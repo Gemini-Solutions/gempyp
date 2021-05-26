@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "pygem"
+version = "0.1.0"
+description = "A ecosystem of libraries useful for software development"
+authors = ["Shubham Shukla"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://pygem.readthedocs.io/en/latest/"
+homepage = "https://github.com/gem-shubhamshukla/pygem"
+repository = "https://github.com/gem-shubhamshukla/pygem"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+pygem = "pygem.cli:main"
