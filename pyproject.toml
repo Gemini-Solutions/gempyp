@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pygem"
 version = "0.1.0"
-description = "A ecosystem of libraries useful for software development"
+description = "An ecosystem of libraries useful for software development"
 authors = ["Shubham Shukla"]
 license = "MIT"
 readme = "README.md"
@@ -13,6 +13,12 @@ repository = "https://github.com/gem-shubhamshukla/pygem"
 python = "^3.7"
 
 [tool.poetry.dev-dependencies]
+Sphinx = "^4.0.2"
+nbsphinx = "^0.8.5"
+ipykernel = "^5.5.5"
+sphinx-autoapi = "^1.8.1"
+sphinx-rtd-theme = "^0.5.2"
+sphinxcontrib-napoleon = "^0.7"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
