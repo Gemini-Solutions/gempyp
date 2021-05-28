@@ -14,5 +14,9 @@ def test(a, b):
    """
    return a+' '+b
 
+
+def test():
+   print("hello1")
+
 def test2():
    print("hello3")
