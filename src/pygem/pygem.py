@@ -20,3 +20,4 @@ def test():
 
 def test2():
    print("hello3")
+   return "hello3"
