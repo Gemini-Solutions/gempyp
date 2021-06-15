@@ -8,6 +8,8 @@ class Database():
                 import data.db_oracle as db
             elif db_type.lower() == 'mysql':
                 import data.db_mysql as db
+            elif db_type.lower() == 'sqlite':
+                import data.db_sqlite as db
             else:
                 print("db_type not found")
                 self.db_obj = None
