@@ -12,6 +12,7 @@ def get_data_thread(config_data, queue1, db_obj = None):
         query = config_data["query"]
         if not db_obj:
             #will update the db type getting when we will have more type of database
+            #add for sqlite
             db_type = "oracle" if config_data["database"][0:3] == 'ORA' else 'mysql'
             d_obj = database.Database(db_type, config_data)
             db_obj = d_obj.get_db_obj()
