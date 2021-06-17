@@ -36,9 +36,11 @@ class DVM():
                 process_no = len(config_list)
                 pool = Pool(processes=process_no)
                 for res in pool.imap_unordered(worker_process,config_list):
-                    if res[0][0] == 0:
+                    res = list(res)
+                    if res[0] == 0:
+                    #if res[0][0] == 0:
                         res_dict["status"]='PASS'
-                        r_val,key_only_in_src,key_only_in_tgt,common_keys,diff_count,match_count = res[0]
+                        r_val,key_only_in_src,key_only_in_tgt,common_keys,diff_count,match_count = [res[i] for i in (0, 1, 2, 3, 4, 5)]
                         res_dict["comp_status"] = "FAIL"
                         if diff_count==0 and len(key_only_in_src)==0 and len(key_only_in_tgt)==0:
                             print("Comparison passed for comp_id {}".format(res[1]))
@@ -167,8 +169,10 @@ def main():
                     pool = Pool(processes = process_no)
                     if process_no>1:
                         for res in pool.imap_unordered(worker_process,config_list):
-                            if res[0][0]==0:
-                                r_val,key_only_in_src, key_only_in_tgt, common_keys, diff_count, match_count = res[0]
+                            res = list(res)
+                            #if res[0][0]==0:
+                            if res[0] == 0:
+                                r_val,key_only_in_src, key_only_in_tgt, common_keys, diff_count, match_count = [res[i] for i in (0, 1, 2, 3, 4, 5)]
                                 if diff_count==0 and len(key_only_in_src)==0 and len(key_only_in_tgt)==0:
                                     print("Comparison passed for comp_id {}".format(res[1]))
                                 elif diff_count>0:
@@ -187,8 +191,10 @@ def main():
                         proc.join()
                     else:
                         res = worker_process(config_list[0])
-                        if res[0][0]==0:
-                                r_val,key_only_in_src, key_only_in_tgt, common_keys, diff_count, match_count = res[0]
+                        res = list(res)
+                        if res[0] == 0:
+                        #if res[0][0]==0:
+                                r_val,key_only_in_src, key_only_in_tgt, common_keys, diff_count, match_count = [res[i] for i in (0, 1, 2, 3, 4, 5)]
                                 if diff_count==0 and len(key_only_in_src)==0 and len(key_only_in_tgt)==0:
                                     print("Comparison passed for comp_id {}".format(res[1]))
                                 elif diff_count>0:
