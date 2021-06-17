@@ -5,9 +5,10 @@ import traceback
 import time
 
 class Database():
-
-    DB_LOCATION = 'mydatabase.db'
-    def __init__(self) -> None:
+    
+    #change hardcoded name
+    DB_LOCATION = 'name'
+    def __init__(self, config_data) -> None:
         pass
         
     def connect(self):
@@ -42,7 +43,7 @@ class Database():
         
     def close(self):
         try:
-            self.cursor.close()
+            #self.cursor.close()
             self.connection.close()
             print("Connection Closed")
         except Exception:
