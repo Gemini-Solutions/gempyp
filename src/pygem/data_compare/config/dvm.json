@@ -1,0 +1,8 @@
+{
+    "trim":"0",
+    "process":1,
+    "report_type":"basic",
+    "tolerance":"1e-06",
+    "diff_sample_count":500,
+    "comp_type":"python"
+}
