@@ -185,5 +185,3 @@ if __name__ == "__main__":
         else:
             print('Invalid response!')
         response = int(input("Choose:\n1.Create suite.json\n2.Create test.json\n3.Create db.json\n4.Insert Connection\n5.Update Connection\n6.Delete Connection\n7.Exit\nResponse: "))
-
-        
