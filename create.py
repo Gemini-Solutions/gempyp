@@ -1,6 +1,37 @@
+from cryptography.fernet import Fernet
+import warnings
 import json
 import os
 import traceback
+import sys
+from getpass import getpass, getuser
+
+KEY_DIR = (
+    	os.path.abspath('')
+)
+
+def encrypt(passwd, key=None):
+    try:
+        if not key:
+            cur_user = getuser()
+            key_file_name = "." + cur_user + ".key"
+            key_file_path = os.path.join(KEY_DIR, key_file_name)
+            print("Keyfile path {}".format(key_file_path))
+            with open(key_file_path, "w") as f:
+                key = Fernet.generate_key()
+                f.write(key.decode('UTF-8'))
+                pass
+            print("Changing file permission to user read-only")
+            os.chmod(key_file_path, 0o600)
+        f = Fernet(key)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            token = f.encrypt(passwd.encode("utf-8"))
+    except Exception:
+        traceback.print_exc()
+        token = None
+        pass
+    return token
 
 def getData(c):
     try:
@@ -91,7 +122,6 @@ def insertConnection():
             newConnection['location'] = input('location: ') 
             newConnection['database'] = ''
             newConnection['user'] = ''
-            #add encryption
             newConnection['password'] = ''
             newConnection['host'] = ''
             newConnection['port'] = ''
@@ -100,7 +130,8 @@ def insertConnection():
             newConnection['database'] = input('database: ')
             newConnection['user'] = input('user: ')
             #add encryption
-            newConnection['password'] = input('password: ')
+            passwd = getpass('password: ')
+            newConnection['password'] = encrypt(passwd).decode("utf-8")
             newConnection['host'] = input('host: ')
             newConnection['port'] = input('port: ')
         connection[connectionName]=newConnection
@@ -137,7 +168,8 @@ def updateConnection():
             dict1['database'] = ret(input('database: '), dict1, 'database')
             dict1['user'] = ret(input('user: '), dict1, 'user')
             #add encryption
-            dict1['password'] = ret(input('password: '), dict1, 'password')
+            passwd = getpass('password: ')
+            dict1['password'] = ret(encrypt(passwd).decode("utf-8"), dict1, 'password')
             dict1['host'] = ret(input('host: '), dict1, 'host')
             dict1['port'] = ret(input('port: '), dict1, 'port')
         connection[connectionName]=dict1
