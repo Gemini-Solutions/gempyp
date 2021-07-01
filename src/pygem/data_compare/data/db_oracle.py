@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 import time
+import common.common_functions as cf
 
 class Database():
     def __init__(self, config_data) -> None:
@@ -19,7 +20,7 @@ class Database():
         try:
             if not self.dsn:
                 if self.user and self.password and self.database and self.port:
-                    self.dsn = self.user + "/" +self.password +"@" + self.database+":"+self.port
+                    self.dsn = self.user + "/" +cf.decrypt(self.password) +"@" + self.database+":"+self.port
                 elif self.database:
                     self.dsn = "/@"+self.database
             if threaded:

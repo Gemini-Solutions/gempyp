@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 import time
+import common.common_functions as cf
 
 class Database():
 
@@ -18,7 +19,7 @@ class Database():
         
     def connect(self):
         try:
-            self.connection = psycopg2.connect(host = self.host, user = self.user, password = self.password, port = self.port,database = self.database)
+            self.connection = psycopg2.connect(host = self.host, user = self.user, password = cf.decrypt(self.password), port = self.port,database = self.database)
             print("Connected Successfully")
             self.cursor = self.connection.cursor()
             print("Cursor Created")

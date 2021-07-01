@@ -1,5 +1,6 @@
 import traceback
 import pymysql
+import common.common_functions as cf
 
 class Database():
 
@@ -14,7 +15,7 @@ class Database():
         
     def connect(self):
         try:
-            self.con = pymysql.connect(host = self.host, user = self.user, password = self.password, port = self.port,database = self.database)
+            self.con = pymysql.connect(host = self.host, user = self.user, password = cf.decrypt(self.password), port = self.port,database = self.database)
             print("Connected successfully")
             self.cursor = self.con.cursor()
             print("Cursor created")
