@@ -4,8 +4,13 @@ import json
 import traceback
 import pandas as pd
 import time
-from Crypto import Random
-from Crypto.Cipher import AES
+from cryptography.fernet import Fernet
+import warnings
+from getpass import getpass, getuser
+
+KEY_DIR = (
+    	os.path.abspath('/home/tanvi/Downloads/PygemDump/')
+)
 
 def read_json(file_path):
     try:
@@ -54,15 +59,37 @@ def exc_handler(method):
         return res
     return check_exc
 
-def encrypt(message, key, key_size=256):
-    message = pad(message)
-    iv = Random.new().read(AES.block_size)
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    return iv + cipher.encrypt(message) 
+def decrypt(enc_pass):
+    cur_user = getuser()
+    key_file_name = "." + cur_user + ".key"
+    key_file_path = os.path.join(KEY_DIR, key_file_name)
+    print("keyfile path is {}".format(key_file_path))
+    if not os.path.exists(key_file_path):
+        print(
+            "Keyfile does not exist. Exiting"
+        )
+        sys.exit(1)
+    else:
+        print("Keyfile exists. Retrieving key")
+        with open(key_file_path) as f:
+            key = f.readline()
+    try:
+        f = Fernet(key)
+        pass
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            enc_pass = enc_pass.encode('utf-8')
+            dec_passwd = f.decrypt(enc_pass)
+            dec_passwd = dec_passwd.decode('utf-8')
+    except Exception:
+        dec_passwd = None
+        traceback.print_exc()
+    return dec_passwd
+    
+if __name__ == '__main__':
+    pass
 
-def decrypt(ciphertext, key):
-    iv = ciphertext[:AES.block_size]
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    plaintext = cipher.decrypt(ciphertext[AES.block_size:])
-    return plaintext.rstrip(b"\0")
+
+
+
 
