@@ -5,33 +5,7 @@ import os
 import traceback
 import sys
 from getpass import getpass, getuser
-
-KEY_DIR = (
-    	os.path.abspath('')
-)
-
-def encrypt(passwd, key=None):
-    try:
-        if not key:
-            cur_user = getuser()
-            key_file_name = "." + cur_user + ".key"
-            key_file_path = os.path.join(KEY_DIR, key_file_name)
-            print("Keyfile path {}".format(key_file_path))
-            with open(key_file_path, "w") as f:
-                key = Fernet.generate_key()
-                f.write(key.decode('UTF-8'))
-                pass
-            print("Changing file permission to user read-only")
-            os.chmod(key_file_path, 0o600)
-        f = Fernet(key)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            token = f.encrypt(passwd.encode("utf-8"))
-    except Exception:
-        traceback.print_exc()
-        token = None
-        pass
-    return token
+from src.pygem.data_compare.common.common_functions import encrypt
 
 def getData(c):
     try:
@@ -68,7 +42,7 @@ def createTest():
         compare["comparisons"] = comparisons
         json.dump(compare, outFile, indent=4)
         outFile.close()
-        print(projectName+'_test.json created at '+filePath)
+        print('------'+projectName+'_test.json created at '+filePath+'------')
     except Exception:
         print("Exception in createTest {}".format(traceback.format_exc()))
 
@@ -88,11 +62,11 @@ def createSuite():
         report["report_email"] = report_email
         json.dump(report, outFile, indent=4)
         outFile.close()
-        print(projectName+'_suite.json created at '+filePath)
+        print('------'+projectName+'_suite.json created at '+filePath+'------')
     except Exception:
         print("Exception in createSuite {}".format(traceback.format_exc()))
 
-def createDB():
+"""def createDB():
     try:
         projectName = input("Enter Project Name: ")
         filePath = input("Enter Path: ")
@@ -103,7 +77,7 @@ def createDB():
         outFile.close()
         print(projectName+'_db.json created at '+filePath)
     except Exception:
-        print("Exception in createDB {}".format(traceback.format_exc()))
+        print("Exception in createDB {}".format(traceback.format_exc()))"""
 
 def insertConnection():
     try:
@@ -116,20 +90,14 @@ def insertConnection():
             connectionName = input("Connection already exists. Enter new Connection Name: ")
         newConnection = {}
         dbs = ['mysql', 'oracle', 'postgre', 'sqlite']
-        dbType = int(input('Choose:\n1.MySQL\n2.Oracle\n3.PostgreSQL\n4:Sqlite\nResponse: '))
+        dbType = int(input('Choose:\n1.MySQL\n2.Oracle\n3.PostgreSQL\n4.Sqlite\nResponse: '))
         newConnection['type'] = dbs[dbType-1] 
         if(newConnection['type']=='sqlite'):
             newConnection['location'] = input('location: ') 
-            newConnection['database'] = ''
-            newConnection['user'] = ''
-            newConnection['password'] = ''
-            newConnection['host'] = ''
-            newConnection['port'] = ''
         else:
-            newConnection['location'] = ''
             newConnection['database'] = input('database: ')
             newConnection['user'] = input('user: ')
-            #add encryption
+            #encryption
             passwd = getpass('password: ')
             newConnection['password'] = encrypt(passwd).decode("utf-8")
             newConnection['host'] = input('host: ')
@@ -138,7 +106,7 @@ def insertConnection():
         outFile = open(path, "w")
         json.dump(connection, outFile, indent=4)
         outFile.close()
-        print('Inserted Connection '+connectionName)
+        print('------Inserted Connection '+connectionName+'------')
     except Exception:
         print("Exception in insertConnection {}".format(traceback.format_exc()))
 
@@ -157,17 +125,17 @@ def updateConnection():
         while(connectionName not in connection):
             connectionName = input("Connection doesn't exist. Enter valid Connection Name: ")
         dict1 = connection[connectionName]
-        response = int(input("Change db type?\n1.Yes\n2.No\nResponse: "))
+        """response = int(input("Change db type?\n1.Yes\n2.No\nResponse: "))
         if(response==1):
             dbs = ['mysql', 'oracle', 'postgre', 'sqlite']
-            dbType = int(input('Choose:\n1.MySQL\n2.Oracle\n3.PostgreSQL\n4:Sqlite\nResponse: '))
-            dict1['type'] = dbs[dbType-1]
+            dbType = int(input('Choose:\n1.MySQL\n2.Oracle\n3.PostgreSQL\n4.Sqlite\nResponse: '))
+            dict1['type'] = dbs[dbType-1]"""
         if(dict1['type']=='sqlite'):
             dict1['location'] = ret(input('location: '), dict1, 'location')
         else:
             dict1['database'] = ret(input('database: '), dict1, 'database')
             dict1['user'] = ret(input('user: '), dict1, 'user')
-            #add encryption
+            #encryption
             passwd = getpass('password: ')
             dict1['password'] = ret(encrypt(passwd).decode("utf-8"), dict1, 'password')
             dict1['host'] = ret(input('host: '), dict1, 'host')
@@ -176,7 +144,7 @@ def updateConnection():
         outFile = open(path, "w")
         json.dump(connection, outFile, indent=4)
         outFile.close()
-        print('Updated Connection '+connectionName)
+        print('------Updated Connection '+connectionName+'------')
     except Exception:
         print("Exception in updateConnection {}".format(traceback.format_exc()))
 
@@ -193,29 +161,27 @@ def deleteConnection():
         outFile = open(path, "w")
         json.dump(connection, outFile, indent=4)
         outFile.close()
-        print('Deleted Connection '+connectionName)
+        print('------Deleted Connection '+connectionName+'------')
     except Exception:
         print("Exception in deleteConnection {}".format(traceback.format_exc()))
       
 if __name__ == "__main__":
-    response = int(input("Choose:\n1.Create suite.json\n2.Create test.json\n3.Create db.json\n4.Insert Connection\n5.Update Connection\n6.Delete Connection\n7.Exit\nResponse: "))
-    while(response!=7):
+    response = int(input("Choose:\n1.Create suite.json\n2.Create test.json\n3.Insert Connection\n4.Update Connection\n5.Delete Connection\n6.Exit\nResponse: "))
+    while(response!=6):
         if(response==1):
             createSuite()
         elif(response==2):
             createTest()
         elif(response==3):
-            createDB()
-        elif(response==4):
             insertConnection()
-        elif(response==5):
+        elif(response==4):
             updateConnection()
-        elif(response==6):
+        elif(response==5):
             deleteConnection()
-        elif(response==7):
+        elif(response==6):
             break
         else:
             print('Invalid response!')
-        response = int(input("Choose:\n1.Create suite.json\n2.Create test.json\n3.Create db.json\n4.Insert Connection\n5.Update Connection\n6.Delete Connection\n7.Exit\nResponse: "))
+        response = int(input("Choose:\n1.Create suite.json\n2.Create test.json\n3.Insert Connection\n4.Update Connection\n5.Delete Connection\n6.Exit\nResponse: "))
 
         
