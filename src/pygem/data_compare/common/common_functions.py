@@ -8,10 +8,6 @@ from cryptography.fernet import Fernet
 import warnings
 from getpass import getpass, getuser
 
-KEY_DIR = (
-    	os.path.abspath('/home/tanvi/Downloads/PygemDump/')
-)
-
 def read_json(file_path):
     try:
         #print(file_path)
@@ -59,11 +55,36 @@ def exc_handler(method):
         return res
     return check_exc
 
+def encrypt(passwd, key=None):
+    try:
+        if not key:
+            cur_user = getuser()
+            KEY_DIR = '/home/'+cur_user+'/.ssh'
+            key_file_name = "." + cur_user + ".key"
+            key_file_path = os.path.join(os.path.abspath(KEY_DIR), key_file_name)
+            print("------Keyfile path {}------".format(key_file_path))
+            with open(key_file_path, "w") as f:
+                key = Fernet.generate_key()
+                f.write(key.decode('UTF-8'))
+                pass
+            print("Changing file permission to user read-only")
+            os.chmod(key_file_path, 0o600)
+        f = Fernet(key)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            token = f.encrypt(passwd.encode("utf-8"))
+    except Exception:
+        traceback.print_exc()
+        token = None
+        pass
+    return token
+
 def decrypt(enc_pass):
     cur_user = getuser()
+    KEY_DIR = KEY_DIR = '/home/'+cur_user+'/.ssh'
     key_file_name = "." + cur_user + ".key"
-    key_file_path = os.path.join(KEY_DIR, key_file_name)
-    print("keyfile path is {}".format(key_file_path))
+    key_file_path = os.path.join(os.path.abspath(KEY_DIR), key_file_name)
+    print("Keyfile path is {}".format(key_file_path))
     if not os.path.exists(key_file_path):
         print(
             "Keyfile does not exist. Exiting"
