@@ -5,9 +5,9 @@ import traceback
 import datetime
 import uuid
 # from logger import logger
-from configurator import configurator,validator
-from data import database,data
-from core import comparator
+#from configurator import configurator,validator
+from data_compare.data import database,data
+from data_compare.core import comparator
 from multiprocessing import Pool, Process
 
 
@@ -129,6 +129,7 @@ def checkCmdLineParams(args):
 
 def worker_process(config):
     try:
+        print(f"config is {config}")
         r_val = 1
         comp_id = config[0]
         print(config[0])

@@ -5,11 +5,11 @@ class Database():
     def __init__(self, db_type, config_data) -> None:
         try:
             if db_type.lower() == "oracle":
-                import data.db_oracle as db
+                import data_compare.data.db_oracle as db
             elif db_type.lower() == 'mysql':
-                import data.db_mysql as db
+                import data_compare.data.db_mysql as db
             elif db_type.lower() == 'sqlite':
-                import data.db_sqlite as db
+                import data_compare.data.db_sqlite as db
             elif db_type.lower() == 'postgre':
                 import data.db_postgre as db   
             else:

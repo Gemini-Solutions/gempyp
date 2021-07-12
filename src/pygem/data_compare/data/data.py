@@ -4,7 +4,7 @@ import sys
 import traceback
 import threading
 import queue
-import data.database as database
+import data_compare.data.database as database
 
 def get_data_thread(config_data, queue1, db_obj = None):
     try:
