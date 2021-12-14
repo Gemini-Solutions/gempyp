@@ -1,17 +1,15 @@
-from typing import List
-from datetime import datetime
+from typing import Dict, List
+from abc import ABC,abstractmethod
+from datetime import datetime, timezone
 import logging
-import atexit
-import tempfile
 from pygem.libs.enums.status import status
-import reportGenerator
+from pygem.config import DefaultSettings 
+from pygem.engine.reportGenerator import templateData
 
-
-
-class baseTemplate():
+class baseTemplate(ABC):
     """ the class need to be extended by all the testcases"""
 
-    def __init__(self,projectName: str = None, testcaseName: str = None, destructor: bool = False, extraColumns : List = None):
+    def __init__(self,projectName: str = None, testcaseName: str = None):
         """ initializes the reportfile to start making the report 
             :param projectName: The name of the project. Will be overidden by the name 
                                 present in the config if the config is given.
@@ -22,24 +20,18 @@ class baseTemplate():
         """
         self.projectName = projectName.strip()
         self.testcaseName = testcaseName.strip()
-        self.destructor = destructor
-        self.extraColumns = extraColumns
-        self.beginTime = datetime.utcnow()
+        self.beginTime = datetime.now(timezone.utc)
+        self.endTime = None
         self.statusCount = {k:0 for k in status}
-
-        self.RESULTFILE = tempfile.NamedTemporaryFile(mode='w+', encoding="iso-8859-1")
+        self.templateData = templateData()
         
         # can be overiiden for custom result file
-        self.resultFileName = self.RESULTFILE.name
+        self.resultFileName = None
         # can be overiiden or will be automatically decided in the end
         self.status = None
 
         # starting the new Report
-        reportGenerator.newReport(self.projectName, self.testcaseName, self.RESULTFILE,self.extraColumns)
-        # register the destructor
-        if self.destructor:
-            atexit.register(self.destructor)
-
+        self.templateData.newReport(self.projectName, self.testcaseName)
     
     def addRow(self, testStep: str, description: str, status: status,  file: str = None, linkName: str ="Click Here", **kwargs):
         """
@@ -47,12 +39,16 @@ class baseTemplate():
         """
         self.statusCount[status]+=1
 
-        link = None
+        attachment = None
         if file:
-            link = self.addLink(file, linkName)
+            # link = self.addLink(file, linkName)
+            attachment = {
+                "URL": file,
+                "linkName": linkName
+            }
+        # add the new row
+        self.templateData.newRow(testStep, description, status.name, attachment, **kwargs)
 
-        # add the new row        
-        reportGenerator.newRow(testStep, description, status, resultFile = self.RESULTFILE, link=link, **kwargs)
 
 
 
@@ -64,23 +60,16 @@ class baseTemplate():
 
         return f""" <a href='{file}'>{linkName}</a> """
 
-    def destructor(self):
+    def finalize_report(self):
         """
             the destructor after the call addRow will not work
         """
 
-        # closing the resultfile
-        if self.RESULTFILE:
-            self.RESULTFILE.close()
-
         if not self.status:
             self.status = self.findStatus()
+        self.endTime = datetime.now(timezone.ut)
         
-        #TODO
-        reportGenerator.finalizeResult()
-        self.generateJSON()
-
-    
+        self.templateData.finalizeResult(self.beginTime, self.endTime, self.statusCount)
 
     def findStatus(self):
         if self.statusCount[status.FAIL] > 0:
@@ -91,13 +80,36 @@ class baseTemplate():
             return status.PASS
         else:
             return status.INFO
+    
+    def _toJSON(self, resultFile):
 
 
-    def generateJSON(self):
+    @abstractmethod
+    def main(self, testcaseSettings: Dict):
         """
-            generates the end result json
+            extend the baseTemplate and implement this method.
         """
-        pass        
+
+    
+    def RUN(self, testcaseSettings):
+        """
+            the main function which will be called by the executor
+        """
+        # set the values from the report if not set automatically 
+        if not self.projectName:
+            self.projectName = testcaseSettings.get("PROJECTNAME", "PYGEM")
+
+        if not self.testcaseName:
+            self.testcaseName = testcaseSettings.get("TESTCASENAME", "TESTCASE")
+
+        self.main(testcaseSettings)
+        self.finalize_report()
+        resultFile = self.templateData.makeReport(testcaseSettings.get("PYGEMFOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER))
+        result = self._toJSON(resultFile)
+
+        return result
+
+        
 
 
         

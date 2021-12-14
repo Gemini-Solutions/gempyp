@@ -1,4 +1,6 @@
 import json
+from datetime import datetime
+
 
 def read_json(file_path):
     try:
@@ -7,6 +9,24 @@ def read_json(file_path):
             res = json.load(fobj)
     except Exception:
         res = None
-        print("Exception in read_json for file path {} is {}".format(file_path, traceback.format_exc()))
     return res
+
+def findDuration(start_time: datetime, end_time: datetime):
+    # finds the duration in the form HH MM SS
+
+    duration = end_time - start_time
+    seconds = duration.total_seconds()
+    mins = seconds/60
+    seconds = seconds%60
+
+    if mins > 0:
+        return f"{mins} mins and {seconds} seconds"
+    return f"{seconds} seconds"
+
+
+
+
+
+
+
 

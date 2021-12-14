@@ -6,7 +6,7 @@ import getpass
 import uuid
 from datetime import datetime
 from testData import testData
-from status import status
+from pygem.libs.enums.status import status
 
 class Engine():
     def __init__(self,params_config):
