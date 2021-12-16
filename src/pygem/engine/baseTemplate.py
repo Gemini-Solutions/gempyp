@@ -1,12 +1,9 @@
 from typing import Dict, List
-from abc import ABC,abstractmethod
 from datetime import datetime, timezone
-import logging
 from pygem.libs.enums.status import status
-from pygem.config import DefaultSettings 
 from pygem.engine.reportGenerator import templateData
 
-class baseTemplate(ABC):
+class testcaseReporter():
     """ the class need to be extended by all the testcases"""
 
     def __init__(self,projectName: str = None, testcaseName: str = None):
@@ -22,6 +19,8 @@ class baseTemplate(ABC):
         self.testcaseName = testcaseName.strip()
         self.beginTime = datetime.now(timezone.utc)
         self.endTime = None
+        self._miscData = {}
+        self._isDestructorCalled = False
         self.statusCount = {k:0 for k in status}
         self.templateData = templateData()
         
@@ -32,6 +31,22 @@ class baseTemplate(ABC):
 
         # starting the new Report
         self.templateData.newReport(self.projectName, self.testcaseName)
+
+    def addMisc(self, key: str, value):
+        """
+            add the misc data to the report
+        """
+        self._miscData[key] = value
+
+    def getMisc(self, key: str):
+        """
+            returns the misc data for the sprcified key
+            returns none if no data is found
+        """
+
+        return self._miscData.get(key, None)
+
+
     
     def addRow(self, testStep: str, description: str, status: status,  file: str = None, linkName: str ="Click Here", **kwargs):
         """
@@ -64,6 +79,10 @@ class baseTemplate(ABC):
         """
             the destructor after the call addRow will not work
         """
+        # only call the destructor once
+        if self._isDestructorCalled:
+            return
+        self._isDestructorCalled = True
 
         if not self.status:
             self.status = self.findStatus()
@@ -81,33 +100,17 @@ class baseTemplate(ABC):
         else:
             return status.INFO
     
-    def _toJSON(self, resultFile):
+    def serialize(self) -> str: 
+        resultData = {}
+        resultData["testcase_name"] = self.testcaseName
+        resultData["project_name"] = self.projectName
+        resultData["status"] = self.status
+        resultData["result_file"] = self.resultFileName
+        resultData["steps_counts"] = self.statusCount
+        resultData["misc_data"] = self._miscData
 
+        return resultData
 
-    @abstractmethod
-    def main(self, testcaseSettings: Dict):
-        """
-            extend the baseTemplate and implement this method.
-        """
-
-    
-    def RUN(self, testcaseSettings):
-        """
-            the main function which will be called by the executor
-        """
-        # set the values from the report if not set automatically 
-        if not self.projectName:
-            self.projectName = testcaseSettings.get("PROJECTNAME", "PYGEM")
-
-        if not self.testcaseName:
-            self.testcaseName = testcaseSettings.get("TESTCASENAME", "TESTCASE")
-
-        self.main(testcaseSettings)
-        self.finalize_report()
-        resultFile = self.templateData.makeReport(testcaseSettings.get("PYGEMFOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER))
-        result = self._toJSON(resultFile)
-
-        return result
 
         
 
