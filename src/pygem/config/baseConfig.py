@@ -6,9 +6,10 @@ from pygem.libs.exceptions import ParseException
 
 class abstarctBaseConfig(ABC):
 
-    _CONFIG = None
+
 
     def __init__(self,*args, **kwargs):
+        self._CONFIG = None
         try:
             self.parse(*args, **kwargs)
         except ParseException as e:

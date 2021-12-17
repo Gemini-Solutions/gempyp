@@ -13,8 +13,8 @@ class AbstarctSimpleTestcase(ABC):
             :param testcaseSettings: testcasesettings object created from the testcase config
             :return
         """
+        pass
 
-    
     def RUN(self, testcaseSettings: Dict):
         """
             the main function which will be called by the executor
