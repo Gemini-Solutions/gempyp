@@ -1,6 +1,10 @@
+import os
 import json
+import logging as log
 from datetime import datetime
 import traceback
+from typing import List, Union
+import typing
 from pygem.config import DefaultSettings
 
 
@@ -32,7 +36,29 @@ def errorHandler(logger, Error, msg = "some Error Occured"):
     logger.error(f"Error: {Error}")
 
     if DefaultSettings.DEBUG:
-        logger.error(f"TraceBack: {traceback.format_exc()}")
+        logger.debug(f"TraceBack: {traceback.format_exc()}")
+
+
+def parseMails(mail: Union(str, typing.TextIO)) -> List:
+    try:
+    
+        if hasattr(mail, 'read'):
+            mails = mail.read()
+        
+        elif os.path.isfile(mail):
+            file = open(mail,'r')
+            mails = file.read()
+            file.close()
+        
+        mails = mails.strip()
+        mails = mails.split(",")
+        return mails
+    except Exception as e:
+        log.error("Error while parsing the mails")
+        log.debug(f"traceback: {traceback.format_exc()}")
+        return []
+        
+
 
 
 

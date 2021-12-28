@@ -3,15 +3,15 @@ import pandas as pd
 class testData():
     
     def __init__(self):
-        self.suiteColumns = ["s_run_id", "s_start_time", "s_end_time", "status", "projectName", "run_type", "s_report_type"]
-        self.multiRunColumns = ["s_run_id", "r_run_id", "r_start_time","r_end_time" "user", "status", "run_type", "env", "machine", "initiated_by", "run_mode"]
-        self.testcaseDetailColumn = ["tc_run_id", "s_run_id", "r_run_id", "tc_start_time", "tc_end_time",  "status", "user", "machine", "result_file", "ignore"]
+        self.testcaseDetailColumn = ["tc_run_id", "start_time", "end_time","name", "category", "log_file", "status", "user", "machine", "result_file", "product_type", "ignore"]
         self.miscDetailColumn = ["run_id", "key" ,"value"]
 
-        self.suiteDetail = pd.DataFrame(columns=self.suiteColumns)
-        self.multiRunColumns = pd.DataFrame(columns=self.multiRunColumns)
-        self.testcaseDetailColumn = pd.DataFrame(columns=self.testcaseDetailColumn)
-        self.miscDetailColumn = pd.DataFrame(columns=self.miscDetailColumn)
+        # can have anyamount of columns
+        # this should always have one row so it can be made a dict or something instad of a dataframe
+        self.suiteDetail = pd.DataFrame()
+        
+        self.testcaseDetails = pd.DataFrame(columns=self.testcaseDetailColumn)
+        self.miscDetails = pd.DataFrame(columns=self.miscDetailColumn)
 
     
     def toJSON(self):
