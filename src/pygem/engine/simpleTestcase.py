@@ -5,42 +5,47 @@ from pygem.engine.baseTemplate import testcaseReporter
 
 
 class AbstarctSimpleTestcase(ABC):
-     
     @abstractmethod
-    def main(self, testcaseSettings: Dict) -> Union(testcaseReporter, List[testcaseReporter]):
+    def main(
+        self, testcaseSettings: Dict
+    ) -> Union(testcaseReporter, List[testcaseReporter]):
         """
-            extend the baseTemplate and implement this method.
-            :param testcaseSettings: testcasesettings object created from the testcase config
-            :return
+        extend the baseTemplate and implement this method.
+        :param testcaseSettings: testcasesettings object created from the testcase config
+        :return
         """
         pass
 
-    def RUN(self, testcaseSettings: Dict):
+    def RUN(self, testcaseSettings: Dict) -> List:
         """
-            the main function which will be called by the executor
+        the main function which will be called by the executor
         """
-        # set the values from the report if not set automatically 
+        # set the values from the report if not s et automatically
         Data = []
         reports = self.main(testcaseSettings)
 
         if isinstance(reports, testcaseReporter):
             reports = [reports]
-        
+
         for index, report in enumerate(reports):
             if not report.projectName:
-                self.projectName = testcaseSettings.get("PROJECTNAME", "PYGEM")
+                report.projectName = testcaseSettings.get("PROJECTNAME", "PYGEM")
 
             if not report.testcaseName:
-                self.testcaseName = testcaseSettings.get("TESTCASENAME", f"TESTCASE_{index}")
- 
+                report.testcaseName = testcaseSettings.get("NAME", f"TESTCASE")
+                report.testcaseName = f"{self.testcaseName}_{index}"
+
             # call the destructor if not already called.
             report.finalize_report()
 
-            # if user has not provided its own resultfile 
+            # if user has not provided its own resultfile
             if not report.resultFileName:
-                report.resultFileName = report.templateData.makeReport(testcaseSettings.get("PYGEMFOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER))
+                report.resultFileName = report.templateData.makeReport(
+                    testcaseSettings.get(
+                        "PYGEMFOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER
+                    )
+                )
             result = report.serialize()
             Data.append(result)
 
         return Data
-

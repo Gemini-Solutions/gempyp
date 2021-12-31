@@ -7,49 +7,42 @@ from pygem.libs.enums.status import status
 from pygem.libs.common import findDuration
 
 
-class templateData():
-
-    def __init__(self, header = "Geminii Report"):
+class templateData:
+    def __init__(self, header="Geminii Report"):
         # initliza the data to be stored as a JSON
         self.REPORTDATA = {"Header": header, "steps": []}
 
-
     def newReport(self, projectName: str, tescaseName: str):
         metadata = []
-        # 1st Column 
+        # 1st Column
         column1 = {
             "TESTCASE NAME": tescaseName,
             "SERVICE PROJECT": projectName,
-            "DATE OF EXECUTION": datetime.now(timezone.utc)
+            "DATE OF EXECUTION": datetime.now(timezone.utc),
         }
         metadata.append(column1)
 
         self.REPORTDATA["MetaData"] = metadata
 
-
-
     def newRow(self, title: str, description: str, status: status, **kwargs):
-        step = {
-            "title":title,
-            "description": description,
-            "status": status
-        }
+        step = {"title": title, "description": description, "status": status}
         step.update(kwargs)
-        
+
         self.REPORTDATA["steps"].append(step)
 
-
     # finalize the result. Calulates duration etc.
-    def finalizeResult(self, beginTime: datetime, endTime: datetime, statusCounts: Dict):
-        #column2
+    def finalizeResult(
+        self, beginTime: datetime, endTime: datetime, statusCounts: Dict
+    ):
+        # column2
         column2 = {
             "EXECUTION STARTED ON": beginTime,
             "EXECUTION ENDED ON": endTime,
-            "EXECUTION DURATION": findDuration(beginTime, endTime)
+            "EXECUTION DURATION": findDuration(beginTime, endTime),
         }
-    
+
         # column3
-        column3 = {k.name:v for k,v in statusCounts.items()}
+        column3 = {k.name: v for k, v in statusCounts.items()}
 
         self.REPORTDATA["MetaData"].append(column2)
         self.REPORTDATA["MetaData"].append(column3)
@@ -59,13 +52,13 @@ class templateData():
         filterValues = self.REPORTDATA.get("filterValues", {})
         filterValues["status"] = [value.name for value in statusCounts.keys()]
 
-    
+    def _getFilters(self) -> Dict:
 
-    def _getFilters(self) -> Dict :
-
-        filterNames = list(set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"])))
+        filterNames = list(
+            set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
+        )
         filterNames.pop("status")
-        filterDict = {name:"input" for name in filterNames}
+        filterDict = {name: "input" for name in filterNames}
         filterDict["status"] = "multiSelect"
 
         return filterDict
@@ -85,7 +78,7 @@ class templateData():
 
     def makeReport(self, Result_Folder):
         """
-            creates the html report and save it in the file    
+        creates the html report and save it in the file
         """
         jsonData = self._toJSON()
 
@@ -94,12 +87,3 @@ class templateData():
         Result_File = None
         # return the html file location
         return Result_File
-
-        
-
-        
-
-
-        
-        
-
