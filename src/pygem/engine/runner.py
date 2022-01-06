@@ -20,8 +20,8 @@ def testcaseRunner(self, testcaseMeta: Dict) -> Tuple(List, Dict):
 
         try:
             # TODO update the confidData to contain some default values
-            # PYGEMFOLDER
-            configData["PYGEMFOLDER"] = testcaseMeta["default_folder"]
+            # PYGEMFOLDE
+            configData["PYGEMFOLDER"] = testcaseMeta["output_folder"]
             ResultData = dynamicTestcase.RUN(configData)
 
             # testcase has successfully ran
@@ -29,6 +29,9 @@ def testcaseRunner(self, testcaseMeta: Dict) -> Tuple(List, Dict):
             output = []
             for data in ResultData:
                 tempdict = {}
+                # TODO
+                # MAKE the TC_RUNID
+                tempdict["tc_run_id"] = "hello"
                 tempdict["name"] = data["testcase_name"]
                 tempdict["category"] = configData.get("category")
                 tempdict["status"] = data["status"]

@@ -67,7 +67,7 @@ class testcaseReporter:
             attachment = {"URL": file, "linkName": linkName}
         # add the new row
         self.templateData.newRow(
-            testStep, description, status.name, attachment, **kwargs
+            testStep, description, status.name, attachment=attachment, **kwargs
         )
 
     def addLink(self, file: str, linkName: str):
@@ -89,7 +89,7 @@ class testcaseReporter:
 
         if not self.status:
             self.status = self.findStatus()
-        self.endTime = datetime.now(timezone.ut)
+        self.endTime = datetime.now(timezone.utc)
 
         self.templateData.finalizeResult(self.beginTime, self.endTime, self.statusCount)
 

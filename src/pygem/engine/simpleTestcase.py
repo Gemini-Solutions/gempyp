@@ -8,7 +8,7 @@ class AbstarctSimpleTestcase(ABC):
     @abstractmethod
     def main(
         self, testcaseSettings: Dict
-    ) -> Union(testcaseReporter, List[testcaseReporter]):
+    ) -> Union[testcaseReporter, List[testcaseReporter]]:
         """
         extend the baseTemplate and implement this method.
         :param testcaseSettings: testcasesettings object created from the testcase config
@@ -32,7 +32,7 @@ class AbstarctSimpleTestcase(ABC):
                 report.projectName = testcaseSettings.get("PROJECTNAME", "PYGEM")
 
             if not report.testcaseName:
-                report.testcaseName = testcaseSettings.get("NAME", f"TESTCASE")
+                report.testcaseName = testcaseSettings.get("NAME", "TESTCASE")
                 report.testcaseName = f"{self.testcaseName}_{index}"
 
             # call the destructor if not already called.

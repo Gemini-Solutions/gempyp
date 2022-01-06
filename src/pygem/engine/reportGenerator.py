@@ -4,11 +4,11 @@ from datetime import datetime, timezone
 from itertools import chain
 import json
 from pygem.libs.enums.status import status
-from pygem.libs.common import findDuration
+from pygem.libs.common import findDuration, dateTimeEncoder
 
 
 class templateData:
-    def __init__(self, header="Geminii Report"):
+    def __init__(self, header="Gemini Report"):
         # initliza the data to be stored as a JSON
         self.REPORTDATA = {"Header": header, "steps": []}
 
@@ -26,6 +26,10 @@ class templateData:
 
     def newRow(self, title: str, description: str, status: status, **kwargs):
         step = {"title": title, "description": description, "status": status}
+
+        if not kwargs.get("attachment"):
+            kwargs.pop("attachment")
+
         step.update(kwargs)
 
         self.REPORTDATA["steps"].append(step)
@@ -57,7 +61,7 @@ class templateData:
         filterNames = list(
             set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
         )
-        filterNames.pop("status")
+        # filterNames.pop("status")
         filterDict = {name: "input" for name in filterNames}
         filterDict["status"] = "multiSelect"
 
@@ -66,7 +70,7 @@ class templateData:
     # Converts the data to the JSON
     def _toJSON(self) -> str:
         try:
-            ResultData = json.dumps(self.REPORTDATA)
+            ResultData = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)
 
             return ResultData
         except TypeError as error:
@@ -81,7 +85,7 @@ class templateData:
         creates the html report and save it in the file
         """
         jsonData = self._toJSON()
-
+        # print(jsonData)
         # TODO
         # write the json to a file and make the copy the template to the folder
         Result_File = None

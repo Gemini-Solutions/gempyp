@@ -46,9 +46,28 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
+        self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
         self.cleaup()
+
+    def makeOutputFolder(self):
+
+        report_folder_name = f"{self.projectName}_{self.project_env}"
+        if self.reportName:
+            report_folder_name = report_folder_name + f"_{self.reportName}"
+        date = datetime.now().strftime("%Y_%M_%D_%H_%m")
+        report_folder_name = report_folder_name + f"_{date}"
+        if "outputfolder" in self.PARAMS:
+            self.ouput_folder = os.path.join(
+                self.PARAMS["outputfolder"], report_folder_name
+            )
+        else:
+            self.ouput_folder = os.path.join(
+                self.current_dir, "pygem_reports", report_folder_name
+            )
+
+        os.makedirs(self.current_dir)
 
     def setUP(self, config: Type[abstarctBaseConfig]):
         self.PARAMS = config.getSuiteConfig()
@@ -59,15 +78,8 @@ class Engine:
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
         self.projectName = self.PARAMS["project"]
+        self.reportName = self.PARAMS.get("reportname")
         self.project_env = self.PARAMS["env"]
-
-        if "outputfolder"  in self.PARAMS:
-            self.output_folder = self.PARAMS["outputFolder"]
-            if not os.path.isdir(self.output_folder):
-                os.makedirs(self.output_folder)
-        else:
-            self.output_folder = os.path.join(self.current_dir, "pygem_reports")
-            os.makedirs(self.output_folder)
 
     def parseMails(self):
         self.mail = common.parseMails(self.PARAMS["mail"])
@@ -290,6 +302,7 @@ class Engine:
         data["user"] = self.user
         data["machine"] = self.machine
         data["env"] = self.project_env
+        data["output_folder"] = self.ouput_folder
 
         return data
 
