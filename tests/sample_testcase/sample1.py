@@ -4,9 +4,10 @@ from pygem.libs.enums.status import status
 
 
 class sample1(AbstarctSimpleTestcase):
-    def main(self, testcaseSettings):
+    def main(self, testcaseSettings, **kwargs):
 
-        self.verify(testcaseSettings["projectName"], testcaseSettings["name"])
+        self.verify(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
+        return self.reporter
 
     def verify(self, projectName, testcaseName):
         self.reporter = testcaseReporter(projectName, testcaseName)

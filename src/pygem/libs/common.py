@@ -37,7 +37,7 @@ def errorHandler(logger, Error, msg="some Error Occured"):
     logger.error(f"Error: {Error}")
 
     if DefaultSettings.DEBUG:
-        logger.debug(f"TraceBack: {traceback.format_exc()}")
+        logger.error(f"TraceBack: {traceback.format_exc()}")
 
 
 def parseMails(mail: Union[str, typing.TextIO]) -> List:
@@ -51,13 +51,13 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
             mails = file.read()
             file.close()
 
-        mails = mails.strip()
+        mails = mail.strip()
         mails = mails.split(",")
         return mails
     except Exception as e:
         log.error("Error while parsing the mails")
         log.error(f"Error : {e}")
-        log.debug(f"traceback: {traceback.format_exc()}")
+        log.error(f"traceback: {traceback.format_exc()}")
         return []
 
 

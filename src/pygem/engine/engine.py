@@ -3,38 +3,39 @@ import os
 import logging
 import platform
 import getpass
-import multiprocessing as Pool
+from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
 from datetime import datetime, timezone
 from pygem.config.baseConfig import abstarctBaseConfig
-from testData import testData
+from pygem.engine.testData import testData
 from pygem.libs.enums.status import status
 from pygem.libs import common
+from pygem.engine.runner import testcaseRunner
 from pygem.config import DefaultSettings
 
 
-def executorFactory(data: Dict) -> Tuple(Dict, Dict):
+def executorFactory(data: Dict) -> Tuple[List, Dict]:
     """
     calls the differnt executors based on the type of the data
     """
     # TODO have to decide the type of the variable
-    if data["configData"]["type"].upper() == "DVM":
-        # TODO do the DVM stuff
-        logging.info("starting the DVM testcase")
-    elif data["configData"]["type"].upper() == "RESTTEST":
-        # TODO do the resttest stuff here
-        logging.info("starting the resttest testcase")
-
-    else:
+    if "TYPE" not in data["configData"]:
         # TODO call the pygem testcases
         logging.info("starting the pygem testcases")
+        return testcaseRunner(data)
+
+    elif data["configData"].get("TYPE").upper() == "DVM":
+        # TODO do the DVM stuff
+        logging.info("starting the DVM testcase")
+    elif data["configData"].get("TYPE").upper() == "RESTTEST":
+        # TODO do the resttest stuff here
+        logging.info("starting the resttest testcase")
 
 
 class Engine:
     def __init__(self, params_config):
-        self.run(self, params_config)
-        pass
+        self.run(params_config)
 
     def run(self, params_config: Type[abstarctBaseConfig]):
         logging.info("Engine Started")
@@ -60,14 +61,14 @@ class Engine:
         report_folder_name = report_folder_name + f"_{date}"
         if "outputfolder" in self.PARAMS:
             self.ouput_folder = os.path.join(
-                self.PARAMS["outputfolder"], report_folder_name
+                self.PARAMS["OUTPUTFOLDER"], report_folder_name
             )
         else:
             self.ouput_folder = os.path.join(
                 self.current_dir, "pygem_reports", report_folder_name
             )
 
-        os.makedirs(self.current_dir)
+        os.makedirs(self.ouput_folder)
 
     def setUP(self, config: Type[abstarctBaseConfig]):
         self.PARAMS = config.getSuiteConfig()
@@ -77,12 +78,12 @@ class Engine:
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
-        self.projectName = self.PARAMS["project"]
-        self.reportName = self.PARAMS.get("reportname")
-        self.project_env = self.PARAMS["env"]
+        self.projectName = self.PARAMS["PROJECT"]
+        self.reportName = self.PARAMS.get("REPORTNAME")
+        self.project_env = self.PARAMS["ENV"]
 
     def parseMails(self):
-        self.mail = common.parseMails(self.PARAMS["mail"])
+        self.mail = common.parseMails(self.PARAMS["MAIL"])
 
     def makeSuiteDetails(self):
 
@@ -114,12 +115,14 @@ class Engine:
             if self.CONFIG.getTestcaseLength() <= 0:
                 raise Exception("no testcase found to run")
 
-            if self.PARAMS["mode"].upper() == "SEQUENCE":
+            if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-            if self.PARAMS["mode"].upper() == "OPTIMIZE":
+                print(self.DATA.testcaseDetails)
+                print(self.DATA.miscDetails)
+            elif self.PARAMS["MODE"].upper() == "OPTIMIZE":
                 self.startParallel()
             else:
-                raise TypeError("mode can only be sequence of parallel")
+                raise TypeError("mode can only be sequence of optimize")
 
         except Exception as e:
             common.errorHandler(
@@ -168,7 +171,7 @@ class Engine:
         """
         pool = None
         try:
-            pool = Pool(self.PARAMS.get("threads", DefaultSettings.THREADS))
+            pool = Pool(self.PARAMS.get("THREADS", DefaultSettings.THREADS))
             # decide the dependency order:
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
@@ -182,9 +185,9 @@ class Engine:
                     else:
                         dependencyError = {
                             "message": "dependency failed",
-                            "testcase": testcase["name"],
-                            "category": testcase.get("category", None),
-                            "product_type": testcase.get("product_type", None),
+                            "testcase": testcase["NAME"],
+                            "category": testcase.get("CATEGORY", None),
+                            "product_type": testcase.get("PRODUCT_TYPE", None),
                         }
 
                         # update the testcase in the database with failed dependency
@@ -221,23 +224,26 @@ class Engine:
         """
         updates the testcase data in the dataframes
         """
-        if error:
-            output = self.getErrorTestcase(
-                error["message"],
-                error["testcase"],
-                error.get("category"),
-                error.get("product_type"),
-            )
-            output = [output]
+        try:
+            if error:
+                output = self.getErrorTestcase(
+                    error["message"],
+                    error["testcase"],
+                    error.get("category"),
+                    error.get("product_type"),
+                )
+                output = [output]
 
-        for i in output:
-            testcaseDict = i["testcaseDict"]
-            self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
-                testcaseDict, ignore_index=True
-            )
-            self.updateTestcaseMiscData(
-                i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
-            )
+            for i in output:
+                testcaseDict = i["testcaseDict"]
+                self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
+                    testcaseDict, ignore_index=True
+                )
+                self.updateTestcaseMiscData(
+                    i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
+                )
+        except Exception as e:
+            common.errorHandler(logging, e, "in update_df")
 
     def getErrorTestcase(
         self,
@@ -296,13 +302,12 @@ class Engine:
     def getTestcaseData(self, testcase: str) -> Dict:
         data = {}
         data["configData"] = self.CONFIG.getTestcaseData(testcase)
-        data["projectName"] = self.projectName
-        data["project_env"] = self.project_env
-        data["s_run_id"] = self.s_run_id
-        data["user"] = self.user
-        data["machine"] = self.machine
-        data["env"] = self.project_env
-        data["output_folder"] = self.ouput_folder
+        data["PROJECTNAME"] = self.projectName
+        data["ENV"] = self.project_env
+        data["S_RUN_ID"] = self.s_run_id
+        data["USER"] = self.user
+        data["MACHINE"] = self.machine
+        data["OUTPUT_FOLDER"] = self.ouput_folder
 
         return data
 
@@ -311,7 +316,7 @@ class Engine:
         yields the testcases with least dependncy first
         Reverse toplogical sort
         """
-        adjList = {key: list(value.get("dependency", [])) for key, value in testcases}
+        adjList = {key: list(value.get("DEPENDENCY", [])) for key, value in testcases.items()}
 
         for key, value in adjList.items():
             new_list = []
@@ -328,7 +333,7 @@ class Engine:
             top_dep = set(
                 i for dependents in list(adjList.values()) for i in dependents
             ) - set(adjList.keys())
-            top_dep.update(key for key, value in adjList if not value)
+            top_dep.update(key for key, value in adjList.items() if not value)
 
             if not top_dep:
                 logging.error(
@@ -350,32 +355,32 @@ class Engine:
         """
         cheks if the dependency is passed for the testcase or not
         """
-        for dep in testcase.get("dependency", []):
+        for dep in testcase.get("DEPENDENCY", []):
 
             dep_split = dep.split(":")
 
             if len(dep_split) == 1:
-                if dep_split[0] not in self.DATA.testcaseDetails["name"]:
+                if dep_split[0] not in self.DATA.testcaseDetails["NAME"]:
                     return False
 
             else:
                 if dep_split[0].upper() == "P":
-                    if dep_split[1] not in self.DATA.testcaseDetails["name"]:
+                    if dep_split[1] not in self.DATA.testcaseDetails["NAME"]:
                         return False
                     if (
                         self.DATA.testcaseDetails.loc(
-                            self.DATA.testcaseDetails["name"] == dep_split[1]
+                            self.DATA.testcaseDetails["NAME"] == dep_split[1]
                         )["status"]
                         != status.PASS.name
                     ):
                         return False
 
                 if dep_split[0].upper() == "F":
-                    if dep_split[1] not in self.DATA.testcaseDetails["name"]:
+                    if dep_split[1] not in self.DATA.testcaseDetails["NAME"]:
                         return False
                     if (
                         self.DATA.testcaseDetails.loc(
-                            self.DATA.testcaseDetails["name"] == dep_split[1]
+                            self.DATA.testcaseDetails["NAME"] == dep_split[1]
                         )["status"]
                         != status.FAIL.name
                     ):

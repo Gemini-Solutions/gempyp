@@ -112,13 +112,13 @@ class testcaseReporter:
 
     def serialize(self) -> Dict:
         resultData = {}
-        resultData["testcase_name"] = self.testcaseName
-        resultData["project_name"] = self.projectName
-        resultData["status"] = self.status
-        resultData["result_file"] = self.resultFileName
-        resultData["steps_counts"] = self.statusCount
-        resultData["misc_data"] = self._miscData
-        resultData["start_time"] = self.beginTime
-        resultData["end_time"] = self.endTime
+        resultData["NAME"] = self.testcaseName
+        resultData["PROJECTNAME"] = self.projectName
+        resultData["STATUS"] = self.status
+        resultData["RESULT_FILE"] = self.resultFileName
+        resultData["STEPS_COUNT"] = self.statusCount
+        resultData["MISC"] = self._miscData
+        resultData["START_TIME"] = self.beginTime
+        resultData["END_TIME"] = self.endTime
 
         return resultData

@@ -1,16 +1,19 @@
+import inspect
 from typing import Dict, List, Tuple
 import logging
 import importlib
 from pygem.libs import common
+from pygem.engine.simpleTestcase import AbstarctSimpleTestcase
 
 
-def testcaseRunner(self, testcaseMeta: Dict) -> Tuple(List, Dict):
-    """ "
+def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
+    """
     actually imports the testcase functions and run the functions
     """
     configData: Dict = testcaseMeta.get("configData")
+    testcaseMeta.pop("configData")
     try:
-        fileName = configData.get("path")
+        fileName = configData.get("PATH")
 
         try:
             dynamicTestcase = importlib.import_module(fileName)
@@ -20,9 +23,18 @@ def testcaseRunner(self, testcaseMeta: Dict) -> Tuple(List, Dict):
 
         try:
             # TODO update the confidData to contain some default values
-            # PYGEMFOLDE
-            configData["PYGEMFOLDER"] = testcaseMeta["output_folder"]
-            ResultData = dynamicTestcase.RUN(configData)
+            # PYGEMFOLDER
+            allClasses = inspect.getmembers(dynamicTestcase, inspect.isclass)
+
+            for name, cls in allClasses:
+                # currently running only one class easily extensible to run multiple classes
+                # from single file
+                if (
+                    issubclass(cls, AbstarctSimpleTestcase)
+                    and name != "AbstarctSimpleTestcase"
+                ):
+                    ResultData = cls().RUN(configData, **testcaseMeta)
+                    break
 
             # testcase has successfully ran
             # make the output Dictt
@@ -32,22 +44,22 @@ def testcaseRunner(self, testcaseMeta: Dict) -> Tuple(List, Dict):
                 # TODO
                 # MAKE the TC_RUNID
                 tempdict["tc_run_id"] = "hello"
-                tempdict["name"] = data["testcase_name"]
-                tempdict["category"] = configData.get("category")
-                tempdict["status"] = data["status"]
-                tempdict["user"] = testcaseMeta["user"]
-                tempdict["machine"] = testcaseMeta["machine"]
+                tempdict["name"] = data["NAME"]
+                tempdict["category"] = configData.get("CATEGORY")
+                tempdict["status"] = data["STATUS"]
+                tempdict["user"] = testcaseMeta["USER"]
+                tempdict["machine"] = testcaseMeta["MACHINE"]
                 tempdict["product_type"] = "PYGEM"
-                tempdict["result_file"] = data["result_file"]
-                tempdict["start_time"] = data["start_time"]
-                tempdict["end_time"] = data["end_time"]
+                tempdict["result_file"] = data["RESULT_FILE"]
+                tempdict["start_time"] = data["START_TIME"]
+                tempdict["end_time"] = data["END_TIME"]
 
                 # have to look into the way on how to get the log file
                 tempdict["log_file"] = None
 
                 singleTestcase = {}
                 singleTestcase["testcaseDict"] = tempdict
-                singleTestcase["misc"] = data.get("misc_data")
+                singleTestcase["misc"] = data.get("MISC")
                 output.append(singleTestcase)
 
             return output, None
@@ -65,9 +77,9 @@ def testcaseRunner(self, testcaseMeta: Dict) -> Tuple(List, Dict):
 def getError(error, configData: Dict) -> Dict:
 
     error = {}
-    error["testcase"] = configData.get("testcase")
+    error["testcase"] = configData.get("NAME")
     error["message"] = str(error)
     error["product_type"] = "PYGEM"
-    error["category"] = configData.get("category", None)
+    error["category"] = configData.get("CATEGORY", None)
 
     return error

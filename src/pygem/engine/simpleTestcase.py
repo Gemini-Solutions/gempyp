@@ -7,7 +7,7 @@ from pygem.engine.baseTemplate import testcaseReporter
 class AbstarctSimpleTestcase(ABC):
     @abstractmethod
     def main(
-        self, testcaseSettings: Dict
+        self, testcaseSettings: Dict, **kwargs
     ) -> Union[testcaseReporter, List[testcaseReporter]]:
         """
         extend the baseTemplate and implement this method.
@@ -16,13 +16,13 @@ class AbstarctSimpleTestcase(ABC):
         """
         pass
 
-    def RUN(self, testcaseSettings: Dict) -> List:
+    def RUN(self, testcaseSettings: Dict, **kwargs) -> List:
         """
         the main function which will be called by the executor
         """
         # set the values from the report if not s et automatically
         Data = []
-        reports = self.main(testcaseSettings)
+        reports = self.main(testcaseSettings, **kwargs)
 
         if isinstance(reports, testcaseReporter):
             reports = [reports]
