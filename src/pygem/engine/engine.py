@@ -50,14 +50,14 @@ class Engine:
         self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
-        self.cleaup()
+        self.makeReport()
 
     def makeOutputFolder(self):
 
         report_folder_name = f"{self.projectName}_{self.project_env}"
         if self.reportName:
             report_folder_name = report_folder_name + f"_{self.reportName}"
-        date = datetime.now().strftime("%Y_%M_%D_%H_%m")
+        date = datetime.now().strftime("%Y_%b_%d_%H%M")
         report_folder_name = report_folder_name + f"_{date}"
         if "outputfolder" in self.PARAMS:
             self.ouput_folder = os.path.join(
@@ -69,6 +69,8 @@ class Engine:
             )
 
         os.makedirs(self.ouput_folder)
+        self.testcase_folder = os.path.join(self.ouput_folder, "testcases")
+        os.makedirs(self.testcase_folder)
 
     def setUP(self, config: Type[abstarctBaseConfig]):
         self.PARAMS = config.getSuiteConfig()
@@ -117,8 +119,6 @@ class Engine:
 
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-                print(self.DATA.testcaseDetails)
-                print(self.DATA.miscDetails)
             elif self.PARAMS["MODE"].upper() == "OPTIMIZE":
                 self.startParallel()
             else:
@@ -145,11 +145,12 @@ class Engine:
                 SuiteStatus = s.name
 
         stoptime = (
-            self.DATA.testcaseDetails["end_time"].sort_values(ascending=False).iloc(0)
+            self.DATA.testcaseDetails["end_time"].sort_values(ascending=False).iloc[0]
         )
+        print(stoptime)
 
         self.DATA.suiteDetail.at[0, "status"] = SuiteStatus
-        self.DATA.suiteDetail.at[0, "end_time"] = stoptime
+        self.DATA.suiteDetail.at[0, "s_end_time"] = stoptime
 
     def startSequence(self):
         """
@@ -181,7 +182,7 @@ class Engine:
 
                     # only append testcases whose dependency are passed otherwise just update the database
                     if self.isDependencyPassed(testcase):
-                        poolList.append(self.getTestcaseData(testcase))
+                        poolList.append(self.getTestcaseData(testcase.get("NAME")))
                     else:
                         dependencyError = {
                             "message": "dependency failed",
@@ -307,8 +308,7 @@ class Engine:
         data["S_RUN_ID"] = self.s_run_id
         data["USER"] = self.user
         data["MACHINE"] = self.machine
-        data["OUTPUT_FOLDER"] = self.ouput_folder
-
+        data["OUTPUT_FOLDER"] = self.testcase_folder
         return data
 
     def getDependency(self, testcases: Dict):
@@ -316,8 +316,9 @@ class Engine:
         yields the testcases with least dependncy first
         Reverse toplogical sort
         """
-        adjList = {key: list(value.get("DEPENDENCY", [])) for key, value in testcases.items()}
-
+        adjList = {
+            key: list(value.get("DEPENDENCY", [])) for key, value in testcases.items()
+        }
         for key, value in adjList.items():
             new_list = []
             for testcase in value:
@@ -386,7 +387,20 @@ class Engine:
                     ):
                         return False
 
-            return True
+        return True
 
-    def cleaup(self):
-        pass
+    def makeReport(self):
+        """
+        saves the report json
+        """
+        suiteReport = None
+        with open("/home/sa.taneja/Gemini/pygem/suite.html", "r") as f:
+            suiteReport = f.read()
+
+        reportJson = self.DATA.getJSONData()
+        suiteReport = suiteReport.replace("::DATA::", reportJson)
+
+        ResultFile = os.path.join(self.ouput_folder, "Result.html")
+
+        with open(ResultFile, "w+") as f:
+            f.write(suiteReport)

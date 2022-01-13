@@ -41,10 +41,9 @@ class AbstarctSimpleTestcase(ABC):
             # if user has not provided its own resultfile
             if not report.resultFileName:
                 report.resultFileName = report.templateData.makeReport(
-                    testcaseSettings.get(
-                        "PYGEMFOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER
-                    )
-                )
+                    kwargs.get(
+                        "OUTPUT_FOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER
+                    ), testcaseSettings["NAME"])
             result = report.serialize()
             Data.append(result)
 

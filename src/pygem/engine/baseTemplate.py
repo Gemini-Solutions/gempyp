@@ -97,7 +97,7 @@ class testcaseReporter:
 
         for i in status:
             if self.statusCount[i] > 0:
-                return i
+                return i.name
 
         """
         if self.statusCount[status.FAIL] > 0:

@@ -20,34 +20,6 @@
         <extra_args1>hello</extra_args1>
         </testcase>
 
-        <testcase>
-        <name>sample_testcase2</name>
-        <category>sample</category>
-        <path>tests.sample_testcase.sample1</path>
-        <run_flag>Y</run_flag>
-        
-        <location>test</location>
-        <extra_args1>hello</extra_args1>
-        </testcase>
-
-        <testcase>
-        <name>sample_testcase3</name>
-        <category>sample</category>
-        <run_flag>Y</run_flag>
-        <location>test</location>
-        <path>tests.sample_testcase.sample1</path>
-        <extra_args1>hello</extra_args1>
-        </testcase>
-
-        <testcase>
-        <name>sample_testcase4</name>
-        <category>sample</category>
-        <run_flag>Y</run_flag>
-        <location>test</location>
-        <path>tests.sample_testcase.sample1</path>
-        <extra_args1>hello</extra_args1>
-        </testcase>
-
     </testcases>
 
 

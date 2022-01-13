@@ -1,4 +1,5 @@
 import inspect
+import uuid
 from typing import Dict, List, Tuple
 import logging
 import importlib
@@ -43,7 +44,8 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 tempdict = {}
                 # TODO
                 # MAKE the TC_RUNID
-                tempdict["tc_run_id"] = "hello"
+                tc_run_id = f"{data['NAME']}_{uuid.uuid4()}"
+                tempdict["tc_run_id"] = tc_run_id
                 tempdict["name"] = data["NAME"]
                 tempdict["category"] = configData.get("CATEGORY")
                 tempdict["status"] = data["STATUS"]
@@ -53,6 +55,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 tempdict["result_file"] = data["RESULT_FILE"]
                 tempdict["start_time"] = data["START_TIME"]
                 tempdict["end_time"] = data["END_TIME"]
+                tempdict["ignore"] = True if testcaseMeta.get("IGNORE") else False
 
                 # have to look into the way on how to get the log file
                 tempdict["log_file"] = None

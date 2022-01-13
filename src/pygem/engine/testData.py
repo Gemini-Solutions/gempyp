@@ -1,4 +1,6 @@
 import pandas as pd
+import json
+from pygem.libs.common import dateTimeEncoder
 
 
 class testData:
@@ -43,3 +45,29 @@ class testData:
         used by fromJSON to validate the json data
         """
         pass
+
+    def getJSONData(self):
+        """
+        provide the report json
+        """
+        SuiteReport = {}
+        suiteDict = self.suiteDetail.to_dict(orient="records")[0]
+        testcaseDict = self.testcaseDetails.to_dict(orient="records")
+        suiteDict["Testcase_Details"] = testcaseDict
+        testcase_counts = self.getTestcaseCounts()
+        suiteDict["TestCase_Info"] = testcase_counts
+
+        SuiteReport["Suits_Details"] = suiteDict
+
+        return json.dumps(SuiteReport, cls=dateTimeEncoder)
+
+    def getTestcaseCounts(self):
+
+        group = self.testcaseDetails.groupby(["status"]).size()
+        group = group.to_dict()
+        total = 0
+        for i in group:
+            total += group[i]
+        group["total"] = total
+
+        return group

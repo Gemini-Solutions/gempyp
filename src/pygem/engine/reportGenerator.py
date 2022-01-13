@@ -1,3 +1,4 @@
+import os
 import logging
 from typing import Dict
 from datetime import datetime, timezone
@@ -18,11 +19,11 @@ class templateData:
         column1 = {
             "TESTCASE NAME": tescaseName,
             "SERVICE PROJECT": projectName,
-            "DATE OF EXECUTION": datetime.now(timezone.utc),
+            "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"},
         }
         metadata.append(column1)
 
-        self.REPORTDATA["MetaData"] = metadata
+        self.REPORTDATA["metaData"] = metadata
 
     def newRow(self, title: str, description: str, status: status, **kwargs):
         step = {"title": title, "description": description, "status": status}
@@ -40,21 +41,22 @@ class templateData:
     ):
         # column2
         column2 = {
-            "EXECUTION STARTED ON": beginTime,
-            "EXECUTION ENDED ON": endTime,
+            "EXECUTION STARTED ON": {"value": beginTime, "type": "datetime"},
+            "EXECUTION ENDED ON": {"value": endTime, "type": "datetime"},
             "EXECUTION DURATION": findDuration(beginTime, endTime),
         }
 
         # column3
         column3 = {k.name: v for k, v in statusCounts.items()}
 
-        self.REPORTDATA["MetaData"].append(column2)
-        self.REPORTDATA["MetaData"].append(column3)
+        self.REPORTDATA["metaData"].append(column2)
+        self.REPORTDATA["metaData"].append(column3)
 
         # filters
-        self.REPORTDATA["filterNames"] = self._getFilters()
-        filterValues = self.REPORTDATA.get("filterValues", {})
+        self.REPORTDATA["FilterNames"] = self._getFilters()
+        filterValues = {}
         filterValues["status"] = [value.name for value in statusCounts.keys()]
+        self.REPORTDATA["FilterValues"] = filterValues
 
     def _getFilters(self) -> Dict:
 
@@ -62,8 +64,8 @@ class templateData:
             set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
         )
         # filterNames.pop("status")
-        filterDict = {name: "input" for name in filterNames}
-        filterDict["status"] = "multiSelect"
+        filterDict = {name: "Input" for name in filterNames}
+        filterDict["status"] = "Dropdown"
 
         return filterDict
 
@@ -79,15 +81,24 @@ class templateData:
         except Exception as e:
             logging.error("some Error occured")
             logging.error(f"Error: {e}")
+        return "Error"
 
-    def makeReport(self, Result_Folder):
+    def makeReport(self, Result_Folder, name):
         """
         creates the html report and save it in the file
         """
-        jsonData = self._toJSON()
-        # print(jsonData)
+        # for now do this will change to a better solution
         # TODO
-        # write the json to a file and make the copy the template to the folder
-        Result_File = None
+        Result_data = ""
+        with open("/home/sa.taneja/Gemini/pygem/index.html", "r") as f:
+            Result_data = f.read()
+        jsonData = self._toJSON()
+
+        Result_data = Result_data.replace("::DATA::", jsonData)
+
+        result_file = os.path.join(Result_Folder, f"{name}.html")
+        with open(result_file, "w+") as f:
+            f.write(Result_data)
+
         # return the html file location
-        return Result_File
+        return result_file

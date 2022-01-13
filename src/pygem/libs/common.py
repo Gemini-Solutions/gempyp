@@ -23,12 +23,12 @@ def findDuration(start_time: datetime, end_time: datetime):
 
     duration = end_time - start_time
     seconds = duration.total_seconds()
-    mins = seconds / 60
+    mins = seconds // 60
     seconds = seconds % 60
 
     if mins > 0:
-        return f"{mins} mins and {seconds} seconds"
-    return f"{seconds} seconds"
+        return f"{mins} mins and {round(seconds, 3)} seconds"
+    return f"{round(seconds, 3)} seconds"
 
 
 def errorHandler(logger, Error, msg="some Error Occured"):
