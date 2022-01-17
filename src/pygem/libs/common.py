@@ -65,6 +65,6 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
 class dateTimeEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
-            return o.timestamp()
+            return o.timestamp()*1000
 
         return json.JSONEncoder.default(self, o)

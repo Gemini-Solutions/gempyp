@@ -103,7 +103,7 @@ class Engine:
             "env": self.project_env,
             "machine": self.machine,
             "initiated_by": self.user,
-            "run_mod": "LINUX_CLI",
+            "run_mode": "LINUX_CLI",
         }
         self.DATA.suiteDetail = self.DATA.suiteDetail.append(
             SuiteDetails, ignore_index=True

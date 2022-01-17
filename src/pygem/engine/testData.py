@@ -53,9 +53,9 @@ class testData:
         SuiteReport = {}
         suiteDict = self.suiteDetail.to_dict(orient="records")[0]
         testcaseDict = self.testcaseDetails.to_dict(orient="records")
-        suiteDict["Testcase_Details"] = testcaseDict
+        suiteDict["TestCase_Details"] = testcaseDict
         testcase_counts = self.getTestcaseCounts()
-        suiteDict["TestCase_Info"] = testcase_counts
+        suiteDict["Testcase_Info"] = testcase_counts
 
         SuiteReport["Suits_Details"] = suiteDict
 

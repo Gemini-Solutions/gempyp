@@ -94,7 +94,7 @@
 </div>
     </body>
     <script>
-        var obj = '::DATA::';
+        var obj = '{"Suits_Details": {"s_run_id": "TEST_PROJECT_BETA_F748FE61-B5A9-4595-89FD-357F99DB9EA6", "s_start_time": 1642398658414.4622, "s_end_time": 1642398658605.1519, "status": "FAIL", "project_name": "test_project", "run_type": "ON DEMAND", "s_report_type": null, "user": "sa.taneja", "env": "beta", "machine": "GSG1TG-GI0167", "initiated_by": "sa.taneja", "run_mode": "LINUX_CLI", "TestCase_Details": [{"tc_run_id": "sample_testcase1_8667e34a-ebbe-45e0-9880-37219adb98f9", "start_time": 1642398658604.2532, "end_time": 1642398658605.1519, "name": "sample_testcase1", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja", "machine": "GSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/pygem/pygem_reports/test_project_beta_2022_Jan_17_1120/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false}], "Testcase_Info": {"FAIL": 1, "total": 1}}}';
         obj = JSON.parse(obj)
         console.log(obj)
         var excludeHeader=["tc_run_id","steps","execution_metadata","result_file","ignore"];
@@ -261,7 +261,7 @@ function getExecutionDetailsTable(data){
     {
            var val = data[exeHeaders[cols[colIndex]]];
            if(val===undefined){
-               val='None';
+               val='';
            }
            if(cols[colIndex].toUpperCase().includes('TIME')){
 val=changeTime(data[exeHeaders[cols[colIndex]]]);
@@ -289,7 +289,7 @@ function getInfraDetailsTable(data){
         var row = $('<tr>');
             var val = data[infraHeaders[cols[colIndex]]];
             if(val===undefined){
-               val='';
+               val='None';
            }
             row.append($('<th/>').html(cols[colIndex]).addClass('text-center').css('color','white').css('background-color','#375A64'));
             row.append($('<td/>').html(val));

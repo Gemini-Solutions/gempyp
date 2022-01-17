@@ -94,7 +94,7 @@
 </div>
     </body>
     <script>
-        var obj = '::DATA::';
+        var obj = '{"Suits_Details": {"s_run_id": "TEST_PROJECT_BETA_17C84496-ACEA-443C-9133-0A5A83C055C8", "s_start_time": 1642399111265.8132, "s_end_time": 1642399111292.355, "status": "FAIL", "project_name": "test_project", "run_type": "ON DEMAND", "s_report_type": null, "user": "sa.taneja", "env": "beta", "machine": "GSG1TG-GI0167", "initiated_by": "sa.taneja", "run_mode": "LINUX_CLI", "TestCase_Details": [{"tc_run_id": "sample_testcase1_9464c480-eacb-4da6-a8dd-d6eef215f456", "start_time": 1642399111292.189, "end_time": 1642399111292.355, "name": "sample_testcase1", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja", "machine": "GSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/pygem/pygem_reports/test_project_beta_2022_Jan_17_1128/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false}], "Testcase_Info": {"FAIL": 1, "total": 1}}}';
         obj = JSON.parse(obj)
         console.log(obj)
         var excludeHeader=["tc_run_id","steps","execution_metadata","result_file","ignore"];
