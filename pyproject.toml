@@ -1,13 +1,15 @@
 [tool.poetry]
 name = "pygem"
-version = "0.1.2.dev1"
+version = "0.1.2.beta1"
 description = "An ecosystem of libraries useful for software development"
 authors = ["Shubham Shukla"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://pygem.readthedocs.io/en/latest/"
-homepage = "https://github.com/gem-shubhamshukla/pygem"
-repository = "https://github.com/gem-shubhamshukla/pygem"
+homepage = "https://github.com/Gemini-Solutions/pygem"
+repository = "https://github.com/Gemini-Solutions/pygem"
+
+include = ["suite.html", "index.html"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
