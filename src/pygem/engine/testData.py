@@ -56,7 +56,6 @@ class testData:
         suiteDict["TestCase_Details"] = testcaseDict
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts
-
         SuiteReport["Suits_Details"] = suiteDict
 
         return json.dumps(SuiteReport, cls=dateTimeEncoder)

@@ -19,9 +19,8 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     """
     calls the differnt executors based on the type of the data
     """
-    # TODO have to decide the type of the variable
+
     if "TYPE" not in data["configData"]:
-        # TODO call the pygem testcases
         logging.info("starting the pygem testcases")
         return testcaseRunner(data)
 
