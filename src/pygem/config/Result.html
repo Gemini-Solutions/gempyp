@@ -12,7 +12,7 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
   <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     </head>
     <style>
         .nav-pills .nav-link.active{
@@ -26,6 +26,9 @@
       }
       .failTest{
           color: red !important
+      }
+      .warnTest{
+          color: yellowgreen !important
       }
       a{
           color: white !important
@@ -94,11 +97,13 @@
 </div>
     </body>
     <script>
-        var obj = '::DATA::';
-        obj = JSON.parse(obj)
+        var obj = '{"Suits_Details": {"s_run_id": "TEST_PROJECT_BETA_D6396137-EE91-4E64-9BD1-4C82D96DF455", "s_start_time": 1642423063768.786, "s_end_time": 1642423063794.419, "status": "FAIL", "project_name": "test_project", "run_type": "ON DEMAND", "s_report_type": null, "user": "sa.taneja", "env": "beta", "machine": "GSG1TG-GI0167", "initiated_by": "sa.taneja", "run_mode": "LINUX_CLI", "TestCase_Details": [{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase1", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja", "machine": "GSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase2", "category": "sample1", "log_file": null, "status": "PASS", "user": "sa.taneja1", "machine": "MSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase3", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja2", "machine": "KSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM2", "ignore": false}], "Testcase_Info": {"FAIL": 1, "TOTAL": 1}}}';
+        obj = JSON.parse(obj);
+        obj.Suits_Details.TestCase_Details=changeFormat(obj.Suits_Details.TestCase_Details);
         console.log(obj)
         var excludeHeader=["tc_run_id","steps","execution_metadata","result_file","ignore"];
-
+var sortType="";
+var lastsortHeader="";
         var exeHeaders={
             "STATUS":"status",
             "PROJECT NAME":"project_name",
@@ -121,6 +126,22 @@
     el.textContent = opt;
     el.value = opt;
     $('#status').append(el);
+}
+
+
+function changeFormat(value){
+for (var i = 0; i < value.length; i++) {
+var keys=Object.keys(value[i]);
+for(var j = 0; j < keys.length; j++) {
+    if(typeof(value[i][keys[j]])!="object"){
+        value[i][keys[j]]={
+            value:value[i][keys[j]],
+            sortValue:value[i][keys[j]]
+        }
+    }
+}
+}
+return value;
 }
 function constructPage(){
 
@@ -170,7 +191,8 @@ function getTestcaseDetailsTable(list)
                 var theader = document.createElement("th");
                 theader.className="head";
                 theader.innerHTML = cols[i];
-                 
+                theader.id=cols[i]+"_tc";
+                 theader.addEventListener("click",getsort);
                 // Append columnName to the table row
                 tr.appendChild(theader);
                  
@@ -197,13 +219,13 @@ function getTestcaseDetailsTable(list)
                      if(cols[j]==='status'){
                         // cell.innerHTML = list[i][cols[j]];
                         var link=document.createElement("a");
-                        link.href=list[i]["result_file"];
+                        link.href=list[i]["result_file"]['value'];
                         link.target="_blank";
-                        link.innerHTML=list[i][cols[j]];
+                        link.innerHTML=list[i][cols[j]]['value'];
                         cell.appendChild(link);
-                        if(list[i][cols[j]]==='PASS'){
+                        if(list[i][cols[j]]['value']==='PASS'){
                         cell.className="statusColorPass";
-                        }else if(list[i][cols[j]]==='FAIL'){
+                        }else if(list[i][cols[j]]['value']==='FAIL'){
                             cell.className="statusColorFail";
                         }
                         else{
@@ -211,24 +233,23 @@ function getTestcaseDetailsTable(list)
                         }
                     }
                     else if(cols[j].toUpperCase().includes('TIME')){
-                            cell.innerHTML =changeTime(list[i][cols[j]]);
+                            cell.innerHTML =changeTime(list[i][cols[j]]['value']);
                         }
                         else if(cols[j].toUpperCase().includes('DURATION')){
-                            cell.innerHTML =getDuration(list[i]['start_time'],list[i]['end_time']);
+                            cell.innerHTML =getDuration(list[i]['start_time']['value'],list[i]['end_time']['value']);
                         } else if(cols[j].toUpperCase().includes('LOG_FILE')){
                             if(!list[i][cols[j]]){
                                 cell.innerHTML ='None';
                             }else{
                             var link=document.createElement('a');
-                            link.href=list[i][cols[j]];
+                            link.href=list[i][cols[j]]['value'];
                             link.target="_blank";
-                            link.innerHTML =list[i][cols[j]];
+                            link.innerHTML =list[i][cols[j]]['value'];
                             cell.appendChild(link);
                             }
                         }
                     else{
-                        console.log(cols[j]);
-                    cell.innerHTML = list[i][cols[j]];
+                    cell.innerHTML = list[i][cols[j]]['value'];
                     }
                 }
             }
@@ -303,6 +324,15 @@ function getInfraDetailsTable(data){
 
 function getCardDetails(data){
     var cards=Object.keys(data);
+    var dummy_card=new Set();
+    dummy_card.add('TOTAL');
+    dummy_card.add('PASS');
+    dummy_card.add('FAIL');
+cards.forEach(ele=>{
+    dummy_card.add(ele);
+})
+    cards=Array.from(dummy_card)
+   
     var cardValues=Object.values(data);
     var div=$('<div/>').addClass('col-sm-8 col-md-8 col-lg-8 mt-4');
     var flex=$('<div/>').addClass('d-flex flex-wrap justify-content-center')
@@ -313,11 +343,19 @@ function getCardDetails(data){
         }else if(cards[i]==='FAIL'){
 card.addClass('failTest')
         }
+        else if(cards[i]==='WARN'){
+card.addClass('warnTest');
+        }
         else{
 
         }
         var cardBody=$('<div/>').addClass('card-body mt-4');
-        var cardTitle=$('<h5/>').addClass('card-title').html(data[cards[i]]);
+        var cardTitle=$('<h5/>').addClass('card-title')
+        if(data[cards[i]]){
+        cardTitle.html(data[cards[i]]);
+        }else{
+cardTitle.html(0);
+        }
         var cardText=$('<h5/>').addClass('card-text').html(cards[i]);
         cardBody.append(cardTitle).append(cardText);
         card.append(cardBody);
@@ -365,11 +403,75 @@ function getOptions(val){
 var options=new Set();
 options.add('All');
 for(var i=0;i<val.length; i++){
-    options.add(val[i]["status"]);
+    options.add(val[i]["status"]['value']);
 }
 return Array.from(options);
 }
 
+
+
+function getsort(val){
+    console.log(obj);
+    if(lastsortHeader===""){
+    lastsortHeader=val.target.innerText;
+    sortType="asc";
+    }else if(val.target.innerText===lastsortHeader){
+        if(sortType==="asc"){
+            sortType="desc";
+        }
+        else{
+            sortType="asc";
+        }
+        lastsortHeader=val.target.innerText;
+
+    }else{
+        sortType="asc";
+        lastsortHeader=val.target.innerText;
+
+    }
+    var tab=[...obj.Suits_Details.TestCase_Details];
+    if(sortType==="asc"){
+        for(var i =0;i<tab.length;i++){
+        for(var j= i+1;j<tab.length;j++){
+         
+            if(tab[i][val.target.innerText]['sortValue']>tab[j][val.target.innerText]['sortValue']){
+                var swap = tab[i];
+                tab[i] = tab[j];
+                tab[j] = swap;
+            }
+        }
+    }
+}else{
+    for(var i =0;i<tab.length;i++){
+        for(var j= i+1;j<tab.length;j++){
+            
+            if(tab[i][val.target.innerText]['sortValue']<tab[j][val.target.innerText]['sortValue']){
+                var swap = tab[i];
+                tab[i] = tab[j];
+                tab[j] = swap;
+            }
+        }
+    } 
+}
+obj.Suits_Details.TestCase_Details=tab;
+console.log(obj);
+$('#pills-testcase').children("div")[1].remove();
+var testcaseDetailsTable=getTestcaseDetailsTable(tab);
+$('#pills-testcase').append(testcaseDetailsTable);
+myFunction();
+var icon=$('<i/>').addClass('fa').css('font-size','18px');
+if(sortType==="asc"){
+    icon.addClass("fa-angle-up ml-1").css('vertical-align', 'middle');
+}
+if(sortType==="desc"){
+    icon.addClass("fa-angle-down ml-1").css('vertical-align', 'middle');
+}
+var targetId="#"+lastsortHeader+"_tc";
+$(targetId).append(icon);
+
+var $filterableRows = $('#tab').find('tbody').find('tr').not(':first');
+// console.log($filterableRows);
+}
 function Headers(list) {
             var columns = [];
            row=list
@@ -383,17 +485,20 @@ function Headers(list) {
 
 
 
-        var eventList = ["change", "load"];
+        var eventList = ["change", "load","click"];
         for(event of eventList){
         window.addEventListener(event, function () {
+          
             var $filterableRows = $('#tab').find('tbody').find('tr').not(':first'),
 		$inputs = $('.search-key');
 $inputs.live('input', function() {
-
+    console.log('working',$filterableRows);
+getTestcaseDetailsTable(obj.Suits_Details.TestCase_Details);
 	$filterableRows.hide().filter(function() {
   	return $(this).find('td').filter(function() {
       var tdText = $(this).text().toLowerCase(),
       		inputValue = $('#' + $(this).data('input')).val();
+             
               if(inputValue ==='All'){
                   inputValue ="";
               }
@@ -403,8 +508,9 @@ $inputs.live('input', function() {
               else{
                   inputValue = inputValue.toLowerCase();
               }
+            //   console.log(tdText);
     	return tdText.indexOf(inputValue) != -1;
-    
+  
     }).length == $(this).find('td').length;
   }).show();
 

@@ -90,7 +90,9 @@ class templateData:
         # for now do this will change to a better solution
         # TODO
         Result_data = ""
-        with open("/home/sa.taneja/Gemini/pygem/index.html", "r") as f:
+        index_path = os.path.dirname(__file__)
+        index_path = os.path.join(os.path.split(index_path)[0], "index.html")
+        with open(index_path, "r") as f:
             Result_data = f.read()
         jsonData = self._toJSON()
 

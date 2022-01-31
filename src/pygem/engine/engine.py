@@ -13,6 +13,7 @@ from pygem.libs.enums.status import status
 from pygem.libs import common
 from pygem.engine.runner import testcaseRunner
 from pygem.config import DefaultSettings
+from pygem.engine import dataUpload
 
 
 def executorFactory(data: Dict) -> Tuple[List, Dict]:
@@ -34,6 +35,8 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
 
 class Engine:
     def __init__(self, params_config):
+        logging.basicConfig()
+        logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
 
     def run(self, params_config: Type[abstarctBaseConfig]):
@@ -46,9 +49,11 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
+        dataUpload.sendSuiteData((self.DATA.toSuiteJson()))
         self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
+        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), mode="PUT")
         self.makeReport()
 
     def makeOutputFolder(self):
@@ -242,6 +247,8 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
                 )
+                dataUpload.sendTestcaseData(self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id))
+
         except Exception as e:
             common.errorHandler(logging, e, "in update_df")
 
@@ -393,7 +400,9 @@ class Engine:
         saves the report json
         """
         suiteReport = None
-        with open("/home/sa.taneja/Gemini/pygem/suite.html", "r") as f:
+        suite_path = os.path.dirname(__file__)
+        suite_path = os.path.join(os.path.split(suite_path)[0], "suite.html")
+        with open(suite_path, "r") as f:
             suiteReport = f.read()
 
         reportJson = self.DATA.getJSONData()

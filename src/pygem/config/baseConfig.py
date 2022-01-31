@@ -11,13 +11,14 @@ class abstarctBaseConfig(ABC):
         self._CONFIG = {}
         try:
             self.parse(*args, **kwargs)
+            # filter the testcasesData
+            self.filter()
+            self.update()
         except ParseException as e:
             errorHandler(logging, e, "failed to parse the config")
 
         except Exception as e:
             errorHandler(logging, e, "Some Error occured")
-        # filter the testcasesData
-        self.filter()
 
     def getSuiteConfig(self) -> Dict:
 

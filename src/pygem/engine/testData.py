@@ -28,17 +28,41 @@ class testData:
         self.testcaseDetails = pd.DataFrame(columns=self.testcaseDetailColumn)
         self.miscDetails = pd.DataFrame(columns=self.miscDetailColumn)
 
-    def toJSON(self):
+    def toSuiteJson(self):
         """
-        converts the whole data to json
+        converts the dataframe to suiteJson
         """
-        pass
+        if self.suiteDetail.empty:
+            return {}
 
-    def fromJSON(self, data):
+        data = self.suiteDetail.to_dict(orient="records")[0]
+        miscData = self.miscDetails[
+            self.miscDetails["table_type"].str.upper() == "SUITE"
+        ]
+
+        miscData = miscData.to_dict(orient="records")
+        data["miscData"] = miscData
+
+        return json.dumps(data, cls=dateTimeEncoder)
+
+    def totestcaseJson(self, tc_run_id, s_run_id):
         """
-        converts the json data to the object
+        returns the testcase for that specific json
         """
-        pass
+
+        testData = self.testcaseDetails.loc[
+            self.testcaseDetails["tc_run_id"].str.upper() == tc_run_id
+        ]
+        if testData.empty:
+            return {}
+        testData = testData.to_dict(orient="records")[0]
+        miscData = self.miscDetails.loc[self.miscDetails["run_id"].str.upper() == tc_run_id]
+        miscData = miscData.to_dict(orient="records")
+
+        testData["miscData"] = miscData
+        testData["s_run_id"] = s_run_id
+
+        return json.dumps(testData, cls=dateTimeEncoder)
 
     def _validate(self):
         """
