@@ -91,7 +91,7 @@ class templateData:
         # TODO
         Result_data = ""
         index_path = os.path.dirname(__file__)
-        index_path = os.path.join(os.path.split(index_path)[0], "index.html")
+        index_path = os.path.join(os.path.split(index_path)[0], "testcase.html")
         with open(index_path, "r") as f:
             Result_data = f.read()
         jsonData = self._toJSON()

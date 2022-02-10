@@ -9,7 +9,7 @@ documentation = "https://pygem.readthedocs.io/en/latest/"
 homepage = "https://github.com/Gemini-Solutions/pygem"
 repository = "https://github.com/Gemini-Solutions/pygem"
 
-include = ["suite.html", "index.html"]
+include = ["suite.html", "testcase.html"]
 
 [tool.poetry.dependencies]
 python = "^3.7"

@@ -40,9 +40,9 @@ def _sendData(payload, url, method="POST"):
         data=payload,
         headers=_getHeaders(),
     )
-    response.raise_for_status()
     logging.debug(f"body: {payload}")
     logging.info(f"URL: {url}")
     logging.info(f"status: {response.status_code}")
+    response.raise_for_status()
 
     return response
