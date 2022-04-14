@@ -21,7 +21,7 @@ class abstarctBaseConfig(ABC):
             errorHandler(logging, e, "Some Error occured")
 
     def getSuiteConfig(self) -> Dict:
-
+        print("^^^^^^^^^^^^^ \n ", self._CONFIG["SUITE_DATA"], "\n^^^^^^^^^")
         return self._CONFIG["SUITE_DATA"]
 
     def getTestcaseConfig(self) -> Dict:

@@ -40,7 +40,7 @@ class AbstarctSimpleTestcase(ABC):
 
             # if user has not provided its own resultfile
             if not report.resultFileName:
-                report.resultFileName = report.templateData.makeReport(
+                report.jsonData = report.templateData.makeReport(
                     kwargs.get(
                         "OUTPUT_FOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER
                     ), testcaseSettings["NAME"])

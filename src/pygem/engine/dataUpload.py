@@ -10,7 +10,7 @@ def _getHeaders():
 
 
 def sendSuiteData(payload, mode="POST"):
-
+    # print("---------suite payload \n", payload, "\n-----------")
     try:
         response = _sendData(payload, DefaultSettings.urls["suiteExec"], mode)
         if response.status_code == 201:
@@ -21,7 +21,7 @@ def sendSuiteData(payload, mode="POST"):
 
 
 def sendTestcaseData(payload):
-
+    # print("--------------- testcase payload\n", payload, "\n---------")
     try:
         response = _sendData(payload, DefaultSettings.urls["testcases"], method="POST")
 
