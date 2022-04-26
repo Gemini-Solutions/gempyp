@@ -21,6 +21,7 @@ class testcaseReporter:
         self.beginTime = datetime.now(timezone.utc)
         self.endTime = None
         self._miscData = {}
+        self.jsonData = None
         self._isDestructorCalled = False
         self.statusCount = {k: 0 for k in status}
         self.templateData = templateData()
@@ -120,5 +121,6 @@ class testcaseReporter:
         resultData["MISC"] = self._miscData
         resultData["START_TIME"] = self.beginTime
         resultData["END_TIME"] = self.endTime
+        resultData["jsonData"] = self.jsonData
 
         return resultData

@@ -36,6 +36,7 @@ class testData:
             return {}
 
         data = self.suiteDetail.to_dict(orient="records")[0]
+        # print("-------- data for suite \n", data, "\n---------")
         miscData = self.miscDetails[
             self.miscDetails["table_type"].str.upper() == "SUITE"
         ]
@@ -43,6 +44,7 @@ class testData:
         miscData = miscData.to_dict(orient="records")
         data["miscData"] = miscData
         data["s_id"] = "test_id"
+        data["testcaseDetails"] = self.testcaseDetails.to_dict(orient="records")
 
         return json.dumps(data, cls=dateTimeEncoder)
 
@@ -62,7 +64,7 @@ class testData:
 
         testData["miscData"] = miscData
         testData["s_run_id"] = s_run_id
-
+        # print("-----------\n testData", testData, "\n------------")
         return json.dumps(testData, cls=dateTimeEncoder)
 
     def _validate(self):
@@ -79,9 +81,11 @@ class testData:
         suiteDict = self.suiteDetail.to_dict(orient="records")[0]
         testcaseDict = self.testcaseDetails.to_dict(orient="records")
         suiteDict["TestCase_Details"] = testcaseDict
+        # print("------\n suiteDict", self.testcaseDetails, "\n --------------")
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts
         SuiteReport["Suits_Details"] = suiteDict
+        SuiteReport["reportProduct"] = "PYGEM"        
 
         return json.dumps(SuiteReport, cls=dateTimeEncoder)
 

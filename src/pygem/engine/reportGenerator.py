@@ -95,12 +95,5 @@ class templateData:
         with open(index_path, "r") as f:
             Result_data = f.read()
         jsonData = self._toJSON()
+        return json.loads(jsonData)
 
-        Result_data = Result_data.replace("::DATA::", jsonData)
-
-        result_file = os.path.join(Result_Folder, f"{name}.html")
-        with open(result_file, "w+") as f:
-            f.write(Result_data)
-
-        # return the html file location
-        return result_file
