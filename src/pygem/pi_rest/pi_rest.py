@@ -2,6 +2,7 @@ import os
 import traceback
 import time
 import logging
+import importlib
 from typing import Dict, List, Tuple
 from pygem.engine.baseTemplate import testcaseReporter as Base
 from pygem.libs.enums.status import status
@@ -14,6 +15,7 @@ from pygem.pi_rest.variable_replacement import variable_replacement as var_repla
 from pygem.pi_rest.post_variables import post_variables
 from pygem.pi_rest.key_check import key_check
 from pygem.pi_rest.post_assertion import post_assertion
+from pygem.pi_rest.rest_obj import REST_Obj
 
 
 class PIREST(Base):
@@ -26,10 +28,10 @@ class PIREST(Base):
         self.set_vars()
 
         # setting reporter object
-        self.reporter = Base(projectName=self.data["PROJECTNAME"], testcaseName=self.data["configData"]["NAME"])
+        self.reporter = Base(projectName=self.project, testcaseName=self.tcname)
 
         logging.info("--------------------Report object created ------------------------")
-        self.reporter.addRow("Starting Test", f'Testcase Name: {self.data["configData"]["NAME"]}', status.INFO) 
+        self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
 
 
     def rest_engine(self):
@@ -152,7 +154,10 @@ class PIREST(Base):
         self.data["OUTPUT_FOLDER"] = self.data.get("OUTPUT_FOLDER", self.default_report_path)
         if self.data["OUTPUT_FOLDER"].strip() == "":
             self.data["OUTPUT_FOLDER"] = self.default_report_path
-
+        self.project = self.data["PROJECTNAME"]
+        self.tcname = self.data["configData"]["NAME"]
+        self.legacy_req = None
+        self.legacy_res = None
         self.variables = {}
 
     def log_request(self):
@@ -183,10 +188,77 @@ class PIREST(Base):
 
     def before_method(self):
         # check for before_file
+        file_str = self.data["configData"].get("BEFORE_FILE", "")
+        if file_str == "" or file_str == " ":
+            return
+        file_name = self.data
+        class_name = ""
+        method_name = ""  # before
+        file_obj = importlib.import_module(file_name)
+        obj_ = file_obj
+        try:
+            before_obj = REST_Obj(
+                pg=self.reporter,
+                project=self.project,
+                request=self.req_obj,
+                response=self.res_obj,
+                tcname=self.tcname,
+                variables=self.variables,
+                legacy_req=self.legacy_req,
+                legacy_res=self.legacy_res,
+                request_file=self.file,
+                env=self.env,
+            )
+            if class_name != "":
+                obj_ = getattr(file_obj, class_name)()
+            fin_obj = getattr(obj_, method_name)(before_obj)
+            self.extract_obj(fin_obj)
+            
+        except Exception:
+            pass
         var_replacement(self).variable_replacement()
         pass
 
     def after_method(self):
         # check for after file
+        file_str = self.data["configData"].get("AFTER_FILE")
+        if file_str == "" or file_str == " ":
+            return
+        file_name = file_str.split("path=")[1].split(",")[0]
+        class_name = ""
+        method_name = ""  # after
+        file_obj = importlib.import_module(file_name)
+        obj_ = file_obj
+        try:
+            after_obj = REST_Obj(
+                pg=self.reporter,
+                project=self.project,
+                request=self.req_obj,
+                response=self.res_obj,
+                tcname=self.tcname,
+                variables=self.variables,
+                legacy_req=self.legacy_req,
+                legacy_res=self.legacy_res,
+                request_file=self.file,
+                env=self.env,
+            )
+            if class_name != "":
+                obj_ = getattr(file_obj, class_name)()
+            fin_obj = getattr(obj_, method_name)(after_obj)
+            self.extract_obj(fin_obj)
+        except Exception:
+            pass
         var_replacement(self).variable_replacement()
         pass
+
+    def extract_obj(self, obj):
+        self.reporter = obj.pg
+        self.project = obj.project
+        self.req_obj = obj.request
+        self.res_obj = obj.response
+        self.tcname = obj.tcname
+        self.variables = obj.variables
+        self.legacy_req = obj.legacy_req
+        self.legacy_res = obj.legacy_res
+        self.file = obj.request_file
+        self.env = obj.env

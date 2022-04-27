@@ -71,7 +71,7 @@ class key_check:
                 self.key_list = [str(i) for i in each_key.split(".")]
                 self.temp_key_list = list(self.key_list)
                 result = self.find_keys(self.response_body, self.key_list)
-                if result == "NOT FOUND":
+                if "NOT FOUND" in result:
                     count_found_fail += 1
                 content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
 
@@ -83,7 +83,6 @@ class key_check:
         if len(self.keys_not) > 0:
             for each_key in self.keys_not:
                 self.key_list = [str(i) for i in each_key.split(".")]
-                print(self.key_list)
                 self.temp_key_list = list(self.key_list)
                 result = self.find_keys(self.response_body, self.key_list)
                 if result == "FOUND":
@@ -94,7 +93,7 @@ class key_check:
                     _status_n = status.FAIL
                 else:
                     _status_n = status.PASS
-            self.pirest_obj.reporter.addRow("Keys to be check for ABSENCE in response body", content_not_found, _status_n)
+            self.pirest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
 
         if status.FAIL in [_status, _status_n]:
             self.pirest_obj.reporter._miscData["Reason_of_failure"] = "Status of key check is not as expected"
@@ -122,12 +121,12 @@ class key_check:
                 # for response[each].something
                 if key_val == "response" and isinstance(json_data, list):
                     key_list.remove(each)
-                    self.find_keys(json_data, key_list)
+                    return self.find_keys(json_data, key_list)
 
                 # for data[each].something
                 elif key_val in json_data and isinstance(json_data[key_val], list):
                     key_list.remove(each)
-                    self.find_keys(json_data[key_val], key_list)
+                    return self.find_keys(json_data[key_val], key_list)
 
                 # return "NOT FOUND" if  key from string "key[each]" is not found in the json_data
                 else:
@@ -146,12 +145,12 @@ class key_check:
                 # for response[0].something
                 if key_val == "response" and isinstance(json_data, list) and key_num < len(json_data):
                     key_list.remove(each)
-                    self.find_keys(json_data[key_num], key_list)
+                    return self.find_keys(json_data[key_num], key_list)
 
                 # for something like data[0].something
                 elif key_val in json_data and isinstance(json_data[key_val], list) and key_num < len(json_data[key_val]):
                     key_list.remove(each)
-                    self.find_keys(json_data[key_val][key_num], key_list)
+                    return self.find_keys(json_data[key_val][key_num], key_list)
                 else:
                     print("Key not found ------------")
                     return "NOT FOUND"
@@ -181,7 +180,7 @@ class key_check:
                         else:
 
                             # return NOT FOUND if key not found in some_key[each][index]
-                            return "NOT FOUND"  # missing in number of objects( in case of each)
+                            return f"NOT FOUND, KEY MISSING IN {count_not_found} Items" # missing in number of objects( in case of each)
 
                     # return NOT FOUND if parent of key is not like some_key[each][index], because other scenarios of list are already covered
                     else:
@@ -205,5 +204,6 @@ class key_check:
                 else:
                     return "NOT FOUND"
 
-        # if the key was not found, then "NOT FOUND" must have been returned in any of the above conditions
+        # if the key w
+        # as not found, then "NOT FOUND" must have been returned in any of the above conditions
         return "FOUND"

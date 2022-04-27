@@ -29,8 +29,8 @@
             <body>{}</body>
             <headers>{}</headers>
             <expected_status_code>200</expected_status_code>
-            <pre_variables>set $[#name]="abs"</pre_variables>
-            <key_check>keys are response[0].name, response[0].name.common;</key_check>
+            <pre_variables>set $[#name]="abd"</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
             <assertion></assertion>
             <location>tests</location>
             <extra_args1>hello</extra_args1>

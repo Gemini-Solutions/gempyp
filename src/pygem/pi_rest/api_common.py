@@ -1,11 +1,14 @@
-from datetime import datetime
-# from requests_ntlm import HttpNtlmAuth
-import requests.auth
-import logging
-import traceback
-import requests
 import json
+import logging
+from time import time
+import traceback
+from datetime import datetime
 from getpass import getuser
+import warnings
+from cryptography.fernet import Fernet, InvalidToken
+import requests
+import requests.auth
+from requests_ntlm import HttpNtlmAuth
 
 
 class API:
@@ -25,14 +28,13 @@ class API:
                     print("JSON object can not be serialized")
                     print(str(e))
             # write code for authentication 
-            #if request.aythType.upper() == "KERBEROS":
-            #   auth = HHTPKerberosAuth(request.authMethod, delegate=False)
+            # decrypt password
 
-            # else:
-                # decrypt password
-
-            #    password = self.decrypt(request.credentials.get("password", ""), EncryptKey)
-            #    auth = HttpNtlmAuth(request.credentials.get("username", " "), password)
+            if request.auth.upper() == "PASSWORD":
+                password = self.decrypt_(request.credentials.get("password", ""), EncryptKey)
+                auth = HttpNtlmAuth(request.credentials.get("username", " "), password)
+            else:
+                auth = None
             try:
                 start_time = end_time = datetime.now()
                 obj = Response()
@@ -45,57 +47,111 @@ class API:
                     raise Exception("Api and method are can not be empty or NULL")
                 elif str.upper(request.method) == "POST":
                     start_time = datetime.now()
-                    resp = requests.post(
-                        request.api,
-                        headers=request.headers,
-                        files=request.file,
-                        data=request.body,
-                        verify=request.SSLVerify,
-                        timeout=request.timeout // 1000
-                    )
+                    if request.auth.upper() == "PASSWORD":
+                        resp = requests.post(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            verify=request.SSLVerify,
+                            auth=auth,
+                            timeout=request.timeout // 1000
+                        )
+                    else:
+                        resp = requests.post(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            verify=request.SSLVerify,
+                            timeout=request.timeout // 1000
+                        )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "GET":
                     start_time = datetime.now()
-                    resp = requests.get(
-                        request.api,
-                        headers=request.headers,
-                        files=request.file,
-                        verify=request.SSLVerify,
-                        timeout = request.timeout // 1000,
-                    )
+                    if request.auth.upper() == "PASSWORD": 
+                        resp = requests.get(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            verify=request.SSLVerify,
+                            auth=auth,
+                            timeout=request.timeout // 1000,
+                        )
+                    else:
+                        resp = requests.get(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            verify=request.SSLVerify,
+                            timeout=request.timeout // 1000,
+                        )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "PUT":
                     start_time = datetime.now()
-                    resp = requests.put(
-                        request.api,
-                        headers=request.headers,
-                        files=request.file,
-                        data=request.body,
-                        verify=request.SSLVerify,
-                        timeout=request.timeout // 1000
-                    )
+                    if request.auth.upper() == "PASSWORD": 
+                        resp = requests.put(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            auth=auth,
+                            verify=request.SSLVerify,
+                            timeout=request.timeout // 1000
+                        )
+                    else:
+                        resp = requests.put(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            verify=request.SSLVerify,
+                            timeout=request.timeout // 1000
+                        )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "PATCH":
                     start_time = datetime.now()
-                    resp = requests.patch(
-                        request.api,
-                        headers=request.headers,
-                        files=request.file,
-                        data=request.body,
-                        verify=request.SSLVerify,
-                        timeout=request.timeout // 1000
-                    )
+                    if request.auth.upper() == "PASSWORD": 
+                        resp = requests.patch(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            verify=request.SSLVerify,
+                            auth=auth,
+                            timeout=request.timeout // 1000
+                        )
+                    else:
+                        resp = requests.patch(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            verify=request.SSLVerify,
+                            timeout=request.timeout // 1000
+                        )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "DELETE":
                     start_time = datetime.now()
-                    resp = requests.delete(
-                        request.api,
-                        headers=request.headers,
-                        files=request.file,
-                        data=request.body,
-                        verify=request.SSLVerify,
-                        timeout=request.timeout // 1000
-                    )
+                    if request.auth.upper() == "PASSWORD":
+                        resp = requests.delete(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            verify=request.SSLVerify,
+                            auth=auth,
+                            timeout=request.timeout // 1000
+                        )
+                    else:
+                        resp = requests.delete(
+                            request.api,
+                            headers=request.headers,
+                            files=request.file,
+                            data=request.body,
+                            verify=request.SSLVerify,
+                            timeout=request.timeout // 1000
+                        )
                     end_time = datetime.now()
                 else:
                     raise Exception("invalid method")
@@ -118,28 +174,41 @@ class API:
                 result = obj
             
             # add retries if required
+            if request.retries > 0:
+                if result.status_code not in request.expected_code_list:
+                    request.retries -= 1
+                    logging.info("retrying...........")
+                    time.sleep(1)
+                    return self.execute_api(request)
             return result
-        
-        pass
 
-
-    def decrypt(self, encrypted_Password, key=None):
-        # decrypt the password based on the key if no key is provided default key will be used
-        result = None
+    def encrypt_(password, key):
         try:
-            if not key:
-                user = getuser()
-                key= self.get_key(user)
-                result = self.decrypt_(encrypted_Password, key)
+            fernet_ = Fernet(key)
+            # supress user warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                enc_pass = fernet_.encrypt(password)
         except Exception as e:
-            print("Error: " + str(e))
-        return result
+            enc_pass = None
+            traceback.print_exc()
+            print(e)
+        return enc_pass
 
-    def decrypt_(self):
-        pass
-
-    def get_key(self):
-        pass
+    def decrypt_(enc_pass, key):
+        try:
+            fernet_ = Fernet(key)
+            # supress user warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                enc_pass = enc_pass.encode('utf-8')
+                dec_pass = fernet_.decrypt(enc_pass)
+                dec_pass = dec_pass.decode('utf-8')
+        except Exception as e:
+            dec_pass = None
+            traceback.print_exc()
+            print(e)
+        return dec_pass
 
 
 class Request:
@@ -150,7 +219,12 @@ class Request:
         self.body = {}
         self.file = ""
         self.SSLVerify = False
+        self.username = ""
+        self.password = ""
         self.timeout = 30000
+        self.auth = ""
+        self.expected_code_list = []
+        self.retries = 0
 
 
 class Response:

@@ -12,10 +12,10 @@ class REST_Obj:
             self.tcname = kwargs["tcname"]
         if "variables" in kwargs:
             self.variables = kwargs["variables"]
-        if "suite_variables" in kwargs:
-            self.suite_variables = kwargs["suite_variables"]
         if "legacy_res" in kwargs:
             self.legacy_res = kwargs["legacy_res"]
+        if "legacy_req" in kwargs:
+            self.legacy_req = kwargs["legacy_req"]
         if "request_filet" in kwargs:
             self.request_file = kwargs["request_file"]
         if "env" in kwargs:

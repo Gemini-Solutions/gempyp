@@ -3,7 +3,7 @@ from pygem.engine.engine import Engine
 
 
 def test():
-    config = XmlConfig("C:\\Users\\an.pandey\\pygem_2\\pygem\\tests\\configTest\\sampleTest.xml")
+    config = XmlConfig("C:\\Users\\an.pandey\\pygem\\tests\\configTest\\sampleTest.xml")
  
     
     Engine(config)
