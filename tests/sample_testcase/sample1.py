@@ -18,6 +18,7 @@ class sample1(AbstarctSimpleTestcase):
         self.reporter.addRow(
             "test step2", "hello world", status.FAIL, extra_arg3="3", extra_arg2="2"
         )
+        self.reporter.addMisc("Reason_Of_Failure","Missing")
         # self.reporter.finalize_report()
         # self.reporter.templateData.makeReport("test")
         # print(self.reporter.serialize())

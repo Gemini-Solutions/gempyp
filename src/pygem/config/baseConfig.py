@@ -36,7 +36,7 @@ class abstarctBaseConfig(ABC):
     @abstractmethod
     def parse(self, *args, **kwargs):
         """
-        overrite this method
+        override this method in xmlConfig
         """
         pass
 
