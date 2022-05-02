@@ -2,6 +2,7 @@ from typing import Dict
 import lxml.etree as et
 from pygem.config.baseConfig import abstarctBaseConfig
 from pygem.libs.parsers import xmlToDict, xmlToList
+import sys
 
 
 class XmlConfig(abstarctBaseConfig):
@@ -20,6 +21,10 @@ class XmlConfig(abstarctBaseConfig):
         suiteData = data.find("suite")
 
         suiteDict = xmlToDict(suiteData)
+        #Adding bridgeToken validation here
+        print("-------------- suiteDict\n", suiteDict, "\n----------")
+        if suiteDict.get("BRIDGE_TOKEN", None) is None:
+            sys.exit("ERROR: Bridge Token is Missing in the config.")
         # do your validations here
 
         return suiteDict

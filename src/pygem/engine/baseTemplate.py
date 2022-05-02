@@ -91,7 +91,9 @@ class testcaseReporter:
         if not self.status:
             self.status = self.findStatus()
         self.endTime = datetime.now(timezone.utc)
-
+        for key in list(self.statusCount):
+            if self.statusCount[key] == 0:
+                del self.statusCount[key]
         self.templateData.finalizeResult(self.beginTime, self.endTime, self.statusCount)
 
     def findStatus(self):

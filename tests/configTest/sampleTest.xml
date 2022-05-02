@@ -6,7 +6,8 @@
     <report_name>test_regression</report_name>
     <mode>SEQUENCE</mode>
     <env>beta</env>
-    <type>pirest</type>
+    <type>pygem</type>
+    <bridge_token>tokentest</bridge_token>
     </suite>
 
     <testcases>

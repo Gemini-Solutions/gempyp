@@ -58,11 +58,11 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
-        dataUpload.sendSuiteData((self.DATA.toSuiteJson()))
+        dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"])
         self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
-        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), mode="PUT")
+        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], mode="PUT")
         self.makeReport()
 
     def makeOutputFolder(self):
@@ -70,7 +70,7 @@ class Engine:
         report_folder_name = f"{self.projectName}_{self.project_env}"
         if self.reportName:
             report_folder_name = report_folder_name + f"_{self.reportName}"
-        date = datetime.now().strftime("%Y_%b_%d_%H%M")
+        date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if "outputfolder" in self.PARAMS:
             self.ouput_folder = os.path.join(
@@ -255,14 +255,19 @@ class Engine:
 
             for i in output:
                 testcaseDict = i["testcaseDict"]
-                self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
+
+                try:
+                    self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
+                except Exception as e:
+                    print(e)
+
                 self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
                     testcaseDict, ignore_index=True
                 )
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
                 )
-                dataUpload.sendTestcaseData(self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id))
+                dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"])
 
         except Exception as e:
             common.errorHandler(logging, e, "in update_df")
@@ -285,6 +290,7 @@ class Engine:
         testcaseDict["start_time"] = datetime.now(timezone.utc)
         testcaseDict["end_time"] = datetime.now(timezone.utc)
         testcaseDict["name"] = testcaseName
+        testcaseDict["ignore"] = False
         if category:
             testcaseDict["category"] = category
         testcaseDict["log_file"] = None
@@ -415,18 +421,23 @@ class Engine:
         saves the report json
         """
         suiteReport = None
-        date = datetime.now().strftime("%Y_%b_%d_%H%M")
+
+        date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
+
         suite_path = os.path.dirname(__file__)
         suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
         with open(suite_path, "r") as f:
             suiteReport = f.read()
 
         reportJson = self.DATA.getJSONData()
+        print(type(reportJson))
         reportJson = json.loads(reportJson)
         reportJson["TestStep_Details"] = self.testcaseData
+        # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
+        print("------------ reportJson\n", reportJson)
         suiteReport = suiteReport.replace("DATA", reportJson)
-        suiteReport = suiteReport.replace("STEPVAR", json.dumps(self.testcaseData))
+
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(date))
 
         with open(ResultFile, "w+") as f:

@@ -4,15 +4,17 @@ from pygem.config import DefaultSettings
 from pygem.libs import common
 
 
-def _getHeaders():
+def _getHeaders(bridgeToken):
 
-    return {"Content-Type": "application/json"}
+    return {"Content-Type": "application/json", "bridgetoken": bridgeToken}
 
 
-def sendSuiteData(payload, mode="POST"):
+
+def sendSuiteData(payload, bridgeToken, mode="POST"):
+
     # print("---------suite payload \n", payload, "\n-----------")
     try:
-        response = _sendData(payload, DefaultSettings.urls["suiteExec"], mode)
+        response = _sendData(payload, DefaultSettings.urls["suiteExec"], bridgeToken, mode)
         if response.status_code == 201:
             logging.info("data uploaded successfully")
 
@@ -20,10 +22,12 @@ def sendSuiteData(payload, mode="POST"):
         common.errorHandler(logging, e, "Error occured while sending the suiteData")
 
 
-def sendTestcaseData(payload):
+
+def sendTestcaseData(payload, bridgeToken):
+
     # print("--------------- testcase payload\n", payload, "\n---------")
     try:
-        response = _sendData(payload, DefaultSettings.urls["testcases"], method="POST")
+        response = _sendData(payload, DefaultSettings.urls["testcases"], bridgeToken, method="POST")
 
         if response.status_code == 201:
             logging.info("data uploaded successfully")
@@ -32,13 +36,13 @@ def sendTestcaseData(payload):
         common.errorHandler(logging, e, "Error occured while sending the testcaseData")
 
 
-def _sendData(payload, url, method="POST"):
+def _sendData(payload, url, bridgeToken, method="POST"):
 
     response = requests.request(
         method=method,
         url=url,
         data=payload,
-        headers=_getHeaders(),
+        headers=_getHeaders(bridgeToken),
     )
     logging.debug(f"body: {payload}")
     logging.info(f"URL: {url}")
