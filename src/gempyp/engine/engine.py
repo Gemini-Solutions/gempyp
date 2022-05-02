@@ -8,13 +8,13 @@ from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
 from datetime import datetime, timezone
-from pygem.config.baseConfig import abstarctBaseConfig
-from pygem.engine.testData import testData
-from pygem.libs.enums.status import status
-from pygem.libs import common
-from pygem.engine.runner import testcaseRunner
-from pygem.config import DefaultSettings
-from pygem.engine import dataUpload
+from gempyp.config.baseConfig import abstarctBaseConfig
+from gempyp.engine.testData import testData
+from gempyp.libs.enums.status import status
+from gempyp.libs import common
+from gempyp.engine.runner import testcaseRunner
+from gempyp.config import DefaultSettings
+from gempyp.engine import dataUpload
 
 
 def executorFactory(data: Dict) -> Tuple[List, Dict]:
@@ -23,7 +23,7 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     """
 
     if "TYPE" not in data["configData"]:
-        logging.info("starting the pygem testcases")
+        logging.info("starting the GemPyP testcases")
         return testcaseRunner(data)
 
     elif data["configData"].get("TYPE").upper() == "DVM":

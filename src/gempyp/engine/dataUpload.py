@@ -1,7 +1,7 @@
 import requests
 import logging
-from pygem.config import DefaultSettings
-from pygem.libs import common
+from gempyp.config import DefaultSettings
+from gempyp.libs import common
 
 
 def _getHeaders(bridgeToken):

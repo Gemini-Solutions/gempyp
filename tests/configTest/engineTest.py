@@ -1,5 +1,5 @@
-from pygem.config.xmlConfig import XmlConfig
-from pygem.engine.engine import Engine
+from gempyp.config.xmlConfig import XmlConfig
+from gempyp.engine.engine import Engine
 
 
 def test():

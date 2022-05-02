@@ -5,7 +5,7 @@ from datetime import datetime
 import traceback
 from typing import List, Union
 import typing
-from pygem.config import DefaultSettings
+from gempyp.config import DefaultSettings
 
 
 def read_json(file_path):

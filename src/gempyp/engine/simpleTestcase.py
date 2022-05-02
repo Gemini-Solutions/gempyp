@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Union, Dict
-from pygem.config import DefaultSettings
-from pygem.engine.baseTemplate import testcaseReporter
+from gempyp.config import DefaultSettings
+from gempyp.engine.baseTemplate import testcaseReporter
 
 
 class AbstarctSimpleTestcase(ABC):
@@ -29,7 +29,7 @@ class AbstarctSimpleTestcase(ABC):
 
         for index, report in enumerate(reports):
             if not report.projectName:
-                report.projectName = testcaseSettings.get("PROJECTNAME", "PYGEM")
+                report.projectName = testcaseSettings.get("PROJECTNAME", "GEMPYP")
 
             if not report.testcaseName:
                 report.testcaseName = testcaseSettings.get("NAME", "TESTCASE")

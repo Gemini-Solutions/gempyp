@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-from pygem.libs.common import dateTimeEncoder
+from gempyp.libs.common import dateTimeEncoder
 
 
 class testData:
@@ -85,7 +85,7 @@ class testData:
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts
         SuiteReport["Suits_Details"] = suiteDict
-        SuiteReport["reportProduct"] = "PYGEM"        
+        SuiteReport["reportProduct"] = "GEMPYP"        
 
         return json.dumps(SuiteReport, cls=dateTimeEncoder)
 
