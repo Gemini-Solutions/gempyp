@@ -3,6 +3,8 @@ import os
 import logging
 import platform
 import getpass
+import json
+import traceback
 from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
@@ -11,9 +13,10 @@ from pygem.config.baseConfig import abstarctBaseConfig
 from pygem.engine.testData import testData
 from pygem.libs.enums.status import status
 from pygem.libs import common
-from pygem.engine.runner import testcaseRunner
+from pygem.engine.runner import testcaseRunner, getError
 from pygem.config import DefaultSettings
 from pygem.engine import dataUpload
+from pygem.pi_rest.pi_rest import PIREST
 
 
 def executorFactory(data: Dict) -> Tuple[List, Dict]:
@@ -28,9 +31,15 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     elif data["configData"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
         logging.info("starting the DVM testcase")
-    elif data["configData"].get("TYPE").upper() == "RESTTEST":
+    elif data["configData"].get("TYPE").upper() == "PIREST":
         # TODO do the resttest stuff here
         logging.info("starting the resttest testcase")
+        try:
+            return PIREST(data).rest_engine()
+        except Exception as e:
+            print(traceback.print_exc())
+            print(e)
+            return None, getError(e, data["configData"])
 
 
 class Engine:
@@ -49,11 +58,11 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
-        dataUpload.sendSuiteData((self.DATA.toSuiteJson()))
+        dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"])
         self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
-        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), mode="PUT")
+        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], mode="PUT")
         self.makeReport()
 
     def makeOutputFolder(self):
@@ -61,7 +70,7 @@ class Engine:
         report_folder_name = f"{self.projectName}_{self.project_env}"
         if self.reportName:
             report_folder_name = report_folder_name + f"_{self.reportName}"
-        date = datetime.now().strftime("%Y_%b_%d_%H%M")
+        date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if "outputfolder" in self.PARAMS:
             self.ouput_folder = os.path.join(
@@ -79,13 +88,15 @@ class Engine:
     def setUP(self, config: Type[abstarctBaseConfig]):
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
+        self.testcaseData = {}
         self.machine = platform.node()
         self.user = getpass.getuser()
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
         self.projectName = self.PARAMS["PROJECT"]
-        self.reportName = self.PARAMS.get("REPORTNAME")
+        self.reportName = self.PARAMS.get("REPORT_NAME")
+        # print("---------- report Name", self.reportName)
         self.project_env = self.PARAMS["ENV"]
 
     def parseMails(self):
@@ -95,6 +106,9 @@ class Engine:
 
         self.s_run_id = f"{self.projectName}_{self.project_env}_{uuid.uuid4()}"
         self.s_run_id = self.s_run_id.upper()
+        run_mode = "LINUX_CLI"
+        if os.name == 'nt':
+            run_mode = "WINDOWS"
         SuiteDetails = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
@@ -102,12 +116,12 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.projectName,
             "run_type": "ON DEMAND",
-            "s_report_type": self.reportName,
+            "report_type": self.reportName,
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
             "initiated_by": self.user,
-            "run_mode": "LINUX_CLI",
+            "run_mode": run_mode,
         }
         self.DATA.suiteDetail = self.DATA.suiteDetail.append(
             SuiteDetails, ignore_index=True
@@ -241,13 +255,19 @@ class Engine:
 
             for i in output:
                 testcaseDict = i["testcaseDict"]
+
+                try:
+                    self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
+                except Exception as e:
+                    print(e)
+
                 self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
                     testcaseDict, ignore_index=True
                 )
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
                 )
-                dataUpload.sendTestcaseData(self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id))
+                dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"])
 
         except Exception as e:
             common.errorHandler(logging, e, "in update_df")
@@ -270,6 +290,7 @@ class Engine:
         testcaseDict["start_time"] = datetime.now(timezone.utc)
         testcaseDict["end_time"] = datetime.now(timezone.utc)
         testcaseDict["name"] = testcaseName
+        testcaseDict["ignore"] = False
         if category:
             testcaseDict["category"] = category
         testcaseDict["log_file"] = None
@@ -400,15 +421,24 @@ class Engine:
         saves the report json
         """
         suiteReport = None
+
+        date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
+
         suite_path = os.path.dirname(__file__)
-        suite_path = os.path.join(os.path.split(suite_path)[0], "suite.html")
+        suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
         with open(suite_path, "r") as f:
             suiteReport = f.read()
 
         reportJson = self.DATA.getJSONData()
-        suiteReport = suiteReport.replace("::DATA::", reportJson)
+        print(type(reportJson))
+        reportJson = json.loads(reportJson)
+        reportJson["TestStep_Details"] = self.testcaseData
+        # self.testcaseData = json.dumps(self.testcaseData)
+        reportJson = json.dumps(reportJson)
+        print("------------ reportJson\n", reportJson)
+        suiteReport = suiteReport.replace("DATA", reportJson)
 
-        ResultFile = os.path.join(self.ouput_folder, "Result.html")
+        ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(date))
 
         with open(ResultFile, "w+") as f:
             f.write(suiteReport)

@@ -57,12 +57,20 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 tempdict["end_time"] = data["END_TIME"]
                 tempdict["ignore"] = True if testcaseMeta.get("IGNORE") else False
 
+                all_status = data["jsonData"]["metaData"][2]
+                total = 0
+                for key in all_status:
+                    total = total + all_status[key]
+                # print("-------------- total", total)
+                data["jsonData"]["metaData"][2]["TOTAL"] = total
+
                 # have to look into the way on how to get the log file
                 tempdict["log_file"] = None
 
                 singleTestcase = {}
                 singleTestcase["testcaseDict"] = tempdict
                 singleTestcase["misc"] = data.get("MISC")
+                singleTestcase["jsonData"] = data.get("jsonData")
                 output.append(singleTestcase)
 
             return output, None
@@ -70,7 +78,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
         except Exception as e:
             common.errorHandler(logging, e, "Error occured while running the testcas")
             return None, getError(e, configData)
-
+ 
     except Exception as e:
         common.errorHandler(logging, e, "Some Error occured while making the testcase")
 

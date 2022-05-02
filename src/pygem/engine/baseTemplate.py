@@ -21,6 +21,7 @@ class testcaseReporter:
         self.beginTime = datetime.now(timezone.utc)
         self.endTime = None
         self._miscData = {}
+        self.jsonData = None
         self._isDestructorCalled = False
         self.statusCount = {k: 0 for k in status}
         self.templateData = templateData()
@@ -90,7 +91,9 @@ class testcaseReporter:
         if not self.status:
             self.status = self.findStatus()
         self.endTime = datetime.now(timezone.utc)
-
+        for key in list(self.statusCount):
+            if self.statusCount[key] == 0:
+                del self.statusCount[key]
         self.templateData.finalizeResult(self.beginTime, self.endTime, self.statusCount)
 
     def findStatus(self):
@@ -120,5 +123,6 @@ class testcaseReporter:
         resultData["MISC"] = self._miscData
         resultData["START_TIME"] = self.beginTime
         resultData["END_TIME"] = self.endTime
+        resultData["jsonData"] = self.jsonData
 
         return resultData

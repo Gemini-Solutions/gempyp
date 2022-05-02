@@ -3,7 +3,9 @@ from pygem.engine.engine import Engine
 
 
 def test():
-    config = XmlConfig("/home/sa.taneja/Gemini/pygem/tests/configTest/sampleTest.xml")
+
+    config = XmlConfig("C:\\gemecosystem\\pygem\\tests\\configTest\\sampleTest.xml")
+
  
     
     Engine(config)
