@@ -1,0 +1,55 @@
+Methods of execution -------------------------------------------------------------------------------------
+1. Through Pygem
+    PIREST(config_data).rest_engine()
+
+2. Commandline - uses rest engine
+    C:/Users/an.pandey/AppData/Local/Microsoft/WindowsApps/python3.10.exe c:/Users/an.pandey/pygem/src/pygem/pi_rest/rest_engine.py -config C:\\Users\\an.pandey\\pygem\\tests\\configTest\\sampleTest.xml -t REST_COUNTRIES_2
+
+3. Python code - calling rest engine internally
+    config = XmlConfig('C:\\Users\\an.pandey\\pygem\\tests\\configTest\\sampleTest.xml')
+    tcname = "REST_COUNTRIES_3"
+    R_ENGINE(data=config, tcname=tcname)
+
+    sample code - C:\Users\an.pandey\pygem\tests\configTest\engineTest.py
+
+
+Key steps -------------------------------------------------------------------------------------------------------- 
+1. UGTF/ python code/ engine parses the xml, convert in to desired dict format, and passes it to the runner.
+2. python code will send create object of engine, pass the config and tc name to engine.
+3. (for cli run) Engine then takes out the data for that testcase from config, formats config, converts/ filters it to required dict
+4. Engine then creates object of RESTTEST runner
+
+Runner ------------------------------------------------------------------------------------------------------
+1. creates an object of pygem report
+2. get necessary data from config data
+3. validates data
+4. Forms request using api_common
+5. gets response, validates response
+6. Adds rows to report
+7. formats the result
+8. Will display the result file
+9. Return to UGTF the required output
+
+Flow of functions --------------------------------------------------------------------------------------------- 
+-- > __init__ 
+--> set_vars 
+--> call rest_engine 
+    --> run 
+    --> validate_conf 
+    --> get_vals
+        --> pre_variable
+        --> variable_replacement
+        --> before_method
+    --> exec_request 
+        --> log_request
+        --> execute 
+        --> log_reponse
+    --> post_process 
+        --> post_variables
+        --> key_check
+        --> post_assertion
+        --> after_method
+    --> write_to_report
+
+
+

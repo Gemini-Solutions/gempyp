@@ -9,7 +9,9 @@ def _getHeaders(bridgeToken):
     return {"Content-Type": "application/json", "bridgetoken": bridgeToken}
 
 
+
 def sendSuiteData(payload, bridgeToken, mode="POST"):
+
     # print("---------suite payload \n", payload, "\n-----------")
     try:
         response = _sendData(payload, DefaultSettings.urls["suiteExec"], bridgeToken, mode)
@@ -20,7 +22,9 @@ def sendSuiteData(payload, bridgeToken, mode="POST"):
         common.errorHandler(logging, e, "Error occured while sending the suiteData")
 
 
+
 def sendTestcaseData(payload, bridgeToken):
+
     # print("--------------- testcase payload\n", payload, "\n---------")
     try:
         response = _sendData(payload, DefaultSettings.urls["testcases"], bridgeToken, method="POST")
