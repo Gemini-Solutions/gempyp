@@ -4,8 +4,8 @@ from typing import Dict
 from datetime import datetime, timezone
 from itertools import chain
 import json
-from pygem.libs.enums.status import status
-from pygem.libs.common import findDuration, dateTimeEncoder
+from gempyp.libs.enums.status import status
+from gempyp.libs.common import findDuration, dateTimeEncoder
 
 
 class templateData:

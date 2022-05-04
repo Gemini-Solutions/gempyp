@@ -2,9 +2,9 @@ import requests
 import base64
 import json
 import os
-from pygem.engine.simpleTestcase import AbstarctSimpleTestcase
-from pygem.engine.baseTemplate import testcaseReporter
-from pygem.libs.enums.status import status
+from gempyp.engine.simpleTestcase import AbstarctSimpleTestcase
+from gempyp.engine.baseTemplate import testcaseReporter
+from gempyp.libs.enums.status import status
 
 
 class authenticate(AbstarctSimpleTestcase):

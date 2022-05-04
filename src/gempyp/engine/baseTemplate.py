@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Dict
-from pygem.libs.enums.status import status
-from pygem.engine.reportGenerator import templateData
+from gempyp.libs.enums.status import status
+from gempyp.engine.reportGenerator import templateData
 
 
 class testcaseReporter:

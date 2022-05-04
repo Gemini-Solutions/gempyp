@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Dict
 import logging
 import argparse
-from pygem.libs.common import errorHandler
-from pygem.libs.exceptions import ParseException
+from gempyp.libs.common import errorHandler
+from gempyp.libs.exceptions import ParseException
 
 
 class abstarctBaseConfig(ABC):

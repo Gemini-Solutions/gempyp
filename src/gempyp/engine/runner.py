@@ -3,8 +3,8 @@ import uuid
 from typing import Dict, List, Tuple
 import logging
 import importlib
-from pygem.libs import common
-from pygem.engine.simpleTestcase import AbstarctSimpleTestcase
+from gempyp.libs import common
+from gempyp.engine.simpleTestcase import AbstarctSimpleTestcase
 
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
@@ -24,7 +24,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
 
         try:
             # TODO update the confidData to contain some default values
-            # PYGEMFOLDER
+            # GEMPYPFOLDER
             allClasses = inspect.getmembers(dynamicTestcase, inspect.isclass)
 
             for name, cls in allClasses:
@@ -51,7 +51,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 tempdict["status"] = data["STATUS"]
                 tempdict["user"] = testcaseMeta["USER"]
                 tempdict["machine"] = testcaseMeta["MACHINE"]
-                tempdict["product_type"] = "PYGEM"
+                tempdict["product_type"] = "GEMPYP"
                 tempdict["result_file"] = data["RESULT_FILE"]
                 tempdict["start_time"] = data["START_TIME"]
                 tempdict["end_time"] = data["END_TIME"]
@@ -90,7 +90,7 @@ def getError(error, configData: Dict) -> Dict:
     error = {}
     error["testcase"] = configData.get("NAME")
     error["message"] = str(error)
-    error["product_type"] = "PYGEM"
+    error["product_type"] = "GEMPYP"
     error["category"] = configData.get("CATEGORY", None)
 
     return error
