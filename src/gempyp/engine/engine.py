@@ -4,6 +4,7 @@ import logging
 import platform
 import getpass
 import json
+import traceback
 from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
@@ -12,7 +13,7 @@ from gempyp.config.baseConfig import abstarctBaseConfig
 from gempyp.engine.testData import testData
 from gempyp.libs.enums.status import status
 from gempyp.libs import common
-from gempyp.engine.runner import testcaseRunner
+from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
 from gempyp.engine import dataUpload
 
@@ -29,9 +30,15 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     elif data["configData"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
         logging.info("starting the DVM testcase")
-    elif data["configData"].get("TYPE").upper() == "RESTTEST":
+    elif data["configData"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
         logging.info("starting the resttest testcase")
+        # try:
+        #     return PIREST(data).rest_engine()
+        # except Exception as e:
+        #     print(traceback.print_exc())
+        #     print(e)
+        #     return None, getError(e, data["configData"])
 
 
 class Engine:
@@ -247,10 +254,12 @@ class Engine:
 
             for i in output:
                 testcaseDict = i["testcaseDict"]
+
                 try:
                     self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:
                     print(e)
+
                 self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
                     testcaseDict, ignore_index=True
                 )
@@ -411,7 +420,9 @@ class Engine:
         saves the report json
         """
         suiteReport = None
+
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
+
         suite_path = os.path.dirname(__file__)
         suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
         with open(suite_path, "r") as f:
@@ -425,6 +436,7 @@ class Engine:
         reportJson = json.dumps(reportJson)
         print("------------ reportJson\n", reportJson)
         suiteReport = suiteReport.replace("DATA", reportJson)
+
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(date))
 
         with open(ResultFile, "w+") as f:
