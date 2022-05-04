@@ -77,7 +77,7 @@ class Engine:
             )
         else:
             self.ouput_folder = os.path.join(
-                self.current_dir, "pygem_reports", report_folder_name
+                self.current_dir, "gempyp_reports", report_folder_name
             )
 
         os.makedirs(self.ouput_folder)

@@ -24,7 +24,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
 
         try:
             # TODO update the confidData to contain some default values
-            # PYGEMFOLDER
+            # GEMPYPFOLDER
             allClasses = inspect.getmembers(dynamicTestcase, inspect.isclass)
 
             for name, cls in allClasses:

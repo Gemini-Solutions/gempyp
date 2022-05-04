@@ -2,7 +2,7 @@
 
     <suite>
     <mail>test@gmail.com</mail>
-    <project>pygem_project</project>
+    <project>gempyp_project</project>
     <report_name>test_regression</report_name>
     <mode>SEQUENCE</mode>
     <env>beta</env>

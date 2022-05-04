@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/gem-shubhamshukla/pygem/issues.
+Report bugs at https://github.com/gem-shubhamshukla/gempyp/issues.
 
 If you are reporting a bug, please include:
 
@@ -36,14 +36,14 @@ and "help wanted" is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-pygem could always use more documentation, whether as part of the
-official pygem docs, in docstrings, or even on the web in blog posts,
+gempyp could always use more documentation, whether as part of the
+official gempyp docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/gem-shubhamshukla/pygem/issues.
+The best way to send feedback is to file an issue at https://github.com/gem-shubhamshukla/gempyp/issues.
 
 If you are proposing a feature:
 
@@ -55,21 +55,21 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `pygem` for local development.
+Ready to contribute? Here's how to set up `gempyp` for local development.
 
-1. Fork the `pygem` repo on GitHub.
+1. Fork the `gempyp` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/pygem.git
+    $ git clone git@github.com:your_name_here/gempyp.git
 
 3. Install your local copy (it is recommended to do this with a virtual environment). The method of installation will depend on the packaging library being used.
-   For example, if setuptools is being used (a setup.py file is present), install pygem with:
+   For example, if setuptools is being used (a setup.py file is present), install gempyp with:
 
    .. code-block:: console
 
        $ python setup.py install
 
-   If `poetry` is being used (poetry.lock and pyproject.toml files are present), install pygem with:
+   If `poetry` is being used (poetry.lock and pyproject.toml files are present), install gempyp with:
 
    .. code-block:: console
 
@@ -100,4 +100,4 @@ Before you submit a pull request, check that it meets these guidelines:
 
 Code of Conduct
 ---------------
-Please note that the pygem project is released with a `Contributor Code of Conduct <conduct.rst>`_. By contributing to this project you agree to abide by its terms.
+Please note that the gempyp project is released with a `Contributor Code of Conduct <conduct.rst>`_. By contributing to this project you agree to abide by its terms.

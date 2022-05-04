@@ -42,7 +42,7 @@ class AbstarctSimpleTestcase(ABC):
             if not report.resultFileName:
                 report.jsonData = report.templateData.makeReport(
                     kwargs.get(
-                        "OUTPUT_FOLDER", DefaultSettings.DEFAULT_PYGEM_FOLDER
+                        "OUTPUT_FOLDER", DefaultSettings.DEFAULT_GEMPYP_FOLDER
                     ), testcaseSettings["NAME"])
             result = report.serialize()
             Data.append(result)

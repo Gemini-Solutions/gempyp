@@ -5,7 +5,7 @@ import os
 import traceback
 import sys
 from getpass import getpass, getuser
-from src.pygem.data_compare.common.common_functions import encrypt
+from src.gempyp.data_compare.common.common_functions import encrypt
 
 def getData(c):
     try:
