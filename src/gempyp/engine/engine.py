@@ -253,8 +253,9 @@ class Engine:
                 output = [output]
 
             for i in output:
+                i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
                 testcaseDict = i["testcaseDict"]
-
+                # print("!!!!!!!!!!!!\n", testcaseDict, "\n!!!!!!!!!!")
                 try:
                     self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:

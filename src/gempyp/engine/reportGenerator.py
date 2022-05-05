@@ -51,7 +51,7 @@ class templateData:
 
         self.REPORTDATA["metaData"].append(column2)
         self.REPORTDATA["metaData"].append(column3)
-
+        # print("----------- steps", self.REPORTDATA["steps"])
         # filters
         self.REPORTDATA["FilterNames"] = self._getFilters()
         filterValues = {}

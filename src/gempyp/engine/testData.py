@@ -13,6 +13,7 @@ class testData:
             "category",
             "log_file",
             "status",
+            "steps",
             "user",
             "machine",
             "result_file",
@@ -44,7 +45,7 @@ class testData:
         miscData = miscData.to_dict(orient="records")
         data["miscData"] = miscData
         data["s_id"] = "test_id"
-        data["testcaseDetails"] = self.testcaseDetails.to_dict(orient="records")
+        # data["testcaseDetails"] = self.testcaseDetails.to_dict(orient="records")
 
         return json.dumps(data, cls=dateTimeEncoder)
 
@@ -81,7 +82,7 @@ class testData:
         suiteDict = self.suiteDetail.to_dict(orient="records")[0]
         testcaseDict = self.testcaseDetails.to_dict(orient="records")
         suiteDict["TestCase_Details"] = testcaseDict
-        # print("------\n suiteDict", self.testcaseDetails, "\n --------------")
+        print("------\n testcaseDict", testcaseDict, "\n --------------")
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts
         SuiteReport["Suits_Details"] = suiteDict
