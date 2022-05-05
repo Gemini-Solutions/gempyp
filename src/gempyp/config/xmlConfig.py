@@ -1,7 +1,7 @@
 from typing import Dict
 import lxml.etree as et
-from pygem.config.baseConfig import abstarctBaseConfig
-from pygem.libs.parsers import xmlToDict, xmlToList
+from gempyp.config.baseConfig import abstarctBaseConfig
+from gempyp.libs.parsers import xmlToDict, xmlToList
 import sys
 
 

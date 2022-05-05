@@ -9,14 +9,13 @@ from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
 from datetime import datetime, timezone
-from pygem.config.baseConfig import abstarctBaseConfig
-from pygem.engine.testData import testData
-from pygem.libs.enums.status import status
-from pygem.libs import common
-from pygem.engine.runner import testcaseRunner, getError
-from pygem.config import DefaultSettings
-from pygem.engine import dataUpload
-from pygem.pi_rest.pi_rest import PIREST
+from gempyp.config.baseConfig import abstarctBaseConfig
+from gempyp.engine.testData import testData
+from gempyp.libs.enums.status import status
+from gempyp.libs import common
+from gempyp.engine.runner import testcaseRunner, getError
+from gempyp.config import DefaultSettings
+from gempyp.engine import dataUpload
 
 
 def executorFactory(data: Dict) -> Tuple[List, Dict]:
@@ -25,21 +24,21 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     """
 
     if "TYPE" not in data["configData"]:
-        logging.info("starting the pygem testcases")
+        logging.info("starting the GemPyP testcases")
         return testcaseRunner(data)
 
     elif data["configData"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
         logging.info("starting the DVM testcase")
-    elif data["configData"].get("TYPE").upper() == "PIREST":
+    elif data["configData"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
         logging.info("starting the resttest testcase")
-        try:
-            return PIREST(data).rest_engine()
-        except Exception as e:
-            print(traceback.print_exc())
-            print(e)
-            return None, getError(e, data["configData"])
+        # try:
+        #     return PIREST(data).rest_engine()
+        # except Exception as e:
+        #     print(traceback.print_exc())
+        #     print(e)
+        #     return None, getError(e, data["configData"])
 
 
 class Engine:
@@ -78,7 +77,7 @@ class Engine:
             )
         else:
             self.ouput_folder = os.path.join(
-                self.current_dir, "pygem_reports", report_folder_name
+                self.current_dir, "gempyp_reports", report_folder_name
             )
 
         os.makedirs(self.ouput_folder)
@@ -254,8 +253,9 @@ class Engine:
                 output = [output]
 
             for i in output:
+                i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
                 testcaseDict = i["testcaseDict"]
-
+                # print("!!!!!!!!!!!!\n", testcaseDict, "\n!!!!!!!!!!")
                 try:
                     self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:

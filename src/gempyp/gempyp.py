@@ -1,4 +1,5 @@
 import os
+import sys
 from libs import common 
 from data_compare import compare 
 import traceback
@@ -19,7 +20,7 @@ def parse_argument():
     args = parser.parse_args()
     return args
 
-class Pygem():
+class GemPyp():
      def __init__(self, s_config_data, t_config_data):
          #read the conf here
          #create suite level result dictionary here
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         else:
             print(f"config file{s_conf_file_path} does not exist")
             sys.exit(1)
-        obj = Pygem(s_config_data, t_config_data)
+        obj = GemPyp(s_config_data, t_config_data)
         obj.execute()
     else:
          print("Argument parsing had issues")
