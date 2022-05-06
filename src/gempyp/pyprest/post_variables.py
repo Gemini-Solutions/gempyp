@@ -1,6 +1,6 @@
 import re
-from pygem.pi_rest.key_check import key_check
-from pygem.pi_rest import utils
+from gempyp.pyprest.key_check import key_check
+from gempyp.pyprest import utils
 
 
 class post_variables:
