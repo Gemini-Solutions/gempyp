@@ -1,6 +1,6 @@
 import re
-from pygem.libs.enums.status import status
-from pygem.pi_rest import utils
+from gempyp.libs.enums.status import status
+from gempyp.pyprest import utils
 import logging
 import traceback
 
