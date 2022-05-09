@@ -1,16 +1,16 @@
 Methods of execution -------------------------------------------------------------------------------------
-1. Through Pygem
+1. Through gempyp
     PIREST(config_data).rest_engine()
 
 2. Commandline - uses rest engine
-    C:/Users/an.pandey/AppData/Local/Microsoft/WindowsApps/python3.10.exe c:/Users/an.pandey/pygem/src/pygem/pi_rest/rest_engine.py -config C:\\Users\\an.pandey\\pygem\\tests\\configTest\\sampleTest.xml -t REST_COUNTRIES_2
+    C:/Users/an.pandey/AppData/Local/Microsoft/WindowsApps/python3.10.exe c:/Users/an.pandey/gempyp/src/gempyp/pi_rest/rest_engine.py -config C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest.xml -t REST_COUNTRIES_2
 
 3. Python code - calling rest engine internally
-    config = XmlConfig('C:\\Users\\an.pandey\\pygem\\tests\\configTest\\sampleTest.xml')
+    config = XmlConfig('C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest.xml')
     tcname = "REST_COUNTRIES_3"
     R_ENGINE(data=config, tcname=tcname)
 
-    sample code - C:\Users\an.pandey\pygem\tests\configTest\engineTest.py
+    sample code - C:\Users\an.pandey\gempyp\tests\configTest\engineTest.py
 
 
 Key steps -------------------------------------------------------------------------------------------------------- 
@@ -20,7 +20,7 @@ Key steps ----------------------------------------------------------------------
 4. Engine then creates object of RESTTEST runner
 
 Runner ------------------------------------------------------------------------------------------------------
-1. creates an object of pygem report
+1. creates an object of gempyp report
 2. get necessary data from config data
 3. validates data
 4. Forms request using api_common

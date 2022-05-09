@@ -1,8 +1,8 @@
-from pygem.config.xmlConfig import XmlConfig
+from gempyp.config.xmlConfig import XmlConfig
 
 
 def test():
-    config = XmlConfig("/home/sa.taneja/Gemini/pygem/tests/configTest/sampleTest.xml")
+    config = XmlConfig("/home/sa.taneja/Gemini/gempyp/tests/configTest/sampleTest.xml")
     print(config.getSuiteConfig())
     print(config.getTestcaseConfig())
 

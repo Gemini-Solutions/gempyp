@@ -79,13 +79,13 @@ class PYPREST(Base):
         # capitalize the keys
         for k, v in self.data["configData"].items():
             self.data.update({k.upper(): v})
-        self.env = self.data.get("ENV", "PROD").strip().upper()
+        self.env = self.data.get("ENV", "PROD").strip(" ").upper()
 
         # get the api url
         if self.env not in self.data.keys():
-            self.api = self.data["configData"]["API"].strip()
+            self.api = self.data["configData"]["API"].strip(" ")
         else: 
-            self.api = self.data.get(self.env, "PROD").strip() + self.data["configData"]["API"].strip()
+            self.api = self.data.get(self.env, "PROD").strip(" ") + self.data["configData"]["API"].strip(" ")
 
         # get the method
         self.method = self.data["configData"].get ("METHOD", "GET")
@@ -157,7 +157,7 @@ class PYPREST(Base):
     def set_vars(self):
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
         self.data["OUTPUT_FOLDER"] = self.data.get("OUTPUT_FOLDER", self.default_report_path)
-        if self.data["OUTPUT_FOLDER"].strip() == "":
+        if self.data["OUTPUT_FOLDER"].strip(" ") == "":
             self.data["OUTPUT_FOLDER"] = self.default_report_path
         self.project = self.data["PROJECTNAME"]
         self.tcname = self.data["configData"]["NAME"]

@@ -6,16 +6,16 @@ import traceback
 
 
 class key_check:
-    def __init__(self, pirest_obj):
-        self.pirest_obj = pirest_obj
+    def __init__(self, pyprest_obj):
+        self.pyprest_obj = pyprest_obj
         pass
 
     def key_check(self):
         self.response_body = {}
-        if self.pirest_obj.key_check and "keys are" in self.pirest_obj.key_check:
-            self.pirest_obj.key_check = self.pirest_obj.key_check
-            print("keycheck string: " + str(self.pirest_obj.key_check))
-            type_list = self.pirest_obj.key_check.strip(";").split(";")
+        if self.pyprest_obj.key_check and "keys are" in self.pyprest_obj.key_check:
+            self.pyprest_obj.key_check = self.pyprest_obj.key_check
+            print("keycheck string: " + str(self.pyprest_obj.key_check))
+            type_list = self.pyprest_obj.key_check.strip(";").split(";")
             self.keys = []
             self.keys_not = []
             for each in type_list:
@@ -31,7 +31,7 @@ class key_check:
                     keys = [i.strip(" ") for i in key_str.split(",")]
                     self.keys = list(set(keys) - set(self.keys_not))
 
-                self.response_body = utils.format_resp_body(self.pirest_obj.res_obj.response_body)
+                self.response_body = utils.format_resp_body(self.pyprest_obj.res_obj.response_body)
                 
                 self.regex_each = re.compile(r".*\[\beach\b\]")
                 self.regex_int = re.compile(r".*\[\d+\]")
@@ -59,7 +59,7 @@ class key_check:
                     _status = status.FAIL
                 else:
                     _status = status.PASS
-            self.pirest_obj.reporter.addRow("Keys to be check for PRESENCE in response body", content_found, _status)
+            self.pyprest_obj.reporter.addRow("Keys to be check for PRESENCE in response body", content_found, _status)
         if len(self.keys_not) > 0:
             for each_key in self.keys_not:
                 self.key_list = [str(i) for i in each_key.split(".")]
@@ -73,11 +73,11 @@ class key_check:
                     _status_n = status.FAIL
                 else:
                     _status_n = status.PASS
-            self.pirest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
+            self.pyprest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
 
         if status.FAIL in [_status, _status_n]:
-            self.pirest_obj.reporter._miscData["Reason_of_failure"] = "Status of key check is not as expected"
-            # self.pirest_obj.reporter.addMisc(Reason_of_failure="Status of key check is not as expected")
+            self.pyprest_obj.reporter._miscData["Reason_of_failure"] = "Status of key check is not as expected"
+            # self.pyprest_obj.reporter.addMisc(Reason_of_failure="Status of key check is not as expected")
 
 
     def find_keys(self, json_data, key_list, store_val=False):

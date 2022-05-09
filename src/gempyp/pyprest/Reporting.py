@@ -4,33 +4,33 @@ import uuid
 import time
 
 
-def write_to_report(pirest_obj):
+def write_to_report(pyprest_obj):
     result = {}
-    if not pirest_obj.reporter.resultFileName:
+    if not pyprest_obj.reporter.resultFileName:
         try:
             try:
-                os.makedirs(pirest_obj.data.get("OUTPUT_FOLDER", pirest_obj.default_report_path))
+                os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
             except Exception as e:
                 traceback.print_exc()
-            pirest_obj.reporter.jsonData = pirest_obj.reporter.templateData.makeReport(
-                pirest_obj.data.get("OUTPUT_FOLDER"), pirest_obj.reporter.testcaseName + str(time.time()))
-            pirest_obj.jsonData = pirest_obj.reporter.jsonData
-            result = pirest_obj.reporter.serialize()
+            pyprest_obj.reporter.jsonData = pyprest_obj.reporter.templateData.makeReport(
+                pyprest_obj.data.get("OUTPUT_FOLDER"), pyprest_obj.reporter.testcaseName + str(time.time()))
+            pyprest_obj.jsonData = pyprest_obj.reporter.jsonData
+            result = pyprest_obj.reporter.serialize()
             # make report
-            # pirest_obj.makeReport(json.dumps(pirest_obj.reporter.jsonData))
+            # pyprest_obj.makeReport(json.dumps(pyprest_obj.reporter.jsonData))
             # print("-------file_dumped---------")
 
         except Exception as e:
             traceback.print_exc()
     output = []
     tempdict = {} 
-    tc_run_id = f"{pirest_obj.data['NAME']}_{uuid.uuid4()}"
+    tc_run_id = f"{pyprest_obj.data['NAME']}_{uuid.uuid4()}"
     tempdict["tc_run_id"] = tc_run_id
     tempdict["name"] = result["NAME"]
-    tempdict["category"] = pirest_obj.data.get("CATEGORY")
+    tempdict["category"] = pyprest_obj.data.get("CATEGORY")
     tempdict["status"] = result["STATUS"]
-    tempdict["user"] = pirest_obj.data.get("USER")
-    tempdict["machine"] = pirest_obj.data.get("MACHINE")
+    tempdict["user"] = pyprest_obj.data.get("USER")
+    tempdict["machine"] = pyprest_obj.data.get("MACHINE")
     tempdict["product_type"] = "gempyp"
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
@@ -48,7 +48,7 @@ def write_to_report(pirest_obj):
     singleTestcase = {}
     singleTestcase["testcaseDict"] = tempdict
     singleTestcase["misc"] = result.get("MISC")
-    singleTestcase["jsonData"] = pirest_obj.jsonData
+    singleTestcase["jsonData"] = pyprest_obj.jsonData
     output.append(singleTestcase)
 
     print(output)
