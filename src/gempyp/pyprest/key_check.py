@@ -1,16 +1,19 @@
 import re
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import utils
-import logging
-import traceback
+import logging as logger
 
 
 class key_check:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
+        self.regex_each = re.compile(r".*\[\beach\b\]")
+        self.regex_int = re.compile(r".*\[\d+\]")
         pass
 
     def key_check(self):
+        logger.info("++++++++++++++++++++++++++++++++++++++++++  INSIDE KEY CHECK  ++++++++++++++++++++++++++++++++++++++++++++++")
+
         self.response_body = {}
         if self.pyprest_obj.key_check and "keys are" in self.pyprest_obj.key_check:
             self.pyprest_obj.key_check = self.pyprest_obj.key_check
@@ -32,9 +35,6 @@ class key_check:
                     self.keys = list(set(keys) - set(self.keys_not))
 
                 self.response_body = utils.format_resp_body(self.pyprest_obj.res_obj.response_body)
-                
-                self.regex_each = re.compile(r".*\[\beach\b\]")
-                self.regex_int = re.compile(r".*\[\d+\]")
 
                 self.get_keys()
 
@@ -50,7 +50,7 @@ class key_check:
             for each_key in self.keys:
                 self.key_list = [str(i) for i in each_key.split(".")]
                 self.temp_key_list = list(self.key_list)
-                result = self.find_keys(self.response_body, self.key_list)
+                result = self.find_keys(self.response_body, self.key_list, self.temp_key_list)
                 if "NOT FOUND" in result:
                     count_found_fail += 1
                 content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
@@ -64,7 +64,7 @@ class key_check:
             for each_key in self.keys_not:
                 self.key_list = [str(i) for i in each_key.split(".")]
                 self.temp_key_list = list(self.key_list)
-                result = self.find_keys(self.response_body, self.key_list)
+                result = self.find_keys(self.response_body, self.key_list, self.temp_key_list)
                 if result == "FOUND":
                     count_notfound_fail += 1
                 content_not_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
@@ -80,7 +80,7 @@ class key_check:
             # self.pyprest_obj.reporter.addMisc(Reason_of_failure="Status of key check is not as expected")
 
 
-    def find_keys(self, json_data, key_list, store_val=False):
+    def find_keys(self, json_data, key_list, temp_key_list):
         print("===================FINDING KEYS=====================")
         for each in key_list:
             print(each, "----------------------------------------------------------------------")
@@ -101,12 +101,12 @@ class key_check:
                 # for response[each].something
                 if key_val == "response" and isinstance(json_data, list):
                     key_list.remove(each)
-                    return self.find_keys(json_data, key_list)
+                    return self.find_keys(json_data, key_list, temp_key_list)
 
                 # for data[each].something
                 elif key_val in json_data and isinstance(json_data[key_val], list):
                     key_list.remove(each)
-                    return self.find_keys(json_data[key_val], key_list)
+                    return self.find_keys(json_data[key_val], key_list, temp_key_list)
 
                 # return "NOT FOUND" if  key from string "key[each]" is not found in the json_data
                 else:
@@ -125,12 +125,12 @@ class key_check:
                 # for response[0].something
                 if key_val == "response" and isinstance(json_data, list) and key_num < len(json_data):
                     key_list.remove(each)
-                    return self.find_keys(json_data[key_num], key_list)
+                    return self.find_keys(json_data[key_num], key_list, temp_key_list)
 
                 # for something like data[0].something
                 elif key_val in json_data and isinstance(json_data[key_val], list) and key_num < len(json_data[key_val]):
                     key_list.remove(each)
-                    return self.find_keys(json_data[key_val][key_num], key_list)
+                    return self.find_keys(json_data[key_val][key_num], key_list, temp_key_list)
                 else:
                     print("Key not found ------------")
                     return "NOT FOUND"
@@ -141,16 +141,15 @@ class key_check:
                 # if input is list
                 if isinstance(json_data, list):
                     temp_list = list(key_list)
-                    # self.temp_key_list has to be defined in get_keys
-                    i = self.temp_key_list.index(temp_list[0])
+                    i = temp_key_list.index(temp_list[0])
                     count_not_found = 0
 
                     # check if the parent key of this key_to_ckeck contained each or not, because other cases are already covered 
                     # example data[each].key_to_find
-                    if json_data and re.match(self.regex_each, self.temp_key_list[i - 1]):
+                    if json_data and re.match(self.regex_each, temp_key_list[i - 1]):
                         for name in json_data:
                             if isinstance(name, dict):
-                                found_res = self.find_keys(name, temp_list)
+                                found_res = self.find_keys(name, temp_list, temp_key_list)
                                 if found_res != "FOUND":
                                     count_not_found += 1
                             else:
@@ -173,7 +172,7 @@ class key_check:
                         tmp_key.remove(each)
                         if len(tmp_key) == 0:
                             return "FOUND"
-                        return self.find_keys(json_data[each], tmp_key)
+                        return self.find_keys(json_data[each], tmp_key, temp_key_list)
 
                     # return not found if key not found in the dictionary i.e. the json_data . 
                     # json_data here is the json/list passed to this function in this recursion

@@ -1,4 +1,4 @@
-import re
+import logging as logger
 
 
 class pre_variables:
@@ -15,7 +15,8 @@ class pre_variables:
         self.pyprest_obj.variables["local"] = {}
         self.pyprest_obj.variables["suite"] = {}
         if self.pyprest_obj.pre_variables:
-
+            logger.info("+++++++++++++++++++++++++++++++++++++++  INSIDE PRE VARIABLES  ++++++++++++++++++++++++++++++++++++++++++")
+            
             pre_variables_str = self.pyprest_obj.pre_variables
 
             # separate by ;

@@ -1,4 +1,5 @@
 import json
+import logging as logger
 import ast
 import re
 
@@ -30,6 +31,7 @@ def format_resp_body(response_body):
 
 
 def fetch_value_of_key(json_, key_partition_list, key_search_result, final_key_value={}):
+    logger.info("======================Fetching values from response =======================")
     regex_each = re.compile(r".*\[\beach\b\]")
     regex_int = re.compile(r".*\[\d+\]")
     actual_key = ".".join(key_partition_list)

@@ -51,5 +51,4 @@ def write_to_report(pyprest_obj):
     singleTestcase["jsonData"] = pyprest_obj.jsonData
     output.append(singleTestcase)
 
-    print(output)
     return output

@@ -106,7 +106,7 @@ class PYPREST(Base):
 
         self.post_assertion = self.data["configData"].get("POST_ASSERTION", None)
 
-        self.post_variables = self.data["configData"].get("POST_VARIABLE", "")
+        self.post_variables = self.data["configData"].get("POST_VARIABLES", "")
 
         #setting variables and variable replacement
         pre_variables(self).pre_variable()

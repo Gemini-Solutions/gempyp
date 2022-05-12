@@ -1,5 +1,6 @@
 import re
 import json
+import logging as logger
 
 class variable_replacement:
     def __init__(self, pyprest_obj):
@@ -8,11 +9,10 @@ class variable_replacement:
             if self.pyprest_obj.variables.get("local") is not None:
                 self.local_pre_variables = self.pyprest_obj.variables.get("local")
             if self.pyprest_obj.variables.get("suite") is not None:
-                self.suite_pre_variables  = self.pyprest_obj.variables.get("suite")
+                self.suite_pre_variables = self.pyprest_obj.variables.get("suite")
             
-        print("+++++++++++++++++++++++++++++++++++++++++")
-        print("INSIDE VARIABLE REPLACEMENT")
-        print("+++++++++++++++++++++++++++++++++++++++++")
+        logger.info("++++++++++++++++++++++++++++++++++++++  INSIDE VARIABLE REPLACEMENT  ++++++++++++++++++++++++++++++++++++++")
+
 
 
     def check_and_get_variables(self, value_str) -> list:
@@ -46,7 +46,7 @@ class variable_replacement:
             if isinstance(v,dict):
                 data[k] = self.update_data_dictionary(v)
             elif isinstance(v,str):
-                if k!="PRE_VARIABLES" and k!="pre_variables" and k is not None:
+                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables" and k is not None:
                     # print(k,data[k])
                     var_list = self.check_and_get_variables(data[k])
                     for var in var_list:
