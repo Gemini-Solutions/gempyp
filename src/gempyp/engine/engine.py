@@ -22,8 +22,9 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     """
     calls the differnt executors based on the type of the data
     """
-
-    if "TYPE" not in data["configData"]:
+    print("------------ Executor Factory\n", )
+    # print("!!!!!!!!!!!!!!", data["configData"]["TYPE"])
+    if "TYPE" not in data["configData"] or data["configData"].get("TYPE").upper() == "GEMPYP":
         logging.info("starting the GemPyP testcases")
         return testcaseRunner(data)
 
@@ -31,8 +32,8 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
         # TODO do the DVM stuff
         logging.info("starting the DVM testcase")
     elif data["configData"].get("TYPE").upper() == "PYPREST":
-        # TODO do the resttest stuff here
-        logging.info("starting the resttest testcase")
+        # TODO do the PYPREST stuff here
+        logging.info("starting the PYPREST testcase")
         # try:
         #     return PIREST(data).rest_engine()
         # except Exception as e:
@@ -85,6 +86,8 @@ class Engine:
         os.makedirs(self.testcase_folder)
 
     def setUP(self, config: Type[abstarctBaseConfig]):
+        # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
+        print("------------\n", dir(config), "\n-------------")
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
         self.testcaseData = {}
@@ -139,7 +142,7 @@ class Engine:
             elif self.PARAMS["MODE"].upper() == "OPTIMIZE":
                 self.startParallel()
             else:
-                raise TypeError("mode can only be sequence of optimize")
+                raise TypeError("mode can only be sequence or optimize")
 
         except Exception as e:
             common.errorHandler(
@@ -173,8 +176,11 @@ class Engine:
         """
         start running the testcases in sequence
         """
+
+        print("--------- sequence testcaseConfig \n", self.CONFIG.getTestcaseConfig(), "\n -------------")
         for testcase in self.CONFIG.getTestcaseConfig():
             data = self.getTestcaseData(testcase)
+            print("-----------data \n", data, "\n---------------")
             output, error = executorFactory(data)
             if error:
                 logging.error(
@@ -185,13 +191,14 @@ class Engine:
 
     def startParallel(self):
         """
-        start runnig the testcases in parallel
+        start running the testcases in parallel
         """
         pool = None
         try:
             pool = Pool(self.PARAMS.get("THREADS", DefaultSettings.THREADS))
             # decide the dependency order:
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
+                print("$$$$$$$$$$$$$$$", testcases)
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
                 poolList = []
@@ -199,6 +206,7 @@ class Engine:
 
                     # only append testcases whose dependency are passed otherwise just update the database
                     if self.isDependencyPassed(testcase):
+                        print("In dependency")
                         poolList.append(self.getTestcaseData(testcase.get("NAME")))
                     else:
                         dependencyError = {
@@ -213,9 +221,11 @@ class Engine:
 
                 if len(poolList) == 0:
                     continue
-
+                print("------------poolList", poolList)
                 # runs the testcase in parallel here
                 results = pool.map(executorFactory, poolList)
+                print("--------------\n parallel result \n", results, "\n---------------")
+                # sys.exit()  
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
@@ -357,6 +367,8 @@ class Engine:
 
             adjList[key] = set(new_list)
 
+        # print("!!!!!!!!!!\n", adjList, "\n!!!!!!!!!!!!")
+        # sys.exit()
         while adjList:
             top_dep = set(
                 i for dependents in list(adjList.values()) for i in dependents
@@ -430,12 +442,12 @@ class Engine:
             suiteReport = f.read()
 
         reportJson = self.DATA.getJSONData()
-        print(type(reportJson))
+        # print(type(reportJson))
         reportJson = json.loads(reportJson)
         reportJson["TestStep_Details"] = self.testcaseData
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
-        print("------------ reportJson\n", reportJson)
+        # print("------------ reportJson\n", reportJson)
         suiteReport = suiteReport.replace("DATA", reportJson)
 
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(date))

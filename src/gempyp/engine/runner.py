@@ -1,4 +1,6 @@
 import inspect
+import sys
+import os
 import uuid
 from typing import Dict, List, Tuple
 import logging
@@ -6,6 +8,17 @@ import importlib
 from gempyp.libs import common
 from gempyp.engine.simpleTestcase import AbstarctSimpleTestcase
 
+def import_from_path(filename):
+    if os.name == 'nt':
+        path_arr = (filename.split("\\"))
+    else:
+        path_arr = filename.split("/")
+    file = path_arr[-1]
+    print("------------------", file)
+    path_arr.remove(file)
+    path_cd = '/'.join(path_arr)
+    print("-------------", path_cd, "---------", filename)
+    return path_cd, file
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
@@ -19,8 +32,17 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
         try:
             dynamicTestcase = importlib.import_module(fileName)
         except ImportError as i:
-            common.errorHandler(logging, i, "testcase file could not be imported")
-            return None, getError(i, configData)
+            # common.errorHandler(logging, i, "testcase file could not be imported, trying with absolute path")
+            try:
+                script_path, script_name = import_from_path(fileName)
+                script_name = script_name[0:-3]
+                sys.path.append(script_path)
+                dynamicTestcase = importlib.import_module(script_name)
+                # print("!!!!!!!!!!!!!!", exec("import " + str(script_name)))
+                # ResultData = dynamicTestcase.sample1().RUN(configData, **testcaseMeta)
+            except ImportError as i:
+                common.errorHandler(logging, i, "testcase file could not be imported")
+                return None, getError(i, configData)
 
         try:
             # TODO update the confidData to contain some default values
@@ -34,6 +56,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                     issubclass(cls, AbstarctSimpleTestcase)
                     and name != "AbstarctSimpleTestcase"
                 ):
+                    print("-------------", name, "------------", cls)
                     ResultData = cls().RUN(configData, **testcaseMeta)
                     break
 
