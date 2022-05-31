@@ -25,6 +25,7 @@ class abstarctBaseConfig(ABC):
         return self._CONFIG["SUITE_DATA"]
 
     def getTestcaseConfig(self) -> Dict:
+        print("^^^^^^^^^^^^^ \n ", self._CONFIG["TESTCASE_DATA"], "\n^^^^^^^^^")
         return self._CONFIG["TESTCASE_DATA"]
 
     def getTestcaseData(self, testcaseName: str) -> Dict:
