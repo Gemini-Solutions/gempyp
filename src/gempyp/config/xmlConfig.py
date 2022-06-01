@@ -11,7 +11,7 @@ class XmlConfig(abstarctBaseConfig):
         # do any xml specific validatioins here
 
     def parse(self, filePath):
-        print("-------- path", filePath)
+        print("-------- Xml file path: ", filePath, '----------')
         data = et.parse(filePath)
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data)
         self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)

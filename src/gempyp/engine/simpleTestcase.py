@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List, Union, Dict
 from gempyp.config import DefaultSettings
 from gempyp.engine.baseTemplate import testcaseReporter
-
+import sys,traceback
+from gempyp.libs.enums.status import status
 
 class AbstarctSimpleTestcase(ABC):
     @abstractmethod
@@ -22,7 +23,18 @@ class AbstarctSimpleTestcase(ABC):
         """
         # set the values from the report if not s et automatically
         Data = []
-        reports = self.main(testcaseSettings, **kwargs)
+        try:
+            print('=================Running Testcase: ', testcaseSettings["NAME"], '============')
+            reports = self.main(testcaseSettings, **kwargs)
+            print('testcaseSettings: ', testcaseSettings)
+        except Exception:
+            print('================================Exception Occured==========================')
+            etype, value, tb = sys.exc_info()
+            print(traceback.print_tb(tb))
+            info, error = traceback.format_exception(etype, value, tb)[-2:]
+            print('===========================================================================')
+            reports = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
+            reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
 
         if isinstance(reports, testcaseReporter):
             reports = [reports]

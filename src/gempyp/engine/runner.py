@@ -17,7 +17,6 @@ def import_from_path(filename):
     print("------------------", file)
     path_arr.remove(file)
     path_cd = '/'.join(path_arr)
-    print("-------------", path_cd, "---------", filename)
     return path_cd, file
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
@@ -56,7 +55,6 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                     issubclass(cls, AbstarctSimpleTestcase)
                     and name != "AbstarctSimpleTestcase"
                 ):
-                    print("-------------", name, "------------", cls)
                     ResultData = cls().RUN(configData, **testcaseMeta)
                     break
 
