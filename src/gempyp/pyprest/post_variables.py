@@ -1,11 +1,11 @@
-from gempyp.pyprest.key_check import key_check
+from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest import utils
 from copy import deepcopy
 import logging as logger
-from gempyp.pyprest.variable_replacement import variable_replacement as var_replacement
+from gempyp.pyprest.variableReplacement import VariableReplacement as var_replacement
 
 
-class post_variables:
+class PostVariables:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
         # get variable written in data["POST_VARIABLE"]
@@ -15,7 +15,7 @@ class post_variables:
         # different dicts for loal and suite variables
 
 
-    def post_variables(self):
+    def postVariables(self):
         logger.info("++++++++++++++++++++++++++++++++++++++  INSIDE POST VARIABLES  ++++++++++++++++++++++++++++++++++++++")
         post_variables_str = self.pyprest_obj.post_variables
         if post_variables_str:
@@ -45,19 +45,19 @@ class post_variables:
                         # find key in response  
                         # call keycheck
                         response_key_partition = response_key.split(".")
-                        response_json = utils.format_resp_body(self.pyprest_obj.res_obj.response_body)
-                        result = key_check(self.pyprest_obj).find_keys(response_json, deepcopy(response_key_partition), deepcopy(response_key_partition))
-
+                        response_json = utils.formatRespBody(self.pyprest_obj.res_obj.response_body)
+                        result = KeyCheck(self.pyprest_obj).findKeys(response_json, deepcopy(response_key_partition), deepcopy(response_key_partition))
+                        print(result, "+++++++++++++++++++")
                         # if result is not "FOUND" then can't set value
-                        if result.upper() is not "FOUND":
+                        if result.upper() != "FOUND":
                             logger.info("====== Key Not Found in response =======")
                             logger.info("'" + key + "' is not found")
                             self.pyprest_obj.variables['local'][key] = each_item[1]
                         else:
-                            new_list = utils.fetch_value_of_key(response_json, response_key_partition, result)
+                            new_list = utils.fetchValueOfKey(response_json, response_key_partition, result)
                             self.pyprest_obj.variables['local'][key] = new_list[response_key]
 
                     # key not found in response, checking pre variables
                     if "$[#" in each_item[1].strip(" "):
-                        var_replacement(self.pyprest_obj).variable_replacement()
+                        var_replacement(self.pyprest_obj).variableReplacement()
             print("variables dict after setting post variables: -------- ", self.pyprest_obj.variables)

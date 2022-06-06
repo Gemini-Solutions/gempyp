@@ -2,9 +2,12 @@ import json
 import logging as logger
 import ast
 import re
+import gempyp.pyprest.compareFunctions as cf
 
 
-def format_resp_body(response_body):
+
+def formatRespBody(response_body):
+    """Encode/decode the response body"""
     if not isinstance(response_body, list):
         try:
             formatted_response_body = json.loads(response_body.decode("utf-8"))
@@ -30,7 +33,11 @@ def format_resp_body(response_body):
     return formatted_response_body
 
 
-def fetch_value_of_key(json_, key_partition_list, key_search_result, final_key_value={}):
+# not able to implement recursion in case of other 
+def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_value={}):
+    """
+    Get values of the required keys from the response json"""
+
     logger.info("======================Fetching values from response =======================")
     regex_each = re.compile(r".*\[\beach\b\]")
     regex_int = re.compile(r".*\[\d+\]")
@@ -44,17 +51,20 @@ def fetch_value_of_key(json_, key_partition_list, key_search_result, final_key_v
                 key_val = key[:br_index]
                 if key_val != "response":
                     json_ = json_[key_val]
-                for each_value in json:
+                for each_value in json_:
                     index_of_key = key_partition_list.index(key)
-                    value_returned = get_values_for_each(each_value, key_partition_list[index_of_key + 1:])
+                    value_returned = getValuesForEach(each_value, key_partition_list[int(index_of_key) + 1:])
                     each_value_list.append(value_returned)
-                del key_partition_list[index_of_key + 1:]
+                del key_partition_list[int(index_of_key) + 1:]
                 flag = 1
             elif re.match(regex_int, key):
                 br_start = key.find('[')
                 br_end = key.find(']')
                 key_val = key[:br_start]
                 key_num = int(key[br_start + 1:br_end])
+                key_num, json_ = getNestedListData(key, json_, key_val)
+                print(isinstance(json_, list))
+                print(key_val == "response")
                 if key_val == "response" and isinstance(json_, list):
                     json_ = json_[key_num]
                 else:
@@ -73,7 +83,9 @@ def fetch_value_of_key(json_, key_partition_list, key_search_result, final_key_v
         
         return final_key_value
    
-def get_values_for_each(each_value_dict, keys_to_fetch):
+def getValuesForEach(each_value_dict, keys_to_fetch):
+    """Getting values in case of "each operator" """
+    print(keys_to_fetch)
     for key in keys_to_fetch():
         if key in each_value_dict:
             each_value_dict = each_value_dict[key]
@@ -83,3 +95,45 @@ def get_values_for_each(each_value_dict, keys_to_fetch):
         else:
             return "not found"
     return each_value_dict
+
+
+def getNestedListData(i, json_data, key_val):
+    br_start = i.find('[')
+    br_end = i.find(']')
+    key_num = int(i[br_start + 1:br_end])
+    if key_val.lower() == 'response':
+        if isinstance(json_data[key_num], list):
+            i = i[br_end + 1:]
+            json_data = json_data[key_num]
+            return getNestedListData(i, json_data, key_val)
+        else:
+            return key_num, json_data
+    else:
+        if isinstance(json_data[key_val][key_num], list):
+            i = i[br_end + 1:]
+            json_data = json_data[key_val][key_num]
+            return getNestedListData(i, json_data, key_val)
+        else:
+            return key_num, json_data
+
+def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1):
+
+    # operators ----- to, notto, not_to, not to, contains, in, except
+    gp = reporter_obj
+
+    dispatch = {
+        'to': cf.compare_to,
+        'notto': cf.compare_notto,
+        'not_to': cf.compare_notto,
+        'in': cf.compare_in,
+        'notin': cf.compare_notin,
+        'not_in': cf.compare_notin,
+        'contains': cf.compare_contains,
+        'not_supported': cf.no_operator,
+    }
+    if operator in list(dispatch.keys()):
+        return dispatch[operator](gp, key, value, key_val_dict, tolerance)
+    else:
+        return dispatch["not_supported"](gp)
+    
+
