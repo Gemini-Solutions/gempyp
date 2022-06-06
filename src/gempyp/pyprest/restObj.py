@@ -1,4 +1,4 @@
-class REST_Obj:
+class RestObj:
     def __init__(self, **kwargs):
         if "pg" in kwargs:
             self.pg = kwargs['pg']
@@ -22,5 +22,5 @@ class REST_Obj:
             self.env = kwargs["env"]
 
     @property
-    def return_obj():
-        return REST_Obj()
+    def returnObj():
+        return RestObj()

@@ -1,7 +1,7 @@
 import logging as logger
 
 
-class pre_variables:
+class PreVariables:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
         # get variable written in data["PRE_VARIABLE"]
@@ -11,7 +11,9 @@ class pre_variables:
         # different dicts for loal and suite variables
 
 
-    def pre_variable(self):
+    def preVariable(self):
+        """
+        Maintaining 2 types of dictionaries- local and suile level"""
         self.pyprest_obj.variables["local"] = {}
         self.pyprest_obj.variables["suite"] = {}
         if self.pyprest_obj.pre_variables:
@@ -33,4 +35,5 @@ class pre_variables:
                     else:
                         self.pyprest_obj.variables["local"][key] = each_item[1].strip(" ")
                     # check for predefined functions
+                    
             print("Setting pre variables: -------- ", self.pyprest_obj.variables)

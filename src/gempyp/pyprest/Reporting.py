@@ -4,7 +4,11 @@ import uuid
 import time
 
 
-def write_to_report(pyprest_obj):
+def writeToReport(pyprest_obj):
+    """
+    This function takes pyprest obj,
+    creates the testcase report if the runmode is debug mode,
+    Creates the dictionary that is to be sent to gempyp"""
     result = {}
     if not pyprest_obj.reporter.resultFileName:
         try:

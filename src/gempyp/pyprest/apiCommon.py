@@ -11,7 +11,7 @@ import requests.auth
 from requests_ntlm import HttpNtlmAuth
 
 
-class API:
+class Api:
     def __init__(self):
         pass
 
@@ -29,11 +29,13 @@ class API:
                     print(str(e))
             # write code for authentication 
             # decrypt password
-
-            if request.auth.upper() == "PASSWORD":
-                password = self.decrypt_(request.credentials.get("password", ""), EncryptKey)
-                auth = HttpNtlmAuth(request.credentials.get("username", " "), password)
-            else:
+            auth = None
+            try:
+                if request.auth.upper() == "PASSWORD":
+                    password = self.decrypt_(request.credentials.get("password", ""), EncryptKey)
+                    auth = HttpNtlmAuth(request.credentials.get("username", " "), password)
+            except Exception as e:
+                logging.info("Error occured while creating the auth object- " + str(e))
                 auth = None
             try:
                 start_time = end_time = datetime.now()
@@ -182,7 +184,7 @@ class API:
                     return self.execute_api(request)
             return result
 
-    def encrypt_(password, key):
+    def encrypt_(self, password, key):
         try:
             fernet_ = Fernet(key)
             # supress user warnings
@@ -195,7 +197,7 @@ class API:
             print(e)
         return enc_pass
 
-    def decrypt_(enc_pass, key):
+    def decrypt_(self, enc_pass, key):
         try:
             fernet_ = Fernet(key)
             # supress user warnings
@@ -219,8 +221,7 @@ class Request:
         self.body = {}
         self.file = ""
         self.SSLVerify = False
-        self.username = ""
-        self.password = ""
+        self.credentials = {}
         self.timeout = 30000
         self.auth = ""
         self.expected_code_list = []

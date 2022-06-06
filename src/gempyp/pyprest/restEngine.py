@@ -1,5 +1,5 @@
 from gempyp.config.xmlConfig import XmlConfig
-from gempyp.pyprest.pyprest import PYPREST
+from gempyp.pyprest.pypRest import PypRest
 from gempyp.config.baseConfig import abstarctBaseConfig
 from typing import Type
 import getpass
@@ -10,11 +10,11 @@ import datetime
 from datetime import timezone, datetime
 
 
-class R_ENGINE:
+class REngine:
     def __init__(self, **kwargs):
         # parse cli to get restcase name
         parser = argparse.ArgumentParser()
-        self.args = self.parse_arguments(parser)
+        self.args = self.parseArguments(parser)
         if (self.args.testcase and self.args.config):
             self.path = self.args.config
             self.tcname = self.args.testcase
@@ -27,12 +27,12 @@ class R_ENGINE:
 
     def runner(self):
         config = self.config
-        self.setUP(config)
-        data = self.form_data(config, self.tcname)
-        PYPREST(data).rest_engine()
+        self.setUp(config)
+        data = self.formData(config, self.tcname)
+        PypRest(data).restEngine()
         print("-----end-------")
 
-    def form_data(self, config: Type[abstarctBaseConfig], tcname):
+    def formData(self, config: Type[abstarctBaseConfig], tcname):
         data = {}
         # get the testcase list from config and check for the passed testcase
         
@@ -47,7 +47,7 @@ class R_ENGINE:
             data["OUTPUT_FOLDER"] = ""
         return data
 
-    def setUP(self, config: Type[abstarctBaseConfig]):
+    def setUp(self, config: Type[abstarctBaseConfig]):
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
         self.machine = platform.node()
@@ -59,7 +59,7 @@ class R_ENGINE:
         self.reportName = self.PARAMS.get("REPORTNAME")
         self.project_env = self.PARAMS["ENV"]
 
-    def parse_arguments(self, parser):
+    def parseArguments(self, parser):
         parser.add_argument("-t", "--testcase",dest="testcase", help="name of the testcase to run")
         parser.add_argument("-config", "--config", help="config file")
         args = parser.parse_args()
@@ -69,4 +69,4 @@ class R_ENGINE:
 if __name__ == "__main__":
     config = XmlConfig('C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest.xml')
     tcname = "REST_COUNTRIES_3"
-    R_ENGINE(data=config, tcname=tcname)
+    REngine(data=config, tcname=tcname)

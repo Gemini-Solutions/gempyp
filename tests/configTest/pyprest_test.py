@@ -8,4 +8,7 @@ def test():
     
     Engine(config)
 
-test()
+
+if __name__ == "__main__":
+    
+    test()

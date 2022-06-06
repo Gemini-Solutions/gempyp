@@ -1,5 +1,7 @@
-from pygem.pi_rest.rest_obj import REST_Obj
+from gempyp.pyprest.restObj import RestObj
 
+
+# create an object of PYPREST helper and take that object in your before and after methods,then return it.
 
 class before:
     def before_(self, obj):
@@ -10,4 +12,4 @@ class before:
 
 
 if __name__ == "__main__":
-    obj = before().before_(REST_Obj(project="SOME_PROJECT"))
+    obj = before().before_(RestObj(project="SOME_PROJECT"))
