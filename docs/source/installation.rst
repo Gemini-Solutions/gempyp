@@ -8,13 +8,13 @@ Installation
 Stable release
 --------------
 
-To install pygem, run this command in your terminal:
+To install gempyp, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install pygem
+    $ pip install gempyp
 
-This is the preferred method to install pygem, as it will always install the most recent stable release.
+This is the preferred method to install gempyp, as it will always install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -26,34 +26,34 @@ you through the process.
 From sources
 ------------
 
-The sources for pygem can be downloaded from the `Github repo`_.
+The sources for gempyp can be downloaded from the `Github repo`_.
 
 You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/gem-shubhamshukla/pygem
+    $ git clone git://github.com/gem-shubhamshukla/gempyp
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/gem-shubhamshukla/pygem/tarball/main
+    $ curl  -OL https://github.com/gem-shubhamshukla/gempyp/tarball/main
 
 Once you have a copy of the source, you can install it. The method of installation will depend on the packaging library being used.
 
-For example, if `setuptools` is being used (a setup.py file is present), install pygem with:
+For example, if `setuptools` is being used (a setup.py file is present), install gempyp with:
 
 .. code-block:: console
 
     $ python setup.py install
 
-If `poetry` is being used (poetry.lock and pyproject.toml files are present), install pygem with:
+If `poetry` is being used (poetry.lock and pyproject.toml files are present), install gempyp with:
 
 .. code-block:: console
 
     $ poetry install
 
 
-.. _Github repo: https://github.com/gem-shubhamshukla/pygem
-.. _tarball: https://github.com/gem-shubhamshukla/pygem/tarball/master
+.. _Github repo: https://github.com/gem-shubhamshukla/gempyp
+.. _tarball: https://github.com/gem-shubhamshukla/gempyp/tarball/master

@@ -16,6 +16,7 @@ from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
 from gempyp.engine import dataUpload
+from gempyp.pyprest.pyprest import PYPREST
 
 
 def executorFactory(data: Dict) -> Tuple[List, Dict]:
@@ -33,12 +34,12 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     elif data["configData"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
         logging.info("starting the resttest testcase")
-        # try:
-        #     return PIREST(data).rest_engine()
-        # except Exception as e:
-        #     print(traceback.print_exc())
-        #     print(e)
-        #     return None, getError(e, data["configData"])
+        try:
+            return PYPREST(data).rest_engine()
+        except Exception as e:
+            print(traceback.print_exc())
+            print(e)
+            return None, getError(e, data["configData"])
 
 
 class Engine:
@@ -430,12 +431,9 @@ class Engine:
             suiteReport = f.read()
 
         reportJson = self.DATA.getJSONData()
-        print(type(reportJson))
         reportJson = json.loads(reportJson)
         reportJson["TestStep_Details"] = self.testcaseData
-        # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
-        print("------------ reportJson\n", reportJson)
         suiteReport = suiteReport.replace("DATA", reportJson)
 
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(date))
