@@ -6,8 +6,10 @@ def test():
 
     config = XmlConfig("C:\\gemecosystem\\pygem\\tests\\configTest\\sampleTest.xml")
 
- 
+    print(type(config))
     
     Engine(config)
 
-test()
+    
+if __name__ == "__main__":
+    test()
