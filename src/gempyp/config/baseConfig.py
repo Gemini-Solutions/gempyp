@@ -5,15 +5,14 @@ import argparse
 from gempyp.libs.common import errorHandler
 from gempyp.libs.exceptions import ParseException
 
-
 class abstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):
         self._CONFIG = {}
+        self.cli_config ={}
         try:
             self.parse(*args, **kwargs)
             # filter the testcasesData
             self.filter()
-            self.update()
         except ParseException as e:
             errorHandler(logging, e, "failed to parse the config")
 
@@ -21,6 +20,7 @@ class abstarctBaseConfig(ABC):
             errorHandler(logging, e, "Some Error occured")
 
     def getSuiteConfig(self) -> Dict:
+        
         print("^^^^^^^^^^^^^ \n ", self._CONFIG["SUITE_DATA"], "\n^^^^^^^^^")
         return self._CONFIG["SUITE_DATA"]
 
@@ -58,7 +58,14 @@ class abstarctBaseConfig(ABC):
 
     # TODO
     def update(self):
+        try:
+            for element in self.cli_config.keys():
+                if self.cli_config[element]:
+                    if str(element) in self._CONFIG['SUITE_DATA']:
+                        self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
+        except Exception as error:
+            print("error occurs in update",error)
         """
         update the suiteData that is given in CLI inputs
         """
-        pass
+        

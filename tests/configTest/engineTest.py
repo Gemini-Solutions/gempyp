@@ -1,13 +1,36 @@
+from ast import Suite
 from distutils.command.config import config
 from gempyp.config.xmlConfig import XmlConfig
 from gempyp.engine.engine import Engine
-from runningFile import string
+import argparse
+
+def argParser():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-config','-c',dest='config',type=str, required=False)
+    parser.add_argument('-MAIL','-m',dest='MAIL', type=str, required=False)
+    parser.add_argument('-PROJECT','-p',dest='PROJECT', type=str, required=False)
+    parser.add_argument('-REPORT_NAME','-rn',dest='REPORT_NAME', type=str, required=False)
+    parser.add_argument('-MODE','-mode',dest='MODE', type=str, required=False)
+    parser.add_argument('-ENV','-env',dest='ENV', type=str, required=False)
+    parser.add_argument('-TYPE','-t',dest='TYPE', type=str, required=False)
+
+    args = parser.parse_args()
+    return args
+
 
 def test():
+    
+    args = argParser()
+    
+    xmlPath = "C:\\Users\\sa.chand\\Desktop\\QA\\gempyp\\tests\\configTest\\sampleTest.xml"
+    if args.config != None:
+        xmlPath = args.config
+    config = XmlConfig(xmlPath)
+    
+    config.cli_config = vars(args)
+    config.update()
 
-    #config = XmlConfig("C:\\Users\\sa.chand\\Desktop\\QA\\gempyp\\tests\\configTest\\sampleTest.xml")
-    config = XmlConfig(string)
- 
     Engine(config)
 
 test()
