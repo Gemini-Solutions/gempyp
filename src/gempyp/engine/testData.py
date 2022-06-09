@@ -82,7 +82,6 @@ class testData:
         suiteDict = self.suiteDetail.to_dict(orient="records")[0]
         testcaseDict = self.testcaseDetails.to_dict(orient="records")
         suiteDict["TestCase_Details"] = testcaseDict
-        print("------\n testcaseDict", testcaseDict, "\n --------------")
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts
         SuiteReport["Suits_Details"] = suiteDict

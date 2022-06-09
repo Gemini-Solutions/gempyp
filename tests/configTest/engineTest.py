@@ -1,10 +1,10 @@
 from gempyp.config.xmlConfig import XmlConfig
 from gempyp.engine.engine import Engine
-
+import os
 
 def test():
 
-    config = XmlConfig("C:\\gemecosystem\\pygem\\tests\\configTest\\sampleTest.xml")
+    config = XmlConfig("C:\\gempyp\\tests\\configTest\\sampleTest.xml")
 
     print(type(config))
     
