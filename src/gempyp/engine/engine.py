@@ -19,6 +19,7 @@ from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import LoggingConfig, my_custom_logger
 from gempyp.engine import dataUpload
+from gempyp.pyprest.pypRest import PypRest
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -41,14 +42,14 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         # TODO do the DVM stuff
         logging.info("starting the DVM testcase")
     elif data["configData"].get("TYPE").upper() == "PYPREST":
-        # TODO do the PYPREST stuff here
-        logging.info("starting the PYPREST testcase")
-        # try:
-        #     return PIREST(data).rest_engine()
-        # except Exception as e:
-        #     print(traceback.print_exc())
-        #     print(e)
-        #     return None, getError(e, data["configData"])
+        # TODO do the resttest stuff here
+        logging.info("starting the resttest testcase")
+        try:
+            return PypRest(data).restEngine()
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
+            return None, getError(e, data["configData"])
 
 
 class Engine:
