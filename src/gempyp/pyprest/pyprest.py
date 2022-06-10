@@ -9,7 +9,7 @@ from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
 from gempyp.libs import common
 from gempyp.engine.runner import getError
-from gempyp.pyprest.reporting import writeToReport
+from gempyp.pyprest.Reporting import writeToReport
 from gempyp.pyprest.preVariables import PreVariables
 from gempyp.pyprest.variableReplacement import VariableReplacement as var_replacement
 from gempyp.pyprest.post_variables import PostVariables

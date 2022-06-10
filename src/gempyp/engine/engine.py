@@ -19,7 +19,7 @@ from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import LoggingConfig, my_custom_logger
 from gempyp.engine import dataUpload
-from gempyp.pyprest.pypRest import PypRest
+from gempyp.pyprest.pyprest import PypRest
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -458,13 +458,9 @@ class Engine:
         self.repSummary()
     
     def repSummary(self):
-        try:
-            logging.info("---------- Finalised the report --------------")
-            logging.info("============== Run Summary =============")
-            count_info = self.repJson['Suits_Details']['Testcase_Info']
-            logging.info("Total Testcases: {testcase_count} | Passed Testcases: {_pass} | Failed Testcases: {_fail}"
-            .format(testcase_count=count_info['total'], _pass=count_info['total']-count_info['FAIL'], _fail=count_info['FAIL']))
-            logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
-        finally:
-            log_file = os.path.join(self.ouput_folder, "Result_{}.log".format(self.date))
-            #log_path = shutil.copyfile('tmp.log', log_file)
+        logging.info("---------- Finalised the report --------------")
+        logging.info("============== Run Summary =============")
+        count_info = self.repJson['Suits_Details']['Testcase_Info']
+        logging.info("Total Testcases: {testcase_count} | Passed Testcases: {_pass} | Failed Testcases: {_fail}"
+        .format(testcase_count=count_info['total'], _pass=count_info['total']-count_info['FAIL'], _fail=count_info['FAIL']))
+        logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
