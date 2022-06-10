@@ -8,7 +8,6 @@ from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
 from datetime import datetime, timezone
-import shutil
 from tomlkit import date
 from gempyp.config.baseConfig import abstarctBaseConfig
 from gempyp.engine.testData import testData
