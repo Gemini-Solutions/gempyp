@@ -13,7 +13,7 @@ def argParser():
     parser.add_argument('-REPORT_NAME','-rn',dest='REPORT_NAME', type=str, required=False)
     parser.add_argument('-MODE','-mode',dest='MODE', type=str, required=False)
     parser.add_argument('-ENV','-env',dest='ENV', type=str, required=False)
-    parser.add_argument('-TYPE','-t',dest='TYPE', type=str, required=False)
+    parser.add_argument('-TYPE','-type',dest='-t', type=str, required=False)
 
     args = parser.parse_args()
     return args
