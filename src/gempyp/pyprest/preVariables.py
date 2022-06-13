@@ -27,7 +27,7 @@ class PreVariables:
         self.pyprest_obj.variables["local"] = {}
         self.pyprest_obj.variables["suite"] = {}
         if self.pyprest_obj.pre_variables:
-            logger.info("****************************** INSIDE PRE VARIABLES  ******************************")
+            self.pyprest_obj.logger.info("************** INSIDE PRE VARIABLES  **************")
             
             pre_variables_str = self.pyprest_obj.pre_variables
 
@@ -47,7 +47,7 @@ class PreVariables:
                         key = "SUITE_" + each_item[0].strip(" ").strip("SUITE.").upper()
                         self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1])"""
                     self.pyprest_obj.variables[scope][key] = self.getFunctionValues(each_item[1])
-            logger.info(f"Setting PRE VARIABLES: -------- {str(self.pyprest_obj.variables)}")
+            self.pyprest_obj.logger.info(f"Setting PRE VARIABLES: -------- {str(self.pyprest_obj.variables)}")
 
     def getFunctionValues(self, var_name):
         if re.match(self.regex_func, var_name):

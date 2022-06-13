@@ -9,6 +9,7 @@ from gempyp.pyprest.variableReplacement import VariableReplacement as var_replac
 class PostAssertion:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
+        self.logger = self.pyprest_obj.logger
         pass
 
     def postAssertion(self):
@@ -18,7 +19,7 @@ class PostAssertion:
         -gets the comparison result and update logs and reporter obj.
         """
         if self.pyprest_obj.post_assertion:
-            logger.info("****************************** INSIDE POST ASSERTION  ******************************")
+            self.logger.info("************** INSIDE POST ASSERTION  **************")
             var_replacement(self.pyprest_obj).variableReplacement()
             self.post_assertion_str = self.pyprest_obj.post_assertion
             post_ass_str_list = self.post_assertion_str.strip(";").split(";")
@@ -30,15 +31,15 @@ class PostAssertion:
 
             self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: </br>" + "</br>".join(key_str), status.INFO)
 
-            logger.info("Post assertion string- " + self.post_assertion_str)
+            self.logger.info("Post assertion string- " + self.post_assertion_str)
             key_val_dict = {}
             for each_assert in list(set(key_str)):
                 key_part_list = each_assert.split(".")
                 response_json = utils.formatRespBody(self.pyprest_obj.res_obj.response_body)
                 result = KeyCheck(self.pyprest_obj).findKeys(response_json, deepcopy(key_part_list), deepcopy(key_part_list))
                 if result.upper() != "FOUND":
-                    logger.info("====== Key Not Found in response =======")
-                    logger.info("'" + each_assert + "' is not found")
+                    self.logger.info("====== Key Not Found in response =======")
+                    self.logger.info("'" + each_assert + "' is not found")
                     self.pyprest_obj.reporter.addRow(f"Checking presence of key {each_assert} in response", f"Key {each_assert} is not found in the response", status.FAIL)
                 else:
                     key_val_dict = utils.fetchValueOfKey(response_json, key_part_list, result, key_val_dict)
@@ -70,7 +71,7 @@ class PostAssertion:
         -removes the element from the assertion dict that are not valid
         -calls comparison functions based on the operator type
         """
-        logger.info("-----------inside assertion func----------------------------")
+        self.logger.info("-----------inside assertion func-----------")
 
         # removing the keys that are not present
         for ele in assertion_list:

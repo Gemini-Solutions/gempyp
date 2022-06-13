@@ -8,7 +8,7 @@ from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
 from datetime import datetime, timezone
-from tomlkit import date
+# from tomlkit import date
 from gempyp.config.baseConfig import abstarctBaseConfig
 from gempyp.engine.testData import testData
 from gempyp.libs.enums.status import status
@@ -18,23 +18,24 @@ from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import LoggingConfig, my_custom_logger
 from gempyp.engine import dataUpload
-from gempyp.pyprest.pyprest import PypRest
+from gempyp.pyprest.pypRest import PypRest
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     """
     calls the differnt executors based on the type of the data
     """
+    if not custom_logger:
+        log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
+        + os.environ.get('unique_id') + '.log')
+        custom_logger = my_custom_logger(log_path)
+    data['configData']['LOGGER'] = custom_logger
+    if 'log_path' not in data['configData']:
+        data['configData']['LOG_PATH'] = log_path
+
     if "TYPE" not in data["configData"] or data["configData"].get("TYPE").upper() == "GEMPYP":
-        #custom_logger.setLevel(logging.INFO)
-        if not custom_logger:
-            log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME')+'_'
-            +os.environ.get('unique_id')+'.log')
-            custom_logger = my_custom_logger(log_path)
         custom_logger.info("starting the GemPyP testcase")
-        data['configData']['logger'] = custom_logger
-        if 'log_path' not in data['configData']:
-            data['configData']['log_path'] = log_path
+        #custom_logger.setLevel(logging.INFO)
         return testcaseRunner(data)
 
     elif data["configData"].get("TYPE").upper() == "DVM":
@@ -42,7 +43,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         logging.info("starting the DVM testcase")
     elif data["configData"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
-        logging.info("starting the resttest testcase")
+        custom_logger.info("starting the PYPREST testcase")
         try:
             return PypRest(data).restEngine()
         except Exception as e:
@@ -184,8 +185,9 @@ class Engine:
         """
         for testcase in self.CONFIG.getTestcaseConfig():
             data = self.getTestcaseData(testcase)
-            log_path = os.path.join(self.CONFIG['SUITE_DATA']['LOG_DIR'],
-            data['configData'].get('NAME')+'_'+self.CONFIG['SUITE_DATA']['UNIQUE_ID']+'.log')
+            print(self.CONFIG.getSuiteConfig())
+            log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
+            data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
             custom_logger = my_custom_logger(log_path)
             data['configData']['log_path'] = log_path
             #LoggingConfig(data['configData'].get('NAME')+'.log')

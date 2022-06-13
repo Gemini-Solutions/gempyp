@@ -10,6 +10,7 @@ from gempyp.pyprest.preVariables import PreVariables
 class PostVariables:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
+        self.logger = self.pyprest_obj.logger
         # get variable written in data["POST_VARIABLE"]
         # postdefined func
         # remove $[#]
@@ -18,7 +19,7 @@ class PostVariables:
 
 
     def postVariables(self):
-        logger.info("****************************** INSIDE POST VARIABLES  ******************************")
+        self.logger.info("************** INSIDE POST VARIABLES  **************")
         post_variables_str = self.pyprest_obj.post_variables
         if post_variables_str:
 
@@ -51,8 +52,8 @@ class PostVariables:
                         result = KeyCheck(self.pyprest_obj).findKeys(response_json, deepcopy(response_key_partition), deepcopy(response_key_partition))
                         # if result is not "FOUND" then can't set value
                         if result.upper() != "FOUND":
-                            logger.info("====== Key Not Found in response =======")
-                            logger.info("'" + key + "' is not found")
+                            self.logger.info("====== Key Not Found in response =======")
+                            self.logger.info("'" + key + "' is not found")
 
                             # check predefined functions
                             self.pyprest_obj.variables[scope][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1])
@@ -63,4 +64,4 @@ class PostVariables:
                     # key not found in response, checking pre variables and pre variables
                     if "$[#" in each_item[1].strip(" "):
                         var_replacement(self.pyprest_obj).variableReplacement()
-            logger.info(f"variables dict after setting POST VARIABLES: -------- {str(self.pyprest_obj.variables)} ")
+            self.logger.info(f"variables dict after setting POST VARIABLES: -------- {str(self.pyprest_obj.variables)} ")

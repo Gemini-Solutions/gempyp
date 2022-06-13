@@ -1,7 +1,7 @@
 import re
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import utils
-import logging as logger
+import logging as logging
 
 
 class KeyCheck:
@@ -15,12 +15,12 @@ class KeyCheck:
         """
         Checks whether a key is present in the response or not.
         """
-        logger.info("******************************  INSIDE KEY CHECK  ******************************")
+        self.pyprest_obj.logger.info("**************  INSIDE KEY CHECK  **************")
 
         self.response_body = {}
         if self.pyprest_obj.key_check and "keys are" in self.pyprest_obj.key_check:
             self.pyprest_obj.key_check = self.pyprest_obj.key_check
-            logger.info("keycheck string: " + str(self.pyprest_obj.key_check))
+            self.pyprest_obj.logger.info("keycheck string: " + str(self.pyprest_obj.key_check))
             type_list = self.pyprest_obj.key_check.strip(";").split(";")
             self.keys = []
             self.keys_not = []
@@ -42,7 +42,7 @@ class KeyCheck:
                 self.getKeys()
 
         else:
-            logger.info("keycheck not performed----------------------")
+            self.pyprest_obj.logger.info("keycheck not performed----------------------")
 
     def getKeys(self):
         """
@@ -90,7 +90,7 @@ class KeyCheck:
         Finding keys in the response on the basis of the regex they match with
         """
         for each in key_list:
-            logger.info(f"===================FINDING KEY - {each}  =====================")
+            self.pyprest_obj.logger.info(f"========FINDING KEY - {each}  ==========")
             """
             note : - if key to find is like data[0].color[9].code or something like data[each].color[9].code or any lind of nesting, then there will be recursion 
             and everytime the value after "." will be passed to the same function 
@@ -116,7 +116,7 @@ class KeyCheck:
 
                 # return "NOT FOUND" if  key from string "key[each]" is not found in the json_data
                 else:
-                    logger.info(f"{each}  - Key not found ------------")
+                    self.pyprest_obj.logger.info(f"{each}  - Key not found ------------")
                     return "NOT FOUND"
 
             # for list like keychecks
@@ -139,7 +139,7 @@ class KeyCheck:
                     key_list.remove(each)
                     return self.findKeys(json_data[key_val][key_num], key_list, temp_key_list)
                 else:
-                    logger.info(f"{each}  - Key not found ------------")
+                    self.pyprest_obj.logger.info(f"{each}  - Key not found ------------")
                     return "NOT FOUND"
 
             # for simple keychecks ( list and dicts) or last steps of list and "each" parsing

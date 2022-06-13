@@ -9,7 +9,7 @@ from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
 from gempyp.libs import common
 from gempyp.engine.runner import getError
-from gempyp.pyprest.Reporting import writeToReport
+from gempyp.pyprest.reporting import writeToReport
 from gempyp.pyprest.preVariables import PreVariables
 from gempyp.pyprest.variableReplacement import VariableReplacement as var_replacement
 from gempyp.pyprest.postVariables import PostVariables
@@ -20,10 +20,10 @@ from gempyp.pyprest.restObj import RestObj
 
 class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
-        logging.root.setLevel(logging.DEBUG)
+        # self.logger.root.setLevel(self.logger.DEBUG)
         self.data = data
-        print(data)
-        logging.info("---------------------Inside REST FRAMEWORK------------------------")
+        self.logger = data["configData"]["LOGGER"]
+        self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
 
         # set vars
         self.setVars()
@@ -31,7 +31,7 @@ class PypRest(Base):
         # setting reporter object
         self.reporter = Base(projectName=self.project, testcaseName=self.tcname)
 
-        logging.info("--------------------Report object created ------------------------")
+        self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
 
 
@@ -49,7 +49,7 @@ class PypRest(Base):
             return output, None
         except Exception as e:
             traceback.print_exc()
-            common.errorHandler(logging, e, "Error occured while running the testcas")
+            common.errorHandler(self.logger, e, "Error occured while running the testcas")
             error_dict = getError(e, self.data["configData"])
             error_dict["jsonData"] = self.reporter.serialize()
             return None, error_dict
@@ -216,11 +216,11 @@ class PypRest(Base):
         -takes all the data from before method and updates the self object"""
 
         # check for before_file
-        logging.info("CHECKING FOR BEFORE FILE___________________________")
+        self.logger.info("CHECKING FOR BEFORE FILE___________________________")
 
         file_str = self.data["configData"].get("BEFORE_FILE", "")
         if file_str == "" or file_str == " ":
-            logging.info("BEFORE FILE NOT FOUND___________________________")
+            self.logger.info("BEFORE FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for pre API steps", "No Pre API steps found", status.INFO)
 
             return
@@ -236,12 +236,12 @@ class PypRest(Base):
         else:
             method_name = "before"
         
-        logging.info("Before file path:- " + file_name)
-        logging.info("Before file class:- " + class_name)
-        logging.info("Before file mthod:- " + method_name)
+        self.logger.info("Before file path:- " + file_name)
+        self.logger.info("Before file class:- " + class_name)
+        self.logger.info("Before file mthod:- " + method_name)
         try:
             file_obj = importlib.import_module(file_name)
-            logging.info("Running before method")
+            self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
                 pg=self.reporter,
@@ -273,11 +273,11 @@ class PypRest(Base):
         -runs after method if found
         -takes all the data from after method and updates the self object"""
 
-        logging.info("CHECKING FOR AFTER FILE___________________________")
+        self.logger.info("CHECKING FOR AFTER FILE___________________________")
 
         file_str = self.data["configData"].get("AFTER_FILE", "")
         if file_str == "" or file_str == " ":
-            logging.info("AFTER FILE NOT FOUND___________________________")
+            self.logger.info("AFTER FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for post API steps", "No Post API steps found", status.INFO)
             return
 
@@ -292,12 +292,12 @@ class PypRest(Base):
             method_name = file_str.split("method=")[1].split(",")[0]
         else:
             method_name = "after"
-        logging.info("After file path:- " + file_name)
-        logging.info("After file class:- " + class_name)
-        logging.info("After file mthod:- " + method_name)
+        self.logger.info("After file path:- " + file_name)
+        self.logger.info("After file class:- " + class_name)
+        self.logger.info("After file mthod:- " + method_name)
         try:
             file_obj = importlib.import_module(file_name)
-            logging.info("Running before method")
+            self.logger.info("Running before method")
             obj_ = file_obj
             after_obj = RestObj(
                 pg=self.reporter,

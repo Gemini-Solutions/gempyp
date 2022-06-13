@@ -127,9 +127,7 @@ class PredefinedFunctions:
 
         params_str should contain comma separated values-
         days,
-        date format 
-        """
-        print("============================")
+        date format """
         n_value = int(args[0].strip('"').strip("'"))
         try:
             date_format = args[1].strip('"').strip("'")

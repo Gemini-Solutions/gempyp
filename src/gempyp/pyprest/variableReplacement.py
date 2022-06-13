@@ -15,7 +15,7 @@ class VariableReplacement:
         functions_list = [x[0] for x in getmembers(prefunc, isfunction)]
         self.functions_dict = {each.lower():each for each in functions_list}
             
-        logger.info("******************************  INSIDE VARIABLE REPLACEMENT  ******************************")
+        self.pyprest_obj.logger.info("**************  INSIDE VARIABLE REPLACEMENT  **************")
 
 
 

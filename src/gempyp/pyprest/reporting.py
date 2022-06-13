@@ -17,17 +17,16 @@ def writeToReport(pyprest_obj):
             try:
                 os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
             except Exception as e:
-                traceback.print_exc()
+                pyprest_obj.logger.info(traceback.print_exc())
             pyprest_obj.reporter.jsonData = pyprest_obj.reporter.templateData.makeReport(
                 pyprest_obj.data.get("OUTPUT_FOLDER"), pyprest_obj.reporter.testcaseName + str(time.time()))
             pyprest_obj.jsonData = pyprest_obj.reporter.jsonData
             result = pyprest_obj.reporter.serialize()
-            print(pyprest_obj.data["configData"].get("DEBUG_MODE", False).upper())
             if pyprest_obj.data["configData"].get("DEBUG_MODE", False).upper() == "TRUE":
                 # make report
                 try:
                     makeReport(pyprest_obj, json.dumps(pyprest_obj.reporter.jsonData))
-                    logging.info("-------file_dumped---------")
+                    pyprest_obj.logger.info("-------file_dumped---------")
                 except Exception as e:
                     traceback.print_exc()
 
@@ -54,7 +53,8 @@ def writeToReport(pyprest_obj):
     result["jsonData"]["metaData"][2]["TOTAL"] = total
 
     # have to look into the way on how to get the log file
-    tempdict["log_file"] = None
+    
+    tempdict["log_file"] = pyprest_obj.data["LOG_PATH"]
 
     singleTestcase = {}
     singleTestcase["testcaseDict"] = tempdict

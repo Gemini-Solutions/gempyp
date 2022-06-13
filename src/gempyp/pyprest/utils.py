@@ -38,7 +38,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
     """
     Get values of the required keys from the response json"""
 
-    logger.info("======================Fetching values from response =======================")
+    logger.info("===========Fetching values from response ============")
     regex_each = re.compile(r".*\[\beach\b\]")
     regex_int = re.compile(r".*\[\d+\]")
     actual_key = ".".join(key_partition_list)
