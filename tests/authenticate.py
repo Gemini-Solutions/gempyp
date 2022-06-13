@@ -26,8 +26,6 @@ class authenticate(AbstarctSimpleTestcase):
         auth_api = 'https://mymisapi.geminisolutions.in/api/Authenticate/Authenticate'
         response = requests.post(auth_api, headers={"Authorization": "Basic {0}".format(self.login_auth)})
         header = json.loads(response.text)
-        print(header)
-        print(type(header))
         header["Authorization"] = "Basic {0}".format(self.login_auth)
         self.reporter.addRow("Validate the Authentication API", auth_api, status.INFO)
         self.reporter.addRow("Validate the user", self.username, status.INFO)

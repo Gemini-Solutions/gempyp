@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
+import traceback
 from typing import Dict
-import logging
 import argparse
-from gempyp.libs.common import errorHandler
-from gempyp.libs.exceptions import ParseException
+import logging
 
 
 class abstarctBaseConfig(ABC):
@@ -14,17 +13,17 @@ class abstarctBaseConfig(ABC):
             # filter the testcasesData
             self.filter()
             self.update()
-        except ParseException as e:
-            errorHandler(logging, e, "failed to parse the config")
-
+            logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
-            errorHandler(logging, e, "Some Error occured")
+            traceback.print_exc()
+            logging.error("failed to parse the config: {e}".format(e=e))
 
     def getSuiteConfig(self) -> Dict:
-        print("^^^^^^^^^^^^^ \n ", self._CONFIG["SUITE_DATA"], "\n^^^^^^^^^")
+        # logging.info("^^^^^^^^^^^^^ \n {suite_data} \n^^^^^^^^^".format(suite_data=self._CONFIG["SUITE_DATA"]))
         return self._CONFIG["SUITE_DATA"]
 
     def getTestcaseConfig(self) -> Dict:
+        # logging.info("--------testCaseDict--------\n {testcaseDict} \n----------".format(testcaseDict=self._CONFIG["TESTCASE_DATA"]))
         return self._CONFIG["TESTCASE_DATA"]
 
     def getTestcaseData(self, testcaseName: str) -> Dict:
