@@ -48,7 +48,6 @@ class templateData:
 
         # column3
         column3 = {k.name: v for k, v in statusCounts.items()}
-
         self.REPORTDATA["metaData"].append(column2)
         self.REPORTDATA["metaData"].append(column3)
         # print("----------- steps", self.REPORTDATA["steps"])

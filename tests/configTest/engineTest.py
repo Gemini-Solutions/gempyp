@@ -20,6 +20,13 @@ def argParser():
 
 
 def test():
+import os
+
+def test():
+
+    config = XmlConfig("C:\\gempyp\\tests\\configTest\\sampleTest.xml")
+
+    print(type(config))
     
     args = argParser()
     
@@ -33,4 +40,6 @@ def test():
 
     Engine(config)
 
-test()
+    
+if __name__ == "__main__":
+    test()

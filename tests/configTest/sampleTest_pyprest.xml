@@ -1,0 +1,88 @@
+<data>
+
+    <suite>
+        <mail>test@gmail.com</mail>
+        <project>GemPyp_project</project>
+        <report_name>test_regression</report_name>
+        <mode>SEQUENCE</mode>
+        <env>beta</env>
+        <bridge_token>tokentest</bridge_token>
+    </suite>
+
+    <testcases>
+
+        <testcase>
+            <name>sample_testcase1</name>
+            <category>sample</category>
+            <run_flag>N</run_flag>
+            <path>tests.sample_testcase.sample1</path>
+            <location>test</location>
+            <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+            <name>REST_COUNTRIES_2</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>$[#method_name]</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication>NTLM</authentication>
+            <pre_variables>set $[# method_name]=GET;set $[#method_second]=POST;</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#method_name];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+        <testcase>
+            <name>GOREST</name>
+            <cateory>sample</cateory>
+            <run_flag>N</run_flag>
+            <api>https://gorest.co.in/public/v2/users</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{"content-type":"application/json","accept":"application/json"}</headers>
+            <expected_status_code>200</expected_status_code>
+            <key_check>keys are response[0].id;</key_check>
+            <pre_variables>set $[#endpoint]="abd"</pre_variables>
+            <post_variable></post_variable>
+            <key_check></key_check>
+            <post_assertion></post_assertion>
+            <locations>tests</locations>
+            <extra_args1></extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+
+        <testcase>
+            <name>GOREST_2</name>
+            <cateory>sample</cateory>
+            <run_flag>N</run_flag>
+            <api>https://gorest.co.in/public/v2/users</api>
+            <method>POST</method>
+            <body> {        
+                "name": " JOhn",
+                "email": "JOhn@gmail.biz",
+                "gender": "male",
+                "status": "inactive"
+            }</body>
+            <headers>{"content-type":"application/json","accept":"application/json", "Authorization":"Bearer 7cf300a3954980370df0803705cb1fb157b4dea84eecf0f2d206f41d48c4a8b5"}</headers>
+            <expected_status_code>201</expected_status_code>
+            <key_check>keys are response[0].id;</key_check>
+            <pre_variable></pre_variable>
+            <key_check></key_check>
+            <post_assertion></post_assertion>
+            <locations>tests</locations>
+            <extra_args1></extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+    </testcases>
+
+
+</data>
