@@ -12,7 +12,7 @@ from gempyp.engine.runner import getError
 from gempyp.pyprest.reporting import writeToReport
 from gempyp.pyprest.preVariables import PreVariables
 from gempyp.pyprest.variableReplacement import VariableReplacement as var_replacement
-from gempyp.pyprest.post_variables import PostVariables
+from gempyp.pyprest.postVariables import PostVariables
 from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
@@ -22,6 +22,7 @@ class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
         logging.root.setLevel(logging.DEBUG)
         self.data = data
+        print(data)
         logging.info("---------------------Inside REST FRAMEWORK------------------------")
 
         # set vars
@@ -161,21 +162,6 @@ class PypRest(Base):
             traceback.print_exc()
             self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
 
-    def makeReport(self, jsonData):
-        """Create testcase file in the given output folder when in debug mode"""
-
-        index_path = os.path.dirname(__file__)
-        Result_data = ""
-        index_path = os.path.join(os.path.split(index_path)[0], "testcase.html")
-        with open(index_path, "r") as f:
-            Result_data = f.read()
-
-        Result_data = Result_data.replace("::DATA::", jsonData)
-
-        result_file = os.path.join(self.data.get("OUTPUT_FOLDER"), f"{self.reporter.testcaseName + str(time.time())}.html")
-        with open(result_file, "w+") as f:
-            f.write(Result_data)
-
     def setVars(self):
         """
         For setting variables like testcase name, output folder etc.
@@ -255,7 +241,7 @@ class PypRest(Base):
         logging.info("Before file mthod:- " + method_name)
         try:
             file_obj = importlib.import_module(file_name)
-            print("file_obj - ", file_obj)
+            logging.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
                 pg=self.reporter,
@@ -311,7 +297,7 @@ class PypRest(Base):
         logging.info("After file mthod:- " + method_name)
         try:
             file_obj = importlib.import_module(file_name)
-            print("file_obj - ", file_obj)
+            logging.info("Running before method")
             obj_ = file_obj
             after_obj = RestObj(
                 pg=self.reporter,

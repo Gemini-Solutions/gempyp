@@ -18,7 +18,7 @@ class PostAssertion:
         -gets the comparison result and update logs and reporter obj.
         """
         if self.pyprest_obj.post_assertion:
-            logger.info("++++++++++++++++++++++++++++++++++++++  INSIDE POST ASSERTION  ++++++++++++++++++++++++++++++++++++++")
+            logger.info("****************************** INSIDE POST ASSERTION  ******************************")
             var_replacement(self.pyprest_obj).variableReplacement()
             self.post_assertion_str = self.pyprest_obj.post_assertion
             post_ass_str_list = self.post_assertion_str.strip(";").split(";")

@@ -11,17 +11,17 @@ def formatRespBody(response_body):
     if not isinstance(response_body, list):
         try:
             formatted_response_body = json.loads(response_body.decode("utf-8"))
-            print("keycheck ----- 1")
+            logger.info("keycheck ----- 1")
         except Exception:
             try:
                 formatted_response_body = json.loads(ast.literal_eval(response_body.decode("utf-8")))
-                print("keycheck ----- 2")
+                logger.info("keycheck ----- 2")
             except Exception:
                 try: 
                     formatted_response_body = json.loads(str(response_body.encode("utf-8")))
                     if "b'" in formatted_response_body:
                         formatted_response_body = formatted_response_body.strip("b'").strip("'")
-                    print("keycheck ----- 3")
+                    logger.info("keycheck ----- 3")
                 except Exception:
                     try:
                         formatted_response_body = json.loads(response_body)
@@ -63,8 +63,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
                 key_val = key[:br_start]
                 key_num = int(key[br_start + 1:br_end])
                 key_num, json_ = getNestedListData(key, json_, key_val)
-                print(isinstance(json_, list))
-                print(key_val == "response")
+
                 if key_val == "response" and isinstance(json_, list):
                     json_ = json_[key_num]
                 else:
@@ -85,7 +84,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
    
 def getValuesForEach(each_value_dict, keys_to_fetch):
     """Getting values in case of "each operator" """
-    print(keys_to_fetch)
+    logger.info(f"Keys to be fetched from response - {keys_to_fetch}")
     for key in keys_to_fetch():
         if key in each_value_dict:
             each_value_dict = each_value_dict[key]

@@ -2,6 +2,8 @@ import traceback
 import os
 import uuid
 import time
+import json
+import logging
 
 
 def writeToReport(pyprest_obj):
@@ -20,18 +22,23 @@ def writeToReport(pyprest_obj):
                 pyprest_obj.data.get("OUTPUT_FOLDER"), pyprest_obj.reporter.testcaseName + str(time.time()))
             pyprest_obj.jsonData = pyprest_obj.reporter.jsonData
             result = pyprest_obj.reporter.serialize()
-            # make report
-            # pyprest_obj.makeReport(json.dumps(pyprest_obj.reporter.jsonData))
-            # print("-------file_dumped---------")
+            print(pyprest_obj.data["configData"].get("DEBUG_MODE", False).upper())
+            if pyprest_obj.data["configData"].get("DEBUG_MODE", False).upper() == "TRUE":
+                # make report
+                try:
+                    makeReport(pyprest_obj, json.dumps(pyprest_obj.reporter.jsonData))
+                    logging.info("-------file_dumped---------")
+                except Exception as e:
+                    traceback.print_exc()
 
         except Exception as e:
             traceback.print_exc()
     output = []
     tempdict = {} 
-    tc_run_id = f"{pyprest_obj.data['NAME']}_{uuid.uuid4()}"
+    tc_run_id = f"{pyprest_obj.tcname}_{uuid.uuid4()}"
     tempdict["tc_run_id"] = tc_run_id
     tempdict["name"] = result["NAME"]
-    tempdict["category"] = pyprest_obj.data.get("CATEGORY")
+    tempdict["category"] = pyprest_obj.category
     tempdict["status"] = result["STATUS"]
     tempdict["user"] = pyprest_obj.data.get("USER")
     tempdict["machine"] = pyprest_obj.data.get("MACHINE")
@@ -56,3 +63,19 @@ def writeToReport(pyprest_obj):
     output.append(singleTestcase)
 
     return output
+
+
+def makeReport(obj, jsonData):
+        # Create testcase file in the given output folder when in debug mode
+
+        index_path = os.path.dirname(__file__)
+        Result_data = ""
+        index_path = os.path.join(os.path.split(index_path)[0], "testcase.html")
+        with open(index_path, "r") as f:
+            Result_data = f.read()
+
+        Result_data = Result_data.replace("::DATA::", jsonData)
+
+        result_file = os.path.join(obj.data.get("OUTPUT_FOLDER"), f"{obj.reporter.testcaseName + str(time.time())}.html")
+        with open(result_file, "w+") as f:
+            f.write(Result_data)

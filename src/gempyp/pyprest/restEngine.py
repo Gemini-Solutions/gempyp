@@ -1,3 +1,4 @@
+import logging
 from gempyp.config.xmlConfig import XmlConfig
 from gempyp.pyprest.pypRest import PypRest
 from gempyp.config.baseConfig import abstarctBaseConfig
@@ -30,7 +31,7 @@ class REngine:
         self.setUp(config)
         data = self.formData(config, self.tcname)
         PypRest(data).restEngine()
-        print("-----end-------")
+        logging.info("-----end-------")
 
     def formData(self, config: Type[abstarctBaseConfig], tcname):
         data = {}
@@ -67,6 +68,6 @@ class REngine:
 
 
 if __name__ == "__main__":
-    config = XmlConfig('C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest.xml')
-    tcname = "REST_COUNTRIES_3"
+    config = XmlConfig('C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest_pyprest.xml')
+    tcname = "REST_COUNTRIES_2"
     REngine(data=config, tcname=tcname)

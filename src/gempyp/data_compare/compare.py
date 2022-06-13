@@ -1,6 +1,6 @@
-from libs.Base import Base
+# from libs.Base import Base
 from data_compare import data_comp as dc
-class Compare(Base):
+class Compare():
     def __init__(self, test_id, config_data):
        #testcase specific config can be set here for the object
        #also call the base class __init__ to set base config here
