@@ -459,9 +459,16 @@ class Engine:
         self.repSummary()
     
     def repSummary(self):
-        logging.info("---------- Finalised the report --------------")
-        logging.info("============== Run Summary =============")
-        count_info = self.repJson['Suits_Details']['Testcase_Info']
-        logging.info("Total Testcases: {testcase_count} | Passed Testcases: {_pass} | Failed Testcases: {_fail}"
-        .format(testcase_count=count_info['total'], _pass=count_info['total']-count_info['FAIL'], _fail=count_info['FAIL']))
-        logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
+        try:
+            logging.info("---------- Finalised the report --------------")
+            logging.info("============== Run Summary =============")
+            count_info = {key.lower(): val for key, val in self.repJson['Suits_Details']['Testcase_Info'].items()}
+            log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
+            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
+            for key, val in count_info.items():
+                if key in status_dict.keys():
+                    log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
+            logging.info(log_str.strip(" | "))
+            logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
+        except Exception as e:
+            logging.error(traceback.print_exc(e))

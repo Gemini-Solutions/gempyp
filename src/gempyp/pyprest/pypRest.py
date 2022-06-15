@@ -3,6 +3,7 @@ import traceback
 import time
 import logging
 import importlib
+import json
 from typing import Dict, List, Tuple
 from gempyp.engine.baseTemplate import testcaseReporter as Base
 from gempyp.libs.enums.status import status
@@ -22,15 +23,17 @@ class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
         # self.logger.root.setLevel(self.logger.DEBUG)
         self.data = data
-        self.logger = data["configData"]["LOGGER"]
+        self.logger = data["configData"]["LOGGER"] if "LOGGER" in data["configData"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
+        self.logger.info(f"-------Executing testcase - \"{self.data['configData']['NAME']}\"---------")
+
 
         # set vars
         self.setVars()
 
         # setting reporter object
         self.reporter = Base(projectName=self.project, testcaseName=self.tcname)
-
+        self.reporter._miscData["Reason_of_failure"] = ""
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
 
@@ -42,13 +45,14 @@ class PypRest(Base):
                 self.validateConf()
                 self.run()
             except Exception as e:
-                traceback.print_exc()
-                self.reporter._miscData["Reason_of_failure"] = f"Something went wrong:- {str(e)}"
+                self.logger.error(str(e))
+                self.logger.error(traceback.print_exc())
+                self.reporter._miscData["Reason_of_failure"] += f"Something went wrong:- {str(e)}, "
                 self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
             output = writeToReport(self)
             return output, None
         except Exception as e:
-            traceback.print_exc()
+            self.logger.error(traceback.print_exc())
             common.errorHandler(self.logger, e, "Error occured while running the testcas")
             error_dict = getError(e, self.data["configData"])
             error_dict["jsonData"] = self.reporter.serialize()
@@ -60,6 +64,7 @@ class PypRest(Base):
         # execute and format result 
         self.execRequest()
         self.postProcess()
+        self.logger.info("--------------------Execution Completed ------------------------")
         self.reporter.finalize_report()
 
     def validateConf(self):
@@ -73,7 +78,7 @@ class PypRest(Base):
 
         if len(set(mandate) - set([i.upper() for i in self.data["configData"].keys()])) > 0:
             # update reason of failure in misc
-            self.reporter._miscData["Reason_of_failure"] = "Mandatory keys are missing"
+            self.reporter._miscData["Reason_of_failure"] += "Mandatory keys are missing, "
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
             
@@ -82,6 +87,7 @@ class PypRest(Base):
         """This is a function to get the values from configData, store it in self object."""
 
         # capitalize the keys
+        self.logger.info(self.data["configData"])
         for k, v in self.data["configData"].items():
             self.data.update({k.upper(): v})
         self.env = self.data.get("ENV", "PROD").strip(" ").upper()
@@ -96,18 +102,22 @@ class PypRest(Base):
         self.method = self.data["configData"].get("METHOD", "GET")
 
         # get the headers
-        self.headers = self.data["configData"].get("HEADERS", {})
-        self.headers = dict()
+        self.headers = json.loads(self.data["configData"].get("HEADERS", {}))
+
 
         # get body
-        self.body = self.data["configData"].get("BODY", {})
+        self.body = json.loads(self.data["configData"].get("BODY", {}))
 
         # get file
         self.file = self.data["configData"].get("REQUEST_FILE", None)
 
+        # get pre variables, not mandatory
         self.pre_variables = self.data["configData"].get("PRE_VARIABLES", "")
 
         self.key_check = self.data["configData"].get("KEY_CHECK", None)
+
+        self.exp_status_code = self.data["configData"].get("EXPECTED_STATUS_CODE", 200)
+        self.exp_status_code = self.getExpectedStatusCode()
 
         self.post_assertion = self.data["configData"].get("POST_ASSERTION", None)
 
@@ -151,16 +161,28 @@ class PypRest(Base):
         var_replacement(self).variableReplacement()
 
         try:
+            # raise Exception(f"Error occured while sending request- test")
+            self.logger.info("--------------------Executing Request ------------------------")
+            self.logger.info(f"url: {self.req_obj.api}")
+            self.logger.info(f"method: {self.req_obj.method}")
+            self.logger.info(f"request_body: {self.req_obj.body}")
+            self.logger.info(f"headers: {self.req_obj.headers}")
+
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
+            self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
+
             # self.res_obj.response_body
             # self.res_obj.status_code
             # self.res_obj.response_time
             # self.res_obj.response_headers
             self.logResponse()
+            
         except Exception as e:
-            traceback.print_exc()
-            self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
+            self.logger.info(traceback.print_exc())
+            # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
+            self.reporter._miscData["Reason_of_failure"] += f"Some error occurred while sending request- {str(e)}, "
+            raise Exception(f"Error occured while sending request - {str(e)}")
 
     def setVars(self):
         """
@@ -180,7 +202,7 @@ class PypRest(Base):
         self.request_file = None
         self.env = self.data["ENV"]
         self.variables = {}
-        self.category = self.data["configData"]["CATEGORY"]
+        self.category = self.data["configData"].get("CATEGORY", None)
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
@@ -198,6 +220,17 @@ class PypRest(Base):
                              + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
                              + f"<b>RESPONSE BODY</b>: {self.res_obj.response_body}", 
                              status.INFO)
+        if str(self.res_obj.status_code) in self.exp_status_code:
+            self.reporter.addRow("Validating Response Code", 
+                             f"<b>Expected RESPONSE CODE</b>: {self.exp_status_code}</br>" 
+                             + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
+                             status.PASS)
+        else:
+            self.reporter.addRow("Validating Response Code", 
+                             f"<b>Expected RESPONSE CODE</b>: {self.exp_status_code}</br>" 
+                             + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
+                             status.FAIL)
+            self.reporter._miscData["Reason_of_failure"] += "Response code is not as expected, "
 
     def postProcess(self):
         """To be run after API request is sent.
@@ -261,10 +294,9 @@ class PypRest(Base):
             self.extractObj(fin_obj)
             
         except Exception as e:
-            traceback.print_exc()
+            self.logger.info(traceback.print_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.WARN)
         var_replacement(self).variableReplacement()
-        pass
 
     def afterMethod(self):
         """This function
@@ -334,3 +366,14 @@ class PypRest(Base):
         self.legacy_res = obj.legacy_res
         self.file = obj.request_file
         self.env = obj.env
+
+    def getExpectedStatusCode(self):
+        code_list = []
+        if "," in self.exp_status_code:
+            code_list = self.exp_status_code.split(",")
+        if "or" in self.exp_status_code.lower():
+            code_list = self.exp_status_code.lower().split("or")
+        code_list = [each.strip(" ") for each in code_list if each not in ["", " "]]
+        print(code_list)
+        return code_list
+

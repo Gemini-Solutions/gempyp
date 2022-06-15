@@ -69,5 +69,5 @@ class REngine:
 
 if __name__ == "__main__":
     config = XmlConfig('C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest_pyprest.xml')
-    tcname = "REST_COUNTRIES_2"
+    tcname = "GOREST"
     REngine(data=config, tcname=tcname)

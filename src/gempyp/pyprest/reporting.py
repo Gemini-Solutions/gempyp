@@ -15,6 +15,7 @@ def writeToReport(pyprest_obj):
     if not pyprest_obj.reporter.resultFileName:
         try:
             try:
+                pyprest_obj.reporter.finalize_report()   ## need to test
                 os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
             except Exception as e:
                 pyprest_obj.logger.info(traceback.print_exc())
@@ -22,16 +23,16 @@ def writeToReport(pyprest_obj):
                 pyprest_obj.data.get("OUTPUT_FOLDER"), pyprest_obj.reporter.testcaseName + str(time.time()))
             pyprest_obj.jsonData = pyprest_obj.reporter.jsonData
             result = pyprest_obj.reporter.serialize()
-            if pyprest_obj.data["configData"].get("DEBUG_MODE", False).upper() == "TRUE":
+            if pyprest_obj.data["configData"].get("DEBUG_MODE", "FALSE").upper() == "TRUE":
                 # make report
                 try:
-                    makeReport(pyprest_obj, json.dumps(pyprest_obj.reporter.jsonData))
+                    makeReport_pypRest(pyprest_obj, json.dumps(pyprest_obj.reporter.jsonData))
                     pyprest_obj.logger.info("-------file_dumped---------")
                 except Exception as e:
-                    traceback.print_exc()
+                    pyprest_obj.logger.info(str(e))
 
         except Exception as e:
-            traceback.print_exc()
+            pyprest_obj.logger.info(traceback.print_exc())
     output = []
     tempdict = {} 
     tc_run_id = f"{pyprest_obj.tcname}_{uuid.uuid4()}"
@@ -49,12 +50,12 @@ def writeToReport(pyprest_obj):
     all_status = result["jsonData"]["metaData"][2]
     total = 0
     for key in all_status:
-        total = all_status[key]
+        total += all_status[key]
     result["jsonData"]["metaData"][2]["TOTAL"] = total
 
-    # have to look into the way on how to get the log file
+    # getting the log file ( the custom gempyp logger)
     
-    tempdict["log_file"] = pyprest_obj.data["LOG_PATH"]
+    tempdict["log_file"] = pyprest_obj.data.get("LOG_PATH", "N.A")
 
     singleTestcase = {}
     singleTestcase["testcaseDict"] = tempdict
@@ -65,7 +66,7 @@ def writeToReport(pyprest_obj):
     return output
 
 
-def makeReport(obj, jsonData):
+def makeReport_pypRest(obj, jsonData):
         # Create testcase file in the given output folder when in debug mode
 
         index_path = os.path.dirname(__file__)
