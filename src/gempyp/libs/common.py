@@ -1,6 +1,6 @@
 import os
 import json
-import logging as log
+import logging
 from datetime import datetime
 import traceback
 from typing import List, Union
@@ -31,13 +31,13 @@ def findDuration(start_time: datetime, end_time: datetime):
     return f"{round(seconds, 3)} seconds"
 
 
-def errorHandler(logger, Error, msg="some Error Occured"):
+def errorHandler(logging, Error, msg="some Error Occured"):
 
-    logger.error(msg)
-    logger.error(f"Error: {Error}")
+    logging.error(msg)
+    logging.error(f"Error: {Error}")
 
     if DefaultSettings.DEBUG:
-        logger.error(f"TraceBack: {traceback.format_exc()}")
+        logging.error(f"TraceBack: {traceback.format_exc()}")
 
 
 def parseMails(mail: Union[str, typing.TextIO]) -> List:
@@ -55,9 +55,9 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
         mails = mails.split(",")
         return mails
     except Exception as e:
-        log.error("Error while parsing the mails")
-        log.error(f"Error : {e}")
-        log.error(f"traceback: {traceback.format_exc()}")
+        logging.error("Error while parsing the mails")
+        logging.error(f"Error : {e}")
+        logging.error(f"traceback: {traceback.format_exc()}")
         return []
 
 
