@@ -42,7 +42,7 @@ class AbstarctSimpleTestcase(ABC):
         the main function which will be called by the executor
         """
         # set the values from the report if not s et automatically
-        self.logger = testcaseSettings.get('logger')
+        self.logger = testcaseSettings.get('LOGGER')
         Data = []
 
         try:
