@@ -92,7 +92,9 @@ def moduleImports(file_name):
     print("---- file name", file_name)
     try:
         dynamicTestcase = importlib.import_module(file_name)
+        return dynamicTestcase
     except Exception as i:
+        print("Testcase not imported as module, Trying with absolute path")
         try:
             script_path, script_name = importFromPath(file_name)
             script_name = script_name[0:-3]

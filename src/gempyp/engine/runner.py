@@ -17,7 +17,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
     print("------------------ In testcase Runner --------------")
     configData: Dict = testcaseMeta.get("configData")
-    logger = configData.get("logger")
+    logger = configData.get("LOGGER")
     testcaseMeta.pop("configData")
     try:
         fileName = configData.get("PATH")
