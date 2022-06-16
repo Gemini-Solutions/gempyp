@@ -1,0 +1,298 @@
+<data>
+
+    <suite>
+        <mail>test@gmail.com</mail>
+        <project>GemPyp_PYPREST</project>
+        <report_name>feature_regression</report_name>
+        <mode>OPTIMIZE</mode>
+        <env>beta</env>
+        <bridge_token>tokentest</bridge_token>
+    </suite>
+    
+    <testcases>
+
+        <testcase>
+            <name>sample_testcase1</name>
+            <category>sample</category>
+            <run_flag>N</run_flag>
+            <path>tests.sample_testcase.sample1</path>
+            <location>test</location>
+            <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+            <name>REST_COUNTRIES_3</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>$[#method_name]</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#method_name]=GET;set $[#method_second]=10;set $[#suite.func_val]=$[#uuid()];set $[#random]=$[#rand(2,5)]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+        <testcase>
+            <name>REST_COUNTRIES_2</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#method_name]=GET;set $[#method_second]=[10,8,50,0];set $[#SUITE.func_val]=$[#getDateFromNow(4,'ddmmyyyy')]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#suite.func_val];set $[#post_var_meth]=$[#uuid()];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+        <testcase>
+            <name>GOREST</name>
+            <cateory>sample</cateory>
+            <run_flag>Y</run_flag>
+            <api>https://gorest.co.in/public/v2/users</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{"content-type":"application/json","accept":"application/json"}</headers>
+            <expected_status_code>200</expected_status_code>
+            <key_check>keys are response[0].id;</key_check>
+            <pre_variables>set $[#endpoint]="abd"</pre_variables>
+            <post_variable></post_variable>
+            <key_check></key_check>
+            <post_assertion></post_assertion>
+            <locations>tests</locations>
+            <extra_args1></extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+
+        <testcase>
+            <name>GOREST_2</name>
+            <cateory>sample</cateory>
+            <run_flag>Y</run_flag>
+            <api>https://gorest.co.in/public/v2/users</api>
+            <method>POST</method>
+            <body> {        
+                "name": " JOhn",
+                "email": "JOhn@gmail.biz",
+                "gender": "male",
+                "status": "inactive"
+            }</body>
+            <headers>{"content-type":"application/json","accept":"application/json", "Authorization":"Bearer 7cf300a3954980370df0803705cb1fb157b4dea84eecf0f2d206f41d48c4a8b5"}</headers>
+            <expected_status_code>201</expected_status_code>
+            <key_check>keys are response[0].id;</key_check>
+            <pre_variable></pre_variable>
+            <key_check></key_check>
+            <post_assertion></post_assertion>
+            <locations>tests</locations>
+            <extra_args1></extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_1</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#func_val]=$[#uuid()]</pre_variables>
+            <key_check>keys are response[0].name</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_2</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#random]=$[#rand(2,5)];set $[#echotime]=$[#epoch()];set $[#epochmilli]=$[#epoch(milli)];set $[#rand_item]=$[#getRandomFromAlist([5,7])];set $[#abc]=$[#getRandomFromAlist($[#some_var_list])];set $[#var]=$[#unique(5)];set $[#date_val]=$[#curr_timestamp('ddmmyyyy')];set $[#future_val]=$[#getDateFromNow(4,'ddmmyyyy')]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_3</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#echotime]=$[#epoch()]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_4</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#epochmilli]=$[#epoch(milli)];</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_5</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#rand_item]=$[#getRandomFromAlist([5,7])]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_6</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#some_var_list]=[0,9,7];set $[#abc]=$[#getRandomFromAlist($[#some_var_list])]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_7</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#var]=$[#unique(5)]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc></misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_8</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#date_val]=$[#curr_timestamp('ddmmyyyy')]</pre_variables>
+            <key_check></key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc></misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>Test_functions_9</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#future_val]=$[#getDateFromNow(4,'ddmmyyyy')]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+    </testcases>
+
+
+</data>

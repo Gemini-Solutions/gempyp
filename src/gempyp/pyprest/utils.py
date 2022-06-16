@@ -1,0 +1,138 @@
+import json
+import logging as logger
+import ast
+import re
+import gempyp.pyprest.compareFunctions as cf
+
+
+
+def formatRespBody(response_body):
+    """Encode/decode the response body"""
+    if not isinstance(response_body, list):
+        try:
+            formatted_response_body = json.loads(response_body.decode("utf-8"))
+            logger.info("keycheck ----- 1")
+        except Exception:
+            try:
+                formatted_response_body = json.loads(ast.literal_eval(response_body.decode("utf-8")))
+                logger.info("keycheck ----- 2")
+            except Exception:
+                try: 
+                    formatted_response_body = json.loads(str(response_body.encode("utf-8")))
+                    if "b'" in formatted_response_body:
+                        formatted_response_body = formatted_response_body.strip("b'").strip("'")
+                    logger.info("keycheck ----- 3")
+                except Exception:
+                    try:
+                        formatted_response_body = json.loads(response_body)
+                    except Exception as e:
+                        formatted_response_body = response_body
+
+    else:
+        formatted_response_body = response_body
+    return formatted_response_body
+
+
+# not able to implement recursion in case of other 
+def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_value={}):
+    """
+    Get values of the required keys from the response json"""
+
+    logger.info("===========Fetching values from response ============")
+    regex_each = re.compile(r".*\[\beach\b\]")
+    regex_int = re.compile(r".*\[\d+\]")
+    actual_key = ".".join(key_partition_list)
+    flag = 0
+    if key_search_result == "FOUND" or "MISSING IN " in key_search_result:
+        for key in key_partition_list:
+            if re.match(regex_each, key):
+                each_value_list = []
+                br_index = key.find('[')
+                key_val = key[:br_index]
+                if key_val != "response":
+                    json_ = json_[key_val]
+                for each_value in json_:
+                    index_of_key = key_partition_list.index(key)
+                    value_returned = getValuesForEach(each_value, key_partition_list[int(index_of_key) + 1:])
+                    each_value_list.append(value_returned)
+                del key_partition_list[int(index_of_key) + 1:]
+                flag = 1
+            elif re.match(regex_int, key):
+                br_start = key.find('[')
+                br_end = key.find(']')
+                key_val = key[:br_start]
+                key_num = int(key[br_start + 1:br_end])
+                key_num, json_ = getNestedListData(key, json_, key_val)
+
+                if key_val == "response" and isinstance(json_, list):
+                    json_ = json_[key_num]
+                else:
+                    json_ = json_[key_val][key_num]
+            else:
+                if isinstance(json_, str) and json_ != "":
+                    json_ = json.dumps(json_)
+                if json_ != "":
+                    json_ = json_[key]
+                if json_ is None:
+                    json_ = "null"
+        if flag != 1:
+            final_key_value[actual_key] = json_
+        else:
+            final_key_value[actual_key] = each_value_list
+        
+        return final_key_value
+   
+def getValuesForEach(each_value_dict, keys_to_fetch):
+    """Getting values in case of "each operator" """
+    logger.info(f"Keys to be fetched from response - {keys_to_fetch}")
+    for key in keys_to_fetch():
+        if key in each_value_dict:
+            each_value_dict = each_value_dict[key]
+            if each_value_dict is None:
+                each_value_dict = "null"
+                break
+        else:
+            return "not found"
+    return each_value_dict
+
+
+def getNestedListData(i, json_data, key_val):
+    br_start = i.find('[')
+    br_end = i.find(']')
+    key_num = int(i[br_start + 1:br_end])
+    if key_val.lower() == 'response':
+        if isinstance(json_data[key_num], list):
+            i = i[br_end + 1:]
+            json_data = json_data[key_num]
+            return getNestedListData(i, json_data, key_val)
+        else:
+            return key_num, json_data
+    else:
+        if isinstance(json_data[key_val][key_num], list):
+            i = i[br_end + 1:]
+            json_data = json_data[key_val][key_num]
+            return getNestedListData(i, json_data, key_val)
+        else:
+            return key_num, json_data
+
+def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1):
+
+    # operators ----- to, notto, not_to, not to, contains, in, except
+    gp = reporter_obj
+
+    dispatch = {
+        'to': cf.compare_to,
+        'notto': cf.compare_notto,
+        'not_to': cf.compare_notto,
+        'in': cf.compare_in,
+        'notin': cf.compare_notin,
+        'not_in': cf.compare_notin,
+        'contains': cf.compare_contains,
+        'not_supported': cf.no_operator,
+    }
+    if operator in list(dispatch.keys()):
+        return dispatch[operator](gp, key, value, key_val_dict, tolerance)
+    else:
+        return dispatch["not_supported"](gp)
+    
+

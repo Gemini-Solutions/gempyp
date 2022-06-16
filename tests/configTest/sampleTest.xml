@@ -14,8 +14,8 @@
         <testcase>
         <name>sample_testcase1</name>
         <category>sample</category>
-        <run_flag>N</run_flag>
-        <path>C:\gemecosystem\pygem\tests\sample_testcase\sample1.py</path>
+        <run_flag>Y</run_flag>
+        <path>C:\gempyp\tests\sample_testcase\sample1.py</path>
         <location>test</location>
         <type>gempyp</type>
         <extra_args1>hello</extra_args1>
@@ -24,7 +24,17 @@
 
 
         <testcase>
-        <name>sample_testcase2</name>
+        <name>sample_exception</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.except_sample</path>
+        <location>test</location>
+        <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>sample_testcase3</name>
         <category>sample</category>
         <run_flag>Y</run_flag>
         <path>sample_testcase.sample1</path>

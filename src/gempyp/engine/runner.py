@@ -1,13 +1,15 @@
+import logging
 import inspect
 import sys
 import os
+import traceback
 import uuid
 from typing import Dict, List, Tuple
-import logging
 import importlib
 from gempyp.libs import common
 from gempyp.engine.gempypHelper import Gempyp
 from gempyp.libs.common import moduleImports
+
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
@@ -15,11 +17,14 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
     print("------------------ In testcase Runner --------------")
     configData: Dict = testcaseMeta.get("configData")
+    logger = configData.get("logger")
     testcaseMeta.pop("configData")
     try:
         fileName = configData.get("PATH")
+
         dynamicTestcase = moduleImports(fileName)
         print("-----------------------------------------------------------")
+
         try:
             # TODO update the confidData to contain some default values
             # GEMPYPFOLDER
@@ -33,8 +38,10 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                     issubclass(cls, Gempyp)
                     and name != "Gempyp"
                 ):
+
                     print("------- In subclass check --------")
                     ResultData = cls().RUN(cls, configData, **testcaseMeta)
+
                     break
             # testcase has successfully ran
             # make the output Dictt
@@ -43,7 +50,13 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 tempdict = {}
                 # TODO
                 # MAKE the TC_RUNID
-                tc_run_id = f"{data['NAME']}_{uuid.uuid4()}"
+                unique_id = uuid.uuid4()
+                try:
+                    if os.environ.get('unique_id'):
+                        unique_id = os.environ.get('unique_id')
+                except Exception:
+                    traceback.print_exc()
+                tc_run_id = f"{data['NAME']}_{unique_id}"
                 tempdict["tc_run_id"] = tc_run_id
                 tempdict["name"] = data["NAME"]
                 tempdict["category"] = configData.get("CATEGORY")
@@ -60,28 +73,28 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 total = 0
                 for key in all_status:
                     total = total + all_status[key]
-                # print("-------------- total", total)
                 data["jsonData"]["metaData"][2]["TOTAL"] = total
 
                 # have to look into the way on how to get the log file
-                tempdict["log_file"] = None
+                try:
+                    log_file = os.path.join(os.environ.get('log_dir'),data['NAME']+'_'+unique_id+'.log')
+                except Exception:
+                    log_file = None
+                tempdict["log_file"] = log_file 
 
                 singleTestcase = {}
                 singleTestcase["testcaseDict"] = tempdict
                 singleTestcase["misc"] = data.get("MISC")
                 singleTestcase["jsonData"] = data.get("jsonData")
-                # print("-------------- singleTestcase\n ", tempdict, "\n--------")
                 output.append(singleTestcase)
-
             return output, None
 
         except Exception as e:
-            common.errorHandler(logging, e, "Error occured while running the testcas")
+            logger.error("Error occured while running the testcase: {e}".format(e=e))
             return None, getError(e, configData)
  
     except Exception as e:
-        common.errorHandler(logging, e, "Some Error occured while making the testcase")
-
+        logger.error("Some Error occured while making the testcase: {e}".format(e=e))
         return None, getError(e, configData)
 
 
@@ -92,5 +105,6 @@ def getError(error, configData: Dict) -> Dict:
     error["message"] = str(error)
     error["product_type"] = "GEMPYP"
     error["category"] = configData.get("CATEGORY", None)
+    error['log_path'] = configData.get('log_path', None)
 
     return error
