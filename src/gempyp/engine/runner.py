@@ -7,7 +7,7 @@ import logging
 import importlib
 from gempyp.libs import common
 from gempyp.engine.gempypHelper import Gempyp
-from gempyp.libs.common import module_imports
+from gempyp.libs.common import moduleImports
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
@@ -18,7 +18,7 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     testcaseMeta.pop("configData")
     try:
         fileName = configData.get("PATH")
-        dynamicTestcase = module_imports(fileName)
+        dynamicTestcase = moduleImports(fileName)
         print("-----------------------------------------------------------")
         try:
             # TODO update the confidData to contain some default values
