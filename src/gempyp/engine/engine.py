@@ -25,6 +25,10 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     """
     calls the differnt executors based on the type of the data
     """
+
+    print("-------------- In Executor Factory --------------------\n")
+    # print("!!!!!!!!!!!!!!", data["configData"]["TYPE"])
+
     if not custom_logger:
         log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.log')
@@ -32,6 +36,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     data['configData']['LOGGER'] = custom_logger
     if 'log_path' not in data['configData']:
         data['configData']['LOG_PATH'] = log_path
+
 
     if "TYPE" not in data["configData"] or data["configData"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
@@ -150,7 +155,7 @@ class Engine:
 
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-            elif self.PARAMS["MODE"].upper() == "OPTIMIZE":
+            elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
                 self.startParallel()
             else:
                 raise TypeError("mode can only be sequence or optimize")

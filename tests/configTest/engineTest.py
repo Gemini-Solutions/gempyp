@@ -6,7 +6,7 @@ def test():
 
     config = XmlConfig("C:\\gempyp\\tests\\configTest\\sampleTest.xml")
 
-    print(type(config))
+    print(type(config), config, vars(config), dir(config))
     
     Engine(config)
 

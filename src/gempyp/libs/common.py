@@ -6,6 +6,8 @@ import traceback
 from typing import List, Union
 import typing
 from gempyp.config import DefaultSettings
+import importlib
+import sys
 
 
 def read_json(file_path):
@@ -68,3 +70,35 @@ class dateTimeEncoder(json.JSONEncoder):
             return o.timestamp()*1000
 
         return json.JSONEncoder.default(self, o)
+
+
+# absolute path path.... moved to file from runner due to circular import issue
+# runner -> gempyp -> abstractsimpletestcase -> runner
+def importFromPath(file_name):
+    print("--------- In import from path ----------")
+    if os.name == 'nt':
+        path_arr = (file_name.split("\\"))
+        print(path_arr)
+    else:
+        path_arr = filename.split("/")
+    file = path_arr[-1]
+    print("------------------", file)
+    path_arr.remove(file)
+    path_cd = '/'.join(path_arr)
+    print("-------------", path_cd, "---------", file_name)
+    return path_cd, file
+
+def moduleImports(file_name):
+    print("---- file name", file_name)
+    try:
+        dynamicTestcase = importlib.import_module(file_name)
+    except Exception as i:
+        try:
+            script_path, script_name = importFromPath(file_name)
+            script_name = script_name[0:-3]
+            sys.path.append(script_path)
+            dynamicTestcase = importlib.import_module(script_name)
+            return dynamicTestcase
+        except Exception as e:
+            print("Error occured while running from absolute path")
+            return e
