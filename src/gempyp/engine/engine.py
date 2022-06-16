@@ -22,6 +22,7 @@ from gempyp.pyprest.pyprest import PypRest
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
+    
     """
     calls the differnt executors based on the type of the data
     """
@@ -35,6 +36,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         data['configData']['logger'] = custom_logger
         if 'log_path' not in data['configData']:
             data['configData']['log_path'] = log_path
+        
         return testcaseRunner(data)
 
     elif data["configData"].get("TYPE").upper() == "DVM":
@@ -184,8 +186,8 @@ class Engine:
         """
         for testcase in self.CONFIG.getTestcaseConfig():
             data = self.getTestcaseData(testcase)
-            log_path = os.path.join(self.CONFIG['SUITE_DATA']['LOG_DIR'],
-            data['configData'].get('NAME')+'_'+self.CONFIG['SUITE_DATA']['UNIQUE_ID']+'.log')
+            log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
+            data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID']+'.log')
             custom_logger = my_custom_logger(log_path)
             data['configData']['log_path'] = log_path
             #LoggingConfig(data['configData'].get('NAME')+'.log')
