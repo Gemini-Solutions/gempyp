@@ -6,60 +6,36 @@ from typing import Dict, List, Tuple
 import logging
 import importlib
 from gempyp.libs import common
-from gempyp.engine.simpleTestcase import AbstarctSimpleTestcase
-
-def import_from_path(filename):
-    if os.name == 'nt':
-        path_arr = (filename.split("\\"))
-    else:
-        path_arr = filename.split("/")
-    file = path_arr[-1]
-    print("------------------", file)
-    path_arr.remove(file)
-    path_cd = '/'.join(path_arr)
-    print("-------------", path_cd, "---------", filename)
-    return path_cd, file
+from gempyp.engine.gempypHelper import Gempyp
+from gempyp.libs.common import module_imports
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
     actually imports the testcase functions and run the functions
     """
+    print("------------------ In testcase Runner --------------")
     configData: Dict = testcaseMeta.get("configData")
     testcaseMeta.pop("configData")
     try:
         fileName = configData.get("PATH")
-
-        try:
-            dynamicTestcase = importlib.import_module(fileName)
-        except ImportError as i:
-            # common.errorHandler(logging, i, "testcase file could not be imported, trying with absolute path")
-            try:
-                script_path, script_name = import_from_path(fileName)
-                script_name = script_name[0:-3]
-                sys.path.append(script_path)
-                dynamicTestcase = importlib.import_module(script_name)
-                # print("!!!!!!!!!!!!!!", exec("import " + str(script_name)))
-                # ResultData = dynamicTestcase.sample1().RUN(configData, **testcaseMeta)
-            except ImportError as i:
-                common.errorHandler(logging, i, "testcase file could not be imported")
-                return None, getError(i, configData)
-
+        dynamicTestcase = module_imports(fileName)
+        print("-----------------------------------------------------------")
         try:
             # TODO update the confidData to contain some default values
             # GEMPYPFOLDER
             allClasses = inspect.getmembers(dynamicTestcase, inspect.isclass)
+            # print("!!!!!!!!!!! allclasses \n", allClasses, "\n!!!!!!!!!!!!!!")
 
             for name, cls in allClasses:
                 # currently running only one class easily extensible to run multiple classes
                 # from single file
                 if (
-                    issubclass(cls, AbstarctSimpleTestcase)
-                    and name != "AbstarctSimpleTestcase"
+                    issubclass(cls, Gempyp)
+                    and name != "Gempyp"
                 ):
-                    print("-------------", name, "------------", cls)
-                    ResultData = cls().RUN(configData, **testcaseMeta)
+                    print("------- In subclass check --------")
+                    ResultData = cls().RUN(cls, configData, **testcaseMeta)
                     break
-
             # testcase has successfully ran
             # make the output Dictt
             output = []

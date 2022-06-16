@@ -22,7 +22,7 @@ def executorFactory(data: Dict) -> Tuple[List, Dict]:
     """
     calls the differnt executors based on the type of the data
     """
-    print("------------ Executor Factory\n", )
+    print("-------------- In Executor Factory --------------------\n")
     # print("!!!!!!!!!!!!!!", data["configData"]["TYPE"])
     if "TYPE" not in data["configData"] or data["configData"].get("TYPE").upper() == "GEMPYP":
         logging.info("starting the GemPyP testcases")
@@ -139,7 +139,7 @@ class Engine:
 
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-            elif self.PARAMS["MODE"].upper() == "OPTIMIZE":
+            elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
                 self.startParallel()
             else:
                 raise TypeError("mode can only be sequence or optimize")
