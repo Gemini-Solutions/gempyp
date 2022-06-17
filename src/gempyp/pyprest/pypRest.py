@@ -45,10 +45,14 @@ class PypRest(Base):
                 self.validateConf()
                 self.run()
             except Exception as e:
-                self.logger.error(str(e))
-                self.logger.error(traceback.print_exc())
-                self.reporter._miscData["Reason_of_failure"] += f"Something went wrong:- {str(e)}, "
-                self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
+                if str(e) == "abort":
+                    self.logger.info("aborting execution")
+                else:
+                    self.logger.error(str(e))
+                    traceback.print_exc()
+                    self.logger.error(traceback.print_exc())
+                    self.reporter._miscData["Reason_of_failure"] += f"Something went wrong:- {str(e)}, "
+                    self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
             output = writeToReport(self)
             return output, None
         except Exception as e:
@@ -220,17 +224,19 @@ class PypRest(Base):
                              + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
                              + f"<b>RESPONSE BODY</b>: {self.res_obj.response_body}", 
                              status.INFO)
-        if str(self.res_obj.status_code) in self.exp_status_code:
+        if self.res_obj.status_code in self.exp_status_code:
             self.reporter.addRow("Validating Response Code", 
-                             f"<b>Expected RESPONSE CODE</b>: {self.exp_status_code}</br>" 
+                             f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                              + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                              status.PASS)
         else:
             self.reporter.addRow("Validating Response Code", 
-                             f"<b>Expected RESPONSE CODE</b>: {self.exp_status_code}</br>" 
+                             f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                              + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                              status.FAIL)
             self.reporter._miscData["Reason_of_failure"] += "Response code is not as expected, "
+            self.logger.info("status codes did not match, aborting testcase.....")
+            raise Exception("abort")
 
     def postProcess(self):
         """To be run after API request is sent.
@@ -370,10 +376,13 @@ class PypRest(Base):
     def getExpectedStatusCode(self):
         code_list = []
         if "," in self.exp_status_code:
-            code_list = self.exp_status_code.split(",")
-        if "or" in self.exp_status_code.lower():
-            code_list = self.exp_status_code.lower().split("or")
-        code_list = [each.strip(" ") for each in code_list if each not in ["", " "]]
-        print(code_list)
+            code_list = self.exp_status_code.strip('"').strip("'").split(",")
+        elif "or" in self.exp_status_code.lower():
+            code_list = self.exp_status_code.strip('"').strip("'").lower().split("or")
+        else:
+            code_list = [self.exp_status_code.strip("'").strip(" ").strip('"')]
+        code_list = [int(each.strip(" ")) for each in code_list if each not in ["", " "]]
+        self.logger.info(code_list)
+        print(" ++++++++++++++++++++++++++++++++")
         return code_list
 

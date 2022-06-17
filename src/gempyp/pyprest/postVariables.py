@@ -53,7 +53,7 @@ class PostVariables:
                         # if result is not "FOUND" then can't set value
                         if result.upper() != "FOUND":
                             self.logger.info("====== Key Not Found in response =======")
-                            self.logger.info("'" + key + "' is not found")
+                            self.logger.info("'" + each_item[1] + "' is not found")
 
                             # check predefined functions
                             self.pyprest_obj.variables[scope][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1])
