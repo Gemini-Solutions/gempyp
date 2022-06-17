@@ -19,7 +19,6 @@ def argParser():
     return args
 
 
-def test():
 import os
 
 def test():
