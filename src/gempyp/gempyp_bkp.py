@@ -3,6 +3,7 @@ from distutils.command.config import config
 from gempyp.config.xmlConfig import XmlConfig
 from gempyp.engine.engine import Engine
 import argparse
+from src.gempyp.config.xmlConfig import XmlConfig
 
 def argParser():
 
@@ -19,13 +20,7 @@ def argParser():
     return args
 
 
-import os
-
 def test():
-
-    config = XmlConfig("C:\\gempyp\\tests\\configTest\\sampleTest.xml")
-
-    print(type(config), config, vars(config), dir(config))
     
     args = argParser()
     
@@ -38,7 +33,5 @@ def test():
     config.update()
 
     Engine(config)
-
-    
 if __name__ == "__main__":
     test()

@@ -2,32 +2,52 @@ from abc import ABC, abstractmethod
 from typing import List, Union, Dict
 from gempyp.config import DefaultSettings
 from gempyp.engine.baseTemplate import testcaseReporter
+from gempyp.libs.common import moduleImports
 import sys,traceback
 from gempyp.libs.enums.status import status
 import logging
 
+
 class AbstarctSimpleTestcase(ABC):
-    @abstractmethod
-    def main(
-        self, testcaseSettings: Dict, **kwargs
-    ) -> Union[testcaseReporter, List[testcaseReporter]]:
+    def gempypMethodExecutor(
+        self, cls, testcaseSettings: Dict, **kwargs
+    ) -> testcaseReporter:
         """
         extend the baseTemplate and implement this method.
         :param testcaseSettings: testcasesettings object created from the testcase config
         :return
         """
-        pass
+        file_name = testcaseSettings.get("PATH")
+        try:
+            testcase = moduleImports(file_name)
+        except:
+            logging.ERROR("Testcase not imported")
+        try:
+            methodName = testcaseSettings.get("METHOD", "main")
+            print("-------- method ---------", methodName)
+            try:
+                methodName = getattr(cls(), methodName)
+                report = methodName()
+                return report
+            except Exception as err:
+                logging.info("Could not run the method")
+                
+        except Exception as e:                
+            print(e)
+            
+        
 
-    def RUN(self, testcaseSettings: Dict, **kwargs) -> List:
+    def RUN(self, cls, testcaseSettings: Dict, **kwargs) -> List:
         """
         the main function which will be called by the executor
         """
         # set the values from the report if not s et automatically
-        self.logger = testcaseSettings.get('logger')
+        self.logger = testcaseSettings.get('LOGGER')
         Data = []
+
         try:
             self.logger.info('=================Running Testcase: {testcase} ============'.format(testcase=testcaseSettings["NAME"]))
-            reports = self.main(testcaseSettings, **kwargs)
+            reports = self.gempypMethodExecutor(cls, testcaseSettings, **kwargs)
             if reports is None:
                 reports = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
                 self.logger.error("Report object was not returned from the testcase file")

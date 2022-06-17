@@ -19,6 +19,7 @@
         <location>test</location>
         <type>gempyp</type>
         <extra_args1>hello</extra_args1>
+        <run_method>main</run_method>
         </testcase>
 
 
@@ -36,9 +37,31 @@
         <name>sample_testcase3</name>
         <category>sample</category>
         <run_flag>Y</run_flag>
-        <path>tests.sample_testcase.sample1</path>
+        <path>sample_testcase.sample1</path>
         <location>test</location>
         <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>sample_testcase3</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>C:\gemecosystem\pygem\tests\sample_testcase\sample2.py</path>
+        <location>test</location>
+        <method>verify</method>
+        <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>sample_testcase4</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>C:\gemecosystem\pygem\tests\sample_testcase\sample2.py</path>
+        <location>test</location>
+        <type>gempyp</type>
+        <method>Main</method>
         <extra_args1>hello</extra_args1>
         </testcase>
         

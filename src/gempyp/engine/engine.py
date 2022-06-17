@@ -8,7 +8,7 @@ from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
 from datetime import datetime, timezone
-from tomlkit import date
+# from tomlkit import date
 from gempyp.config.baseConfig import abstarctBaseConfig
 from gempyp.engine.testData import testData
 from gempyp.libs.enums.status import status
@@ -18,7 +18,7 @@ from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import LoggingConfig, my_custom_logger
 from gempyp.engine import dataUpload
-from gempyp.pyprest.pyprest import PypRest
+from gempyp.pyprest.pypRest import PypRest
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -26,17 +26,22 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     """
     calls the differnt executors based on the type of the data
     """
+
+    print("-------------- In Executor Factory --------------------\n")
+    # print("!!!!!!!!!!!!!!", data["configData"]["TYPE"])
+
+    if not custom_logger:
+        log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
+        + os.environ.get('unique_id') + '.log')
+        custom_logger = my_custom_logger(log_path)
+    data['configData']['LOGGER'] = custom_logger
+    if 'log_path' not in data['configData']:
+        data['configData']['LOG_PATH'] = log_path
+
+
     if "TYPE" not in data["configData"] or data["configData"].get("TYPE").upper() == "GEMPYP":
-        #custom_logger.setLevel(logging.INFO)
-        if not custom_logger:
-            log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME')+'_'
-            +os.environ.get('unique_id')+'.log')
-            custom_logger = my_custom_logger(log_path)
         custom_logger.info("starting the GemPyP testcase")
-        data['configData']['logger'] = custom_logger
-        if 'log_path' not in data['configData']:
-            data['configData']['log_path'] = log_path
-        
+        #custom_logger.setLevel(logging.INFO)
         return testcaseRunner(data)
 
     elif data["configData"].get("TYPE").upper() == "DVM":
@@ -44,7 +49,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         logging.info("starting the DVM testcase")
     elif data["configData"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
-        logging.info("starting the resttest testcase")
+        custom_logger.info("starting the PYPREST testcase")
         try:
             return PypRest(data).restEngine()
         except Exception as e:
@@ -151,7 +156,7 @@ class Engine:
 
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-            elif self.PARAMS["MODE"].upper() == "OPTIMIZE":
+            elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
                 self.startParallel()
             else:
                 raise TypeError("mode can only be sequence or optimize")
@@ -186,8 +191,9 @@ class Engine:
         """
         for testcase in self.CONFIG.getTestcaseConfig():
             data = self.getTestcaseData(testcase)
+            print(self.CONFIG.getSuiteConfig())
             log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
-            data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID']+'.log')
+            data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
             custom_logger = my_custom_logger(log_path)
             data['configData']['log_path'] = log_path
             #LoggingConfig(data['configData'].get('NAME')+'.log')
@@ -459,9 +465,16 @@ class Engine:
         self.repSummary()
     
     def repSummary(self):
-        logging.info("---------- Finalised the report --------------")
-        logging.info("============== Run Summary =============")
-        count_info = self.repJson['Suits_Details']['Testcase_Info']
-        logging.info("Total Testcases: {testcase_count} | Passed Testcases: {_pass} | Failed Testcases: {_fail}"
-        .format(testcase_count=count_info['total'], _pass=count_info['total']-count_info['FAIL'], _fail=count_info['FAIL']))
-        logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
+        try:
+            logging.info("---------- Finalised the report --------------")
+            logging.info("============== Run Summary =============")
+            count_info = {key.lower(): val for key, val in self.repJson['Suits_Details']['Testcase_Info'].items()}
+            log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
+            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
+            for key, val in count_info.items():
+                if key in status_dict.keys():
+                    log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
+            logging.info(log_str.strip(" | "))
+            logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
+        except Exception as e:
+            logging.error(traceback.print_exc(e))
