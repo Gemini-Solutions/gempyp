@@ -22,10 +22,6 @@ def argParser():
 import os
 
 def test():
-
-    config = XmlConfig("C:\\gempyp\\tests\\configTest\\sampleTest.xml")
-
-    print(type(config), config, vars(config), dir(config))
     
     args = argParser()
     
