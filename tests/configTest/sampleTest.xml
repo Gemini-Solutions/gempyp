@@ -15,7 +15,7 @@
         <name>sample_testcase1</name>
         <category>sample</category>
         <run_flag>Y</run_flag>
-        <path>C:\gempyp\tests\sample_testcase\sample1.py</path>
+        <path>tests.sample_testcase.sample1</path>
         <location>test</location>
         <type>gempyp</type>
         <extra_args1>hello</extra_args1>
@@ -74,7 +74,7 @@
 <!-- <testcase>
             <name>REST_COUNTRIES_2</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>n</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>

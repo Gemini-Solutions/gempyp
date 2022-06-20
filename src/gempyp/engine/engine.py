@@ -22,6 +22,7 @@ from gempyp.pyprest.pypRest import PypRest
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
+    
     """
     calls the differnt executors based on the type of the data
     """

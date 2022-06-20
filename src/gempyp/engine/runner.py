@@ -77,7 +77,8 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
 
                 # have to look into the way on how to get the log file
                 try:
-                    log_file = os.path.join(os.environ.get('log_dir'),data['NAME']+'_'+unique_id+'.log')
+                    # log_file = os.path.join(os.environ.get('log_dir'),data['NAME']+'_'+unique_id+'.log')
+                    log_file= os.path.join('../../logs',data['NAME']+'_'+unique_id+'.log')
                 except Exception:
                     log_file = None
                 tempdict["log_file"] = log_file 
