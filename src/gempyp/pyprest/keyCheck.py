@@ -123,10 +123,13 @@ class KeyCheck:
             # example  response[0].data, data[0].color etc
 
             elif re.match(self.regex_int, each):
+                print("==========================   0    ++++++++++++++++++++++++++")
+                print(json_data)
                 br_start = each.find('[')
                 br_end = each.find(']')
                 key_val = each[:br_start]
                 key_num = int(each[br_start + 1:br_end])
+                print("==========================   1    ++++++++++++++++++++++++++")
                 key_num, json_data = utils.getNestedListData(each, json_data, key_val)
 
                 # for response[0].something

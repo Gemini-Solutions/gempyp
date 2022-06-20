@@ -382,7 +382,5 @@ class PypRest(Base):
         else:
             code_list = [self.exp_status_code.strip("'").strip(" ").strip('"')]
         code_list = [int(each.strip(" ")) for each in code_list if each not in ["", " "]]
-        self.logger.info(code_list)
-        print(" ++++++++++++++++++++++++++++++++")
         return code_list
 

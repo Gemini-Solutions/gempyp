@@ -26,6 +26,7 @@ class PostAssertion:
             key_str = []
             for each in post_ass_str_list:
                 key_str.append(str(list(str(each).split(" "))[1]))
+            key_str = list(set(key_str))
             assertion_list = self.getAssertionDict(post_ass_str_list)  # list of dictionaries of operator and values for keys
             # get a string of comma separated keys
 
