@@ -28,6 +28,7 @@ class abstarctBaseConfig(ABC):
 
     def getTestcaseData(self, testcaseName: str) -> Dict:
         return self._CONFIG["TESTCASE_DATA"].get(testcaseName, None)
+    
 
     def getTestcaseLength(self) -> int:
         return len(self._CONFIG.get("TESTCASE_DATA", []))

@@ -32,14 +32,15 @@ class VariableReplacement:
         varName = var_name.strip("$[#]")
         try:
             if "SUITE." in varName.upper():
-                varValue = self.suite_pre_variables[varName.replace(".", "_")]
+                varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
+                
             else:
                 varValue = self.local_pre_variables[varName]
                 # suite_variables
                 # varValue = self.local_pre_variables[varName]
         except:
             return "Null"
-        str_val = var_name.replace("$[#"+varName+"]",varValue)
+        str_val = var_name.replace("$[#"+varName+"]", str(varValue))
         if "$[#" not in str_val:
             return str(str_val) 
         if "$[#" or "$" in str_val:
@@ -80,5 +81,5 @@ class VariableReplacement:
         return data
 
     def variableReplacement(self):
-        # print(self.local_pre_variables)
-        data = self.updateDataDictionary(self.pyprest_obj.__dict__)
+        self.updateDataDictionary(self.pyprest_obj.__dict__)
+        

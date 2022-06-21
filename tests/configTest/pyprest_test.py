@@ -4,7 +4,7 @@ from gempyp.engine.engine import Engine
 
 def test():
 
-    config = XmlConfig("C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest_pyprest.xml")
+    config = XmlConfig("C:\\Users\\ar.mishra\\gempyp\\tests\\configTest\\sample_test_variables.xml")
     
     Engine(config)
 

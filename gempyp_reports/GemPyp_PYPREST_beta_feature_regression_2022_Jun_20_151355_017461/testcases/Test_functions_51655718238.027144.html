@@ -1,0 +1,315 @@
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+  <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+
+  </script>
+  <style>
+      table{
+          font-size:13px !important
+      }
+      .table-fit {
+    width: 1px;
+}
+.filterHead{
+   border-radius: 1rem;
+}
+.head{
+    background-color:#375A64;
+    color: white;
+}
+.statusColorPass{
+    background-color:green !important;
+    color: white !important;
+}
+.statusColorInfo{
+    background-color:grey !important;
+}
+  </style>
+  <body onload="constructTables()"> 
+ 
+        <div class="container-fluid">
+          <div class="mt-3 text-center">
+              <div class="card" style="border: 1px groove black;">
+         <h4 class="my-4"><b>GEMINI QA AUTOMATED TEST EXECUTION REPORT</b></h4>
+         <h5 id="subheading" style="color: grey;"><b>
+             <span id="subHead"></span>
+             <span>(Automation Testing)</span>
+             </b>
+         </h5>
+         <div class="d-flex flex-wrap justify-content-around" id="tableRow">
+</div>
+<div class="d-flex flex-wrap justify-content-evenly" id="filters">
+</div>
+<div class="d-flex flex-wrap justify-content-evenly" id="lowerTable">
+</div>
+          </div>
+        </div>
+
+        </body>
+        <script>
+var obj = '{"Header": "Gemini Report", "steps": [{"title": "Starting Test", "description": "Testcase Name: Test_functions_5", "status": "INFO"}, {"title": "Executing the REST Endpoint", "description": "<b>URL</b>: https://restcountries.com/v3.1/lang/german</br><b>METHOD</b>: GET</br><b>REQUEST HEADERS</b>: {}", "status": "PASS"}, {"title": "Searching for pre API steps", "description": "No Pre API steps found", "status": "INFO"}, {"title": "Details of Request Execution", "description": "<b>RESPONSE CODE</b>: 200</br><b>RESPONSE HEADERS</b>: {'Date': 'Mon, 20 Jun 2022 09:41:08 GMT', 'Server': 'Apache/2.4.38 (Debian)', 'Content-Type': 'application/json', 'content-encoding': 'gzip', 'content-length': '4200', 'Keep-Alive': 'timeout=5, max=100', 'Connection': 'Keep-Alive'}</br><b>RESPONSE BODY</b>: [{\"name\":{\"common\":\"Germany\",\"official\":\"Federal Republic of Germany\",\"nativeName\":{\"deu\":{\"official\":\"Bundesrepublik Deutschland\",\"common\":\"Deutschland\"}}},\"tld\":[\".de\"],\"cca2\":\"DE\",\"ccn3\":\"276\",\"cca3\":\"DEU\",\"cioc\":\"GER\",\"independent\":true,\"status\":\"officially-assigned\",\"unMember\":true,\"currencies\":{\"EUR\":{\"name\":\"Euro\",\"symbol\":\"\u20ac\"}},\"idd\":{\"root\":\"+4\",\"suffixes\":[\"9\"]},\"capital\":[\"Berlin\"],\"altSpellings\":[\"DE\",\"Federal Republic of Germany\",\"Bundesrepublik Deutschland\"],\"region\":\"Europe\",\"subregion\":\"Western Europe\",\"languages\":{\"deu\":\"German\"},\"translations\":{\"ara\":{\"official\":\"\u062c\u0645\u0647\u0648\u0631\u064a\u0629 \u0623\u0644\u0645\u0627\u0646\u064a\u0627 \u0627\u0644\u0627\u062a\u062d\u0627\u062f\u064a\u0629\",\"common\":\"\u0623\u0644\u0645\u0627\u0646\u064a\u0627\"},\"ces\":{\"official\":\"Spolkov\u00e1 republika N\u011bmecko\",\"common\":\"N\u011bmecko\"},\"cym\":{\"official\":\"Federal Republic of Germany\",\"common\":\"Germany\"},\"deu\":{\"official\":\"Bundesrepublik Deutschland\",\"common\":\"Deutschland\"},\"est\":{\"official\":\"Saksamaa Liitvabariik\",\"common\":\"Saksamaa\"},\"fin\":{\"official\":\"Saksan liittotasavalta\",\"common\":\"Saksa\"},\"fra\":{\"official\":\"R\u00e9publique f\u00e9d\u00e9rale d'Allemagne\",\"common\":\"Allemagne\"},\"hrv\":{\"official\":\"Njema\u010dka Federativna Republika\",\"common\":\"Njema\u010dka\"},\"hun\":{\"official\":\"N\u00e9met Sz\u00f6vets\u00e9gi K\u00f6zt\u00e1rsas\u00e1g\",\"common\":\"N\u00e9metorsz\u00e1g\"},\"ita\":{\"official\":\"Repubblica federale di Germania\",\"common\":\"Germania\"},\"jpn\":{\"official\":\"\u30c9\u30a4\u30c4\u9023\u90a6\u5171\u548c\u56fd\",\"common\":\"\u30c9\u30a4\u30c4\"},\"kor\":{\"official\":\"\ub3c5\uc77c \uc5f0\ubc29 \uacf5\ud654\uad6d\",\"common\":\"\ub3c5\uc77c\"},\"nld\":{\"official\":\"Bondsrepubliek Duitsland\",\"common\":\"Duitsland\"},\"per\":{\"official\":\"\u062c\u0645\u0647\u0648\u0631\u06cc \u0641\u062f\u0631\u0627\u0644 \u0622\u0644\u0645\u0627\u0646\",\"common\":\"\u0622\u0644\u0645\u0627\u0646\"},\"pol\":{\"official\":\"Republika Federalna Niemiec\",\"common\":\"Niemcy\"},\"por\":{\"official\":\"Rep\u00fablica Federal da Alemanha\",\"common\":\"Alemanha\"},\"rus\":{\"official\":\"\u0424\u0435\u0434\u0435\u0440\u0430\u0442\u0438\u0432\u043d\u0430\u044f \u0420\u0435\u0441\u043f\u0443\u0431\u043b\u0438\u043a\u0430 \u0413\u0435\u0440\u043c\u0430\u043d\u0438\u044f\",\"common\":\"\u0413\u0435\u0440\u043c\u0430\u043d\u0438\u044f\"},\"slk\":{\"official\":\"Nemeck\u00e1 spolkov\u00e1 republika\",\"common\":\"Nemecko\"},\"spa\":{\"official\":\"Rep\u00fablica Federal de Alemania\",\"common\":\"Alemania\"},\"swe\":{\"official\":\"F\u00f6rbundsrepubliken Tyskland\",\"common\":\"Tyskland\"},\"urd\":{\"official\":\"\u0648\u0641\u0627\u0642\u06cc \u062c\u0645\u06c1\u0648\u0631\u06cc\u06c1 \u062c\u0631\u0645\u0646\u06cc\",\"common\":\"\u062c\u0631\u0645\u0646\u06cc\"},\"zho\":{\"official\":\"\u5fb7\u610f\u5fd7\u8054\u90a6\u5171\u548c\u56fd\",\"common\":\"\u5fb7\u56fd\"}},\"latlng\":[51.0,9.0],\"landlocked\":false,\"borders\":[\"AUT\",\"BEL\",\"CZE\",\"DNK\",\"FRA\",\"LUX\",\"NLD\",\"POL\",\"CHE\"],\"area\":357114.0,\"demonyms\":{\"eng\":{\"f\":\"German\",\"m\":\"German\"},\"fra\":{\"f\":\"Allemande\",\"m\":\"Allemand\"}},\"flag\":\"\\uD83C\\uDDE9\\uD83C\\uDDEA\",\"maps\":{\"googleMaps\":\"https://goo.gl/maps/mD9FBMq1nvXUBrkv6\",\"openStreetMaps\":\"https://www.openstreetmap.org/relation/51477\"},\"population\":83240525,\"gini\":{\"2016\":31.9},\"fifa\":\"GER\",\"car\":{\"signs\":[\"DY\"],\"side\":\"right\"},\"timezones\":[\"UTC+01:00\"],\"continents\":[\"Europe\"],\"flags\":{\"png\":\"https://flagcdn.com/w320/de.png\",\"svg\":\"https://flagcdn.com/de.svg\"},\"coatOfArms\":{\"png\":\"https://mainfacts.com/media/images/coats_of_arms/de.png\",\"svg\":\"https://mainfacts.com/media/images/coats_of_arms/de.svg\"},\"startOfWeek\":\"monday\",\"capitalInfo\":{\"latlng\":[52.52,13.4]},\"postalCode\":{\"format\":\"#####\",\"regex\":\"^(\\\\d{5})$\"}},{\"name\":{\"common\":\"Liechtenstein\",\"official\":\"Principality of Liechtenstein\",\"nativeName\":{\"deu\":{\"official\":\"F\u00fcrstentum Liechtenstein\",\"common\":\"Liechtenstein\"}}},\"tld\":[\".li\"],\"cca2\":\"LI\",\"ccn3\":\"438\",\"cca3\":\"LIE\",\"cioc\":\"LIE\",\"independent\":true,\"status\":\"officially-assigned\",\"unMember\":true,\"currencies\":{\"CHF\":{\"name\":\"Swiss franc\",\"symbol\":\"Fr\"}},\"idd\":{\"root\":\"+4\",\"suffixes\":[\"23\"]},\"capital\":[\"Vaduz\"],\"altSpellings\":[\"LI\",\"Principality of Liechtenstein\",\"F\u00fcrstentum Liechtenstein\"],\"region\":\"Europe\",\"subregion\":\"Western Europe\",\"languages\":{\"deu\":\"German\"},\"translations\":{\"ara\":{\"official\":\"\u0625\u0645\u0627\u0631\u0629 \u0644\u064a\u062e\u062a\u0646\u0634\u062a\u0627\u064a\u0646\",\"common\":\"\u0644\u064a\u062e\u062a\u0646\u0634\u062a\u0627\u064a\u0646\"},\"ces\":{\"official\":\"Kn\u00ed\u017eectv\u00ed Lichten\u0161tejnsk\u00e9\",\"common\":\"Lichten\u0161tejnsko\"},\"cym\":{\"official\":\"Principality of Liechtenstein\",\"common\":\"Liechtenstein\"},\"deu\":{\"official\":\"F\u00fcrstentum Liechtenstein\",\"common\":\"Liechtenstein\"},\"est\":{\"official\":\"Liechtensteini V\u00fcrstiriik\",\"common\":\"Liechtenstein\"},\"fin\":{\"official\":\"Liechensteinin ruhtinaskunta\",\"common\":\"Liechenstein\"},\"fra\":{\"official\":\"Principaut\u00e9 du Liechtenstein\",\"common\":\"Liechtenstein\"},\"hrv\":{\"official\":\"Kne\u017eevina Lihten\u0161tajn\",\"common\":\"Lihten\u0161tajn\"},\"hun\":{\"official\":\"Liechtensteini Hercegs\u00e9g\",\"common\":\"Liechtenstein\"},\"ita\":{\"official\":\"Principato del Liechtenstein\",\"common\":\"Liechtenstein\"},\"jpn\":{\"official\":\"\u30ea\u30d2\u30c6\u30f3\u30b7\u30e5\u30bf\u30a4\u30f3\u516c\u56fd\",\"common\":\"\u30ea\u30d2\u30c6\u30f3\u30b7\u30e5\u30bf\u30a4\u30f3\"},\"kor\":{\"official\":\"\ub9ac\ud788\ud150\uc288\ud0c0\uc778 \uacf5\uad6d\",\"common\":\"\ub9ac\ud788\ud150\uc288\ud0c0\uc778\"},\"nld\":{\"official\":\"Vorstendom Liechtenstein\",\"common\":\"Liechtenstein\"},\"per\":{\"official\":\"\u0634\u0627\u0647\u0632\u0627\u062f\u0647\u200c\u0646\u0634\u06cc\u0646 \u0644\u06cc\u062e\u062a\u0646\u200c\u0627\u0634\u062a\u0627\u06cc\u0646\",\"common\":\"\u0644\u06cc\u062e\u062a\u0646\u200c\u0627\u0634\u062a\u0627\u06cc\u0646\"},\"pol\":{\"official\":\"Ksi\u0119stwo Liechtensteinu\",\"common\":\"Liechtenstein\"},\"por\":{\"official\":\"Principado de Liechtenstein\",\"common\":\"Liechtenstein\"},\"rus\":{\"official\":\"\u041a\u043d\u044f\u0436\u0435\u0441\u0442\u0432\u043e \u041b\u0438\u0445\u0442\u0435\u043d\u0448\u0442\u0435\u0439\u043d\",\"common\":\"\u041b\u0438\u0445\u0442\u0435\u043d\u0448\u0442\u0435\u0439\u043d\"},\"slk\":{\"official\":\"Lichten\u0161tajnsk\u00e9 knie\u017eatstvo\",\"common\":\"Lichten\u0161tajnsko\"},\"spa\":{\"official\":\"Principado de Liechtenstein\",\"common\":\"Liechtenstein\"},\"swe\":{\"official\":\"Furstend\u00f6met Liechtenstein\",\"common\":\"Liechtenstein\"},\"urd\":{\"official\":\"\u0627\u0645\u0627\u0631\u0627\u062a \u0644\u06cc\u062e\u062a\u06cc\u0646\u0633\u062a\u0627\u0626\u0646\",\"common\":\"\u0644\u06cc\u062e\u062a\u06cc\u0646\u0633\u062a\u0627\u0626\u0646\"},\"zho\":{\"official\":\"\u5217\u652f\u6566\u58eb\u767b\u516c\u56fd\",\"common\":\"\u5217\u652f\u6566\u58eb\u767b\"}},\"latlng\":[47.26666666,9.53333333],\"landlocked\":true,\"borders\":[\"AUT\",\"CHE\"],\"area\":160.0,\"demonyms\":{\"eng\":{\"f\":\"Liechtensteiner\",\"m\":\"Liechtensteiner\"},\"fra\":{\"f\":\"Liechtensteinoise\",\"m\":\"Liechtensteinois\"}},\"flag\":\"\\uD83C\\uDDF1\\uD83C\\uDDEE\",\"maps\":{\"googleMaps\":\"https://goo.gl/maps/KNuHeiJzAPodwM7y6\",\"openStreetMaps\":\"https://www.openstreetmap.org/relation/1155955\"},\"population\":38137,\"fifa\":\"LIE\",\"car\":{\"signs\":[\"FL\"],\"side\":\"right\"},\"timezones\":[\"UTC+01:00\"],\"continents\":[\"Europe\"],\"flags\":{\"png\":\"https://flagcdn.com/w320/li.png\",\"svg\":\"https://flagcdn.com/li.svg\"},\"coatOfArms\":{\"png\":\"https://mainfacts.com/media/images/coats_of_arms/li.png\",\"svg\":\"https://mainfacts.com/media/images/coats_of_arms/li.svg\"},\"startOfWeek\":\"monday\",\"capitalInfo\":{\"latlng\":[47.13,9.52]},\"postalCode\":{\"format\":\"####\",\"regex\":\"^(\\\\d{4})$\"}},{\"name\":{\"common\":\"Belgium\",\"official\":\"Kingdom of Belgium\",\"nativeName\":{\"deu\":{\"official\":\"K\u00f6nigreich Belgien\",\"common\":\"Belgien\"},\"fra\":{\"official\":\"Royaume de Belgique\",\"common\":\"Belgique\"},\"nld\":{\"official\":\"Koninkrijk Belgi\u00eb\",\"common\":\"Belgi\u00eb\"}}},\"tld\":[\".be\"],\"cca2\":\"BE\",\"ccn3\":\"056\",\"cca3\":\"BEL\",\"cioc\":\"BEL\",\"independent\":true,\"status\":\"officially-assigned\",\"unMember\":true,\"currencies\":{\"EUR\":{\"name\":\"Euro\",\"symbol\":\"\u20ac\"}},\"idd\":{\"root\":\"+3\",\"suffixes\":[\"2\"]},\"capital\":[\"Brussels\"],\"altSpellings\":[\"BE\",\"Belgi\u00eb\",\"Belgie\",\"Belgien\",\"Belgique\",\"Kingdom of Belgium\",\"Koninkrijk Belgi\u00eb\",\"Royaume de Belgique\",\"K\u00f6nigreich Belgien\"],\"region\":\"Europe\",\"subregion\":\"Western Europe\",\"languages\":{\"deu\":\"German\",\"fra\":\"French\",\"nld\":\"Dutch\"},\"translations\":{\"ara\":{\"official\":\"\u0645\u0645\u0644\u0643\u0629 \u0628\u0644\u062c\u064a\u0643\u0627\",\"common\":\"\u0628\u0644\u062c\u064a\u0643\u0627\"},\"ces\":{\"official\":\"Belgick\u00e9 kr\u00e1lovstv\u00ed\",\"common\":\"Belgie\"},\"cym\":{\"official\":\"Teyrnas Gwlad Belg\",\"common\":\"Gwlad Belg\"},\"deu\":{\"official\":\"K\u00f6nigreich Belgien\",\"common\":\"Belgien\"},\"est\":{\"official\":\"Belgia Kuningriik\",\"common\":\"Belgia\"},\"fin\":{\"official\":\"Belgian kuningaskunta\",\"common\":\"Belgia\"},\"fra\":{\"official\":\"Royaume de Belgique\",\"common\":\"Belgique\"},\"hrv\":{\"official\":\"Kraljevina Belgija\",\"common\":\"Belgija\"},\"hun\":{\"official\":\"Belga Kir\u00e1lys\u00e1g\",\"common\":\"Belgium\"},\"ita\":{\"official\":\"Regno del Belgio\",\"common\":\"Belgio\"},\"jpn\":{\"official\":\"\u30d9\u30eb\u30ae\u30fc\u738b\u56fd\",\"common\":\"\u30d9\u30eb\u30ae\u30fc\"},\"kor\":{\"official\":\"\ubca8\uae30\uc5d0 \uc655\uad6d\",\"common\":\"\ubca8\uae30\uc5d0\"},\"nld\":{\"official\":\"Koninkrijk Belgi\u00eb\",\"common\":\"Belgi\u00eb\"},\"per\":{\"official\":\"\u067e\u0627\u062f\u0634\u0627\u0647\u06cc \u0628\u0644\u0698\u06cc\u06a9\",\"common\":\"\u0628\u0644\u0698\u06cc\u06a9\"},\"pol\":{\"official\":\"Kr\u00f3lestwo Belgii\",\"common\":\"Belgia\"},\"por\":{\"official\":\"Reino da B\u00e9lgica\",\"common\":\"B\u00e9lgica\"},\"rus\":{\"official\":\"\u041a\u043e\u0440\u043e\u043b\u0435\u0432\u0441\u0442\u0432\u043e \u0411\u0435\u043b\u044c\u0433\u0438\u044f\",\"common\":\"\u0411\u0435\u043b\u044c\u0433\u0438\u044f\"},\"slk\":{\"official\":\"Belgick\u00e9 kr\u00e1\u013eovstvo\",\"common\":\"Belgicko\"},\"spa\":{\"official\":\"Reino de B\u00e9lgica\",\"common\":\"B\u00e9lgica\"},\"swe\":{\"official\":\"Konungariket Belgien\",\"common\":\"Belgien\"},\"urd\":{\"official\":\"\u0645\u0645\u0644\u06a9\u062a\u0650 \u0628\u0644\u062c\u0626\u06cc\u0645\",\"common\":\"\u0628\u0644\u062c\u0626\u06cc\u0645\"},\"zho\":{\"official\":\"\u6bd4\u5229\u65f6\u738b\u56fd\",\"common\":\"\u6bd4\u5229\u65f6\"}},\"latlng\":[50.83333333,4.0],\"landlocked\":false,\"borders\":[\"FRA\",\"DEU\",\"LUX\",\"NLD\"],\"area\":30528.0,\"demonyms\":{\"eng\":{\"f\":\"Belgian\",\"m\":\"Belgian\"},\"fra\":{\"f\":\"Belge\",\"m\":\"Belge\"}},\"flag\":\"\\uD83C\\uDDE7\\uD83C\\uDDEA\",\"maps\":{\"googleMaps\":\"https://goo.gl/maps/UQQzat85TCtPRXAL8\",\"openStreetMaps\":\"https://www.openstreetmap.org/relation/52411\"},\"population\":11555997,\"gini\":{\"2018\":27.2},\"fifa\":\"BEL\",\"car\":{\"signs\":[\"B\"],\"side\":\"right\"},\"timezones\":[\"UTC+01:00\"],\"continents\":[\"Europe\"],\"flags\":{\"png\":\"https://flagcdn.com/w320/be.png\",\"svg\":\"https://flagcdn.com/be.svg\"},\"coatOfArms\":{\"png\":\"https://mainfacts.com/media/images/coats_of_arms/be.png\",\"svg\":\"https://mainfacts.com/media/images/coats_of_arms/be.svg\"},\"startOfWeek\":\"monday\",\"capitalInfo\":{\"latlng\":[50.83,4.33]},\"postalCode\":{\"format\":\"####\",\"regex\":\"^(\\\\d{4})$\"}},{\"name\":{\"common\":\"Namibia\",\"official\":\"Republic of Namibia\",\"nativeName\":{\"afr\":{\"official\":\"Republiek van Namibi\u00eb\",\"common\":\"Namibi\u00eb\"},\"deu\":{\"official\":\"Republik Namibia\",\"common\":\"Namibia\"},\"eng\":{\"official\":\"Republic of Namibia\",\"common\":\"Namibia\"},\"her\":{\"official\":\"Republic of Namibia\",\"common\":\"Namibia\"},\"hgm\":{\"official\":\"Republic of Namibia\",\"common\":\"Namibia\"},\"kwn\":{\"official\":\"Republic of Namibia\",\"common\":\"Namibia\"},\"loz\":{\"official\":\"Republic of Namibia\",\"common\":\"Namibia\"},\"ndo\":{\"official\":\"Republic of Namibia\",\"common\":\"Namibia\"},\"tsn\":{\"official\":\"Lefatshe la Namibia\",\"common\":\"Namibia\"}}},\"tld\":[\".na\"],\"cca2\":\"NA\",\"ccn3\":\"516\",\"cca3\":\"NAM\",\"cioc\":\"NAM\",\"independent\":true,\"status\":\"officially-assigned\",\"unMember\":true,\"currencies\":{\"NAD\":{\"name\":\"Namibian dollar\",\"symbol\":\"$\"},\"ZAR\":{\"name\":\"South African rand\",\"symbol\":\"R\"}},\"idd\":{\"root\":\"+2\",\"suffixes\":[\"64\"]},\"capital\":[\"Windhoek\"],\"altSpellings\":[\"NA\",\"Namibi\u00eb\",\"Republic of Namibia\"],\"region\":\"Africa\",\"subregion\":\"Southern Africa\",\"languages\":{\"afr\":\"Afrikaans\",\"deu\":\"German\",\"eng\":\"English\",\"her\":\"Herero\",\"hgm\":\"Khoekhoe\",\"kwn\":\"Kwangali\",\"loz\":\"Lozi\",\"ndo\":\"Ndonga\",\"tsn\":\"Tswana\"},\"translations\":{\"ara\":{\"official\":\"\u062c\u0645\u0647\u0648\u0631\u064a\u0629 \u0646\u0627\u0645\u064a\u0628\u064a\u0627\",\"common\":\"\u0646\u0627\u0645\u064a\u0628\u064a\u0627\"},\"ces\":{\"official\":\"Namibijsk\u00e1 republika\",\"common\":\"Namibie\"},\"cym\":{\"official\":\"Republic of Namibia\",\"common\":\"Namibia\"},\"deu\":{\"official\":\"Republik Namibia\",\"common\":\"Namibia\"},\"est\":{\"official\":\"Namiibia Vabariik\",\"common\":\"Namiibia\"},\"fin\":{\"official\":\"Namibian tasavalta\",\"common\":\"Namibia\"},\"fra\":{\"official\":\"R\u00e9publique de Namibie\",\"common\":\"Namibie\"},\"hrv\":{\"official\":\"Republika Namibija\",\"common\":\"Namibija\"},\"hun\":{\"official\":\"Nam\u00edbiai K\u00f6zt\u00e1rsas\u00e1g\",\"common\":\"Nam\u00edbia\"},\"ita\":{\"official\":\"Repubblica di Namibia\",\"common\":\"Namibia\"},\"jpn\":{\"official\":\"\u30ca\u30df\u30d3\u30a2\u5171\u548c\u56fd\",\"common\":\"\u30ca\u30df\u30d3\u30a2\"},\"kor\":{\"official\":\"\ub098\ubbf8\ube44\uc544 \uacf5\ud654\uad6d\",\"common\":\"\ub098\ubbf8\ube44\uc544\"},\"nld\":{\"official\":\"Republiek Namibi\u00eb\",\"common\":\"Namibi\u00eb\"},\"per\":{\"official\":\"\u062c\u0645\u0647\u0648\u0631\u06cc \u0646\u0627\u0645\u06cc\u0628\u06cc\u0627\",\"common\":\"\u0646\u0627\u0645\u06cc\u0628\u06cc\u0627\"},\"pol\":{\"official\":\"Republika Namibii\",\"common\":\"Namibia\"},\"por\":{\"official\":\"Rep\u00fablica da Nam\u00edbia\",\"common\":\"Nam\u00edbia\"},\"rus\":{\"official\":\"\u0420\u0435\u0441\u043f\u0443\u0431\u043b\u0438\u043a\u0430 \u041d\u0430\u043c\u0438\u0431\u0438\u044f\",\"common\":\"\u041d\u0430\u043c\u0438\u0431\u0438\u044f\"},\"slk\":{\"official\":\"Nam\u00edbijsk\u00e1 republika\",\"common\":\"Nam\u00edbia\"},\"spa\":{\"official\":\"Rep\u00fablica de Namibia\",\"common\":\"Namibia\"},\"swe\":{\"official\":\"Republiken Namibia\",\"common\":\"Namibia\"},\"urd\":{\"official\":\"\u062c\u0645\u06c1\u0648\u0631\u06cc\u06c1 \u0646\u0645\u06cc\u0628\u06cc\u0627\",\"common\":\"\u0646\u0645\u06cc\u0628\u06cc\u0627\"},\"zho\":{\"official\":\"\u7eb3\u7c73\u6bd4\u4e9a\u5171\u548c\u56fd\",\"common\":\"\u7eb3\u7c73\u6bd4\u4e9a\"}},\"latlng\":[-22.0,17.0],\"landlocked\":false,\"borders\":[\"AGO\",\"BWA\",\"ZAF\",\"ZMB\"],\"area\":825615.0,\"demonyms\":{\"eng\":{\"f\":\"Namibian\",\"m\":\"Namibian\"},\"fra\":{\"f\":\"Namibienne\",\"m\":\"Namibien\"}},\"flag\":\"\\uD83C\\uDDF3\\uD83C\\uDDE6\",\"maps\":{\"googleMaps\":\"https://goo.gl/maps/oR1i8BFEYX3EY83WA\",\"openStreetMaps\":\"https://www.openstreetmap.org/relation/195266\"},\"population\":2540916,\"gini\":{\"2015\":59.1},\"fifa\":\"NAM\",\"car\":{\"signs\":[\"NAM\"],\"side\":\"left\"},\"timezones\":[\"UTC+01:00\"],\"continents\":[\"Africa\"],\"flags\":{\"png\":\"https://flagcdn.com/w320/na.png\",\"svg\":\"https://flagcdn.com/na.svg\"},\"coatOfArms\":{\"png\":\"https://mainfacts.com/media/images/coats_of_arms/na.png\",\"svg\":\"https://mainfacts.com/media/images/coats_of_arms/na.svg\"},\"startOfWeek\":\"monday\",\"capitalInfo\":{\"latlng\":[-22.57,17.08]}},{\"name\":{\"common\":\"Luxembourg\",\"official\":\"Grand Duchy of Luxembourg\",\"nativeName\":{\"deu\":{\"official\":\"Gro\u00dfherzogtum Luxemburg\",\"common\":\"Luxemburg\"},\"fra\":{\"official\":\"Grand-Duch\u00e9 de Luxembourg\",\"common\":\"Luxembourg\"},\"ltz\":{\"official\":\"Groussherzogtum L\u00ebtzebuerg\",\"common\":\"L\u00ebtzebuerg\"}}},\"tld\":[\".lu\"],\"cca2\":\"LU\",\"ccn3\":\"442\",\"cca3\":\"LUX\",\"cioc\":\"LUX\",\"independent\":true,\"status\":\"officially-assigned\",\"unMember\":true,\"currencies\":{\"EUR\":{\"name\":\"Euro\",\"symbol\":\"\u20ac\"}},\"idd\":{\"root\":\"+3\",\"suffixes\":[\"52\"]},\"capital\":[\"Luxembourg\"],\"altSpellings\":[\"LU\",\"Grand Duchy of Luxembourg\",\"Grand-Duch\u00e9 de Luxembourg\",\"Gro\u00dfherzogtum Luxemburg\",\"Groussherzogtum L\u00ebtzebuerg\"],\"region\":\"Europe\",\"subregion\":\"Western Europe\",\"languages\":{\"deu\":\"German\",\"fra\":\"French\",\"ltz\":\"Luxembourgish\"},\"translations\":{\"ara\":{\"official\":\"\u062f\u0648\u0642\u064a\u0629 \u0644\u0648\u0643\u0633\u0645\u0628\u0648\u0631\u063a\",\"common\":\"\u0644\u0648\u0643\u0633\u0645\u0628\u0648\u0631\u063a\"},\"ces\":{\"official\":\"Lucembursk\u00e9 velkov\u00e9vodstv\u00ed\",\"common\":\"Lucembursko\"},\"cym\":{\"official\":\"Grand Duchy of Luxembourg\",\"common\":\"Luxembourg\"},\"deu\":{\"official\":\"Gro\u00dfherzogtum Luxemburg,\",\"common\":\"Luxemburg\"},\"est\":{\"official\":\"Luksemburgi Suurhertsogiriik\",\"common\":\"Luksemburg\"},\"fin\":{\"official\":\"Luxemburgin suurherttuakunta\",\"common\":\"Luxemburg\"},\"fra\":{\"official\":\"Grand-Duch\u00e9 de Luxembourg\",\"common\":\"Luxembourg\"},\"hrv\":{\"official\":\"Veliko Vojvodstvo Luksemburg\",\"common\":\"Luksemburg\"},\"hun\":{\"official\":\"Luxemburgi Nagyhercegs\u00e9g\",\"common\":\"Luxemburg\"},\"ita\":{\"official\":\"Granducato di Lussemburgo\",\"common\":\"Lussemburgo\"},\"jpn\":{\"official\":\"\u30eb\u30af\u30bb\u30f3\u30d6\u30eb\u30af\u5927\u516c\u56fd\",\"common\":\"\u30eb\u30af\u30bb\u30f3\u30d6\u30eb\u30af\"},\"kor\":{\"official\":\"\ub8e9\uc148\ubd80\ub974\ud06c \ub300\uacf5\uad6d\",\"common\":\"\ub8e9\uc148\ubd80\ub974\ud06c\"},\"nld\":{\"official\":\"Groothertogdom Luxemburg\",\"common\":\"Luxemburg\"},\"per\":{\"official\":\"\u062f\u0648\u06a9\u200c\u0646\u0634\u06cc\u0646 \u0644\u0648\u06a9\u0632\u0627\u0645\u0628\u0648\u0631\u06af\",\"common\":\"\u0644\u0648\u06a9\u0632\u0627\u0645\u0628\u0648\u0631\u06af\"},\"pol\":{\"official\":\"Wielkie Ksi\u0119stwo Luksemburga\",\"common\":\"Luksemburg\"},\"por\":{\"official\":\"Gr\u00e3o-Ducado do Luxemburgo\",\"common\":\"Luxemburgo\"},\"rus\":{\"official\":\"\u0412\u0435\u043b\u0438\u043a\u043e\u0435 \u0413\u0435\u0440\u0446\u043e\u0433\u0441\u0442\u0432\u043e \u041b\u044e\u043a\u0441\u0435\u043c\u0431\u0443\u0440\u0433\",\"common\":\"\u041b\u044e\u043a\u0441\u0435\u043c\u0431\u0443\u0440\u0433\"},\"slk\":{\"official\":\"Luxembursk\u00e9 ve\u013ekovojvodstvo\",\"common\":\"Luxembursko\"},\"spa\":{\"official\":\"Gran Ducado de Luxemburgo\",\"common\":\"Luxemburgo\"},\"swe\":{\"official\":\"Storhertigd\u00f6met Luxemburg\",\"common\":\"Luxemburg\"},\"urd\":{\"official\":\"\u062f\u0648\u0642\u06cc\u06c1 \u06a9\u0628\u06cc\u0631\u0644\u06a9\u0633\u0645\u0628\u0631\u06af\",\"common\":\"\u0644\u06a9\u0633\u0645\u0628\u0631\u06af\"},\"zho\":{\"official\":\"\u5362\u68ee\u5821\u5927\u516c\u56fd\",\"common\":\"\u5362\u68ee\u5821\"}},\"latlng\":[49.75,6.16666666],\"landlocked\":true,\"borders\":[\"BEL\",\"FRA\",\"DEU\"],\"area\":2586.0,\"demonyms\":{\"eng\":{\"f\":\"Luxembourger\",\"m\":\"Luxembourger\"},\"fra\":{\"f\":\"Luxembourgeoise\",\"m\":\"Luxembourgeois\"}},\"flag\":\"\\uD83C\\uDDF1\\uD83C\\uDDFA\",\"maps\":{\"googleMaps\":\"https://goo.gl/maps/L6b2AgndgHprt2Ko9\",\"openStreetMaps\":\"https://www.openstreetmap.org/relation/2171347#map=10/49.8167/6.1335\"},\"population\":632275,\"gini\":{\"2018\":35.4},\"fifa\":\"LUX\",\"car\":{\"signs\":[\"L\"],\"side\":\"right\"},\"timezones\":[\"UTC+01:00\"],\"continents\":[\"Europe\"],\"flags\":{\"png\":\"https://flagcdn.com/w320/lu.png\",\"svg\":\"https://flagcdn.com/lu.svg\"},\"coatOfArms\":{\"png\":\"https://mainfacts.com/media/images/coats_of_arms/lu.png\",\"svg\":\"https://mainfacts.com/media/images/coats_of_arms/lu.svg\"},\"startOfWeek\":\"monday\",\"capitalInfo\":{\"latlng\":[49.6,6.12]},\"postalCode\":{\"format\":\"####\",\"regex\":\"^(\\\\d{4})$\"}}]", "status": "INFO"}, {"title": "Validating Response Code", "description": "<b>Expected RESPONSE CODE</b>: [200]</br><b>ACTUAL RESPONSE CODE</b>: 200", "status": "PASS"}, {"title": "Keys to be check for PRESENCE in response body", "description": "<b>name.common</b>=FOUND<br><b>name</b>=FOUND<br><b>common</b>=NOT FOUND, KEY MISSING IN 5 Items<br>", "status": "FAIL"}, {"title": "Executing Post Assertion check", "description": "Keys to execute assetion check are: </br>response[0].name.common</br>response[0].name.common</br>response[0].name.common</br>response[0].name.common</br>response[0].na.common</br>response[0].name.official", "status": "INFO"}, {"title": "Checking presence of key response[0].na.common in response", "description": "Key response[0].na.common is not found in the response", "status": "FAIL"}, {"title": "Running validation for response[0].name.common", "description": "Expected value: != German</br>Actual value:- Germany</br>Values are same", "status": "PASS"}, {"title": "Running validation for response[0].name.common", "description": "Expected value:- Germany</br>Actual value:- Germany</br>Values are same", "status": "PASS"}, {"title": "Running validation for response[0].name.common", "description": "Expected value:- not in list [a,b]</br>Actual value:- Germany</br>Value is not present in the list", "status": "PASS"}, {"title": "Running validation for response[0].name.common", "description": "Expected value:- in list [\"germany\", \"france\"]</br>Actual value:- Germany</br>Values are same", "status": "PASS"}, {"title": "Running validation for response[0].name.official", "description": "Expected value:- \"Germany\"</br>Actual value:- Federal Republic of Germany</br>Actual value contains expected value", "status": "PASS"}, {"title": "Searching for post API steps", "description": "No Post API steps found", "status": "INFO"}], "metaData": [{"TESTCASE NAME": "Test_functions_5", "SERVICE PROJECT": "GemPyp_PYPREST", "DATE OF EXECUTION": {"value": 1655718237011.5781, "type": "date"}}, {"EXECUTION STARTED ON": {"value": 1655718237011.5781, "type": "datetime"}, "EXECUTION ENDED ON": {"value": 1655718238027.144, "type": "datetime"}, "EXECUTION DURATION": "1.016 seconds"}, {"FAIL": 2, "PASS": 7, "INFO": 5}], "FilterNames": {"description": "Input", "title": "Input", "status": "Dropdown"}, "FilterValues": {"status": ["FAIL", "PASS", "INFO"]}}';
+obj = JSON.parse(obj)
+console.log(obj)
+document.getElementById("subHead").innerText=obj.Header;
+function constructTables(){
+for(var i=0;i<obj.metaData.length;i++){
+    var div=$('<div/>').addClass('col-sm-4 col-md-4 col-lg-4 mt-4');
+  var tables=  constructTable(obj.metaData[i]).addClass('table table-bordered table-hover');
+  div.append(tables);
+    $("#tableRow").append(div);
+}
+// var FilterTable=$('<table/>');
+ var rows=createFilters(obj.FilterNames);
+//  FilterTable.append(rows).addClass('table-borderless table-sm').css('size','8px');
+ var divFiter=$('<div/>').addClass('col-sm-12 col-md-12 col-lg-12 mt-4 mainFilt');
+ divFiter.append(rows);
+$("#filters").append(divFiter);
+
+
+ var mainTable=createLowerTable(obj.steps);
+ var divLower=$('<div/>').addClass('col-sm-12 col-md-12 col-lg-12 mt-4 main');
+ divLower.append(mainTable);
+ $("#lowerTable").append(divLower);
+}
+
+function createLowerTable(list){
+var cols = [];
+             
+            for (var i = 0; i < list.length; i++) {
+                for (var k in list[i]) {
+                    if (cols.indexOf(k) === -1) {
+                         
+                        // Push all keys to the array
+                        cols.push(k);
+                    }
+                }
+            }
+            // var table=$('<table/>');
+            // var row = $(table[0].insertRow(-1));
+            // for (var i = 0; i < cols.length; i++) {
+                 
+            //     // Create the table header th element
+            //     var headerCell = $("<th />");
+            // headerCell.html(customers[0][i]);
+            // row.append(headerCell);
+            // }
+
+
+
+            // Create a table element
+            var table = document.createElement("table");
+            table.id="tab"
+             table.className="table table-bordered table-hover text-center";
+            // Create table row tr element of a table
+            var tr = table.insertRow(-1);
+             
+            for (var i = 0; i < cols.length; i++) {
+                 
+                // Create the table header th element
+                var theader = document.createElement("th");
+                theader.className="head";
+                theader.innerHTML = cols[i];
+                 
+                // Append columnName to the table row
+                tr.appendChild(theader);
+            }
+             
+            // Adding the data to the table
+            for (var i = 0; i < list.length; i++) {
+                 
+                // Create a new row
+                trow = table.insertRow(-1);
+                for (var j = 0; j < cols.length; j++) {
+                    var cell = trow.insertCell(-1);
+                     var att = document.createAttribute("data-input");
+                     if(cols[j].includes(" ")){
+                         var v=cols[j].replace(" ","_");
+                 att.value = v;
+               }else{
+                     att.value = cols[j];
+               }
+                     cell.setAttributeNode(att);
+
+                    if(typeof(list[i][cols[j]])==='object'){
+                        var a=document.createElement("a");
+                        a.href=list[i][cols[j]]['href'];
+                        a.target="_blank";
+                        a.innerHTML=list[i][cols[j]]['LinkName'];
+                        cell.appendChild(a);
+                    } else if(cols[j]==='STATUS'){
+                        cell.innerHTML = list[i][cols[j]];
+                        if(list[i][cols[j]]==='PASS'){
+                        cell.className="statusColorPass";
+                        }
+                        else{
+                            cell.className="statusColorInfo";
+                        }
+                    }
+                    else if(cols[j]==='TIME'){
+                            cell.innerHTML =convertIntoDateTime(list[i][cols[j]]);
+                        }
+                    else{
+                    cell.innerHTML = list[i][cols[j]];
+                    }
+                }
+            }
+             
+return table;
+}
+function createFilters(value){
+
+    var cols = Headers(value); 
+var checkLength=cols.length;
+var FilterTable=$('<table/>').css('border-collapse', 'separate').css('border-spacing','0px 10px');
+var row = $('<tr/>').css('word-wrap','normal');
+    for (var i=0;i<cols.length;i++){
+           var val = value[cols[i]];
+           if (val == null) val = ""; 
+            row.append($('<th/>').html(cols[i]).addClass('filterHead text-center py-2').css('color','white').css('background-color','#375A64').css('min-width','90px')); 
+            if(val==='Input'){
+                var input = $('<input>').attr('size',20).attr('type','text').attr('value','').addClass('form-control search-key');
+               if(cols[i].includes(" ")){
+                 cols[i]=  cols[i].replace(" ","_");
+                
+               }
+                input.attr('id',cols[i]);
+            row.append($('<td/>').append(input).addClass('form-control input'));
+            }else if(val=='Dropdown'){
+                var Dropdown = $('<select/>').addClass('custom-select search-key').css('width','100%').css('color','black !important');
+                Dropdown.attr('id',cols[i]);
+                var options=obj.FilterValues[cols[i]]
+                for(var j=0;j<options.length;j++){
+                    Dropdown.append($('<option>',{text:options[j]}).attr('value',options[j]).addClass('form-control'));
+                }
+                row.append($('<td/>').append(Dropdown));
+            }
+              if((i+1)%4==0 && i!=0){
+                
+                  FilterTable.append(row);
+                 var row = $('<tr/>').css('word-wrap','normal');
+
+              }
+       }
+       
+    
+    //    var searchButton=$('<button/>').addClass('btn btn-secondary btn-sm').html('Filter');
+ var clearButton=$('<button/>').addClass('btn btn-secondary btn-sm').html('Clear Filter');
+ clearButton.attr('id','clear');
+ $(document).ready(function(){
+ clearButton.click(function(){
+     myFunction();
+ });
+});
+//  row.append($('<td/>').append(searchButton));
+ row.append($('<td/>').append(clearButton));
+     
+FilterTable.append(row).addClass('table-borderless table-sm');
+return FilterTable;
+    }
+
+function constructTable(value) {
+var cols = Headers(value); 
+         var rows=$('<table>');
+       for (var colIndex = 0; colIndex < cols.length; colIndex++)
+       {
+        var row = $('<tr>');
+           var val = value[cols[colIndex]];
+           if (val == null) val = ""; 
+            row.append($('<th/>').html(cols[colIndex]).css('color','white').css('background-color','#375A64')); 
+            if(typeof(val)==='object'){
+                row.append($('<td/>').html(changeDate(val)));
+            }else{
+            row.append($('<td/>').html(val));
+            }
+               $(rows).append(row);
+       }
+     return rows;    
+     
+    
+}
+   function Headers(list) {
+            var columns = [];
+           row=list
+                for (var k in row) {
+                    if ($.inArray(k, columns) == -1) {
+                        columns.push(k);
+                    }
+                }
+                return columns;
+        }    
+        function convertIntoDateTime(value){
+ var date = new Date(value);
+ return date.toLocaleString();
+        }   
+        var eventList = ["change", "load"];
+        for(event of eventList){
+        window.addEventListener(event, function () {
+            var $filterableRows = $('#tab').find('tbody').find('tr').not(':first'),
+		$inputs = $('.search-key');
+
+$inputs.live('input', function() {
+
+	$filterableRows.hide().filter(function() {
+  	return $(this).find('td').filter(function() {
+      var tdText = $(this).text().toLowerCase(),
+      		inputValue = $('#' + $(this).data('input')).val();
+              if(inputValue ==='All'){
+                  inputValue ="";
+              }
+              if(inputValue===undefined){
+                  inputValue ="";
+              }
+              else{
+                  inputValue = inputValue.toLowerCase();
+              }
+    	return tdText.indexOf(inputValue) != -1;
+    
+    }).length == $(this).find('td').length;
+  }).show();
+
+});
+        });
+    }
+function myFunction(){
+   var inputs=$('.search-key');
+   for(var i=0;i<inputs.length;i++){
+       inputs[i];
+       if(inputs[i].id==='STATUS'){
+           inputs[i].value='All';
+       }else{
+       inputs[i].value='';
+       }
+   }
+
+
+    var $filterableRows = $('#tab tbody tr');
+   $filterableRows.show()
+}
+function changeDate(val){
+    console.log(val);
+    var temp=val.type.toLowerCase();
+    var d= new Date(val.value);
+    if(temp==='date'){
+        
+        return d.toLocaleDateString();
+    }else if(temp==='time'){
+        return d.toLocaleTimeString();
+    }else if(temp==='datetime'){
+return d.toLocaleString();
+    }
+}
+ </script>
+
+</html>

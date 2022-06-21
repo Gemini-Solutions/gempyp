@@ -1,77 +1,60 @@
 <data>
 
     <suite>
-    <mail>test@gmail.com</mail>
-    <project>gempyp_project</project>
-    <report_name>test_regression</report_name>
-    <mode>optimize</mode>
-    <env>beta</env>
-    <bridge_token>tokentest</bridge_token>
+        <mail>test@gmail.com</mail>
+        <project>gempyp_project</project>
+        <report_name>test_regression</report_name>
+        <mode>sequence</mode>
+        <env>beta</env>
+        <bridge_token>tokentest</bridge_token>
     </suite>
 
     <testcases>
-
         <testcase>
-        <name>sample_testcase1</name>
-        <category>sample</category>
-        <run_flag>Y</run_flag>
-        <path>C:\gempyp\tests\sample_testcase\sample1.py</path>
-        <location>test</location>
-        <type>gempyp</type>
-        <extra_args1>hello</extra_args1>
-        <run_method>main</run_method>
+            <name>Test_functions_4</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var1] = VAR_1</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var2]="SUITE_VAR2";</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>false</debug_mode>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
         </testcase>
-
-
         <testcase>
-        <name>sample_exception</name>
-        <category>sample</category>
-        <run_flag>Y</run_flag>
-        <path>tests.sample_testcase.except_sample</path>
-        <location>test</location>
-        <type>gempyp</type>
-        <extra_args1>hello</extra_args1>
+            <name>Test_functions_7</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#var]=$[#unique(5)]; set $[#SUITE.var3] = var_3;set $[#var2]= $[#SUITE.var1]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#SUITE.var_tc2]="SUITE_VAR_tc2"</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>false</debug_mode>
+            <report_misc></report_misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
         </testcase>
-
-        <testcase>
-        <name>sample_testcase3</name>
-        <category>sample</category>
-        <run_flag>Y</run_flag>
-        <path>sample_testcase.sample1</path>
-        <location>test</location>
-        <type>gempyp</type>
-        <extra_args1>hello</extra_args1>
-        </testcase>
-
-        <testcase>
-        <name>sample_testcase3</name>
-        <category>sample</category>
-        <run_flag>Y</run_flag>
-        <path>C:\gemecosystem\pygem\tests\sample_testcase\sample2.py</path>
-        <location>test</location>
-        <method>verify</method>
-        <type>gempyp</type>
-        <extra_args1>hello</extra_args1>
-        </testcase>
-
-        <testcase>
-        <name>sample_testcase4</name>
-        <category>sample</category>
-        <run_flag>Y</run_flag>
-        <path>C:\gemecosystem\pygem\tests\sample_testcase\sample2.py</path>
-        <location>test</location>
-        <type>gempyp</type>
-        <method>Main</method>
-        <extra_args1>hello</extra_args1>
-        </testcase>
-        
 
     </testcases>
 
 
-</data>
-
-<!-- <testcase>
+</data> <!-- <testcase>
             <name>REST_COUNTRIES_2</name>
             <category>sample</category>
             <run_flag>Y</run_flag>

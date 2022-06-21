@@ -7,7 +7,8 @@ def compare_to(obj, key, value, key_val_dict, tolerance=0.1):
     OPERATOR -"to"
     """
     actual_value = key_val_dict.get(key, key)
-    if actual_value.lower() == value.strip('"').strip("'").lower():
+   
+    if str(actual_value.lower()) == str(value).strip('"').strip("'").lower():
         obj.addRow(f"Running validation for {key}", f"Expected value:- {value}</br>Actual value:- {actual_value}</br>Values are same", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"Expected value:- {value}</br>Actual value:- {actual_value}</br>Values are not same", status.FAIL)

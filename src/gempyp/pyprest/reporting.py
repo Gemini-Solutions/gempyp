@@ -16,7 +16,8 @@ def writeToReport(pyprest_obj):
         try:
             try:
                 pyprest_obj.reporter.finalize_report()   ## need to test
-                os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
+                if pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path) is None:
+                    os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
             except Exception as e:
                 pyprest_obj.logger.info(traceback.print_exc())
             pyprest_obj.reporter.jsonData = pyprest_obj.reporter.templateData.makeReport(
@@ -47,6 +48,7 @@ def writeToReport(pyprest_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
+    tempdict["suite_variables"] = pyprest_obj.variables["suite"]
     all_status = result["jsonData"]["metaData"][2]
     total = 0
     for key in all_status:
