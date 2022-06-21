@@ -39,7 +39,7 @@ class VariableReplacement:
                 # varValue = self.local_pre_variables[varName]
         except:
             return "Null"
-        str_val = var_name.replace("$[#"+varName+"]",varValue)
+        str_val = var_name.replace("$[#"+varName+"]", str(varValue))
         if "$[#" not in str_val:
             return str(str_val) 
         if "$[#" or "$" in str_val:
@@ -73,7 +73,7 @@ class VariableReplacement:
                         if var_val == "Null" and "$[#" in str(data[k]):
                             newValStr = data[k]
                         else:
-                            newValStr = data[k].replace(var_name,str(var_val))
+                            newValStr = data[k].replace(var_name, str(var_val))
                         del data[k]
                         data[k] = newValStr
                     

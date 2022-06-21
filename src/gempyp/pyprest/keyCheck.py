@@ -18,7 +18,7 @@ class KeyCheck:
         self.pyprest_obj.logger.info("**************  INSIDE KEY CHECK  **************")
 
         self.response_body = {}
-        if self.pyprest_obj.key_check and "keys are" in self.pyprest_obj.key_check:
+        if self.pyprest_obj.key_check and "keys are" in self.pyprest_obj.key_check.lower():
             self.pyprest_obj.key_check = self.pyprest_obj.key_check
             self.pyprest_obj.logger.info("keycheck string: " + str(self.pyprest_obj.key_check))
             type_list = self.pyprest_obj.key_check.strip(";").split(";")
@@ -27,12 +27,12 @@ class KeyCheck:
             for each in type_list:
 
                 # not condition
-                if "keys are not" in each:
+                if "keys are not" in each.lower():
                     key_not_str = each.split("keys are not")
                     self.keys_not = [i.strip(" ") for i in key_not_str.split(",")]
 
                 # keys are condition 
-                if "keys are" in each:
+                elif "keys are" in each.lower():
                     key_str = each.split("keys are")[1]
                     keys = [i.strip(" ") for i in key_str.split(",")]
                     self.keys = list(set(keys) - set(self.keys_not))
@@ -123,13 +123,10 @@ class KeyCheck:
             # example  response[0].data, data[0].color etc
 
             elif re.match(self.regex_int, each):
-                print("==========================   0    ++++++++++++++++++++++++++")
-                print(json_data)
                 br_start = each.find('[')
                 br_end = each.find(']')
                 key_val = each[:br_start]
                 key_num = int(each[br_start + 1:br_end])
-                print("==========================   1    ++++++++++++++++++++++++++")
                 key_num, json_data = utils.getNestedListData(each, json_data, key_val)
 
                 # for response[0].something
