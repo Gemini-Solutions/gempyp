@@ -5,7 +5,6 @@ import traceback
 import pytz
 import random
 import uuid
-import logging as logger
 
 
 #TODO: functions we can add in the predefined functions 
@@ -53,13 +52,13 @@ class PredefinedFunctions:
     def rand(self, start, end):
         """get random number out of a given range"""
         try:
-            if start<end:
-                self.randNumber = random.randint(start,end)
+            if int(start) < int(end):
+                self.randNumber = random.randint(int(start), int(end))
                 return self.randNumber
             else:
-                print("Start and end values are not defined properly")
+                self.pyprest_obj.logger.info("Start and end values are not defined properly")
         except Exception as e:
-            print(e)  
+            self.pyprest_obj.logger.error(str(e)) 
 
     # return uuid
     def uuid(self, *kwargs):
@@ -80,7 +79,7 @@ class PredefinedFunctions:
             else:
                 return round(time.time(), 0)
         except Exception as e:
-            print(e)
+            self.pyprest_obj.logger.info(str(e))
 
     def unique(self, len_):
         """
@@ -116,7 +115,7 @@ class PredefinedFunctions:
             randIndex = random.randint(startIdxList, endIdxList)
             return listName[randIndex]
         except Exception as e:
-            print(e)     
+            self.pyprest_obj.logger.info(str(e))   
 
 
     #get date from now function it will add a value which is provided as a parameter to the current date and will return it to the use.
@@ -132,15 +131,15 @@ class PredefinedFunctions:
         try:
             date_format = args[1].strip('"').strip("'")
         except Exception as e:
-            traceback.print_exc()
+            self.pyprest_obj.logger.info(traceback.print_exc())
             date_format = 'ddmmyyyy'
         try:
             self.data_N_days_after = date.today() + timedelta(days = int(n_value))
             self.value = self.data_N_days_after.strftime(str(self.date_formats[date_format]))
             return self.value
         except Exception as e:
-            traceback.print_exc()
-            print("Error occured while excuting getDateFromNow() function")
+            self.pyprest_obj.logger.info(traceback.print_exc())
+            self.pyprest_obj.logger.info("Error occured while excuting getDateFromNow() function")
 
     # getDate function with format
     def curr_timestamp(self, dateformat="", tz="UTC"):
@@ -157,7 +156,7 @@ class PredefinedFunctions:
         """
         currentTimestamp = datetime.now().strftime("%d%m%y")
         try: 
-            print("inside get date ")
+            self.pyprest_obj.logger.info("inside get date ")
             if not tz:
                 dateTime = datetime.now()
             else:
@@ -165,21 +164,17 @@ class PredefinedFunctions:
             try:
                 currentTimestamp = dateTime.strftime(self.date_formats.get(dateformat.strip('"').strip("'").lower(), '%d%m%y'))
             except Exception as e:
-                print(str(e))
+                self.pyprest_obj.logger.info(str(e))
         except Exception as e:
-            print(e)
+            self.pyprest_obj.logger.info(str(e))
         return currentTimestamp
         
-
-
-
-
 
     # TODO
     #get time function with timezone, timeformat, twentyfourhourformat
     def getTime(self,tz = "", timeFormat = "", twentyfourhourFormat = True):
         try:
-            print("Execution of getTime")
+            self.pyprest_obj.logger.info("Execution of getTime")
             try:
                 # print(tz)
                 if not tz: 
@@ -188,9 +183,9 @@ class PredefinedFunctions:
                     try:
                         dateTime = datetime.datetime.now(pytz.timezone(tz))
                     except Exception as e:
-                         print(e)
+                         self.pyprest_obj.logger.info(str(e))
             except Exception as e:
-                print(e)  
+                self.pyprest_obj.logger.info(str(e))
             if not timeFormat and  twentyfourhourFormat is False  :
                 self.currentTime = dateTime.strftime("%I:%M:%S")
             elif not timeFormat and twentyfourhourFormat is True:
@@ -214,7 +209,7 @@ class PredefinedFunctions:
                 self.currentTime = dateTime.strftime("%H:%M:%S")
             return self.currentTime
         except Exception as e:
-            print(e)
+            self.pyprest_obj.logger.info(str(e))
 
     def generateListofValues(self, start_val, end_val, iter_val):
         pass

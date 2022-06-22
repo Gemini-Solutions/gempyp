@@ -1,4 +1,5 @@
 import pandas as pd
+import traceback
 import json
 from gempyp.libs.common import dateTimeEncoder
 
@@ -81,6 +82,19 @@ class testData:
         SuiteReport = {}
         suiteDict = self.suiteDetail.to_dict(orient="records")[0]
         testcaseDict = self.testcaseDetails.to_dict(orient="records")
+        miscDict=self.miscDetails.to_dict(orient="records")
+        try:
+
+            # converting testcaseDict to dict for easy parsing
+            test_dict = {d['tc_run_id']: d for d in testcaseDict}
+            for each_misc in miscDict:
+                test_dict[each_misc['run_id']][each_misc["key"]] = each_misc["value"]
+
+            # converting dict back to list
+            testcaseDict = [test_dict[tc_run_id] for tc_run_id in test_dict.keys()]
+        except Exception as e:
+            traceback.print_exc()
+
         suiteDict["TestCase_Details"] = testcaseDict
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts
