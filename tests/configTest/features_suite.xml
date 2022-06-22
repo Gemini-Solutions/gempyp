@@ -4,7 +4,7 @@
         <mail>ankitapandey281999@gmail.com</mail>
         <project>PYPREST</project>
         <report_name>feature_regression</report_name>
-        <mode>OPTIMIZE</mode>
+        <mode>optimize</mode>
         <env>beta</env>
         <bridge_token>tokentest</bridge_token>
     </suite>
@@ -12,6 +12,7 @@
     <testcases>
 
         <testcase>
+<<<<<<< HEAD
             <name>sample_testcase1</name>
             <category>sample</category>
             <run_flag>N</run_flag>
@@ -103,6 +104,8 @@
 
 
         <testcase>
+=======
+>>>>>>> 27ff55aa641df40df28a24937b71d15179d0e284
             <name>Test_Pre_Variables</name>
             <category>Pre_variables</category>
             <run_flag>Y</run_flag>
@@ -138,7 +141,7 @@
 
         <testcase>
             <name>Test_Pre_Variable_in_Body</name>
-            <cateory>Pre_variables</cateory>
+            <category>Pre_variables</category>
             <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
@@ -159,7 +162,7 @@
 
         <testcase>
             <name>Test_Pre_Variable_in_Headers</name>
-            <cateory>Pre_variables</cateory>
+            <category>Pre_variables</category>
             <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
@@ -197,7 +200,7 @@
 
         <testcase>
             <name>Test_Post</name>
-            <cateory>Method</cateory>
+            <category>Method</category>
             <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
@@ -522,10 +525,10 @@
             <headers>{}</headers>
             <expected_status_code>200</expected_status_code>
             <authentication></authentication>
-            <pre_variables>$[#var]=GUNS</pre_variables>
+            <pre_variables>set $[#var]=GUNS</pre_variables>
             <key_check></key_check>
             <post_variables>set $[#new_var]=$[#var]</post_variables>
-            <post_assertion>compare response[0].name.common to $[#new_var]</post_assertion>
+            <post_assertion>compare response[0].name.common notto $[#new_var]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
 
@@ -539,7 +542,7 @@
             <headers>{}</headers>
             <expected_status_code>200</expected_status_code>
             <authentication></authentication>
-            <pre_variables>$[#suite.var]=GUNS</pre_variables>
+            <pre_variables>set $[#suite.var]=GUNS</pre_variables>
             <key_check></key_check>
             <post_variables></post_variables>
             <post_assertion>compare response[0].name.common notto $[#suite.var]</post_assertion>

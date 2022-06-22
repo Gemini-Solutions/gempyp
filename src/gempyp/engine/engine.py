@@ -23,6 +23,7 @@ from gempyp.pyprest.pypRest import PypRest
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
+    
     """
     calls the differnt executors based on the type of the data
     """
@@ -31,7 +32,8 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     # print("!!!!!!!!!!!!!!", data["configData"]["TYPE"])
 
     if not custom_logger:
-        log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
+        # log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
+        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['configData'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.log')
         custom_logger = my_custom_logger(log_path)
     data['configData']['LOGGER'] = custom_logger
@@ -102,6 +104,10 @@ class Engine:
         os.makedirs(self.ouput_folder)
         self.testcase_folder = os.path.join(self.ouput_folder, "testcases")
         os.makedirs(self.testcase_folder)
+        self.testcase_log_folder = os.path.join(self.ouput_folder, "logs")
+        os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
+        os.makedirs(self.testcase_log_folder)
+
 
     def setUP(self, config: Type[abstarctBaseConfig]):
         # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
@@ -195,10 +201,17 @@ class Engine:
         """
         start running the testcases in sequence
         """
+
         for testcase in self.CONFIG.getTestcaseConfig():
             data = self.getTestcaseData(testcase)
+<<<<<<< HEAD
             # print(self.CONFIG.getSuiteConfig())
             log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
+=======
+            print(self.CONFIG.getSuiteConfig())
+            # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
+            log_path = os.path.join(self.testcase_log_folder,
+>>>>>>> 27ff55aa641df40df28a24937b71d15179d0e284
             data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
             custom_logger = my_custom_logger(log_path)
             data['configData']['log_path'] = log_path

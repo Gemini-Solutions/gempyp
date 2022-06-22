@@ -94,7 +94,7 @@ class PypRest(Base):
   
         
         # capitalize the keys
-        self.logger.info(self.data["configData"])
+
         for k, v in self.data["configData"].items():
             self.data.update({k.upper(): v})
         self.env = self.data.get("ENV", "PROD").strip(" ").upper()
@@ -188,6 +188,8 @@ class PypRest(Base):
             self.logResponse()
             
         except Exception as e:
+            if str(e) == "abort":
+                raise Exception("abort")
             self.logger.info(traceback.print_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
             self.reporter._miscData["REASON_OF_FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
@@ -197,7 +199,7 @@ class PypRest(Base):
         """
         For setting variables like testcase name, output folder etc.
         """
-
+        print(self.data)
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
         self.data["OUTPUT_FOLDER"] = self.data.get("OUTPUT_FOLDER", self.default_report_path)
         if self.data["OUTPUT_FOLDER"].strip(" ") == "":
@@ -387,7 +389,5 @@ class PypRest(Base):
         else:
             code_list = [self.exp_status_code.strip("'").strip(" ").strip('"')]
         code_list = [int(each.strip(" ")) for each in code_list if each not in ["", " "]]
-        self.logger.info(code_list)
-        print(" ++++++++++++++++++++++++++++++++")
         return code_list
 
