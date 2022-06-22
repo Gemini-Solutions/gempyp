@@ -91,7 +91,7 @@ class PypRest(Base):
         """This is a function to get the values from configData, store it in self object."""
 
         # capitalize the keys
-        self.logger.info(self.data["configData"])
+
         for k, v in self.data["configData"].items():
             self.data.update({k.upper(): v})
         self.env = self.data.get("ENV", "PROD").strip(" ").upper()
@@ -183,6 +183,8 @@ class PypRest(Base):
             self.logResponse()
             
         except Exception as e:
+            if str(e) == "abort":
+                raise Exception("abort")
             self.logger.info(traceback.print_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
             self.reporter._miscData["Reason_of_failure"] += f"Some error occurred while sending request- {str(e)}, "
@@ -192,7 +194,7 @@ class PypRest(Base):
         """
         For setting variables like testcase name, output folder etc.
         """
-
+        print(self.data)
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
         self.data["OUTPUT_FOLDER"] = self.data.get("OUTPUT_FOLDER", self.default_report_path)
         if self.data["OUTPUT_FOLDER"].strip(" ") == "":

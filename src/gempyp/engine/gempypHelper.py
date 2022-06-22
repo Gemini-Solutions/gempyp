@@ -8,6 +8,11 @@ class Gempyp(AbstarctSimpleTestcase):
             self.reporter = testcaseReporter(projectName, testcaseName)
         else:
             self.reporter = testcaseReporter("Gempyp", "testing")
+        
+        # access project name and testcase name
+        # self.reporter = testcaseReporter(Project, Testcase)
+        # user will use this reporter in their testcases
+        
 
 
         
