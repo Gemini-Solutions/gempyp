@@ -1,36 +1,40 @@
-from gempyp.engine.gempypHelper import Gempyp
-from gempyp.engine.gempypHelper import Gempyp
+from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 
 
-class Combined(Gempyp):
+class Combined(AbstractSimpleTestcase):
     def __init__(self):
         pass
 
-    def testcase_1(self):
-        self.report = Gempyp("Gempyp", "testcase_1").reporter
-        # need to user Gempyp.reporter directly here
-        # no need to give testcase name and project name
-        self.report.addRow("test", "desc", Gempyp.PASS)
-        return self.report
+    def testcase_1(self, reporter):
+        reporter.addRow("test", "desc", self.Status.PASS)
+        reporter.logger.info("Testing logger -  this is testcase 1--------------------------")
+        reporter.addMisc("TEST 1", "Test")
 
-    def testcase_2(self):
-        self.report = Gempyp("Gempyp", "testcase_2").reporter
-        self.report.addRow("main test", "main desc", self.PASS)
-        return self.report
+        return reporter
+
+    def testcase_2(self, reporter):
+        reporter.logger.info("Here we are testing logger")
+        reporter.logger.info("this is testcase 2--------------------------")
+        reporter.addRow("main test", "main desc", self.Status.PASS)
+        reporter.addMisc("TEST 2", "Test___")
+
+        return reporter
     
-    def testcase_except_(self):
-        self.report = Gempyp("Gempyp", "testcase_except").reporter
+    def testcase_except_(self, reporter):
+        reporter.logger.info("this is the exception testcase")
+        reporter.addRow("except test", "main desc", self.Status.PASS)
+
         x=3/0
-        self.report.addRow(
-           "test step3", "divide by 0: " +x, self.FAIL, extra_arg3="3", extra_arg2="2"
+        reporter.logger.info("this is the exception testcase")
+        reporter.addRow("except test", "main desc", self.Status.PASS)
+
+        reporter.addRow(
+           "test step3", "divide by 0: " +x, self.Status.FAIL, extra_arg3="3", extra_arg2="2"
         )
         self.report.addMisc("Reason_Of_Failure", "Missing")
-        # self.reporter.finalize_report()
-        # self.reporter.templateData.makeReport("test")
-        # print(self.reporter.serialize())
 
-    def main(self):
-        self.report = Gempyp("Gempyp", "main_test").reporter
-        self.report.addRow("main_test", "desc", self.PASS)
+    def main(self, reporter):
+        reporter.addRow("main_test", "desc", self.Status.PASS)
+        return reporter
 
 
