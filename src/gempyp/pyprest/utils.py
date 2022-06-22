@@ -72,7 +72,10 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
                 if isinstance(json_, str) and json_ != "":
                     json_ = json.dumps(json_)
                 if json_ != "":
-                    json_ = json_[key]
+                    if "response" == key.lower():
+                        json_ = json_
+                    else:
+                        json_ = json_[key]
                 if json_ is None:
                     json_ = "null"
         if flag != 1:
@@ -99,7 +102,7 @@ def getValuesForEach(each_value_dict, keys_to_fetch):
 def getNestedListData(i, json_data, key_val):
     """parse nested lists in response"""
     # check if response is empty or not, if response is empty, how did it reach here?
-    
+
     br_start = i.find('[')
     br_end = i.find(']')
     key_num = int(i[br_start + 1:br_end])

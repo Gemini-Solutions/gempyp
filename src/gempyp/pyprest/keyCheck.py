@@ -105,8 +105,15 @@ class KeyCheck:
                 key_val = each[:br_index]
 
                 # for response[each].something
-                if key_val == "response" and isinstance(json_data, list):
+                if key_val.lower() == "response" and isinstance(json_data, list):
                     key_list.remove(each)
+                    return self.findKeys(json_data, key_list, temp_key_list)
+                
+                if key_val.lower() == "response" and isinstance(json_data, dict):
+                    print(key_list)
+                    key_list.remove(each)
+                    print(key_list)
+
                     return self.findKeys(json_data, key_list, temp_key_list)
 
                 # for data[each].something
@@ -174,12 +181,16 @@ class KeyCheck:
 
                 # if input is dict
                 elif isinstance(json_data, dict):
-                    if each in json_data:
+                    if each in json_data or each.lower() == "response":
                         tmp_key = list(key_list)
                         tmp_key.remove(each)
                         if len(tmp_key) == 0:
                             return "FOUND"
-                        return self.findKeys(json_data[each], tmp_key, temp_key_list)
+                        if each.lower() == "response":
+                            json_data = json_data
+                        else:
+                            json_data = json_data[each]
+                        return self.findKeys(json_data, tmp_key, temp_key_list)
 
                     # return not found if key not found in the dictionary i.e. the json_data . 
                     # json_data here is the json/list passed to this function in this recursion
