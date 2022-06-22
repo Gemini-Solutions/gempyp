@@ -7,7 +7,7 @@ import uuid
 from typing import Dict, List, Tuple
 import importlib
 from gempyp.libs import common
-from gempyp.engine.gempypHelper import Gempyp
+from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 from gempyp.libs.common import moduleImports
 
 
@@ -35,8 +35,8 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 # currently running only one class easily extensible to run multiple classes
                 # from single file
                 if (
-                    issubclass(cls, Gempyp)
-                    and name != "Gempyp"
+                    issubclass(cls, AbstractSimpleTestcase)
+                    and name != "AbstractSimpleTestcase"
                 ):
 
                     print("------- In subclass check --------")
@@ -78,7 +78,8 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 # have to look into the way on how to get the log file
                 try:
                     # log_file = os.path.join(os.environ.get('log_dir'),data['NAME']+'_'+unique_id+'.log')
-                    log_file= os.path.join('../../logs',data['NAME']+'_'+unique_id+'.log')
+                    # log_file= os.path.join('../../logs',data['NAME']+'_'+unique_id+'.log')
+                    log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log')
                 except Exception:
                     log_file = None
                 tempdict["log_file"] = log_file 

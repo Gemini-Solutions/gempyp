@@ -1,25 +1,23 @@
-from gempyp.engine.gempypHelper import Gempyp
+from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 
 
-class sample2(Gempyp):
+class sample2(AbstractSimpleTestcase):
     def __init__(self):
         pass 
 
-    def verify(self):
-        self.report = Gempyp("Gempyp", "verify_testcase").reporter
-        self.report.addRow("test", "desc", self.PASS)
-        # for status, we can use self.PASS or Gempyp.PASS
-        return self.report
+    def verify(self, reporter):
+        reporter.addRow("test", "desc", self.Status.PASS)
+        reporter.logger.info("We are testing logger inside verify method")
+        return reporter
 
-    def Main(self):
-        self.report = Gempyp("Gempyp", "Main_testcase").reporter
-        self.report.addRow("main test", "main desc", Gempyp.PASS)
-        return self.report
+    def Main(self, reporter):
+        reporter.addRow("main test", "main desc", self.Status.PASS)
+        reporter.logger.info("We are testing logger inside main method")
+        return reporter
 
-    def main(self):
-        self.report = Gempyp("Gempyp", "main_Testcase_sample_2").reporter
-        self.report.addRow("main test", "main desc", self.PASS)
-        return self.report
+    def main(self, reporter):
+        reporter.addRow("main test", "main desc", self.Status.PASS)
+        return reporter
 
 if __name__ == "__main__":
     sample2().verify()  
