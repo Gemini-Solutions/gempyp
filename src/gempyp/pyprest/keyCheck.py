@@ -81,7 +81,7 @@ class KeyCheck:
             self.pyprest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
 
         if status.FAIL in [_status, _status_n]:
-            self.pyprest_obj.reporter._miscData["Reason_of_failure"] = "Status of key check is not as expected"
+            self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] = "Status of key check is not as expected"
             # self.pyprest_obj.reporter.addMisc(Reason_of_failure="Status of key check is not as expected")
 
 

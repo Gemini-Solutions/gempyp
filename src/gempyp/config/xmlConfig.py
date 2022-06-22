@@ -21,6 +21,7 @@ class XmlConfig(abstarctBaseConfig):
         LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.log'))
         super().__init__(filePath)
         # do any xml specific validatioins here
+       
 
     def parse(self, filePath):
         logging.info("-------- Xml file path: {filePath} ----------".format(filePath=filePath))
@@ -36,6 +37,7 @@ class XmlConfig(abstarctBaseConfig):
         suiteData = data.find("suite")
 
         suiteDict = xmlToDict(suiteData)
+        suiteDict["SUITE_VARS"] = {}
         #Adding bridgeToken validation here
         logging.info("--------suiteDict--------\n {suiteDict} \n----------".format(suiteDict=suiteDict))
         if suiteDict.get("BRIDGE_TOKEN", None) is None:

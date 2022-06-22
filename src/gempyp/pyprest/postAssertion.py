@@ -10,6 +10,10 @@ class PostAssertion:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
         self.logger = self.pyprest_obj.logger
+        self.space_handler = {
+            "not to": "notto",
+            "not in": "notin",
+        }
         pass
 
     def postAssertion(self):
@@ -21,13 +25,15 @@ class PostAssertion:
         if self.pyprest_obj.post_assertion:
             self.logger.info("************** INSIDE POST ASSERTION  **************")
             var_replacement(self.pyprest_obj).variableReplacement()
-            self.post_assertion_str = self.pyprest_obj.post_assertion
+            self.post_assertion_str = " ".join(self.pyprest_obj.post_assertion.split())
             post_ass_str_list = self.post_assertion_str.strip(";").split(";")
+
             key_str = []
-            for each in post_ass_str_list:
-                key_str.append(str(list(str(each).split(" "))[1]))
+            assertion_list = self.getAssertionDict(post_ass_str_list)
+            for each in assertion_list:
+                key_str.append(list(each.keys())[0])
             key_str = list(set(key_str))
-            assertion_list = self.getAssertionDict(post_ass_str_list)  # list of dictionaries of operator and values for keys
+            # list of dictionaries of operator and values for keys
             # get a string of comma separated keys
 
             self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: </br>" + "</br>".join(key_str), status.INFO)
@@ -53,18 +59,23 @@ class PostAssertion:
         ]
         """
         # need to add condition for compare all and compare all except in legacy
+        temp_str = str(";".join(string_list))
+        for i in self.space_handler.keys():
+            temp_str = temp_str.replace(str(i), self.space_handler[i])
+        string_list = temp_str.split(';')
+        flag = 0
         list_ = []
         for each in string_list:
-            items = each.split(" ")
-            if '[' in each:
-                br_start = each.rfind('[')
-                br_end = each.rfind(']')
-                if each[br_start - 1] in ["'", '"', "$", " "]:
-                    items = each[:br_start - 1].split(" ") + [each[br_start:br_end + 1]] + each[br_end + 1:].split(" ")
-                if "" in items:
-                    items.remove("")
-            if items[0].strip(" ").upper() == "COMPARE":
-                list_.append(dict({items[1]: {"operator": "".join(items[2:-1]), "value": items[-1]}}))
+            if "COMPARE" == each.strip(" ").split(" ")[0].upper():
+                each = each.strip(" ").split(" ", 1)[1]
+                flag = 1
+            if flag == 1:
+                assert_str = each.strip(" ").split(" ", 1)
+                key = assert_str[0]
+                opr_val = assert_str[1].strip(" ").split(" ", 1)
+                opr = opr_val[0].strip(" ")
+                val = opr_val[1].strip(" ")
+                list_.append(dict({key: {"operator": "".join(opr.strip(" ")), "value": val.strip(" ")}}))
         return list_
 
     def postAssertionFunc(self, key_val_dict, assertion_list):

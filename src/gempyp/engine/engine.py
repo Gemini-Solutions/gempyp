@@ -1,3 +1,4 @@
+from cgi import test
 import sys
 import os
 import platform
@@ -68,6 +69,8 @@ class Engine:
     def run(self, params_config: Type[abstarctBaseConfig]):
         logging.info("Engine Started")
         # initialize the data class
+        
+
         self.DATA = testData()
         # get the env for the engine Runner
         self.ENV = os.getenv("ENV_BASE", "BETA").upper()
@@ -120,6 +123,10 @@ class Engine:
         self.reportName = self.PARAMS.get("REPORT_NAME")
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
+        self.user_suite_variables = self.PARAMS["SUITE_VARS"]
+        
+
+        #add suite_vars here 
 
     def parseMails(self):
         self.mail = common.parseMails(self.PARAMS["MAIL"])
@@ -194,10 +201,11 @@ class Engine:
         """
         start running the testcases in sequence
         """
+        print(self.CONFIG.getTestcaseConfig())
 
         for testcase in self.CONFIG.getTestcaseConfig():
+            print("########################################################")
             data = self.getTestcaseData(testcase)
-            print(self.CONFIG.getSuiteConfig())
             # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
             log_path = os.path.join(self.testcase_log_folder,
             data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
@@ -205,6 +213,7 @@ class Engine:
             data['configData']['log_path'] = log_path
             #LoggingConfig(data['configData'].get('NAME')+'.log')
             output, error = executorFactory(data, custom_logger)
+            
             if error:
                 custom_logger.error(
                     f"Error occured while executing the testcase: {error['testcase']}"
@@ -281,8 +290,13 @@ class Engine:
                 output = [output]
             for i in output:
                 i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
+                
                 testcaseDict = i["testcaseDict"]
                 try:
+                    """ update suite vars here from testcaseDict["suite_variables"] append it in the suite vars of _config"""
+    
+                    self.user_suite_variables.update(i.get("suite_variables", {}))
+                    
                     self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:
                     logging.error(e)
@@ -331,7 +345,7 @@ class Engine:
 
         result["testcaseDict"] = testcaseDict
 
-        misc["reason of failure"] = message
+        misc["REASON_OF_FAILURE"] = message
 
         result["misc"] = misc
 
@@ -365,6 +379,7 @@ class Engine:
         data["USER"] = self.user
         data["MACHINE"] = self.machine
         data["OUTPUT_FOLDER"] = self.testcase_folder
+        data["SUITE_VARS"] = self.user_suite_variables
         return data
 
     def getDependency(self, testcases: Dict):
@@ -481,7 +496,12 @@ class Engine:
             for key, val in count_info.items():
                 if key in status_dict.keys():
                     log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
+        
+
             logging.info(log_str.strip(" | "))
+            
             logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
+
+
         except Exception as e:
             logging.error(traceback.print_exc(e))

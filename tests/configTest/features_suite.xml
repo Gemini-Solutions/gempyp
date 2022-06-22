@@ -8,7 +8,7 @@
         <env>beta</env>
         <bridge_token>tokentest</bridge_token>
     </suite>
-    
+
     <testcases>
 
         <testcase>

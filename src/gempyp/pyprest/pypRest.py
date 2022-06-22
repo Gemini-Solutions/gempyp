@@ -17,6 +17,7 @@ from gempyp.pyprest.postVariables import PostVariables
 from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
+from gempyp.pyprest.miscVariables import MiscVariables
 
 
 class PypRest(Base):
@@ -33,7 +34,7 @@ class PypRest(Base):
 
         # setting reporter object
         self.reporter = Base(projectName=self.project, testcaseName=self.tcname)
-        self.reporter._miscData["Reason_of_failure"] = ""
+        self.reporter._miscData["REASON_OF_FAILURE"] = ""
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
 
@@ -51,7 +52,7 @@ class PypRest(Base):
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.logger.error(traceback.print_exc())
-                    self.reporter._miscData["Reason_of_failure"] += f"Something went wrong:- {str(e)}, "
+                    self.reporter._miscData["REASON_OF_FAILURE"] += f"Something went wrong:- {str(e)}, "
                     self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
             output = writeToReport(self)
             return output, None
@@ -68,6 +69,7 @@ class PypRest(Base):
         # execute and format result 
         self.execRequest()
         self.postProcess()
+        MiscVariables(self).miscVariables()
         self.logger.info("--------------------Execution Completed ------------------------")
         self.reporter.finalize_report()
 
@@ -82,20 +84,20 @@ class PypRest(Base):
 
         if len(set(mandate) - set([i.upper() for i in self.data["configData"].keys()])) > 0:
             # update reason of failure in misc
-            self.reporter._miscData["Reason_of_failure"] += "Mandatory keys are missing, "
+            self.reporter._miscData["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
             
     # read config and get data
     def getVals(self):
         """This is a function to get the values from configData, store it in self object."""
-
+  
+        
         # capitalize the keys
 
         for k, v in self.data["configData"].items():
             self.data.update({k.upper(): v})
         self.env = self.data.get("ENV", "PROD").strip(" ").upper()
-
         # get the api url
         if self.env not in self.data.keys():
             self.api = self.data["configData"]["API"].strip(" ")
@@ -108,7 +110,9 @@ class PypRest(Base):
         # get the headers
         self.headers = json.loads(self.data["configData"].get("HEADERS", {}))
 
-
+        #get miscellaneous variables for report.
+        self.report_misc = self.data["configData"].get("REPORT_MISC","")
+        
         # get body
         self.body = json.loads(self.data["configData"].get("BODY", {}))
 
@@ -133,6 +137,7 @@ class PypRest(Base):
 
         self.password = self.data["configData"].get("PASSWORD", None)
 
+        
         #setting variables and variable replacement
         PreVariables(self).preVariable()
         var_replacement(self).variableReplacement()
@@ -187,7 +192,7 @@ class PypRest(Base):
                 raise Exception("abort")
             self.logger.info(traceback.print_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
-            self.reporter._miscData["Reason_of_failure"] += f"Some error occurred while sending request- {str(e)}, "
+            self.reporter._miscData["REASON_OF_FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
             raise Exception(f"Error occured while sending request - {str(e)}")
 
     def setVars(self):
@@ -236,7 +241,7 @@ class PypRest(Base):
                              f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                              + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                              status.FAIL)
-            self.reporter._miscData["Reason_of_failure"] += "Response code is not as expected, "
+            self.reporter._miscData["REASON_OF_FAILURE"] += "Response code is not as expected, "
             self.logger.info("status codes did not match, aborting testcase.....")
             raise Exception("abort")
 

@@ -122,21 +122,28 @@ def getNestedListData(i, json_data, key_val):
             return key_num, json_data
 
 
+def dispatch_dict():
+    dispatch = {
+        'to': cf.compare_to,
+        'notto': cf.compare_notto,
+        'not to': cf.compare_notto,
+        'not_to': cf.compare_notto,
+        'in': cf.compare_in,
+        'notin': cf.compare_notin,
+        'not in': cf.compare_notin,
+        'not_in': cf.compare_notin,
+        'contains': cf.compare_contains,
+        'not_supported': cf.no_operator,
+    }
+    return dispatch
+
+
 def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1):
 
     # operators ----- to, notto, not_to, not to, contains, in, except
     gp = reporter_obj
 
-    dispatch = {
-        'to': cf.compare_to,
-        'notto': cf.compare_notto,
-        'not_to': cf.compare_notto,
-        'in': cf.compare_in,
-        'notin': cf.compare_notin,
-        'not_in': cf.compare_notin,
-        'contains': cf.compare_contains,
-        'not_supported': cf.no_operator,
-    }
+    dispatch = dispatch_dict()
     if operator in list(dispatch.keys()):
         return dispatch[operator](gp, key, value, key_val_dict, tolerance)
     else:

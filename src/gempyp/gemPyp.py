@@ -31,6 +31,7 @@ class GemPyp:
     def runner(self):
         """This function takes the config and updates the config data in case or cli run and direct(python) run"""
         config = XmlConfig(self.config)
+        print(config.__dict__)
         if not self.args:
             del self.__dict__["args"]
             config.cli_config = vars(self)
