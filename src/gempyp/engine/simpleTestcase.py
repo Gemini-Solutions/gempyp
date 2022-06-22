@@ -8,7 +8,7 @@ from gempyp.libs.enums.status import status
 import logging
 
 
-class AbstarctSimpleTestcase(ABC):
+class AbstarctSimpleTestcase(ABC, status):
     def gempypMethodExecutor(
         self, cls, testcaseSettings: Dict, **kwargs
     ) -> testcaseReporter:

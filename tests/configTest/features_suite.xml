@@ -4,7 +4,7 @@
         <mail>ankitapandey281999@gmail.com</mail>
         <project>PYPREST</project>
         <report_name>feature_regression</report_name>
-        <mode>OPTIMIZE</mode>
+        <mode>optimize</mode>
         <env>beta</env>
         <bridge_token>tokentest</bridge_token>
     </suite>
@@ -47,7 +47,7 @@
 
         <testcase>
             <name>Test_Pre_Variable_in_Body</name>
-            <cateory>Pre_variables</cateory>
+            <category>Pre_variables</category>
             <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
@@ -68,7 +68,7 @@
 
         <testcase>
             <name>Test_Pre_Variable_in_Headers</name>
-            <cateory>Pre_variables</cateory>
+            <category>Pre_variables</category>
             <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
@@ -106,7 +106,7 @@
 
         <testcase>
             <name>Test_Post</name>
-            <cateory>Method</cateory>
+            <category>Method</category>
             <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
@@ -434,7 +434,7 @@
             <pre_variables>set $[#var]=GUNS</pre_variables>
             <key_check></key_check>
             <post_variables>set $[#new_var]=$[#var]</post_variables>
-            <post_assertion>compare response[0].name.common to $[#new_var]</post_assertion>
+            <post_assertion>compare response[0].name.common notto $[#new_var]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
 

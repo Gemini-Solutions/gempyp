@@ -1,0 +1,95 @@
+<data>
+
+    <suite>
+    <mail>test@gmail.com</mail>
+    <project>GEMPYP_TEST</project>
+    <report_name>FEATURE_REGRESSION</report_name>
+    <mode>optimize</mode>
+    <env>beta</env>
+    <bridge_token>tokentest</bridge_token>
+    </suite>
+
+    <testcases>
+
+
+        <testcase>
+        <name>testcase_except_</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.Testcase_methods_1</path>
+        <location>test</location>
+        <method>testcase_except_</method>
+        <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>testcase_1</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.Testcase_methods_1</path>
+        <location>test</location>
+        <type>gempyp</type>
+        <method>testcase_1</method>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>testcase_2</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.Testcase_methods_1</path>
+        <location>test</location>
+        <type>gempyp</type>
+        <method>testcase_2</method>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>testcase_main</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.Testcase_methods_1</path>
+        <location>test</location>
+        <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>verify_testcase</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.Testcase_methods_2</path>
+        <location>test</location>
+        <method>verify</method>
+        <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>Main_testcase</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.Testcase_methods_2</path>
+        <location>test</location>
+        <method>Main</method>
+        <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+        <name>main_Testcase_sample_2</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <path>tests.sample_testcase.Testcase_methods_2</path>
+        <location>test</location>
+        <type>gempyp</type>
+        <extra_args1>hello</extra_args1>
+        </testcase>
+
+    </testcases>
+
+
+</data>
+
+
