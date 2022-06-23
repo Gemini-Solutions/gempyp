@@ -94,6 +94,9 @@ class testData:
             testcaseDict = [test_dict[tc_run_id] for tc_run_id in test_dict.keys()]
         except Exception as e:
             traceback.print_exc()
+        # print("*************")
+        # print(testcaseDict)
+        # print("*************")
 
         suiteDict["TestCase_Details"] = testcaseDict
         testcase_counts = self.getTestcaseCounts()

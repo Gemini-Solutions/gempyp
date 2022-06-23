@@ -204,14 +204,9 @@ class Engine:
 
         for testcase in self.CONFIG.getTestcaseConfig():
             data = self.getTestcaseData(testcase)
-<<<<<<< HEAD
-            # print(self.CONFIG.getSuiteConfig())
-            log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
-=======
             print(self.CONFIG.getSuiteConfig())
             # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
             log_path = os.path.join(self.testcase_log_folder,
->>>>>>> 27ff55aa641df40df28a24937b71d15179d0e284
             data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
             custom_logger = my_custom_logger(log_path)
             data['configData']['log_path'] = log_path
@@ -299,7 +294,7 @@ class Engine:
                 try:
                     """ update suite vars here from testcaseDict["suite_variables"] append it in the suite vars of _config"""
     
-                    self.user_suite_variables.update(testcaseDict["suite_variables"])
+                    self.user_suite_variables.update(i.get("suite_variables",{}))
                     
                     self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:

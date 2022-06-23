@@ -1,5 +1,4 @@
 from gempyp.config.xmlConfig import XmlConfig
-from 
 from gempyp.engine.engine import Engine
 
 

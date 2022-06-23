@@ -27,44 +27,7 @@
             <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <TYPE>PYPREST</TYPE>
         </testcase>
-        <testcase>
-            <name>Test_functions_2</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://gorest.co.in/public/v2/$[#SUITE.user]</api>
-            <method>GET</method>
-            <body>{}</body>
-            <headers>{}</headers>
-            <expected_status_code>200</expected_status_code>
-            <authentication></authentication>
-            <pre_variables>set $[#SUITE.pst]=$[#SUITE.varpost];set $[#user]=users;set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var2] = $[#SUITE.var1]</pre_variables>
-            <key_check></key_check>
-            <post_variables>set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var3]="SUITE_VAR2";</post_variables>
-            <post_assertion>compare response.name  to 'Ekaksh Singh JD'; compare response.id to 3284; </post_assertion>
-            <location>tests</location>
-            <debug_mode>false</debug_mode>
-            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
-            <TYPE>PYPREST</TYPE>
-        </testcase>
-        <testcase>
-            <name>Test_functions_3</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://gorest.co.in/public/v2/$[#SUITE.pst]</api>
-            <method>GET</method>
-            <body>{}</body>
-            <headers>{}</headers>
-            <expected_status_code>200</expected_status_code>
-            <authentication></authentication>
-            <pre_variables>set $[#user]=users;set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var4] = $[#SUITE.var3]</pre_variables>
-            <key_check></key_check>
-            <post_variables>set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var5]="SUITE_VAR5";</post_variables>
-            <post_assertion>compare response[0].name  to "3284"; compare response[0].name to "3284";</post_assertion>
-            <location>tests</location>
-            <debug_mode>false</debug_mode>
-            <report_misc>set $[#misc.report_columns]=$[#post_var_meth];set $[#misc.post_var] = $[#SUITE.pst]</report_misc>
-            <TYPE>PYPREST</TYPE>
-        </testcase>
+
 
     </testcases>
 </data>

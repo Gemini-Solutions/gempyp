@@ -48,7 +48,7 @@ def writeToReport(pyprest_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
-    tempdict["suite_variables"] = pyprest_obj.variables["suite"]
+    # tempdict["suite_variables"] = pyprest_obj.variables["suite"]
     all_status = result["jsonData"]["metaData"][2]
     total = 0
     for key in all_status:
@@ -63,6 +63,7 @@ def writeToReport(pyprest_obj):
     singleTestcase["testcaseDict"] = tempdict
     singleTestcase["misc"] = result.get("MISC")
     singleTestcase["jsonData"] = pyprest_obj.jsonData
+    singleTestcase["suite_variables"] = pyprest_obj.variables["suite"]
     output.append(singleTestcase)
 
     return output

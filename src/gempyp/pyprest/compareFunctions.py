@@ -9,15 +9,9 @@ def compare_to(obj, key, value, key_val_dict, tolerance=0.1):
     OPERATOR -"to"
     """
     actual_value = key_val_dict.get(key, key)
-<<<<<<< HEAD
-   
-    if str(actual_value.lower()) == str(value).strip('"').strip("'").lower():
-        obj.addRow(f"Running validation for {key}", f"Expected value:- {value}</br>Actual value:- {actual_value}</br>Values are same", status.PASS)
-=======
     if isinstance(actual_value, (int, float)):
         actual_value = actual_value
         exp_value = float(value.strip('"').strip("'").lower()) 
->>>>>>> 27ff55aa641df40df28a24937b71d15179d0e284
     else:
         actual_value = str(actual_value).lower()
         exp_value = value.strip('"').strip("'").lower()
