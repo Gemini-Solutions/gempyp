@@ -21,10 +21,7 @@
         </testcase>
 
         <testcase>
-            <name>REST_COUNTRIES_3</name>
-=======
             <name>Test_functions_1</name>
->>>>>>> 3e731a2cfb89190d1cbd7385aff9ac5326855fea
             <category>sample</category>
             <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
@@ -82,11 +79,7 @@
         </testcase>
 
         <testcase>
-<<<<<<< HEAD
-=======
->>>>>>> 27ff55aa641df40df28a24937b71d15179d0e284
-=======
->>>>>>> 3e731a2cfb89190d1cbd7385aff9ac5326855fea
+
             <name>Test_Pre_Variables</name>
             <category>Pre_variables</category>
             <run_flag>Y</run_flag>
