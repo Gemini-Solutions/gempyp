@@ -65,6 +65,9 @@ class KeyCheck:
                 else:
                     _status = status.PASS
             self.pyprest_obj.reporter.addRow("Keys to be check for PRESENCE in response body", content_found, _status)
+            if _status == status.FAIL:
+                self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing in Response, "
+
         if len(self.keys_not) > 0:
             for each_key in self.keys_not:
                 self.key_list = [str(i) for i in each_key.split(".")]
@@ -81,7 +84,7 @@ class KeyCheck:
             self.pyprest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
 
         if status.FAIL in [_status, _status_n]:
-            self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] = "Status of key check is not as expected"
+            self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] = "Status of key check is not as expected, "
             # self.pyprest_obj.reporter.addMisc(Reason_of_failure="Status of key check is not as expected")
 
 

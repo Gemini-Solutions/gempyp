@@ -54,6 +54,8 @@ class PypRest(Base):
                     self.logger.error(traceback.print_exc())
                     self.reporter._miscData["REASON_OF_FAILURE"] += f"Something went wrong:- {str(e)}, "
                     self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
+            if self.reporter._miscData["REASON_OF_FAILURE"] == "":
+                self.reporter._miscData["REASON_OF_FAILURE"] = None
             output = writeToReport(self)
             return output, None
         except Exception as e:

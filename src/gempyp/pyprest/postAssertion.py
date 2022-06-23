@@ -48,6 +48,8 @@ class PostAssertion:
                     self.logger.info("====== Key Not Found in response =======")
                     self.logger.info("'" + each_assert + "' is not found")
                     self.pyprest_obj.reporter.addRow(f"Checking presence of key {each_assert} in response", f"Key {each_assert} is not found in the response", status.FAIL)
+                    self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing for assertion in Response, "
+                    
                 else:
                     key_val_dict = utils.fetchValueOfKey(response_json, key_part_list, result, key_val_dict)
             self.postAssertionFunc(key_val_dict, assertion_list)

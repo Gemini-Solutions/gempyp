@@ -20,6 +20,8 @@ def compare_to(obj, key, value, key_val_dict, tolerance=0.1):
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+        obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+
     return obj
 
 
@@ -39,6 +41,8 @@ def compare_notto(obj, key, value, key_val_dict, tolerance=0.1):
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+        obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+    
     return obj
 
 
@@ -60,6 +64,8 @@ def compare_in(obj, key, value, key_val_dict, tolerance=0.1):
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+        obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+    
     return obj
 
 
@@ -83,6 +89,8 @@ def compare_notin(obj, key, value, key_val_dict, tolerance=0.1):
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+        obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+        
     return obj
 
 def compare_contains(obj, key, value, key_val_dict, tolerance=0.1):
@@ -94,6 +102,8 @@ def compare_contains(obj, key, value, key_val_dict, tolerance=0.1):
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+        obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+        
     return obj
 
 

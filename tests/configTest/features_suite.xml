@@ -12,6 +12,64 @@
     <testcases>
 
         <testcase>
+            <name>Test_functions_1</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var2]="SUITE_VAR2";</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>false</debug_mode>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+        <testcase>
+            <name>Test_functions_2</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://gorest.co.in/public/v2/$[#SUITE.user]</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#SUITE.pst]=posts;set $[#SUITE.user]=users;set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var2] = VAR_1</pre_variables>
+            <key_check></key_check>
+            <post_variables>set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var3]="SUITE_VAR2";</post_variables>
+            <post_assertion>compare response[0].id not in [2,4,3088.0];compare response[0].id in [2.0,4.0,3088]; compare response[0].name not to  'Ekaksh Singh JD'; compare response[0].name not in  ['Ekaksh Singh JD',  '1'];compare response.id to 3284;</post_assertion>
+            <location>tests</location>
+            <debug_mode>false</debug_mode>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+        <testcase>
+            <name>Test_functions_3</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://gorest.co.in/public/v2/$[#SUITE.pst]</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#user]=users;set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var4] = $[#SUITE.var3]</pre_variables>
+            <key_check></key_check>
+            <post_variables>set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var5]="SUITE_VAR5";</post_variables>
+            <post_assertion> compare response[0].name to  "3284"; compare response[0].name to "3284";</post_assertion>
+            <location>tests</location>
+            <debug_mode>false</debug_mode>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth];set $[#misc.post_var] = $[#SUITE.pst]</report_misc>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
             <name>Test_Pre_Variables</name>
             <category>Pre_variables</category>
             <run_flag>Y</run_flag>
