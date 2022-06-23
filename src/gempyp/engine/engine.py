@@ -201,10 +201,10 @@ class Engine:
         """
         start running the testcases in sequence
         """
+        print(self.CONFIG.getTestcaseConfig())
 
         for testcase in self.CONFIG.getTestcaseConfig():
             data = self.getTestcaseData(testcase)
-            print(self.CONFIG.getSuiteConfig())
             # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
             log_path = os.path.join(self.testcase_log_folder,
             data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
@@ -294,7 +294,7 @@ class Engine:
                 try:
                     """ update suite vars here from testcaseDict["suite_variables"] append it in the suite vars of _config"""
     
-                    self.user_suite_variables.update(i.get("suite_variables",{}))
+                    self.user_suite_variables.update(i.get("suite_variables", {}))
                     
                     self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:
