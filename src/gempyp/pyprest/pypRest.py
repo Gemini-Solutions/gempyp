@@ -20,6 +20,7 @@ from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 
 
+
 class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
         # self.logger.root.setLevel(self.logger.DEBUG)
@@ -57,6 +58,7 @@ class PypRest(Base):
             if self.reporter._miscData["REASON_OF_FAILURE"] == "":
                 self.reporter._miscData["REASON_OF_FAILURE"] = None
             ## variable replacement.val_not_found ---- replace variables with "NULL"
+            var_replacement(self).ValueNotFound()
             output = writeToReport(self)
             return output, None
         except Exception as e:
@@ -111,7 +113,9 @@ class PypRest(Base):
         self.method = self.data["configData"].get("METHOD", "GET")
 
         # get the headers
+        # self.headers = self.data["configData"].get("HEADERS",{})
         self.headers = json.loads(self.data["configData"].get("HEADERS", {}))
+        
 
         #get miscellaneous variables for report.
         self.report_misc = self.data["configData"].get("REPORT_MISC","")
@@ -219,7 +223,7 @@ class PypRest(Base):
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
-        body_str = "</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
+        body_str = f"</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
         self.reporter.addRow("Executing the REST Endpoint", 
                              f"<b>URL</b>: {self.req_obj.api}</br>" 
                              + f"<b>METHOD</b>: {self.req_obj.method}</br>" 
@@ -228,10 +232,32 @@ class PypRest(Base):
                              status.PASS)
 
     def logResponse(self):
+        body = self.res_obj.response_body
+        if isinstance(body, str):
+            if "<!DOCTYPE html>" in body and "</html>" in body:
+                body = f"<a href={self.req_obj.api} target = '_blank'>Click here</a>"
         self.reporter.addRow("Details of Request Execution", 
                              f"<b>RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
                              + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
-                             + f"<b>RESPONSE BODY</b>: {self.res_obj.response_body}", 
+                             + f"<b>RESPONSE BODY</b>: {str(body)}", 
+                             status.INFO)
+        if self.res_obj.status_code in self.exp_status_code:
+            self.reporter.addRow("Validating Response Code", 
+                             f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                             + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
+                             status.PASS)
+        else:
+            self.reporter.addRow("Validating Response Code", 
+                             f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                             + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
+                             status.FAIL)
+            self.reporter._miscData["REASON_OF_FAILURE"] += "Response code is not as expected, "
+            self.logger.info("status codes did not match, aborting testcase.....")
+            raise Exception("abort")
+        self.reporter.addRow("Details of Request Execution", 
+                             f"<b>RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
+                             + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
+                             + f"<b>RESPONSE BODY</b>: {str(self.res_obj.response_body)}", 
                              status.INFO)
         if self.res_obj.status_code in self.exp_status_code:
             self.reporter.addRow("Validating Response Code", 
