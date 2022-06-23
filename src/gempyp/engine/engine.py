@@ -204,7 +204,6 @@ class Engine:
         print(self.CONFIG.getTestcaseConfig())
 
         for testcase in self.CONFIG.getTestcaseConfig():
-            print("########################################################")
             data = self.getTestcaseData(testcase)
             # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
             log_path = os.path.join(self.testcase_log_folder,

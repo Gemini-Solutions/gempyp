@@ -31,7 +31,7 @@ class Combined(AbstractSimpleTestcase):
         reporter.addRow(
            "test step3", "divide by 0: " +x, self.Status.FAIL, extra_arg3="3", extra_arg2="2"
         )
-        reporter.addMisc("Reason_Of_Failure", "Missing")
+        self.report.addMisc("Reason_Of_Failure", "Missing")
 
     def main(self, reporter):
         reporter.addRow("main_test", "desc", self.Status.PASS)

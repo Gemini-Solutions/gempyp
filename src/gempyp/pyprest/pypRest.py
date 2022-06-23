@@ -56,6 +56,7 @@ class PypRest(Base):
                     self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
             if self.reporter._miscData["REASON_OF_FAILURE"] == "":
                 self.reporter._miscData["REASON_OF_FAILURE"] = None
+            ## variable replacement.val_not_found ---- replace variables with "NULL"
             output = writeToReport(self)
             return output, None
         except Exception as e:
@@ -201,7 +202,6 @@ class PypRest(Base):
         """
         For setting variables like testcase name, output folder etc.
         """
-        print(self.data)
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
         self.data["OUTPUT_FOLDER"] = self.data.get("OUTPUT_FOLDER", self.default_report_path)
         if self.data["OUTPUT_FOLDER"].strip(" ") == "":
