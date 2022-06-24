@@ -92,9 +92,9 @@ class Engine:
             report_folder_name = report_folder_name + f"_{self.reportName}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if "outputfolder" in self.PARAMS:
+        if "OUTPUT_FOLDER" in self.PARAMS:
             self.ouput_folder = os.path.join(
-                self.PARAMS["OUTPUTFOLDER"], report_folder_name
+                self.PARAMS["OUTPUT_FOLDER"], report_folder_name
             )
         else:
             self.ouput_folder = os.path.join(
