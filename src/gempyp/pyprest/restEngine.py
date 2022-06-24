@@ -50,7 +50,7 @@ class REngine:
 
     def setUp(self, config: Type[abstarctBaseConfig]):
         self.PARAMS = config.getSuiteConfig()
-        self.CONFIG = config
+        self.CONFIG = config 
         self.machine = platform.node()
         self.user = getpass.getuser()
         self.current_dir = os.getcwd()

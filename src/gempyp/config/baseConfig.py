@@ -4,10 +4,10 @@ from typing import Dict
 import argparse
 import logging
 
-
 class abstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):
         self._CONFIG = {}
+        self.cli_config ={}
         try:
             self.parse(*args, **kwargs)
             # filter the testcasesData
@@ -28,6 +28,7 @@ class abstarctBaseConfig(ABC):
 
     def getTestcaseData(self, testcaseName: str) -> Dict:
         return self._CONFIG["TESTCASE_DATA"].get(testcaseName, None)
+    
 
     def getTestcaseLength(self) -> int:
         return len(self._CONFIG.get("TESTCASE_DATA", []))
@@ -57,7 +58,14 @@ class abstarctBaseConfig(ABC):
 
     # TODO
     def update(self):
+        try:
+            for element in self.cli_config.keys():
+                if self.cli_config[element]:
+                    if str(element) in self._CONFIG['SUITE_DATA']:
+                        self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
+        except Exception as error:
+            print("error occurs in update",error)
         """
         update the suiteData that is given in CLI inputs
         """
-        pass
+        

@@ -1,0 +1,3 @@
+for downloading required libraries from pip use following commands
+
+pip install -r ./src/gempyp/requirement.txt
