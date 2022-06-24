@@ -137,3 +137,5 @@ dmypy.json
 **.Rproj.user*
 **.Rproj
 **.Rhistory
+gempyp_reports/
+slogs/
