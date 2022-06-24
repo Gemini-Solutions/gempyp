@@ -92,9 +92,9 @@ class Engine:
             report_folder_name = report_folder_name + f"_{self.reportName}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if "outputfolder" in self.PARAMS:
+        if "OUTPUT_FOLDER" in self.PARAMS:
             self.ouput_folder = os.path.join(
-                self.PARAMS["OUTPUTFOLDER"], report_folder_name
+                self.PARAMS["OUTPUT_FOLDER"], report_folder_name
             )
         else:
             self.ouput_folder = os.path.join(
@@ -201,24 +201,24 @@ class Engine:
         """
         start running the testcases in sequence
         """
-        print(self.CONFIG.getTestcaseConfig())
 
-        for testcase in self.CONFIG.getTestcaseConfig():
-            data = self.getTestcaseData(testcase)
-            # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
-            log_path = os.path.join(self.testcase_log_folder,
-            data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
-            custom_logger = my_custom_logger(log_path)
-            data['configData']['log_path'] = log_path
-            #LoggingConfig(data['configData'].get('NAME')+'.log')
-            output, error = executorFactory(data, custom_logger)
-            
-            if error:
-                custom_logger.error(
-                    f"Error occured while executing the testcase: {error['testcase']}"
-                )
-                custom_logger.error(f"message: {error['message']}")
-            self.update_df(output, error)
+        for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
+            for testcase in testcases:
+                data = self.getTestcaseData(testcase['NAME'])
+                # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
+                log_path = os.path.join(self.testcase_log_folder,
+                data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
+                custom_logger = my_custom_logger(log_path)
+                data['configData']['log_path'] = log_path
+                #LoggingConfig(data['configData'].get('NAME')+'.log')
+                output, error = executorFactory(data, custom_logger)
+                
+                if error:
+                    custom_logger.error(
+                        f"Error occured while executing the testcase: {error['testcase']}"
+                    )
+                    custom_logger.error(f"message: {error['message']}")
+                self.update_df(output, error)
 
     def startParallel(self):
         """
@@ -238,12 +238,14 @@ class Engine:
                     if self.isDependencyPassed(testcase):
                         poolList.append(self.getTestcaseData(testcase.get("NAME")))
                     else:
+                        print("----------------here--------------------")
                         dependencyError = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
                             "product_type": testcase.get("PRODUCT_TYPE", None),
                         }
+                        ####### handle dependency error in jsondata(update_df)
 
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependencyError)
@@ -288,6 +290,7 @@ class Engine:
                 )
                 output = [output]
             for i in output:
+
                 i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
                 
                 testcaseDict = i["testcaseDict"]
@@ -386,9 +389,11 @@ class Engine:
         yields the testcases with least dependncy first
         Reverse toplogical sort
         """
+
         adjList = {
-            key: list(value.get("DEPENDENCY", [])) for key, value in testcases.items()
+            key: list(set(list(value.get("DEPENDENCY", "").split(","))) - set([""])) for key, value in testcases.items()
         }
+
         for key, value in adjList.items():
             new_list = []
             for testcase in value:
@@ -425,33 +430,30 @@ class Engine:
         """
         cheks if the dependency is passed for the testcase or not
         """
-        for dep in testcase.get("DEPENDENCY", []):
 
-            dep_split = dep.split(":")
+        ###### split on ','
+        for dep in list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""])):
+
+            dep_split = list(dep.split(":"))
 
             if len(dep_split) == 1:
-                if dep_split[0] not in self.DATA.testcaseDetails["NAME"]:
+                ####### NAME to name, to_list()
+                if dep_split[0] not in self.DATA.testcaseDetails["name"].to_list():
                     return False
 
             else:
                 if dep_split[0].upper() == "P":
-                    if dep_split[1] not in self.DATA.testcaseDetails["NAME"]:
+                    if dep_split[1] not in self.DATA.testcaseDetails["name"].to_list():
                         return False
-                    if (
-                        self.DATA.testcaseDetails.loc(
-                            self.DATA.testcaseDetails["NAME"] == dep_split[1]
-                        )["status"]
-                        != status.PASS.name
-                    ):
+                    ####### way to parsing the df    
+                    if ((self.DATA.testcaseDetails[self.DATA.testcaseDetails["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
                         return False
 
                 if dep_split[0].upper() == "F":
-                    if dep_split[1] not in self.DATA.testcaseDetails["NAME"]:
+                    if dep_split[1] not in self.DATA.testcaseDetails["name"].to_list():
                         return False
                     if (
-                        self.DATA.testcaseDetails.loc(
-                            self.DATA.testcaseDetails["NAME"] == dep_split[1]
-                        )["status"]
+                        (self.DATA.testcaseDetails[self.DATA.testcaseDetails["name"] == dep_split[1]]['status'].iloc[0])
                         != status.FAIL.name
                     ):
                         return False

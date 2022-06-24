@@ -33,11 +33,10 @@ class AbstractSimpleTestcase(ABC):
             reporter = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
             # adding logger to the reporter
             reporter.logger = logger
-            reporter_returned = None
             flag = 1
             try:
                 methodName = getattr(cls(), methodName)
-                reporter_returned = methodName(reporter)
+                methodName(reporter)
                 flag = 0
             except Exception as err:
                 logger.info(traceback.print_exc())
@@ -45,10 +44,7 @@ class AbstractSimpleTestcase(ABC):
                 if flag == 1:
                     reporter.addRow("Exception Occured", "Exception occured in testcase: Report was not generated.", status.FAIL)    
                     logger.error("some error occurred while running the Testcase")
-                if reporter_returned:
-                    return reporter_returned
-                else:
-                    return reporter
+                return reporter
                 
         except Exception as e:                
             print(e)
