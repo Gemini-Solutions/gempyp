@@ -1,5 +1,3 @@
-from cgi import test
-from curses.ascii import isdigit
 import sys
 import os
 import platform
