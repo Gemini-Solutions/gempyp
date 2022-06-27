@@ -74,7 +74,7 @@ class VariableReplacement:
                         if var_val == "Null" and "$[#" in str(data[k]):
                             newValStr = data[k]
                         else:
-                            newValStr = data[k].replace(var_name,str(var_val))
+                            newValStr = data[k].replace(var_name, str(var_val))
                         del data[k]
                         data[k] = newValStr
                     

@@ -4,7 +4,6 @@ from libs import common
 from data_compare import compare 
 import traceback
 import argparse
-from src.gempyp.config.xmlConfig import XmlConfig
 
 def test():
    print("hello1")

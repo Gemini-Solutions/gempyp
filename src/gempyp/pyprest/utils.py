@@ -97,6 +97,9 @@ def getValuesForEach(each_value_dict, keys_to_fetch):
 
 
 def getNestedListData(i, json_data, key_val):
+    """parse nested lists in response"""
+    # check if response is empty or not, if response is empty, how did it reach here?
+    
     br_start = i.find('[')
     br_end = i.find(']')
     key_num = int(i[br_start + 1:br_end])
@@ -114,6 +117,7 @@ def getNestedListData(i, json_data, key_val):
             return getNestedListData(i, json_data, key_val)
         else:
             return key_num, json_data
+
 
 def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1):
 

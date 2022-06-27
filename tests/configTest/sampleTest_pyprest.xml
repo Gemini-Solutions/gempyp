@@ -23,7 +23,7 @@
         <testcase>
             <name>REST_COUNTRIES_3</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>$[#method_name]</method>
             <body>{}</body>
@@ -51,8 +51,13 @@
             <expected_status_code>200</expected_status_code>
             <authentication></authentication>
             <pre_variables>set $[#method_name]=GET;set $[#method_second]=[10,8,50,0];set $[#SUITE.func_val]=$[#getDateFromNow(4,'ddmmyyyy')]</pre_variables>
+<<<<<<< HEAD
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
             <post_variables>set $[#new_var]=$[#suite.func_val];set $[#post_var_meth]=$[#uuid()];set $[#suite.var]="SUITE_VAR"]</post_variables>
+=======
+            <key_check>keys are response[0].name, response[0].name.common, response[each].name.common;</key_check>
+            <post_variables>set $[#new_var]=$[#suite.func_val];set $[#post_var_meth]=$[#uuid()];set $[#misc.report_columns]=NEW;set $[#suite.var]="SUITE_VAR"]</post_variables>
+>>>>>>> 27ff55aa641df40df28a24937b71d15179d0e284
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
@@ -63,7 +68,7 @@
         <testcase>
             <name>GOREST</name>
             <cateory>sample</cateory>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>GET</method>
             <body>{}</body>
@@ -83,7 +88,7 @@
         <testcase>
             <name>GOREST_2</name>
             <cateory>sample</cateory>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
             <body> {        
@@ -106,7 +111,7 @@
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -127,7 +132,7 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -148,7 +153,7 @@
         <testcase>
             <name>Test_functions_3</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -169,7 +174,7 @@
         <testcase>
             <name>Test_functions_4</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -190,7 +195,7 @@
         <testcase>
             <name>Test_functions_5</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -211,7 +216,7 @@
         <testcase>
             <name>Test_functions_6</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -232,7 +237,7 @@
         <testcase>
             <name>Test_functions_7</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -253,7 +258,7 @@
         <testcase>
             <name>Test_functions_8</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -274,7 +279,7 @@
         <testcase>
             <name>Test_functions_9</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
