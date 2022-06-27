@@ -5,10 +5,9 @@ import os
 
 obj = GemPyp()
 
-# obj.config = "/home/vatsarpit/Desktop/gempyp/gempyp/tests/configTest/Gempyp_Test_suite.xml"
-obj.config = "/home/vatsarpit/Desktop/gempyp/gempyp/tests/configTest/testcases.xml"
 
-obj.MAIL = "arpitmishra@gmail.com"
+obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
+obj.MAIL = "ankitapandey281999@gmail.com"
 
 
 # main condition is necessary

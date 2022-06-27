@@ -1,18 +1,20 @@
 <data>
 
     <suite>
+
         <mail>test@gmail.com</mail>
         <project>GEMPYP_TEST</project>
         <report_name>FEATURE_REGRESSION</report_name>
         <mode>sequence</mode>
         <env>beta</env>
         <bridge_token>tokentest</bridge_token>
-        <threads>three</threads>
+        <threads>3</threads>
         <output_folder></output_folder>
     </suite>
 
     <testcases>
         <testcase>
+
             <name>testcase_except_</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
@@ -202,3 +204,4 @@
 
 
 </data>
+

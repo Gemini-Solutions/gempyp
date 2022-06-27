@@ -13,7 +13,15 @@
 
     <testcases>
 
-       
+        <testcase>
+
+            <name>sample_testcase1</name>
+            <category>sample</category>
+            <run_flag>N</run_flag>
+            <path>tests.sample_testcase.sample1</path>
+            <location>test</location>
+            <extra_args1>hello</extra_args1>
+        </testcase>
 
         <testcase>
             <name>Test_functions_1</name>
@@ -75,7 +83,6 @@
         </testcase>
 
         <testcase>
-
             <name>Test_Pre_Variables</name>
             <category>Pre_variables</category>
             <run_flag>Y</run_flag>

@@ -43,6 +43,7 @@ class AbstractSimpleTestcase(ABC):
             finally:
                 if flag == 1:
                     reporter.addRow("Exception Occured", "Exception occured in testcase: Report was not generated.", status.FAIL)    
+
                     logger.error("some error occurred while running the Testcase")
                 return reporter
                 

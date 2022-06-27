@@ -29,11 +29,13 @@ class PostAssertion:
             post_ass_str_list = self.post_assertion_str.strip(";").split(";")
 
             key_str = []
+
             assertion_list = self.getAssertionDict(post_ass_str_list)
             for each in assertion_list:
                 key_str.append(list(each.keys())[0])
             key_str = list(set(key_str))
             # list of dictionaries of operator and values for keys
+
             # get a string of comma separated keys
 
             self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: </br>" + "</br>".join(key_str), status.INFO)
