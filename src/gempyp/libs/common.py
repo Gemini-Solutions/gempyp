@@ -100,7 +100,7 @@ def moduleImports(file_name):
                 try:
                     for each in sys.path:
                         if isinstance(each,dict) and each is not None:
-                            logging.info("---------- Fetching config path - {} ------".format( each['XMLConfigDir']))
+                            logging.info("--------- Fetching config path - {} ------".format( each['XMLConfigDir']))
                             lib_path = os.path.join(each['XMLConfigDir'], script_path)
                     sys.path.append(lib_path)
                     dynamicTestcase = importlib.import_module(script_name.split(".")[0])  
