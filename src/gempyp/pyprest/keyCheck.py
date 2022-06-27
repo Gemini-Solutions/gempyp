@@ -65,6 +65,9 @@ class KeyCheck:
                 else:
                     _status = status.PASS
             self.pyprest_obj.reporter.addRow("Keys to be check for PRESENCE in response body", content_found, _status)
+            if _status == status.FAIL:
+                self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing in Response, "
+
         if len(self.keys_not) > 0:
             for each_key in self.keys_not:
                 self.key_list = [str(i) for i in each_key.split(".")]
@@ -81,7 +84,7 @@ class KeyCheck:
             self.pyprest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
 
         if status.FAIL in [_status, _status_n]:
-            self.pyprest_obj.reporter._miscData["Reason_of_failure"] = "Status of key check is not as expected"
+            self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] = "Status of key check is not as expected, "
             # self.pyprest_obj.reporter.addMisc(Reason_of_failure="Status of key check is not as expected")
 
 
@@ -105,8 +108,15 @@ class KeyCheck:
                 key_val = each[:br_index]
 
                 # for response[each].something
-                if key_val == "response" and isinstance(json_data, list):
+                if key_val.lower() == "response" and isinstance(json_data, list):
                     key_list.remove(each)
+                    return self.findKeys(json_data, key_list, temp_key_list)
+                
+                if key_val.lower() == "response" and isinstance(json_data, dict):
+                    print(key_list)
+                    key_list.remove(each)
+                    print(key_list)
+
                     return self.findKeys(json_data, key_list, temp_key_list)
 
                 # for data[each].something
@@ -174,12 +184,16 @@ class KeyCheck:
 
                 # if input is dict
                 elif isinstance(json_data, dict):
-                    if each in json_data:
+                    if each in json_data or each.lower() == "response":
                         tmp_key = list(key_list)
                         tmp_key.remove(each)
                         if len(tmp_key) == 0:
                             return "FOUND"
-                        return self.findKeys(json_data[each], tmp_key, temp_key_list)
+                        if each.lower() == "response":
+                            json_data = json_data
+                        else:
+                            json_data = json_data[each]
+                        return self.findKeys(json_data, tmp_key, temp_key_list)
 
                     # return not found if key not found in the dictionary i.e. the json_data . 
                     # json_data here is the json/list passed to this function in this recursion

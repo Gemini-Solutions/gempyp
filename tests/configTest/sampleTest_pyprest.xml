@@ -8,7 +8,7 @@
         <env>beta</env>
         <bridge_token>tokentest</bridge_token>
     </suite>
-    
+
     <testcases>
 
         <testcase>
@@ -32,11 +32,11 @@
             <authentication></authentication>
             <pre_variables>set $[#method_name]=GET;set $[#method_second]=10;set $[#suite.func_val]=$[#uuid()];set $[#random]=$[#rand(2,5)]</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#suite.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -56,7 +56,7 @@
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -115,11 +115,11 @@
             <authentication></authentication>
             <pre_variables>set $[#func_val]=$[#uuid()]</pre_variables>
             <key_check>keys are response[0].name</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#SUITE.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -136,11 +136,11 @@
             <authentication></authentication>
             <pre_variables>set $[#random]=$[#rand(2,5)];set $[#echotime]=$[#epoch()];set $[#epochmilli]=$[#epoch(milli)];set $[#rand_item]=$[#getRandomFromAlist([5,7])];set $[#abc]=$[#getRandomFromAlist($[#some_var_list])];set $[#var]=$[#unique(5)];set $[#date_val]=$[#curr_timestamp('ddmmyyyy')];set $[#future_val]=$[#getDateFromNow(4,'ddmmyyyy')]</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#SUITE.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -157,11 +157,11 @@
             <authentication></authentication>
             <pre_variables>set $[#echotime]=$[#epoch()]</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#SUITE.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -178,11 +178,11 @@
             <authentication></authentication>
             <pre_variables>set $[#epochmilli]=$[#epoch(milli)];</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#SUITE.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -199,11 +199,11 @@
             <authentication></authentication>
             <pre_variables>set $[#rand_item]=$[#getRandomFromAlist([5,7])]</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#SUITE.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -220,11 +220,11 @@
             <authentication></authentication>
             <pre_variables>set $[#some_var_list]=[0,9,7];set $[#abc]=$[#getRandomFromAlist($[#some_var_list])]</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#SUITE.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -241,11 +241,11 @@
             <authentication></authentication>
             <pre_variables>set $[#var]=$[#unique(5)]</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#suite.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc></misc>
+            <report_misc></report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -262,11 +262,11 @@
             <authentication></authentication>
             <pre_variables>set $[#date_val]=$[#curr_timestamp('ddmmyyyy')]</pre_variables>
             <key_check></key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#suite.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc></misc>
+            <report_misc></report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -283,11 +283,11 @@
             <authentication></authentication>
             <pre_variables>set $[#future_val]=$[#getDateFromNow(4,'ddmmyyyy')]</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#misc.report_columns]=$[#post_var_meth];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#suite.var]="SUITE_VAR"]</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>true</debug_mode>
-            <misc>set $[#misc.report_columns]=$[#post_var_meth]</misc>
+            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <extra_args1>hello</extra_args1>
             <TYPE>PYPREST</TYPE>
         </testcase>

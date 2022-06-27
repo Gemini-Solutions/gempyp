@@ -18,6 +18,25 @@ class VariableReplacement:
         self.pyprest_obj.logger.info("**************  INSIDE VARIABLE REPLACEMENT  **************")
 
 
+    def ValueNotFound(self):
+        data = self.pyprest_obj.__dict__
+        for k,v in data.copy().items():
+            if isinstance(v,dict):
+                data[k] = self.updateDataDictionary(v)
+            elif isinstance(v,str):
+                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and k is not None :
+                    var_list = self.checkAndGetVariables(data[k])
+                    for var in var_list:
+                        var_name = var
+                        var_val = self.getVariableValues(var_name)
+                        if var_val == "null" and "$[#" in str(data[k]):
+                            newValStr = "null"
+                        else:
+                            newValStr = data[k].replace(var_name, str(var_val))
+                        del data[k]
+                        data[k] = newValStr
+                    
+            self.pyprest_obj.__dict__ = data
 
     def checkAndGetVariables(self, value_str) -> list:
         if value_str is not None and type(value_str) is str:
@@ -32,7 +51,8 @@ class VariableReplacement:
         varName = var_name.strip("$[#]")
         try:
             if "SUITE." in varName.upper():
-                varValue = self.suite_pre_variables[varName.replace(".", "_")]
+                varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
+                
             else:
                 varValue = self.local_pre_variables[varName]
                 # suite_variables
@@ -53,10 +73,10 @@ class VariableReplacement:
         func_name = self.functions_dict.get(func_name.lower(), "invalid")
 
         try:
-            val =  (prefunc + func_name)(params) if func_name != "invalid" else "Null"
+            val =  (prefunc + func_name)(params) if func_name != "invalid" else "null"
             return val
         except:
-            return "Null"
+            return "null"
          
 
 
@@ -65,12 +85,12 @@ class VariableReplacement:
             if isinstance(v,dict):
                 data[k] = self.updateDataDictionary(v)
             elif isinstance(v,str):
-                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and  k is not None:
+                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:
                     var_list = self.checkAndGetVariables(data[k])
                     for var in var_list:
                         var_name = var
                         var_val = self.getVariableValues(var_name)
-                        if var_val == "Null" and "$[#" in str(data[k]):
+                        if var_val == "null" and "$[#" in str(data[k]):
                             newValStr = data[k]
                         else:
                             newValStr = data[k].replace(var_name, str(var_val))
@@ -80,5 +100,5 @@ class VariableReplacement:
         return data
 
     def variableReplacement(self):
-        # print(self.local_pre_variables)
-        data = self.updateDataDictionary(self.pyprest_obj.__dict__)
+        self.updateDataDictionary(self.pyprest_obj.__dict__)
+        

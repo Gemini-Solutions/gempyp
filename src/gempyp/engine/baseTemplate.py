@@ -25,6 +25,7 @@ class testcaseReporter:
         self._isDestructorCalled = False
         self.statusCount = {k: 0 for k in status}
         self.templateData = templateData()
+        self.logger = None
 
         # can be overiiden for custom result file
         self.resultFileName = None
