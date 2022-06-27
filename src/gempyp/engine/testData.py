@@ -95,6 +95,7 @@ class testData:
         except Exception as e:
             traceback.print_exc()
 
+
         suiteDict["TestCase_Details"] = testcaseDict
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts

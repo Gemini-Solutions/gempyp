@@ -4,8 +4,8 @@ from gempyp.engine.engine import Engine
 
 def test():
 
-    # config = XmlConfig("C:\\Users\\ar.mishra\\gempyp\\tests\\configTest\\sample_test_variables.xml")  #windows path
-    config = XmlConfig("./tests/configTest/sample_test_variables.xml")
+    config = XmlConfig("C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\features_suite.xml")
+
     
     Engine(config)
 

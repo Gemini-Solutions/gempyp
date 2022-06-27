@@ -72,7 +72,10 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
                 if isinstance(json_, str) and json_ != "":
                     json_ = json.dumps(json_)
                 if json_ != "":
-                    json_ = json_[key]
+                    if "response" == key.lower():
+                        json_ = json_
+                    else:
+                        json_ = json_[key]
                 if json_ is None:
                     json_ = "null"
         if flag != 1:
@@ -99,7 +102,7 @@ def getValuesForEach(each_value_dict, keys_to_fetch):
 def getNestedListData(i, json_data, key_val):
     """parse nested lists in response"""
     # check if response is empty or not, if response is empty, how did it reach here?
-    
+
     br_start = i.find('[')
     br_end = i.find(']')
     key_num = int(i[br_start + 1:br_end])
@@ -119,21 +122,28 @@ def getNestedListData(i, json_data, key_val):
             return key_num, json_data
 
 
+def dispatch_dict():
+    dispatch = {
+        'to': cf.compare_to,
+        'notto': cf.compare_notto,
+        'not to': cf.compare_notto,
+        'not_to': cf.compare_notto,
+        'in': cf.compare_in,
+        'notin': cf.compare_notin,
+        'not in': cf.compare_notin,
+        'not_in': cf.compare_notin,
+        'contains': cf.compare_contains,
+        'not_supported': cf.no_operator,
+    }
+    return dispatch
+
+
 def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1):
 
     # operators ----- to, notto, not_to, not to, contains, in, except
     gp = reporter_obj
 
-    dispatch = {
-        'to': cf.compare_to,
-        'notto': cf.compare_notto,
-        'not_to': cf.compare_notto,
-        'in': cf.compare_in,
-        'notin': cf.compare_notin,
-        'not_in': cf.compare_notin,
-        'contains': cf.compare_contains,
-        'not_supported': cf.no_operator,
-    }
+    dispatch = dispatch_dict()
     if operator in list(dispatch.keys()):
         return dispatch[operator](gp, key, value, key_val_dict, tolerance)
     else:
