@@ -1,0 +1,90 @@
+<data>
+
+    <suite>
+        <mail>test@gmail.com</mail>
+        <project>GEMPYP_TEST</project>
+        <report_name>FEATURE_REGRESSION</report_name>
+        <mode>optimize</mode>
+        <env>beta</env>
+        <bridge_token>tokentest</bridge_token>
+        <threads>three</threads>
+        <output_folder></output_folder>
+    </suite>
+
+    <testcases>
+        <testcase>
+            <name>testcase_except_</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <path>gempyp_test.Testcase_methods_11</path>
+            <location>test</location>
+            <method>testcase_except_</method>
+            <type>gempyp</type>
+            <extra_args1>hello</extra_args1>
+        </testcase>
+
+
+
+        <testcase>
+            <name>testcase_2</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <path>tests/sample_testcase/Testcase_methods_1.py</path>
+            <location>test</location>
+            <type>gempyp</type>
+            <method>testcase_2</method>
+            <extra_args1>hello</extra_args1>
+        </testcase>
+
+        <testcase>
+            <name>testcase_main</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <path>gempyp_test.Testcase_methods_11</path>
+            <location>test</location>
+            <type>gempyp</type>
+            <extra_args1>hello</extra_args1>
+        </testcase>
+       
+        <testcase>
+            <name>testcase_11</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <path>../../../../gempyp_test/Testcase_methods_11.py</path>
+            <location>test</location>
+            <type>gempyp</type>
+            <method>testcase_1</method>
+            <extra_args1>hello</extra_args1>
+        </testcase>
+        <testcase>
+            <name>testcase_13</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <path>/home/vatsarpit/Desktop/gempyp_test/Testcase_methods_11.py</path>
+            <location>test</location>
+            <type>gempyp</type>
+            <method>testcase_1</method>
+            <extra_args1>hello</extra_args1>
+        </testcase>
+        <testcase>
+            <name>REST_COUNTRIES_3</name>
+            <category>sample</category>
+            <run_flag>N</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>$[#method_name]</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#method_name]=GET;set $[#method_second]=10;set $[#suite.func_val]=$[#uuid()];set $[#random]=$[#rand(2,5)]</pre_variables>
+            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
+            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#func_val];set $[#suite.var]="SUITE_VAR"]</post_variables>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <location>tests</location>
+            <debug_mode>true</debug_mode>
+            <report_misc>set $[#misc.report_columns]=GET;</report_misc>
+            <extra_args1>hello</extra_args1>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+    </testcases>
+</data>
