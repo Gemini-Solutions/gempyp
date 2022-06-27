@@ -202,6 +202,7 @@ class Engine:
         start running the testcases in sequence
         """
 
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -219,6 +220,7 @@ class Engine:
                     )
                     custom_logger.error(f"message: {error['message']}")
                 self.update_df(output, error)
+
 
     def startParallel(self):
         """

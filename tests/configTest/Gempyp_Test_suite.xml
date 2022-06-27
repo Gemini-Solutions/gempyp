@@ -1,18 +1,21 @@
 <data>
 
     <suite>
+
         <mail>test@gmail.com</mail>
         <project>GEMPYP_TEST</project>
         <report_name>FEATURE_REGRESSION</report_name>
         <mode>optimize</mode>
         <env>beta</env>
         <bridge_token>tokentest</bridge_token>
+
     </suite>
 
     <testcases>
 
 
         <testcase>
+
             <name>testcase_except_</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
@@ -168,3 +171,4 @@
 
 
 </data>
+

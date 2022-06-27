@@ -12,6 +12,7 @@
     <testcases>
 
         <testcase>
+
             <name>sample_testcase1</name>
             <category>sample</category>
             <run_flag>N</run_flag>
@@ -79,7 +80,6 @@
         </testcase>
 
         <testcase>
-
             <name>Test_Pre_Variables</name>
             <category>Pre_variables</category>
             <run_flag>Y</run_flag>

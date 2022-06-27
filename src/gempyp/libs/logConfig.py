@@ -1,7 +1,7 @@
 from fileinput import filename
 from stat import filemode
 import sys, os
-from tkinter import W
+# from tkinter import W
 import coloredlogs, logging
 
 class LoggingConfig:
