@@ -29,7 +29,7 @@ class AbstractSimpleTestcase(ABC):
             logger.ERROR("Testcase not imported")
         try:
             methodName = testcaseSettings.get("METHOD", "main")
-            logger.info("-------- method ---------", methodName)
+            logger.info(f"-------- method ---------{methodName}")
             reporter = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
             # adding logger to the reporter
             reporter.logger = logger
