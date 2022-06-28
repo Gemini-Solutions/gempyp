@@ -19,6 +19,7 @@ class VariableReplacement:
 
 
     def ValueNotFound(self):
+        logger.info("------ assigning all variables to null those value not found -----")
         data = self.pyprest_obj.__dict__
         for k,v in data.copy().items():
             if isinstance(v,dict):
@@ -49,17 +50,21 @@ class VariableReplacement:
        
     def getVariableValues(self, var_name):
         varName = var_name.strip("$[#]")
+        print("\n\n Inside Get variable values:  ", var_name," ---- ",varName)
         try:
             if "SUITE." in varName.upper():
                 varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
                 
             else:
                 varValue = self.local_pre_variables[varName]
+
                 # suite_variables
                 # varValue = self.local_pre_variables[varName]
         except:
-            return "Null"
+            print("returning null value not found")
+            return "null"
         str_val = var_name.replace("$[#"+varName+"]", str(varValue))
+        print("***",str_val)
         if "$[#" not in str_val:
             return str(str_val) 
         if "$[#" or "$" in str_val:
@@ -81,12 +86,15 @@ class VariableReplacement:
 
 
     def updateDataDictionary(self, data):
+        logger
         for k,v in data.copy().items():
             if isinstance(v,dict):
                 data[k] = self.updateDataDictionary(v)
             elif isinstance(v,str):
                 if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:
                     var_list = self.checkAndGetVariables(data[k])
+                    if k == "post_assertion" or k == "POST_ASSERTION":
+                        print(k,"  ------  ",var_list)
                     for var in var_list:
                         var_name = var
                         var_val = self.getVariableValues(var_name)

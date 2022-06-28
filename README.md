@@ -1,14 +1,13 @@
-# pygem 
+# gempyp
 
 [![Python](https://img.shields.io/badge/python-3.7-blue)]()
-[![codecov](https://codecov.io/gh/gem-shubhamshukla/pygem/branch/main/graph/badge.svg)](https://codecov.io/gh/gem-shubhamshukla/pygem)
-[![Documentation Status](https://readthedocs.org/projects/pygem/badge/?version=latest)](https://pygem.readthedocs.io/en/latest/?badge=latest)
-
+[![codecov](https://codecov.io/gh/gem-shubhamshukla/gempyp/branch/main/graph/badge.svg)](https://codecov.io/gh/gem-shubhamshukla/gempyp)
+[![Documentation Status](https://readthedocs.org/projects/gempyp/badge/?version=latest)](https://gempyp.readthedocs.io/en/latest/?badge=latest)
 
 ## Installation
 
-```bash
-$ pip install -i https://test.pypi.org/simple/ pygem
+```powershell
+$ pip install gempyp
 ```
 
 ## Features
@@ -25,11 +24,11 @@ $ pip install -i https://test.pypi.org/simple/ pygem
 
 ## Documentation
 
-The official documentation is hosted on Read the Docs: https://pygem.readthedocs.io/en/latest/
+The official documentation is hosted on Read the Docs: https://gempyp.readthedocs.io/en/latest/
 
 ## Contributors
 
-We welcome and recognize all contributions. You can see a list of current contributors in the [contributors tab](https://github.com/gem-shubhamshukla/pygem/graphs/contributors).
+We welcome and recognize all contributions. You can see a list of current contributors in the [contributors tab](https://github.com/Gemini-Solutions/gempyp/).
 
 ### Credits
 
