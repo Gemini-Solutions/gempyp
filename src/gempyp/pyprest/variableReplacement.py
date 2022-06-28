@@ -58,7 +58,7 @@ class VariableReplacement:
                 # suite_variables
                 # varValue = self.local_pre_variables[varName]
         except:
-            return "Null"
+            return "null"
         str_val = var_name.replace("$[#"+varName+"]", str(varValue))
         if "$[#" not in str_val:
             return str(str_val) 

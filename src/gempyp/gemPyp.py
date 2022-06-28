@@ -2,8 +2,7 @@ from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
 
-
-class GemPyp:
+class Gempyp:
     def __init__(self):
         self.config = None
         self.MAIL = None
@@ -55,12 +54,19 @@ class GemPyp:
         self.args = args
         self.runner()
 
+def main():
+    obj = Gempyp()
+    #obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
+    #obj.ENV = ""
+    #obj.MAIL = ""
+    obj.parser()
+
 if __name__ == "__main__":
-    obj = GemPyp()
+    obj = Gempyp()
     
-    obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
-    obj.ENV = ""
-    obj.MAIL = ""
+    #obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
+    #obj.ENV = ""
+    #obj.MAIL = ""
     obj.parser()
     
 

@@ -1,9 +1,9 @@
-from gempyp.gemPyp import GemPyp
+from gempyp.gempyp import Gempyp
 import sys
 import os
 
 
-obj = GemPyp()
+obj = Gempyp()
 
 
 obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
