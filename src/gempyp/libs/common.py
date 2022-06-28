@@ -1,18 +1,20 @@
 import os
 import json
-import logging as log
+import logging
 from datetime import datetime
 import traceback
 from typing import List, Union
 import typing
 from gempyp.config import DefaultSettings
+import importlib
+import sys
 
 
 def read_json(file_path):
     try:
-        # print(file_path)
         with open(file_path) as fobj:
             res = json.load(fobj)
+            print(res)
     except Exception:
         res = None
     return res
@@ -31,13 +33,13 @@ def findDuration(start_time: datetime, end_time: datetime):
     return f"{round(seconds, 3)} seconds"
 
 
-def errorHandler(logger, Error, msg="some Error Occured"):
+def errorHandler(logging, Error, msg="some Error Occured"):
 
-    logger.error(msg)
-    logger.error(f"Error: {Error}")
+    logging.error(msg)
+    logging.error(f"Error: {Error}")
 
     if DefaultSettings.DEBUG:
-        logger.error(f"TraceBack: {traceback.format_exc()}")
+        logging.error(f"TraceBack: {traceback.format_exc()}")
 
 
 def parseMails(mail: Union[str, typing.TextIO]) -> List:
@@ -55,9 +57,9 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
         mails = mails.split(",")
         return mails
     except Exception as e:
-        log.error("Error while parsing the mails")
-        log.error(f"Error : {e}")
-        log.error(f"traceback: {traceback.format_exc()}")
+        logging.error("Error while parsing the mails")
+        logging.error(f"Error : {e}")
+        logging.error(f"traceback: {traceback.format_exc()}")
         return []
 
 
@@ -66,5 +68,49 @@ class dateTimeEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
             return o.timestamp()*1000
-
         return json.JSONEncoder.default(self, o)
+
+# absolute path path.... moved to file from runner due to circular import issue
+# runner -> gempyp -> abstractsimpletestcase -> runner
+def importFromPath(file_name):
+    logging.info("--------- In import from path ----------")
+    path_arr = file_name.split(os.sep)    
+    file = path_arr[-1]
+    path_arr.remove(file)
+    path_cd = os.sep.join(path_arr)
+    return path_cd, file
+    
+def moduleImports(file_name):
+    import_flag = 0
+    try:
+        logging.info("--------Trying importing modules--------")
+        dynamicTestcase = importlib.import_module(file_name)        
+        return dynamicTestcase
+    except Exception as i:
+        logging.info("-------Testcase not imported as module, Trying with absolute path-------")
+        try:
+            script_path, script_name = importFromPath(file_name)
+            script_name = script_name.split(".")[0]
+            if script_path is not None:
+                sys.path.append(script_path)
+            try:
+                dynamicTestcase = importlib.import_module(script_name)   
+            except Exception:
+                logging.info("when absolute and module import both failed")
+                try:
+                    for each in sys.path:
+                        if isinstance(each,dict) and each is not None:
+                            logging.info("--------- Fetching config path - {} ------".format( each['XMLConfigDir']))
+                            lib_path = os.path.join(each['XMLConfigDir'], script_path)
+                    sys.path.append(lib_path)
+                    dynamicTestcase = importlib.import_module(script_name.split(".")[0])  
+                    import_flag = 1 
+                except Exception:
+                    traceback.print_exc()
+                if import_flag != 1:
+                    traceback.print_exc()
+            return dynamicTestcase
+        except Exception as e:
+            logging.error("----- Error occured file could not be imported using any of the methods.-----")
+            traceback.print_exc()
+            return e
