@@ -1,8 +1,7 @@
 # gempyp
 
-[![Python](https://img.shields.io/badge/python-3.7-blue)]()
-[![codecov](https://codecov.io/gh/gem-shubhamshukla/gempyp/branch/main/graph/badge.svg)](https://codecov.io/gh/gem-shubhamshukla/gempyp)
-[![Documentation Status](https://readthedocs.org/projects/gempyp/badge/?version=latest)](https://gempyp.readthedocs.io/en/latest/?badge=latest)
+[![Python](https://img.shields.io/badge/python-3.10.4-blue)]()
+
 
 ## Installation
 
