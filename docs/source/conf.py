@@ -6,7 +6,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"pygem"
+project = u"gempyp"
 copyright = u"2021, Shubham Shukla"
 author = u"Shubham Shukla"
 
@@ -22,7 +22,7 @@ extensions = [
     "nbsphinx",
 ]
 autoapi_type = "python"
-autoapi_dirs = ["../../src"]
+autoapi_dirs = ["../../"]
 napoleon_numpy_docstring = True
 nbsphinx_execute = "always"
 

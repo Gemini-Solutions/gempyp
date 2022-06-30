@@ -1,4 +1,4 @@
-Welcome to pygem's documentation!
+Welcome to gempyp's documentation!
 ===========================================================
 
 A ecosystem of libraries useful for software development
