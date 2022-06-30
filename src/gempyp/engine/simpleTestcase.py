@@ -8,7 +8,10 @@ from gempyp.libs.enums.status import status
 import logging
 
 
-class AbstarctSimpleTestcase(ABC):
+class AbstractSimpleTestcase(ABC):
+    Status = status
+    # get logger
+
     def gempypMethodExecutor(
         self, cls, testcaseSettings: Dict, **kwargs
     ) -> testcaseReporter:
@@ -17,23 +20,34 @@ class AbstarctSimpleTestcase(ABC):
         :param testcaseSettings: testcasesettings object created from the testcase config
         :return
         """
+        logger = testcaseSettings.get("LOGGER")
+        kwargs["TESTCASENAME"] = testcaseSettings["NAME"]
         file_name = testcaseSettings.get("PATH")
         try:
             testcase = moduleImports(file_name)
         except:
-            logging.ERROR("Testcase not imported")
+            logger.ERROR("Testcase not imported")
         try:
             methodName = testcaseSettings.get("METHOD", "main")
-            print("-------- method ---------", methodName)
+            logger.info(f"-------- method ---------{methodName}")
+            reporter = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
+            # adding logger to the reporter
+            reporter.logger = logger
             try:
                 methodName = getattr(cls(), methodName)
-                report = methodName()
-                return report
+                methodName(reporter)
             except Exception as err:
-                logging.info("Could not run the method")
+                logger.error(traceback.format_exc())
+                etype, value, tb = sys.exc_info()
+                info, error = traceback.format_exception(etype, value, tb)[-2:]
+                #reports = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
+                reporter.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
+            finally:
+                return reporter
                 
-        except Exception as e:                
-            print(e)
+        except Exception as e:
+            if e:            
+                logger.error(traceback.format_exc())
             
         
 
@@ -48,6 +62,8 @@ class AbstarctSimpleTestcase(ABC):
         try:
             self.logger.info('=================Running Testcase: {testcase} ============'.format(testcase=testcaseSettings["NAME"]))
             reports = self.gempypMethodExecutor(cls, testcaseSettings, **kwargs)
+
+            # will never enter this  block
             if reports is None:
                 reports = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
                 self.logger.error("Report object was not returned from the testcase file")

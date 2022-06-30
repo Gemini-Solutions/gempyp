@@ -16,7 +16,7 @@ from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
 import logging
-from gempyp.libs.logConfig import LoggingConfig, my_custom_logger
+from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 
@@ -31,7 +31,8 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     # print("!!!!!!!!!!!!!!", data["configData"]["TYPE"])
 
     if not custom_logger:
-        log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
+        # log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
+        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['configData'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.log')
         custom_logger = my_custom_logger(log_path)
     data['configData']['LOGGER'] = custom_logger
@@ -67,6 +68,8 @@ class Engine:
     def run(self, params_config: Type[abstarctBaseConfig]):
         logging.info("Engine Started")
         # initialize the data class
+        
+
         self.DATA = testData()
         # get the env for the engine Runner
         self.ENV = os.getenv("ENV_BASE", "BETA").upper()
@@ -88,9 +91,9 @@ class Engine:
             report_folder_name = report_folder_name + f"_{self.reportName}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if "outputfolder" in self.PARAMS:
+        if "OUTPUT_FOLDER" in self.PARAMS and self.PARAMS["OUTPUT_FOLDER"]:
             self.ouput_folder = os.path.join(
-                self.PARAMS["OUTPUTFOLDER"], report_folder_name
+                self.PARAMS["OUTPUT_FOLDER"], report_folder_name
             )
         else:
             self.ouput_folder = os.path.join(
@@ -100,8 +103,10 @@ class Engine:
         os.makedirs(self.ouput_folder)
         self.testcase_folder = os.path.join(self.ouput_folder, "testcases")
         os.makedirs(self.testcase_folder)
-        self.log_info = os.path.join(self.testcase_folder,"logs_info")
-        os.makedirs(self.log_info)
+        self.testcase_log_folder = os.path.join(self.ouput_folder, "logs")
+        os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
+        os.makedirs(self.testcase_log_folder)
+
 
     def setUP(self, config: Type[abstarctBaseConfig]):
         # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
@@ -117,6 +122,10 @@ class Engine:
         self.reportName = self.PARAMS.get("REPORT_NAME")
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
+        self.user_suite_variables = self.PARAMS["SUITE_VARS"]
+        
+
+        #add suite_vars here 
 
     def parseMails(self):
         self.mail = common.parseMails(self.PARAMS["MAIL"])
@@ -191,24 +200,26 @@ class Engine:
         """
         start running the testcases in sequence
         """
-        for testcase in self.CONFIG.getTestcaseConfig():
-            data = self.getTestcaseData(testcase)
-            print(self.CONFIG.getSuiteConfig())
-            log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
-            data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
-            # log_path = os.path.join(self.log_info,
-            # data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
-            
-            custom_logger = my_custom_logger(log_path)
-            data['configData']['log_path'] = log_path
-            #LoggingConfig(data['configData'].get('NAME')+'.log')
-            output, error = executorFactory(data, custom_logger)
-            if error:
-                custom_logger.error(
-                    f"Error occured while executing the testcase: {error['testcase']}"
-                )
-                custom_logger.error(f"message: {error['message']}")
-            self.update_df(output, error)
+
+
+        for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
+            for testcase in testcases:
+                data = self.getTestcaseData(testcase['NAME'])
+                # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
+                log_path = os.path.join(self.testcase_log_folder,
+                data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
+                custom_logger = my_custom_logger(log_path)
+                data['configData']['log_path'] = log_path
+                #LoggingConfig(data['configData'].get('NAME')+'.log')
+                output, error = executorFactory(data, custom_logger)
+                
+                if error:
+                    custom_logger.error(
+                        f"Error occured while executing the testcase: {error['testcase']}"
+                    )
+                    custom_logger.error(f"message: {error['message']}")
+                self.update_df(output, error)
+
 
     def startParallel(self):
         """
@@ -216,7 +227,12 @@ class Engine:
         """
         pool = None
         try:
-            pool = Pool(self.PARAMS.get("THREADS", DefaultSettings.THREADS))
+            threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
+            try:
+                threads = int(threads)
+            except:
+                threads = DefaultSettings.THREADS
+            pool = Pool(threads)
             # decide the dependency order:
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
@@ -228,12 +244,14 @@ class Engine:
                     if self.isDependencyPassed(testcase):
                         poolList.append(self.getTestcaseData(testcase.get("NAME")))
                     else:
+                        print("----------------here--------------------")
                         dependencyError = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
                             "product_type": testcase.get("PRODUCT_TYPE", None),
                         }
+                        ####### handle dependency error in jsondata(update_df)
 
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependencyError)
@@ -278,9 +296,15 @@ class Engine:
                 )
                 output = [output]
             for i in output:
+
                 i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
+                
                 testcaseDict = i["testcaseDict"]
                 try:
+                    """ update suite vars here from testcaseDict["suite_variables"] append it in the suite vars of _config"""
+    
+                    self.user_suite_variables.update(i.get("suite_variables", {}))
+                    
                     self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:
                     logging.error(e)
@@ -329,7 +353,7 @@ class Engine:
 
         result["testcaseDict"] = testcaseDict
 
-        misc["reason of failure"] = message
+        misc["REASON_OF_FAILURE"] = message
 
         result["misc"] = misc
 
@@ -363,6 +387,7 @@ class Engine:
         data["USER"] = self.user
         data["MACHINE"] = self.machine
         data["OUTPUT_FOLDER"] = self.testcase_folder
+        data["SUITE_VARS"] = self.user_suite_variables
         return data
 
     def getDependency(self, testcases: Dict):
@@ -370,9 +395,11 @@ class Engine:
         yields the testcases with least dependncy first
         Reverse toplogical sort
         """
+
         adjList = {
-            key: list(value.get("DEPENDENCY", [])) for key, value in testcases.items()
+            key: list(set(list(value.get("DEPENDENCY", "").split(","))) - set([""])) for key, value in testcases.items()
         }
+
         for key, value in adjList.items():
             new_list = []
             for testcase in value:
@@ -409,33 +436,30 @@ class Engine:
         """
         cheks if the dependency is passed for the testcase or not
         """
-        for dep in testcase.get("DEPENDENCY", []):
 
-            dep_split = dep.split(":")
+        ###### split on ','
+        for dep in list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""])):
+
+            dep_split = list(dep.split(":"))
 
             if len(dep_split) == 1:
-                if dep_split[0] not in self.DATA.testcaseDetails["NAME"]:
+                ####### NAME to name, to_list()
+                if dep_split[0] not in self.DATA.testcaseDetails["name"].to_list():
                     return False
 
             else:
                 if dep_split[0].upper() == "P":
-                    if dep_split[1] not in self.DATA.testcaseDetails["NAME"]:
+                    if dep_split[1] not in self.DATA.testcaseDetails["name"].to_list():
                         return False
-                    if (
-                        self.DATA.testcaseDetails.loc(
-                            self.DATA.testcaseDetails["NAME"] == dep_split[1]
-                        )["status"]
-                        != status.PASS.name
-                    ):
+                    ####### way to parsing the df    
+                    if ((self.DATA.testcaseDetails[self.DATA.testcaseDetails["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
                         return False
 
                 if dep_split[0].upper() == "F":
-                    if dep_split[1] not in self.DATA.testcaseDetails["NAME"]:
+                    if dep_split[1] not in self.DATA.testcaseDetails["name"].to_list():
                         return False
                     if (
-                        self.DATA.testcaseDetails.loc(
-                            self.DATA.testcaseDetails["NAME"] == dep_split[1]
-                        )["status"]
+                        (self.DATA.testcaseDetails[self.DATA.testcaseDetails["name"] == dep_split[1]]['status'].iloc[0])
                         != status.FAIL.name
                     ):
                         return False
@@ -479,7 +503,12 @@ class Engine:
             for key, val in count_info.items():
                 if key in status_dict.keys():
                     log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
+        
+
             logging.info(log_str.strip(" | "))
+            
             logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
+
+
         except Exception as e:
             logging.error(traceback.print_exc(e))

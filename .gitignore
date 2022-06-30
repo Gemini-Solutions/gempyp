@@ -1,10 +1,6 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
+gempyp_reports/
+logs/
+.vscode/
 
 # Distribution / packaging
 .Python
@@ -26,6 +22,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -137,3 +134,5 @@ dmypy.json
 **.Rproj.user*
 **.Rproj
 **.Rhistory
+gempyp_reports/
+slogs/

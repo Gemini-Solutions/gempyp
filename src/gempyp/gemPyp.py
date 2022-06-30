@@ -1,38 +1,72 @@
-from ast import Suite
-from distutils.command.config import config
 from gempyp.config.xmlConfig import XmlConfig
-from gempyp.engine.engine import Engine
 import argparse
+from gempyp.engine.engine import Engine
 
-def argParser():
+class Gempyp:
+    def __init__(self):
+        self.config = None
+        self.MAIL = None
+        self.PROJECT = None
+        self.REPORT_NAME = None
+        self.MODE = None
+        self.ENV = None
+        self.args = None
+        self.THREADS = None
+        self.BRIDGE_TOKEN = None 
+        self.OUTPUT_FOLDER = None
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-config','-c',dest='config',type=str, required=False)
-    parser.add_argument('-MAIL','-m',dest='MAIL', type=str, required=False)
-    parser.add_argument('-PROJECT','-p',dest='PROJECT', type=str, required=False)
-    parser.add_argument('-REPORT_NAME','-rn',dest='REPORT_NAME', type=str, required=False)
-    parser.add_argument('-MODE','-mode',dest='MODE', type=str, required=False)
-    parser.add_argument('-ENV','-env',dest='ENV', type=str, required=False)
-    parser.add_argument('-TYPE','-type',dest='-t', type=str, required=False)
-
-    args = parser.parse_args()
-    return args
-
-
-def test():
-    
-    args = argParser()
-    
-    xmlPath = "C:\\Users\\sa.chand\\Desktop\\QA\\gempyp\\tests\\configTest\\sampleTest.xml"
-    if args.config != None:
-        xmlPath = args.config
-    config = XmlConfig(xmlPath)
-    
-    config.cli_config = vars(args)
-    config.update()
-
-    Engine(config)
 
     
+    def argParser(self):
+        """Argument parser to help running through CLI"""
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-config','-c',dest='config',type=str, required=False)
+        parser.add_argument('-mail','-m',dest='MAIL', type=str, required=False)
+        parser.add_argument('-project','-p',dest='PROJECT', type=str, required=False)
+
+        parser.add_argument('-Report_name','-rn',dest='REPORT_NAME', type=str, required=False)
+        parser.add_argument('-mode','-mode',dest='MODE', type=str, required=False)
+        parser.add_argument('-env','-env',dest='ENV', type=str, required=False)
+        parser.add_argument('-threads','-t',dest='THREADS',type=str, required=False)
+        parser.add_argument('-bridge_token','-token',dest='BRIDGE_TOKEN',type=str, required=False)
+        parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
+
+        args = parser.parse_args()
+        return args
+
+    def runner(self):
+        """This function takes the config and updates the config data in case or cli run and direct(python) run"""
+        config = XmlConfig(self.config)
+        if not self.args:
+            del self.__dict__["args"]
+            config.cli_config = vars(self)
+        else:
+            config.cli_config = vars(self.args)
+        config.update()
+        Engine(config)
+
+    def parser(self):
+        """Calls the parser and handles the case of no cli args"""
+        args = self.argParser()
+        if args.config != None:
+            self.config = args.config
+        self.args = args
+        self.runner()
+
+def main():
+    obj = Gempyp()
+    #obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
+    #obj.ENV = ""
+    #obj.MAIL = ""
+    obj.parser()
+
 if __name__ == "__main__":
-    test()
+    obj = Gempyp()
+    
+    #obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
+    #obj.ENV = ""
+    #obj.MAIL = ""
+    obj.parser()
+    
+
