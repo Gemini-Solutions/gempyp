@@ -12,7 +12,6 @@ class abstarctBaseConfig(ABC):
             self.parse(*args, **kwargs)
             # filter the testcasesData
             self.filter()
-            self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
             traceback.print_exc()

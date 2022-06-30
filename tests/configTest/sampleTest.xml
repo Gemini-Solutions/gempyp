@@ -4,7 +4,7 @@
     <mail>test@gmail.com</mail>
     <project>gempyp_project</project>
     <report_name>test_regression</report_name>
-    <mode>optimize</mode>
+    <mode>sequence</mode>
     <env>beta</env>
     <bridge_token>tokentest</bridge_token>
     </suite>
@@ -14,7 +14,7 @@
         <testcase>
         <name>sample_testcase1</name>
         <category>sample</category>
-        <run_flag>Y</run_flag>
+        <run_flag>N</run_flag>
         <path>tests.sample_testcase.sample1</path>
         <location>test</location>
         <type>gempyp</type>
@@ -26,7 +26,7 @@
         <testcase>
         <name>sample_exception</name>
         <category>sample</category>
-        <run_flag>Y</run_flag>
+        <run_flag>N</run_flag>
         <path>tests.sample_testcase.except_sample</path>
         <location>test</location>
         <type>gempyp</type>
@@ -36,7 +36,7 @@
         <testcase>
         <name>sample_testcase3</name>
         <category>sample</category>
-        <run_flag>Y</run_flag>
+        <run_flag>N</run_flag>
         <path>sample_testcase.sample1</path>
         <location>test</location>
         <type>gempyp</type>
@@ -47,7 +47,7 @@
         <name>sample_testcase3</name>
         <category>sample</category>
         <run_flag>Y</run_flag>
-        <path>C:\gemecosystem\pygem\tests\sample_testcase\sample2.py</path>
+        <path>C:\Users\sa.chand\Desktop\QA\gempyp\tests\sample_testcase\sample2.py</path>
         <location>test</location>
         <method>verify</method>
         <type>gempyp</type>
@@ -58,7 +58,7 @@
         <name>sample_testcase4</name>
         <category>sample</category>
         <run_flag>Y</run_flag>
-        <path>C:\gemecosystem\pygem\tests\sample_testcase\sample2.py</path>
+        <path>C:\Users\sa.chand\Desktop\QA\gempyp\tests\sample_testcase\sample2.py</path>
         <location>test</location>
         <type>gempyp</type>
         <method>Main</method>

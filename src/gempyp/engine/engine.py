@@ -100,6 +100,8 @@ class Engine:
         os.makedirs(self.ouput_folder)
         self.testcase_folder = os.path.join(self.ouput_folder, "testcases")
         os.makedirs(self.testcase_folder)
+        self.log_info = os.path.join(self.testcase_folder,"logs_info")
+        os.makedirs(self.log_info)
 
     def setUP(self, config: Type[abstarctBaseConfig]):
         # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
@@ -194,6 +196,9 @@ class Engine:
             print(self.CONFIG.getSuiteConfig())
             log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
             data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
+            # log_path = os.path.join(self.log_info,
+            # data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
+            
             custom_logger = my_custom_logger(log_path)
             data['configData']['log_path'] = log_path
             #LoggingConfig(data['configData'].get('NAME')+'.log')
