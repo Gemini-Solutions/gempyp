@@ -16,7 +16,7 @@
             <name>testcase_except_</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <path>tests.sample_testcase.Testcase_methods_1</path>
+            <path>..\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <method>testcase_except_</method>
             <type>gempyp</type>
@@ -27,7 +27,7 @@
             <name>testcase_2</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <path>tests.sample_testcase.Testcase_methods_1</path>
+            <path>C:\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
             <method>testcase_2</method>
@@ -38,7 +38,7 @@
             <name>testcase_main</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <path>tests.sample_testcase.Testcase_methods_1</path>
+            <path>..\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
             <extra_args1>hello</extra_args1>
@@ -48,23 +48,21 @@
             <name>verify_testcase</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <path>tests.sample_testcase.Testcase_methods_2</path>
+            <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>verify</method>
             <type>gempyp</type>
-            <extra_args1>hello</extra_args1>
-            <dependency>F:testcase_except_,P:Main_testcase</dependency>
+            <extra_args1>hello</extra_args1>        
         </testcase>
 
         <testcase>
             <name>Main_testcase</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <path>tests.sample_testcase.Testcase_methods_2</path>
+            <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>Main</method>
             <type>gempyp</type>
-            <dependency>F:testcase_except_</dependency>
             <extra_args1>hello</extra_args1>
         </testcase>
 
@@ -72,7 +70,7 @@
             <name>main_Testcase_sample_2</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <path>tests.sample_testcase.Testcase_methods_2</path>
+            <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <type>gempyp</type>
             <extra_args1>hello</extra_args1>
@@ -80,7 +78,7 @@
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>n</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -114,7 +112,6 @@
             <debug_mode>false</debug_mode>
             <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
             <TYPE>PYPREST</TYPE>
-            <dependency>Test_functions_1</dependency>
             
         </testcase>
         <testcase>
@@ -134,7 +131,6 @@
             <location>tests</location>
             <debug_mode>false</debug_mode>
             <report_misc>set $[#misc.report_columns]=$[#post_var_meth];set $[#misc.post_var] = $[#SUITE.pst]</report_misc>
-            <dependency>Test_functions_2</dependency>
             <TYPE>PYPREST</TYPE>
             
         </testcase>
