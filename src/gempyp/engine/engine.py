@@ -16,7 +16,7 @@ from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
 import logging
-from gempyp.libs.logConfig import LoggingConfig, my_custom_logger
+from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 

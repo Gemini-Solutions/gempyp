@@ -61,7 +61,6 @@ class VariableReplacement:
                 # suite_variables
                 # varValue = self.local_pre_variables[varName]
         except:
-            print("returning null value not found")
             return "null"
         str_val = var_name.replace("$[#"+varName+"]", str(varValue))
         print("***",str_val)
