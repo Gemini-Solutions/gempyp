@@ -1,5 +1,6 @@
 from importlib.resources import path
 from ntpath import join
+import tempfile
 from typing import Dict
 import lxml.etree as et
 import logging
@@ -12,7 +13,7 @@ import uuid
 
 class XmlConfig(abstarctBaseConfig):
     def __init__(self, filePath: str):
-        self.log_dir = str(os.path.join(os.getcwd(), 'logs'))
+        self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
         self.unique_id = str(uuid.uuid4())

@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import os
 import platform
@@ -96,8 +97,9 @@ class Engine:
                 self.PARAMS["OUTPUT_FOLDER"], report_folder_name
             )
         else:
+            home = str(Path.home())
             self.ouput_folder = os.path.join(
-                self.current_dir, "gempyp_reports", report_folder_name
+                home, "gempyp_reports", report_folder_name
             )
 
         os.makedirs(self.ouput_folder)
