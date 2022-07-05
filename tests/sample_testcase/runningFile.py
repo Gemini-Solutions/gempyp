@@ -1,12 +1,16 @@
-from gempyp.gemPyp import GemPyp
+from gempyp.gempyp import Gempyp
+import sys
+import os
 
 
-obj = GemPyp()
+obj = Gempyp()
 
-obj.config = "C:\\Users\\ar.mishra\\gempyp\\tests\\configTest\\features_suite.xml"
-obj.MAIL = "arpitmishra.sln123@gmail.com"
+
+obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
+obj.MAIL = "ankitapandey281999@gmail.com"
 
 
 # main condition is necessary
 if __name__ == "__main__":
+    print(obj.__dict__)
     obj.runner()

@@ -17,10 +17,12 @@ def compare_to(obj, key, value, key_val_dict, tolerance=0.1):
         exp_value = value.strip('"').strip("'").lower()
         
     if actual_value == exp_value:
+
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
         obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+
 
     return obj
 
@@ -37,6 +39,7 @@ def compare_notto(obj, key, value, key_val_dict, tolerance=0.1):
     else:
         actual_value = str(actual_value).lower()
         exp_value = value.strip('"').strip("'").lower()
+
     if actual_value != exp_value:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
@@ -51,6 +54,7 @@ def compare_in(obj, key, value, key_val_dict, tolerance=0.1):
     OPERATOR - "in"
     """
     actual_value = key_val_dict.get(key, key)
+
     exp_value = [i.strip('"').strip("'").lower() for i in list(value.strip("[]").split(","))]
     if isinstance(actual_value, (int, float)):
         actual_value = actual_value
@@ -66,6 +70,7 @@ def compare_in(obj, key, value, key_val_dict, tolerance=0.1):
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
         obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
     
+
     return obj
 
 
@@ -74,6 +79,7 @@ def compare_notin(obj, key, value, key_val_dict, tolerance=0.1):
     OPERATOR - "notin, not_in"
     """
     actual_value = key_val_dict.get(key, key)
+
     exp_value = [i.strip('"').strip("'").lower() for i in list(value.strip("[]").split(","))]
 
     if isinstance(actual_value, (int, float)):
@@ -99,6 +105,7 @@ def compare_contains(obj, key, value, key_val_dict, tolerance=0.1):
     """
     actual_value = key_val_dict.get(key, key)
     if value.lower().strip("'").strip('"') in str(actual_value).strip("'").strip('"').lower():
+
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
         obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)

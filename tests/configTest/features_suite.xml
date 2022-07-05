@@ -4,14 +4,17 @@
         <mail>ankitapandey281999@gmail.com</mail>
         <project>PYPREST</project>
         <report_name>feature_regression</report_name>
-        <mode>optimize</mode>
+        <mode>sequence</mode>
         <env>beta</env>
         <bridge_token>tokentest</bridge_token>
+       <threads>8</threads>
+
     </suite>
 
     <testcases>
 
         <testcase>
+
             <name>sample_testcase1</name>
             <category>sample</category>
             <run_flag>N</run_flag>
@@ -37,6 +40,7 @@
             <location>tests</location>
             <debug_mode>false</debug_mode>
             <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
+            <extra_args>hellp</extra_args>
             <TYPE>PYPREST</TYPE>
         </testcase>
         <testcase>
@@ -79,7 +83,6 @@
         </testcase>
 
         <testcase>
-
             <name>Test_Pre_Variables</name>
             <category>Pre_variables</category>
             <run_flag>Y</run_flag>
@@ -171,6 +174,16 @@
             <post_assertion>compare response[0].name.common not to $[#uuid_val]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
+        <testcase>
+            <name>testcase_11</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <path>../../../../gempyp_test/Testcase_methods_11.py</path>
+            <location>test</location>
+            <type>gempyp</type>
+            <method>testcase_1</method>
+            <extra_args1>hello</extra_args1>
+        </testcase>     
 
         <testcase>
             <name>Test_Post</name>
@@ -293,7 +306,7 @@
             <pre_variables>set $[#some_var_list]=[0,9,7];set $[#abc]=$[#getRandomFromAlist($[#some_var_list])]</pre_variables>
             <key_check></key_check>
             <post_variables></post_variables>
-            <post_assertion>compare response[0].name.common notto $[#abc]</post_assertion>
+            <post_assertion>compare response[0].name.common not to $[#abc]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
 
@@ -468,7 +481,7 @@
             <pre_variables></pre_variables>
             <key_check></key_check>
             <post_variables>set $[#new_var]=$[#uuid()]</post_variables>
-            <post_assertion>compare response[0].name.common notto $[#new_var]</post_assertion>
+            <post_assertion>compare response[0].name.common n $[#new_var]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
 
@@ -502,7 +515,7 @@
             <pre_variables>set $[#var]=GUNS</pre_variables>
             <key_check></key_check>
             <post_variables>set $[#new_var]=$[#var]</post_variables>
-            <post_assertion>compare response[0].name.common notto $[#new_var]</post_assertion>
+            <post_assertion>compare response[0].name.common n $[#new_var]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
 
@@ -519,7 +532,7 @@
             <pre_variables>set $[#suite.var]=GUNS</pre_variables>
             <key_check></key_check>
             <post_variables></post_variables>
-            <post_assertion>compare response[0].name.common notto $[#suite.var]</post_assertion>
+            <post_assertion>compare response[0].name.common n $[#suite.var]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
     </testcases>

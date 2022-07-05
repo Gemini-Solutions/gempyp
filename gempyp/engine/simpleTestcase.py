@@ -29,25 +29,25 @@ class AbstractSimpleTestcase(ABC):
             logger.ERROR("Testcase not imported")
         try:
             methodName = testcaseSettings.get("METHOD", "main")
-            print("-------- method ---------", methodName)
+            logger.info(f"-------- method ---------{methodName}")
             reporter = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
             # adding logger to the reporter
             reporter.logger = logger
-            flag = 1
             try:
                 methodName = getattr(cls(), methodName)
                 methodName(reporter)
-                flag = 0
             except Exception as err:
-                logger.info(traceback.print_exc())
+                logger.error(traceback.format_exc())
+                etype, value, tb = sys.exc_info()
+                info, error = traceback.format_exception(etype, value, tb)[-2:]
+                #reports = testcaseReporter(kwargs["PROJECTNAME"], testcaseSettings["NAME"])
+                reporter.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
             finally:
-                if flag == 1:
-                    reporter.addRow("Exception Occured", "Exception occured in testcase: Report was not generated.", status.FAIL)    
-                    logger.error("some error occurred while running the Testcase")
                 return reporter
                 
-        except Exception as e:                
-            print(e)
+        except Exception as e:
+            if e:            
+                logger.error(traceback.format_exc())
             
         
 

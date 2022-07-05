@@ -15,14 +15,14 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
     actually imports the testcase functions and run the functions
     """
-    print("------------------ In testcase Runner --------------")
+    logging.info("------------------ In testcase Runner --------------")
     configData: Dict = testcaseMeta.get("configData")
     logger = configData.get("LOGGER")
     testcaseMeta.pop("configData")
     try:
         fileName = configData.get("PATH")
-
         dynamicTestcase = moduleImports(fileName)
+        
         print("-----------------------------------------------------------")
 
         try:

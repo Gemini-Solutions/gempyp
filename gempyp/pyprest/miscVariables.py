@@ -18,6 +18,7 @@ class MiscVariables:
         try:
             if self.pyprest_obj.report_misc:
                 miscVariableStr = self.pyprest_obj.report_misc
+                print(miscVariableStr)
                 miscVariableList = miscVariableStr.split(";")
                 for each in miscVariableList:
                     each_item = each.split("=")
@@ -33,7 +34,7 @@ class MiscVariables:
 
         except Exception as e:
             logger.error(e)
-
+        self.pyprest_obj.reporter.addMisc("k1","v1")
         logger.info(f"Report_misc_variables:  { self.pyprest_obj.reporter._miscData } ")
 
         

@@ -1,3 +1,4 @@
+from importlib.resources import path
 from ntpath import join
 from typing import Dict
 import lxml.etree as et
@@ -25,6 +26,10 @@ class XmlConfig(abstarctBaseConfig):
 
     def parse(self, filePath):
         logging.info("-------- Xml file path: {filePath} ----------".format(filePath=filePath))
+        path_list = filePath.split(os.sep)[0:-1]
+        newfilePath = os.sep.join(path_list)
+        sys.path.append({"XMLConfigDir":newfilePath})
+
         logging.info("-------- Started the Xml parsing in XmlConfig ---------")
         data = et.parse(filePath)
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data)        

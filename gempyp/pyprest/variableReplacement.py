@@ -24,7 +24,7 @@ class VariableReplacement:
             if isinstance(v,dict):
                 data[k] = self.updateDataDictionary(v)
             elif isinstance(v,str):
-                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and  k is not None:
+                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and k is not None :
                     var_list = self.checkAndGetVariables(data[k])
                     for var in var_list:
                         var_name = var
@@ -58,7 +58,7 @@ class VariableReplacement:
                 # suite_variables
                 # varValue = self.local_pre_variables[varName]
         except:
-            return "Null"
+            return "null"
         str_val = var_name.replace("$[#"+varName+"]", str(varValue))
         if "$[#" not in str_val:
             return str(str_val) 
@@ -85,7 +85,7 @@ class VariableReplacement:
             if isinstance(v,dict):
                 data[k] = self.updateDataDictionary(v)
             elif isinstance(v,str):
-                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and  k is not None:
+                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:
                     var_list = self.checkAndGetVariables(data[k])
                     for var in var_list:
                         var_name = var

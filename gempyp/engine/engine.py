@@ -1,4 +1,3 @@
-from cgi import test
 import sys
 import os
 import platform
@@ -17,7 +16,7 @@ from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
 import logging
-from gempyp.libs.logConfig import LoggingConfig, my_custom_logger
+from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 
@@ -92,7 +91,7 @@ class Engine:
             report_folder_name = report_folder_name + f"_{self.reportName}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if "OUTPUT_FOLDER" in self.PARAMS:
+        if "OUTPUT_FOLDER" in self.PARAMS and self.PARAMS["OUTPUT_FOLDER"]:
             self.ouput_folder = os.path.join(
                 self.PARAMS["OUTPUT_FOLDER"], report_folder_name
             )
@@ -202,6 +201,7 @@ class Engine:
         start running the testcases in sequence
         """
 
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -220,13 +220,19 @@ class Engine:
                     custom_logger.error(f"message: {error['message']}")
                 self.update_df(output, error)
 
+
     def startParallel(self):
         """
         start running the testcases in parallel
         """
         pool = None
         try:
-            pool = Pool(self.PARAMS.get("THREADS", DefaultSettings.THREADS))
+            threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
+            try:
+                threads = int(threads)
+            except:
+                threads = DefaultSettings.THREADS
+            pool = Pool(threads)
             # decide the dependency order:
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
