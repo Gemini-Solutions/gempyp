@@ -22,6 +22,7 @@ class abstarctBaseConfig(ABC):
         return self._CONFIG["SUITE_DATA"]
 
     def getTestcaseConfig(self) -> Dict:
+        """reutrn the testCaseData to filter method"""
         # logging.info("--------testCaseDict--------\n {testcaseDict} \n----------".format(testcaseDict=self._CONFIG["TESTCASE_DATA"]))
         return self._CONFIG["TESTCASE_DATA"]
 
@@ -30,6 +31,9 @@ class abstarctBaseConfig(ABC):
     
 
     def getTestcaseLength(self) -> int:
+        """
+        return the length of testCase
+        """
         return len(self._CONFIG.get("TESTCASE_DATA", []))
 
     @abstractmethod
@@ -57,6 +61,7 @@ class abstarctBaseConfig(ABC):
 
     # TODO
     def update(self):
+        """to update the data that is passed by cli"""
         try:
             for element in self.cli_config.keys():
                 if self.cli_config[element]:

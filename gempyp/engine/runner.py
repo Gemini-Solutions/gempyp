@@ -13,7 +13,7 @@ from gempyp.libs.common import moduleImports
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
-    actually imports the testcase functions and run the functions
+    actually imports the testcase files and call the run method
     """
     logging.info("------------------ In testcase Runner --------------")
     configData: Dict = testcaseMeta.get("configData")
@@ -101,6 +101,9 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
 
 
 def getError(error, configData: Dict) -> Dict:
+    """
+    returning the dictionary of error teatCase data
+    """
 
     error = {}
     error["testcase"] = configData.get("NAME")

@@ -7,12 +7,15 @@ import logging
 
 
 def _getHeaders(bridgeToken):
-
+    """for getting the bridgeToken in _sendData method"""
     return {"Content-Type": "application/json", "bridgetoken": bridgeToken}
 
 
 
 def sendSuiteData(payload, bridgeToken, mode="POST"):
+    """
+    for checking the sendSuiteData api response
+    """
     try:
         response = _sendData(payload, DefaultSettings.urls["suiteExec"], bridgeToken, mode)
         if response.status_code == 201:
@@ -22,6 +25,9 @@ def sendSuiteData(payload, bridgeToken, mode="POST"):
         logging.error(traceback.format_exc())
 
 def sendTestcaseData(payload, bridgeToken):
+    """
+    for checking the sendTestCaseData api response
+    """
     try:
         response = _sendData(payload, DefaultSettings.urls["testcases"], bridgeToken, method="POST")
 
@@ -33,6 +39,9 @@ def sendTestcaseData(payload, bridgeToken):
 
 
 def _sendData(payload, url, bridgeToken, method="POST"):
+    """
+    calling the api to upload the data into database
+    """
 
     response = requests.request(
         method=method,
