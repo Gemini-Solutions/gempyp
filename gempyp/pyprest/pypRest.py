@@ -168,10 +168,11 @@ class PypRest(Base):
         if self.auth_type == "NTLM":
             self.req_obj.credentials = {"username": self.username, "password": self.password}
             self.req_obj.auth = "PASSWORD"
-        self.logRequest()
 
         # calling the before method after creating the request object.
         self.beforeMethod()
+
+        self.logRequest()
 
         # calling variable replacement after before method
         var_replacement(self).variableReplacement()
@@ -387,7 +388,7 @@ class PypRest(Base):
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
             fin_obj = getattr(obj_, method_name)(after_obj)
-            self.extract_obj(fin_obj)
+            self.extractObj(fin_obj)
         except Exception as e:
             self.reporter.addRow("Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.WARN)
 
