@@ -21,7 +21,10 @@ class XmlConfig(abstarctBaseConfig):
         os.environ['unique_id'] = self.unique_id
         os.environ['log_dir'] = self.log_dir
         warnings.filterwarnings('ignore')
+        suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.log'))
         LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.log'))
+        # LoggingConfig(suiteLogsLoc)
+        print("------suite logs------",suiteLogsLoc)
         super().__init__(filePath)
         # do any xml specific validatioins here
        
