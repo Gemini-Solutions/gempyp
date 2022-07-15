@@ -1,4 +1,4 @@
-from gempyp.gempyp import Gempyp
+from gempyp.gemPyp import Gempyp
 import sys
 import os
 
@@ -6,8 +6,8 @@ import os
 obj = Gempyp()
 
 
-obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
-obj.MAIL = "ankitapandey281999@gmail.com"
+obj.config = "C:\\Users\\ta.agarwal\\gempyp\\tests\\configTest\\Gempyp_Test_suite.xml"
+obj.MAIL = "8979149361t@gmail.com"
 
 
 # main condition is necessary
