@@ -4,6 +4,9 @@ from gempyp.engine.engine import Engine
 
 class Gempyp:
     def __init__(self):
+        """
+        initiating some variables  
+        """
         self.config = None
         self.MAIL = None
         self.PROJECT = None
@@ -39,7 +42,9 @@ class Gempyp:
         return args
 
     def runner(self):
-        """This function takes the config and updates the config data in case or cli run and direct(python) run"""
+        """
+        This function takes the config and updates the config data in case or cli run and direct(python) run
+        """
         config = XmlConfig(self.config)
         if not self.args:
             del self.__dict__["args"]
