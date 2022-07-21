@@ -33,7 +33,7 @@ class Gempyp:
         parser.add_argument('-username','-username',dest='USERNAME',type=str, required=False)
         parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
-        # parser.add_argument('-set','-set',dest='SET',type=str, required=False)
+        parser.add_argument('-set','-set',dest='SET',type=str, required=False)
 
         args = parser.parse_args()
         return args
