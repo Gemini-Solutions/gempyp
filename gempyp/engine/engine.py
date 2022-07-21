@@ -114,7 +114,10 @@ class Engine:
         self.CONFIG = config
         self.testcaseData = {}
         self.machine = platform.node()
-        self.user = getpass.getuser()
+        if("USERNAME" in self.PARAMS):
+            self.user = self.PARAMS["USERNAME"]
+        else:
+            self.user=getpass.getuser()
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)

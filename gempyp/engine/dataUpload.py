@@ -38,7 +38,7 @@ def _sendData(payload, url, bridgeToken, user_name, method="POST"):
     if DefaultSettings.count > 3:
         logging.critical("Incorrect bridgetoken/username or APIs are down")
         sys.exit()
-
+    
     response = requests.request(
         method=method,
         url=url,
