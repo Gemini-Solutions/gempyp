@@ -11,7 +11,7 @@ class abstarctBaseConfig(ABC):
         self.cli_config ={}
         try:
             self.parse(*args, **kwargs)
-            # filter the testcasesData
+            # filter removed from here because we need to apply filter after updating data with cli input(if given)
             self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
