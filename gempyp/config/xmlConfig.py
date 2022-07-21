@@ -1,5 +1,6 @@
 from importlib.resources import path
 from ntpath import join
+import tempfile
 from typing import Dict
 import lxml.etree as et
 import logging
@@ -12,14 +13,18 @@ import uuid
 
 class XmlConfig(abstarctBaseConfig):
     def __init__(self, filePath: str):
-        self.log_dir = str(os.path.join(os.getcwd(), 'logs'))
+        
+        self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
         self.unique_id = str(uuid.uuid4())
         os.environ['unique_id'] = self.unique_id
         os.environ['log_dir'] = self.log_dir
         warnings.filterwarnings('ignore')
+        suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.log'))
         LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.log'))
+        # LoggingConfig(suiteLogsLoc)
+        print("------suite logs------",suiteLogsLoc)
         super().__init__(filePath)
         # do any xml specific validatioins here
        
@@ -48,6 +53,9 @@ class XmlConfig(abstarctBaseConfig):
         if suiteDict.get("BRIDGE_TOKEN", None) is None:
             logging.critical("Bridge Token is Missing")
             sys.exit("ERROR: Bridge Token is Missing in the config.")
+        if suiteDict.get("USERNAME", None) is None:
+            logging.critical("Username is Missing")
+            sys.exit("ERROR: Username is Missing in the config.")
         # do your validations here
 
         return suiteDict

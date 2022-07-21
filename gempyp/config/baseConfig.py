@@ -11,7 +11,7 @@ class abstarctBaseConfig(ABC):
         self.cli_config ={}
         try:
             self.parse(*args, **kwargs)
-            # filter the testcasesData
+            # filter removed from here because we need to apply filter after updating data with cli input(if given)
             self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
@@ -24,6 +24,7 @@ class abstarctBaseConfig(ABC):
         return self._CONFIG["SUITE_DATA"]
 
     def getTestcaseConfig(self) -> Dict:
+        """reutrn the testCaseData to filter method"""
         # logging.info("--------testCaseDict--------\n {testcaseDict} \n----------".format(testcaseDict=self._CONFIG["TESTCASE_DATA"]))
         return self._CONFIG["TESTCASE_DATA"]
 
@@ -32,6 +33,9 @@ class abstarctBaseConfig(ABC):
     
 
     def getTestcaseLength(self) -> int:
+        """
+        return the length of testCase
+        """
         return len(self._CONFIG.get("TESTCASE_DATA", []))
 
     @abstractmethod
@@ -52,11 +56,10 @@ class abstarctBaseConfig(ABC):
             if value.get("RUN_FLAG","N").upper() != "Y":
                 continue
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
-                # print(value.get("CATEGORY"))
                 continue
-            # if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
-            #     print(value.get("SET"))
-            #     continue
+            if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
+                print(value.get("SET"))
+                continue
 
             # TODO add more filters
 
@@ -66,6 +69,7 @@ class abstarctBaseConfig(ABC):
 
     # TODO
     def update(self):
+        """to update the data that is passed by cli"""
         try:
             for element in self.cli_config.keys():
                 if self.cli_config[element]:

@@ -4,6 +4,9 @@ from gempyp.engine.engine import Engine
 
 class Gempyp:
     def __init__(self):
+        """
+        initiating some variables  
+        """
         self.config = None
         self.MAIL = None
         self.PROJECT = None
@@ -33,13 +36,15 @@ class Gempyp:
         parser.add_argument('-username','-username',dest='USERNAME',type=str, required=False)
         parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
-        # parser.add_argument('-set','-set',dest='SET',type=str, required=False)
+        parser.add_argument('-set','-set',dest='SET',type=str, required=False)
 
         args = parser.parse_args()
         return args
 
     def runner(self):
-        """This function takes the config and updates the config data in case or cli run and direct(python) run"""
+        """
+        This function takes the config and updates the config data in case or cli run and direct(python) run
+        """
         config = XmlConfig(self.config)
         if not self.args:
             del self.__dict__["args"]
