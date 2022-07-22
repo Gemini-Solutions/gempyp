@@ -17,8 +17,8 @@ class Gempyp:
         self.THREADS = None
         self.BRIDGE_TOKEN = None 
         self.OUTPUT_FOLDER = None
-
-
+        self.CATEGORY = None
+        self.SET = None
     
     def argParser(self):
         """Argument parser to help running through CLI"""
@@ -34,6 +34,8 @@ class Gempyp:
         parser.add_argument('-threads','-t',dest='THREADS',type=str, required=False)
         parser.add_argument('-bridge_token','-token',dest='BRIDGE_TOKEN',type=str, required=False)
         parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
+        parser.add_argument('-category','-cat',dest='CATEGORY',type=str, required=False)
+        parser.add_argument('-set','-s',dest='SET',type=str, required=False)
 
         args = parser.parse_args()
         return args

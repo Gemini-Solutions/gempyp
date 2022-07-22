@@ -20,6 +20,7 @@ import logging
 from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
+import smtplib
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -90,6 +91,7 @@ class Engine:
         self.updateSuiteData()
         dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], mode="PUT")
         self.makeReport()
+        self.sendEmail()
 
     def makeOutputFolder(self):
         """
@@ -151,7 +153,7 @@ class Engine:
 
     def makeSuiteDetails(self):
         """
-        making suite Details 
+        making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
@@ -307,8 +309,8 @@ class Engine:
     def update_df(self, output: List, error: Dict):
 
         """
-        updates the testcase data in the dataframes
-        like
+        updates the testcase data in the dataframes of testData.py
+        
         """
         try:
             if error:
@@ -389,7 +391,7 @@ class Engine:
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):
         """
-        updates the misc data for the testcases
+        updates the misc data for the testcases in testData.py
         """
         miscList = []
 
@@ -408,7 +410,7 @@ class Engine:
 
     def getTestcaseData(self, testcase: str) -> Dict:
         """
-        taking argument as the testcase name and  return
+        taking argument as the testcase name and  return dictionary containing information about testCase
         """
         data = {}
         data["configData"] = self.CONFIG.getTestcaseData(testcase)
@@ -434,6 +436,7 @@ class Engine:
         for key, value in adjList.items():
             new_list = []
             for testcase in value:
+
                 testcase = testcase.split(":")
                 if len(testcase) > 1:
                     new_list.append(testcase[1])
@@ -446,6 +449,7 @@ class Engine:
                 i for dependents in list(adjList.values()) for i in dependents
             ) - set(adjList.keys())
             top_dep.update(key for key, value in adjList.items() if not value)
+
 
             if not top_dep:
                 logging.critical(
@@ -546,3 +550,23 @@ class Engine:
 
         except Exception as e:
             logging.error(traceback.print_exc(e))
+
+    def sendEmail(self):
+        # creates SMTP session
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+  
+        # start TLS for security
+        s.starttls()
+  
+        # Authentication
+        s.login("sachin8garg2000@gmail.com", "nzngpukdhihwfrku")
+  
+        # message to be sent
+        # message = os.path.
+  
+        # sending the mail
+        s.sendmail("sachin8garg2000@gmail.com", "sachin6garg2000@gmail.com", message)
+  
+        # terminating the session
+        s.quit()
+

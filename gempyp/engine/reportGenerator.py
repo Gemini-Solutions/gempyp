@@ -59,7 +59,7 @@ class templateData:
 
     def _getFilters(self) -> Dict:
         """
-        return the unique columns
+        return the steps that are described in testcases reporter .addRow 
         """
 
         filterNames = list(

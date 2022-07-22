@@ -11,7 +11,7 @@ class abstarctBaseConfig(ABC):
         try:
             self.parse(*args, **kwargs)
             # filter the testcasesData
-            self.filter()
+            # self.filter()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
             traceback.print_exc()
@@ -19,6 +19,7 @@ class abstarctBaseConfig(ABC):
 
     def getSuiteConfig(self) -> Dict:
         # logging.info("^^^^^^^^^^^^^ \n {suite_data} \n^^^^^^^^^".format(suite_data=self._CONFIG["SUITE_DATA"]))
+        self.filter()
         return self._CONFIG["SUITE_DATA"]
 
     def getTestcaseConfig(self) -> Dict:
@@ -54,6 +55,13 @@ class abstarctBaseConfig(ABC):
             if value.get("RUN_FLAG", "N").upper() != "Y":
                 continue
             # TODO add more filters
+            
+            if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
+                print(value.get("CATEGORY"))
+                continue
+            if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
+                print(value.get("SET"))
+                continue
 
             filteredDict[key] = value
 
