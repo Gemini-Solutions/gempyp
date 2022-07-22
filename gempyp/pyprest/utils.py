@@ -88,7 +88,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
 def getValuesForEach(each_value_dict, keys_to_fetch):
     """Getting values in case of "each operator" """
     logger.info(f"Keys to be fetched from response - {keys_to_fetch}")
-    for key in keys_to_fetch():
+    for key in keys_to_fetch:
         if key in each_value_dict:
             each_value_dict = each_value_dict[key]
             if each_value_dict is None:

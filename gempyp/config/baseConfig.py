@@ -3,6 +3,7 @@ import traceback
 from typing import Dict
 import argparse
 import logging
+from unicodedata import category
 
 class abstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):
@@ -10,8 +11,8 @@ class abstarctBaseConfig(ABC):
         self.cli_config ={}
         try:
             self.parse(*args, **kwargs)
-            # filter the testcasesData
-            # self.filter()
+            # filter removed from here because we need to apply filter after updating data with cli input(if given)
+            self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
             traceback.print_exc()
@@ -52,8 +53,14 @@ class abstarctBaseConfig(ABC):
         filteredDict = {}
 
         for key, value in testcaseData.items():
-            if value.get("RUN_FLAG", "N").upper() != "Y":
+            if value.get("RUN_FLAG","N").upper() != "Y":
                 continue
+            if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
+                continue
+            if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
+                print(value.get("SET"))
+                continue
+
             # TODO add more filters
             
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
@@ -74,6 +81,7 @@ class abstarctBaseConfig(ABC):
             for element in self.cli_config.keys():
                 if self.cli_config[element]:
                     if str(element) in self._CONFIG['SUITE_DATA']:
+                        # print(element)
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:
             print("error occurs in update",error)

@@ -53,6 +53,9 @@ class XmlConfig(abstarctBaseConfig):
         if suiteDict.get("BRIDGE_TOKEN", None) is None:
             logging.critical("Bridge Token is Missing")
             sys.exit("ERROR: Bridge Token is Missing in the config.")
+        if suiteDict.get("USERNAME", None) is None:
+            logging.critical("Username is Missing")
+            sys.exit("ERROR: Username is Missing in the config.")
         # do your validations here
 
         return suiteDict

@@ -3,12 +3,12 @@
     <suite>
 
         <mail>test@gmail.com</mail>
-        <project>GEMPYP_TEST</project>
-        <report_name>FEATURE_REGRESSION</report_name>
+        <project>gempyp</project>
+        <report_name>testcase</report_name>
         <mode>optimize</mode>
-        <env>beta</env>
+        <env>prod</env>
         <bridge_token>tokentest</bridge_token>
-        
+        <username>tanya</username>
     </suite>
 
     <testcases>
@@ -17,7 +17,7 @@
             <name>testcase_except_</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <path>..\sample_testcase\Testcase_methods_1.py</path>
+            <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <method>testcase_except_</method>
             <type>gempyp</type>
@@ -26,9 +26,9 @@
 
         <testcase>
             <name>testcase_2</name>
-            <category>sample</category>
+            <category>sample1</category>
             <run_flag>Y</run_flag>
-            <path>C:\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
+            <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
             <method>testcase_2</method>
@@ -38,7 +38,7 @@
         <testcase>
             <name>testcase_main</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <dependency>testcase_2</dependency>
@@ -49,7 +49,7 @@
         <testcase>
             <name>verify_testcase</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <dependency>testcase_except_,testcase_main</dependency>
@@ -62,6 +62,7 @@
             <name>Main_testcase</name>
             <set>sample</set>
             <run_flag>Y</run_flag>
+            <category>sample</category>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>Main</method>
@@ -73,6 +74,7 @@
             <name>main_Testcase_sample_2</name>
             <set>sample</set>
             <run_flag>Y</run_flag>
+            <category>sample</category>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <type>gempyp</type>
@@ -81,7 +83,7 @@
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
