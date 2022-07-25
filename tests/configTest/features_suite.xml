@@ -31,7 +31,7 @@
             <method>GET</method>
             <body>{}</body>
             <headers>{}</headers>
-            <expected_status_code>200</expected_status_code>
+            <expected_status_code>200,404,201</expected_status_code>
             <authentication></authentication>
             <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
