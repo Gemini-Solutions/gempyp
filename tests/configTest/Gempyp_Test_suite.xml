@@ -6,8 +6,6 @@
         <report_name>FEATURE_REGRESSION</report_name>
         <mode>optimize</mode>
         <env>prod</env>
-        <bridge_token>tokentest</bridge_token>
-        <username>tanya</username>
     </suite>
 
     <testcases>
