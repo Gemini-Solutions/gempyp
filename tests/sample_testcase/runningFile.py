@@ -1,4 +1,4 @@
-from gempyp.gempyp import Gempyp
+from gempyp.gemPyp import Gempyp
 import sys
 import os
 
@@ -6,11 +6,10 @@ import os
 obj = Gempyp()
 
 
-obj.config = "C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\Gempyp_Test_Suite.xml"
-obj.MAIL = "ankitapandey281999@gmail.com"
+obj.config = "C:\\Users\\ar.mishra\\gempyp\\tests\\configTest\\new_test_suite.xml"
+obj.MAIL = "arpit.mishra@geminisolutions.com"
 
 
 # main condition is necessary
 if __name__ == "__main__":
-    print(obj.__dict__)
     obj.runner()
