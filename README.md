@@ -1,6 +1,7 @@
-# gempyp
+# GEMPYP
 
-[![Python](https://img.shields.io/badge/python-3.7-blue)]()
+[![Python](https://img.shields.io/badge/python-3.10.4-blue)]()
+
 
 ## Installation
 
@@ -27,6 +28,11 @@ The official documentation is hosted on Read the Docs: https://gempyp.readthedoc
 ## Contributors
 
 We welcome and recognize all contributions. You can see a list of current contributors in the [contributors tab](https://github.com/Gemini-Solutions/gempyp/).
+
+## More
+For more information visit https://gempyp.gemecosystem.com/ and https://gemecosystem.com/
+
+
 
 ### Credits
 
