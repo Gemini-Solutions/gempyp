@@ -1,4 +1,3 @@
-from tkinter import CURRENT
 from gempyp.libs.enums.status import status
 import logging as logger
 
