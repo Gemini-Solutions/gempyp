@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gempyp"
-version = "0.1.1"
+version = "0.1.12"
 description = "An ecosystem of libraries useful for software development"
 authors = ["Gemini Solutions-QA"]
 license = "MIT"
@@ -9,10 +9,10 @@ documentation = "https://gempyp.readthedocs.io/en/latest/"
 homepage = "https://github.com/Gemini-Solutions/gempyp"
 repository = "https://github.com/Gemini-Solutions/gempyp"
 
-include = ["suite.html", "testcase.html"]
+include = ["suite.html", "testcase.html", "final_report.html"]
 
 [tool.poetry.dependencies]
-python = "^3.10.4"
+python = "^3.6.0"
 pytest = "^6.2.4"
 certifi = "^2022.6.15"
 cffi = "^1.15.0"

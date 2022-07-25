@@ -77,11 +77,11 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
-        dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"])
+        dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
-        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], mode="PUT")
+        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         self.makeReport()
 
     def makeOutputFolder(self):
@@ -317,7 +317,7 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
                 )
-                dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"])
+                dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
