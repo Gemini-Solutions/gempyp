@@ -55,9 +55,7 @@ class XmlConfig(abstarctBaseConfig):
     def _getTestCaseData(self, data) -> Dict:
 
         testcaseData = data.find("testcases")
-
         testcaseList = xmlToList(testcaseData)
         testcaseDict = {k['NAME']: k for k in testcaseList}
         # do your validation here
-
         return testcaseDict

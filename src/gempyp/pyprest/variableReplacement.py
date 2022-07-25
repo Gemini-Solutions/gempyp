@@ -20,7 +20,7 @@ class VariableReplacement:
 
     def ValueNotFound(self):
         logger.info("------ assigning all variables to null those value not found -----")
-        data = self.pyprest_obj.__dict__
+        data = self.pyprest_obj.__dict__       
         for k,v in data.copy().items():
             if isinstance(v,dict):
                 data[k] = self.updateDataDictionary(v)
@@ -31,12 +31,11 @@ class VariableReplacement:
                         var_name = var
                         var_val = self.getVariableValues(var_name)
                         if var_val == "null" and "$[#" in str(data[k]):
-                            newValStr = "null"
+                            newValStr = data[k].replace(var_name, "Null")
                         else:
                             newValStr = data[k].replace(var_name, str(var_val))
                         del data[k]
                         data[k] = newValStr
-                    
             self.pyprest_obj.__dict__ = data
 
     def checkAndGetVariables(self, value_str) -> list:
@@ -92,8 +91,6 @@ class VariableReplacement:
             elif isinstance(v,str):
                 if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:
                     var_list = self.checkAndGetVariables(data[k])
-                    if k == "post_assertion" or k == "POST_ASSERTION":
-                        print(k,"  ------  ",var_list)
                     for var in var_list:
                         var_name = var
                         var_val = self.getVariableValues(var_name)

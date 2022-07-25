@@ -47,4 +47,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-gempyp = "gempyp.gempyp:main"
+gempyp = "gempyp.gemPyp:main"

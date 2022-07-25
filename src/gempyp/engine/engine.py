@@ -189,7 +189,9 @@ class Engine:
         for s in status:
             if statusDict.get(s.name, 0) > 0:
                 SuiteStatus = s.name
-
+        print("*****************")
+        print("suite_end_time",self.DATA.testcaseDetails["end_time"])
+        print("*****************")
         stoptime = (
             self.DATA.testcaseDetails["end_time"].sort_values(ascending=False).iloc[0]
         )

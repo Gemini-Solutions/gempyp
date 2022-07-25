@@ -9,6 +9,7 @@ class KeyCheck:
         self.pyprest_obj = pyprest_obj
         self.regex_each = re.compile(r".*\[\beach\b\]")
         self.regex_int = re.compile(r".*\[\d+\]")
+        self.isLegacyPresent = False
         pass
 
     def keyCheck(self):
@@ -18,27 +19,40 @@ class KeyCheck:
         self.pyprest_obj.logger.info("**************  INSIDE KEY CHECK  **************")
 
         self.response_body = {}
+
         if self.pyprest_obj.key_check and "keys are" in self.pyprest_obj.key_check.lower():
             self.pyprest_obj.key_check = self.pyprest_obj.key_check
             self.pyprest_obj.logger.info("keycheck string: " + str(self.pyprest_obj.key_check))
             type_list = self.pyprest_obj.key_check.strip(";").split(";")
+            print('\n\n\n')
+            print("++++++++Type List+++++++++++++", type_list)
             self.keys = []
             self.keys_not = []
             for each in type_list:
+                print("---------each_in type_list-------------", each)
 
                 # not condition
                 if "keys are not" in each.lower():
-                    key_not_str = each.split("keys are not")
+                    key_not_str = each.split("keys are not")[1]
+                    print("key_not_str",key_not_str)
                     self.keys_not = [i.strip(" ") for i in key_not_str.split(",")]
+                    print("self.keys_not     ",self.keys_not)
 
                 # keys are condition 
                 elif "keys are" in each.lower():
                     key_str = each.split("keys are")[1]
+                    print("key_str   ",key_str)
                     keys = [i.strip(" ") for i in key_str.split(",")]
+                    print("keys-----",keys)
                     self.keys = list(set(keys) - set(self.keys_not))
+                    print("self.keys      ",self.keys)
 
                 self.response_body = utils.formatRespBody(self.pyprest_obj.res_obj.response_body)
-
+                if self.pyprest_obj.legacy_res is not None:
+                    self.pyprest_obj.logger.info("Legacy API found for key check....")
+                    self.isLegacyPresent = True
+                    self.legacy_response_body = utils.formatRespBody(self.pyprest_obj.legacy_res.response_body)
+                    print("****legacy response****", self.legacy_response_body)
                 self.getKeys()
 
         else:
@@ -46,52 +60,110 @@ class KeyCheck:
 
     def getKeys(self):
         """
-        Logging on the basis or presence or absence of keys"""
+        Logging on the basis or presence or absence of keys
+        """
         count_found_fail, count_notfound_fail = 0, 0
         _status, _status_n = status.INFO, status.INFO
         content_found = ""  # html content, add all the key checks in single row
         content_not_found = ""
+        legacy_content_found = ''
         if len(self.keys) > 0:
             for each_key in self.keys:
                 self.key_list = [str(i) for i in each_key.split(".")]
                 self.temp_key_list = list(self.key_list)
-                result = self.findKeys(self.response_body, self.key_list, self.temp_key_list)
-                if "NOT FOUND" in result:
-                    count_found_fail += 1
-                content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                print(f"\n\nself.key_list:  { self.key_list}\n\n\n ")
+                if self.isLegacyPresent:
+                    result = ''
+                    if 'legacy' in self.key_list[0]:
+                        print("legacy value is present in the key list and legacy api present in the response as well", self.key_list)
+                        result = self.findKeys(self.legacy_response_body, self.key_list, self.temp_key_list,"legacy")
+                        legacy_content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
 
-                if count_found_fail > 0:
-                    _status = status.FAIL
+                    else:
+                        result = self.findKeys(self.response_body, self.key_list,self.temp_key_list)
+                        content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                    if "NOT FOUND" in result:
+                        count_found_fail += 1
+                    if count_found_fail > 0:
+                        _status = status.FAIL
+                    else:
+                        _status = status.PASS
+                    result = ''
+                             
                 else:
-                    _status = status.PASS
-            self.pyprest_obj.reporter.addRow("Keys to be check for PRESENCE in response body", content_found, _status)
-            if _status == status.FAIL:
-                self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing in Response, "
+                    result = self.findKeys(self.response_body, self.key_list, self.temp_key_list)
+                    if "NOT FOUND" in result:
+                        count_found_fail += 1
+                    content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+
+                    if count_found_fail > 0:
+                        _status = status.FAIL
+                    else:
+                        _status = status.PASS
+            if self.isLegacyPresent:
+                self.pyprest_obj.reporter.addRow("Keys to be check for presence/absence in response body of current and legacy api","Keys are present status",_status ,CURRENT_API= content_found, LEGACY_API= legacy_content_found)
+                if _status == status.FAIL:
+                    self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing in Current or Legacy API Response, "
+            else:   
+                self.pyprest_obj.reporter.addRow("Keys to be check for PRESENCE in response body", content_found, _status)
+                if _status == status.FAIL:
+                    self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing in Response, "
 
         if len(self.keys_not) > 0:
             for each_key in self.keys_not:
                 self.key_list = [str(i) for i in each_key.split(".")]
                 self.temp_key_list = list(self.key_list)
-                result = self.findKeys(self.response_body, self.key_list, self.temp_key_list)
-                if result == "FOUND":
-                    count_notfound_fail += 1
-                content_not_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                if self.isLegacyPresent:
+                    result = ''
+                    if 'legacy' in self.key_list[0]:
+                        print("legacy value is present in the key list and legacy api present in the response as well", self.key_list)
+                        result = self.findKeys(self.legacy_response_body, self.key_list, self.temp_key_list,"legacy")
+                        legacy_content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                        print("legacy_content_found: ",legacy_content_found)
 
-                if count_notfound_fail > 0:
-                    _status_n = status.FAIL
+                    else:
+                        print('key_list inside current response', self.key_list)
+                        result = self.findKeys(self.response_body, self.key_list,self.temp_key_list)
+                        print("result for current response: ", result)
+                        content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                        print("content_found for current api: ",content_found)
+                    if "NOT FOUND" in result:
+                        count_found_fail += 1
+                    if count_found_fail > 0:
+                        _status = status.FAIL
+                    else:
+                        _status = status.PASS
+                    result = ''
                 else:
-                    _status_n = status.PASS
-            self.pyprest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
+                    result = self.findKeys(self.response_body, self.key_list, self.temp_key_list)
+                    if result == "FOUND":
+                        count_notfound_fail += 1
+                    content_not_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
 
-        if status.FAIL in [_status, _status_n]:
-            self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] = "Status of key check is not as expected, "
+                    if count_notfound_fail > 0:
+                        _status_n = status.FAIL
+                    else:
+                        _status_n = status.PASS
+            
+            if self.isLegacyPresent:
+                self.pyprest_obj.reporter.addRow("Keys to be check for presence/absence in response body of current and legacy api","Keys are not present in the response status",_status ,CURRENT_API= content_found, LEGACY_API= legacy_content_found)
+                if _status == status.FAIL:
+                    self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing in Current or Legacy API Response, "
+            else:    
+                self.pyprest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
+
+            if status.FAIL in [_status, _status_n]:
+                self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] = "Status of key check is not as expected, "
             # self.pyprest_obj.reporter.addMisc(Reason_of_failure="Status of key check is not as expected")
 
+# change adding another param typeOfResponse to make findkeys reusable for legacy and current responses
 
-    def findKeys(self, json_data, key_list, temp_key_list):
+    def findKeys(self, json_data, key_list, temp_key_list, typeOfResponse = 'response'):
         """
         Finding keys in the response on the basis of the regex they match with
         """
+        if "legacy" in key_list or "legacy" in temp_key_list:
+            typeOfResponse = 'legacy'
         for each in key_list:
             self.pyprest_obj.logger.info(f"========FINDING KEY - {each}  ==========")
             """
@@ -103,16 +175,24 @@ class KeyCheck:
             """
 
             # parsing the keychecks with "each" in them
+            print("\n\nline176: ",key_list)
+
+            print("\n\nline178", re.match(self.regex_each,each))
+
             if re.match(self.regex_each, each):
+                print(each) 
                 br_index = each.find('[')
+                print("line178",br_index)
                 key_val = each[:br_index]
+                print("line 181",key_val)
 
                 # for response[each].something
-                if key_val.lower() == "response" and isinstance(json_data, list):
+                if key_val.lower() == typeOfResponse and isinstance(json_data, list):
+                    
                     key_list.remove(each)
                     return self.findKeys(json_data, key_list, temp_key_list)
                 
-                if key_val.lower() == "response" and isinstance(json_data, dict):
+                if key_val.lower() == typeOfResponse and isinstance(json_data, dict):
                     print(key_list)
                     key_list.remove(each)
                     print(key_list)
@@ -121,6 +201,7 @@ class KeyCheck:
 
                 # for data[each].something
                 elif key_val in json_data and isinstance(json_data[key_val], list):
+                    print("\nline199: ", key_val)
                     key_list.remove(each)
                     return self.findKeys(json_data[key_val], key_list, temp_key_list)
 
@@ -133,14 +214,17 @@ class KeyCheck:
             # example  response[0].data, data[0].color etc
 
             elif re.match(self.regex_int, each):
+                print("%&&&&&&&&&&&&&&&&&&")
+                print(each)
                 br_start = each.find('[')
                 br_end = each.find(']')
                 key_val = each[:br_start]
                 key_num = int(each[br_start + 1:br_end])
+                print("%&&&&&&&&&&&&&&&&&&")
                 key_num, json_data = utils.getNestedListData(each, json_data, key_val)
 
                 # for response[0].something
-                if key_val == "response" and isinstance(json_data, list) and key_num < len(json_data):
+                if key_val == typeOfResponse and isinstance(json_data, list) and key_num < len(json_data):
                     key_list.remove(each)
                     return self.findKeys(json_data[key_num], key_list, temp_key_list)
 
@@ -184,12 +268,12 @@ class KeyCheck:
 
                 # if input is dict
                 elif isinstance(json_data, dict):
-                    if each in json_data or each.lower() == "response":
+                    if each in json_data or each.lower() == typeOfResponse:
                         tmp_key = list(key_list)
                         tmp_key.remove(each)
                         if len(tmp_key) == 0:
                             return "FOUND"
-                        if each.lower() == "response":
+                        if each.lower() == typeOfResponse:
                             json_data = json_data
                         else:
                             json_data = json_data[each]
