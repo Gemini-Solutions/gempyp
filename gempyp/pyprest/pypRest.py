@@ -18,7 +18,6 @@ from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
-from gempyp.pyprest.legacyComparison import legacyApiComparison
 
 
 

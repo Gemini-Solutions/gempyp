@@ -5,7 +5,8 @@
         <report_name>feature_regression</report_name>
         <mode>optimize</mode>
         <env>beta</env>
-        <bridge_token>tokentest</bridge_token>
+        <username>arpit.mishra</username>
+        <bridge_token>189d848f-edfc-43e9-a6ae-02005c2445fd1657018525269</bridge_token>
         <threads>8</threads>
 
     </suite>
