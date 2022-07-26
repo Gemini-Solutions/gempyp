@@ -30,7 +30,6 @@ class Gempyp:
         parser.add_argument('-config','-c',dest='config',type=str, required=False)
         parser.add_argument('-mail','-m',dest='MAIL', type=str, required=False)
         parser.add_argument('-project','-p',dest='PROJECT', type=str, required=False)
-
         parser.add_argument('-Report_name','-rn',dest='REPORT_NAME', type=str, required=False)
         parser.add_argument('-mode','-mode',dest='MODE', type=str, required=False)
         parser.add_argument('-env','-env',dest='ENV', type=str, required=False)
@@ -40,6 +39,7 @@ class Gempyp:
         parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
         parser.add_argument('-set','-set',dest='SET',type=str, required=False)
+
 
         args = parser.parse_args()
         return args
