@@ -17,6 +17,8 @@ class Gempyp:
         self.THREADS = None
         self.BRIDGE_TOKEN = None 
         self.OUTPUT_FOLDER = None
+        self.CATEGORY = None
+        self.SET = None
 
 
     
