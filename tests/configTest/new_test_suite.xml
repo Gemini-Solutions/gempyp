@@ -1,9 +1,9 @@
 <data>
     <suite>
-        <mail>ankitapandey281999@gmail.com</mail>
+        <mail>arpit.mishra@geminisolutions.com</mail>
         <project>PYPREST</project>
         <report_name>feature_regression</report_name>
-        <mode>optimize</mode>
+        <mode>sequence</mode>
         <env>beta</env>
         <username>arpit.mishra</username>
         <bridge_token>189d848f-edfc-43e9-a6ae-02005c2445fd1657018525269</bridge_token>
@@ -14,7 +14,7 @@
         <testcase>
             <name>legacy key check and post assertion check</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -70,18 +70,65 @@
             <legacy_headers>{"accept":"application/json"}</legacy_headers>
             <legacy_body>{}</legacy_body>
             <legacy_expected_status_code>200,300</legacy_expected_status_code>
-            <key_check>keys are legacy_response[0].name.common,legacy_response[each].name, current_response.data, current_response.message</key_check>
+            <key_check>keys are legacy[0].name.common</key_check>
             <post_variables></post_variables>
-            <post_assertion></post_assertion>
+            <post_assertion>compare data.status to "pass"; </post_assertion>
             <debug_mode>false</debug_mode>
             <report_misc></report_misc>
             <TYPE>PYPREST</TYPE>
 
         </testcase>
         <testcase>
-            <name>legacy key check and post assertion check with rest Country2</name>
+            <name> post assertion check between two responses</name>
             <category>sample</category>
             <run_flag>N</run_flag>
+            <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200,300,400</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
+            <legacy_api>https://apis.gemecosystem.com/suiteexe?s_run_id=PYPREST_BETA_F8C0CEA5-A2BE-4FEA-822F-DB2C52D52413</legacy_api>
+            <legacy_method>GET</legacy_method>
+            <legacy_headers>{"accept":"application/json"}</legacy_headers>
+            <legacy_body>{}</legacy_body>
+            <legacy_expected_status_code>200,300</legacy_expected_status_code>
+            <key_check>keys are legacy.data, legacy.data.s_id</key_check>
+            <post_variables></post_variables>
+            <post_assertion>compare data.s_id to legacy.data.s_id; compare legacy.data.status to data.status;</post_assertion>
+            <debug_mode>false</debug_mode>
+            <report_misc></report_misc>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+        <testcase>
+            <name>compare all response legacy</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200,300,400</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
+            <legacy_api>https://apis.gemecosystem.com/suiteexe?s_run_id=PYPREST_BETA_F8C0CEA5-A2BE-4FEA-822F-DB2C52D52413</legacy_api>
+            <legacy_method>GET</legacy_method>
+            <legacy_headers>{"accept":"application/json"}</legacy_headers>
+            <legacy_body>{}</legacy_body>
+            <legacy_expected_status_code>200,300</legacy_expected_status_code>
+            <key_check>keys are legacy.data, legacy.data.s_id</key_check>
+            <post_variables></post_variables>
+            <post_assertion>compare data.s_id to legacy.data.s_id; compare legacy.data.status not to data.status; compare legacy.data.user to data.user</post_assertion>
+            <debug_mode>false</debug_mode>
+            <report_misc></report_misc>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+        <testcase>
+            <name>legacy key check and post assertion check with rest Country2</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -96,7 +143,7 @@
             <legacy_expected_status_code>200,300</legacy_expected_status_code>
             <key_check>keys are legacy[0].name.common,legacy[each].name,response[each].name,response[0].name.common</key_check>
             <post_variables></post_variables>
-            <post_assertion></post_assertion>
+            <post_assertion>compare legacy[0].name.common to response[0].name.common; compare legacy[0].name.common to 'namibia'</post_assertion>
             <debug_mode>false</debug_mode>
             <report_misc></report_misc>
             <TYPE>PYPREST</TYPE>
@@ -187,5 +234,24 @@
             <report_misc></report_misc>
             <TYPE>PYPREST</TYPE>
         </testcase>
-    </testcases>
+    
+    <testcase>
+        <name>Single api restcountry</name>
+        <category>sample</category>
+        <run_flag>Y</run_flag>
+        <api>https://restcountries.com/v3.1/lang/german</api>
+        <method>GET</method>
+        <body>{}</body>
+        <headers>{}</headers>
+        <expected_status_code>200,300,400</expected_status_code>
+        <authentication></authentication>
+        <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
+        <post_assertion>compare response[0].name.common not to 'germany'; compare name.common to 'namibia'</post_assertion>
+        <debug_mode>false</debug_mode>
+        <report_misc></report_misc>
+        <TYPE>PYPREST</TYPE>
+
+    </testcase>
+</testcases>
+
 </data>

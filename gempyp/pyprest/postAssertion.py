@@ -1,4 +1,5 @@
 import logging as logger
+import gempyp.pyprest.compareFunctions as cf
 from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest import utils
 from copy import deepcopy
@@ -11,6 +12,8 @@ class PostAssertion:
         self.pyprest_obj = pyprest_obj
         self.logger = self.pyprest_obj.logger
         self.isLegacyPresent = False
+        self.legacy_all_keys = []
+        self.all_keys = []
         self.space_handler = {
             "not to": "notto",
             "not in": "notin",
@@ -30,18 +33,23 @@ class PostAssertion:
             if self.pyprest_obj.legacy_res is not None:
                 self.logger.info("Legacy API found, proceeding for post assertion accordingly....")
                 self.isLegacyPresent = True
-            #
+                self.legacy_all_keys = utils.getKeys(utils.formatRespBody(self.pyprest_obj.legacy_res.response_body))
+                self.all_keys = utils.getKeys(utils.formatRespBody(self.pyprest_obj.res_obj.response_body))
             self.post_assertion_str = " ".join(self.pyprest_obj.post_assertion.split())
-
-            print("\npost assertion str  in post assertion:", self.post_assertion_str)
+            
             post_ass_str_list = self.post_assertion_str.strip(";").split(";")
-            print("\n post assertion list :   in post assertion ", post_ass_str_list)
+            # for each in post_ass_str_list:
+            #     # 
+            #     if "COMPARE ALL" in each.upper():
+            #         print(each.upper())
+            #         print("compare all present )))))))))))))")
 
             key_str = []
             legacy_key_str = []
+            # comparison_val_str = []
 
             assertion_list = self.getAssertionDict(post_ass_str_list)
-            print("\n Assertion List= ",assertion_list)
+            # print("\n Assertion List= ",assertion_list)
             for each in assertion_list:
                 if 'legacy' in list(each.keys())[0]:
                     legacy_key_str.append(list(each.keys())[0])
@@ -50,13 +58,12 @@ class PostAssertion:
             key_str = list(set(key_str))
             if len(legacy_key_str)>0:
                  legacy_key_str = list(set(legacy_key_str))
-            print("\nkey str in post assertion line 41 ---- ",key_str)
-            print("\nlegacy key str in post assertion line 41 ---- ",legacy_key_str)
-            # list of dictionaries of operator and values for keys
-
-            # get a string of comma separated keys
-            if self.isLegacyPresent:
+            
+            
+            if self.isLegacyPresent and len(self.all_keys)==0:
                 self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys for assertion check", status.INFO, CURRENT_API="Keys to execute assertion check in current API are: </br>" + "</br>".join(key_str),LEGACY_API="Keys to execute assertion check in legacy API are: </br>" + "</br>".join(legacy_key_str))
+            elif self.isLegacyPresent and len(self.all_keys) > 0:
+                self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Running Assertion on legacy and current API Responses", status.INFO, CURRENT_API="Running assertion for both the APIs",LEGACY_API="Running assertion for both the APIs")
             else:
                 self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: </br>" + "</br>".join(key_str), status.INFO)
 
@@ -68,15 +75,15 @@ class PostAssertion:
             key_val_dict = {}        
             for each_assert in list_of_all_keys:
                 key_part_list = each_assert.split(".") 
-                if "legacy" in key_part_list:
+                # print("-------***key_part_list", key_part_list)
+                if "legacy" in each_assert:
                     response_json = utils.formatRespBody(self.pyprest_obj.legacy_res.response_body)
+                    # print(key_part_list)
                     # key_part_list.pop(0)
                 else:
                     response_json = utils.formatRespBody(self.pyprest_obj.res_obj.response_body)
+                # print("responseType=----------",type(response_json))
                 result = KeyCheck(self.pyprest_obj).findKeys(response_json, deepcopy(key_part_list), deepcopy(key_part_list))
-                # print("&&&&&&&&&&&&&&&&&&&&&&&&&")
-                # print(result)
-                # print("&&&&&&&&&&&&&&&&&&&&&&&&&")
                 if result.upper() != "FOUND":
                     self.logger.info("====== Key Not Found in response =======")
                     self.logger.info("'" + each_assert + "' is not found")
@@ -88,16 +95,10 @@ class PostAssertion:
                         self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing for assertion in Response, "    
                 else:
                     key_val_dict = utils.fetchValueOfKey(response_json, key_part_list, result, key_val_dict)
-                    print("key_val_dict", key_val_dict)
+                    # print("key_val_dict", key_val_dict)
             self.postAssertionFunc(key_val_dict, assertion_list)
 
-    def getAssertionDict(self, string_list):
-        
-        #  compare response[0].data to value
-        #  compare legacy[0].data to "value"
-        #  compare legacy[0].data to data
-
-        
+    def getAssertionDict(self, string_list):     
         """assertion list-
         [
             {keys: {operator: operator, value: expected value}},
@@ -131,30 +132,39 @@ class PostAssertion:
         self.logger.info("-----------inside assertion func-----------")
 
         # removing the keys that are not present
-        print("************")
-        print(assertion_list)
-
-        print("************")
-        
-        print(key_val_dict)
-        print("************")
         for ele in assertion_list:
-            print("()()()()()()()()()")
-            print(ele)
-            print("()()()()()()()()()")
             if list(ele.keys())[0] not in key_val_dict.keys():
                 assertion_list.remove(ele)
-
+        key_val_dict_legacy = {}
+        key_val_dict_current = {}
         # calling compare function for each validation string
         for each_assert in assertion_list:
             key = list(each_assert.keys())[0]
             operator = list(each_assert.values())[0]['operator']
-            value = list(each_assert.values())[0]['value']
+            value = list(each_assert.values())[0]['value']            
+            if value.split(".")[-1] in self.legacy_all_keys or value.split(".")[-1] in self.all_keys and '"' not in value and "'" not in value: 
+                result_legacy = ''
+                result_current = ''
+                key_part_list = value.split(".") 
+                if 'legacy' in value:
+                    result_legacy = KeyCheck(self.pyprest_obj).findKeys(utils.formatRespBody(self.pyprest_obj.legacy_res.response_body), deepcopy(key_part_list), deepcopy(key_part_list))
+                    key_val_dict_legacy = utils.fetchValueOfKey(utils.formatRespBody(self.pyprest_obj.legacy_res.response_body), key_part_list, result_legacy, key_val_dict_legacy)
+                else:
+                    result_current = KeyCheck(self.pyprest_obj).findKeys(utils.formatRespBody(self.pyprest_obj.res_obj.response_body), deepcopy(key_part_list), deepcopy(key_part_list))
+                    key_val_dict_legacy = utils.fetchValueOfKey(utils.formatRespBody(self.pyprest_obj.res_obj.response_body), key_part_list, result_current, key_val_dict_current)              
+
             tolerance = 0.1
-            if 'legacy' in key and self.isLegacyPresent:
+            if (value.split(".")[-1] not in self.all_keys) and ('legacy' in key and self.isLegacyPresent):
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance,self.isLegacyPresent, True)
-            elif 'legacy' not in key and self.isLegacyPresent:
+            elif (value.split(".")[-1]) not in self.legacy_all_keys and 'legacy' not in key and self.isLegacyPresent:
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance, self.isLegacyPresent)
-            else:
+            elif not self.isLegacyPresent:
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance)
+            else:
+                if operator == "notto":
+                    cf.compare_notto_resp(self.pyprest_obj.reporter,key, value, key_val_dict, key_val_dict_legacy,tolerance)
+                elif operator == "to":
+                    cf.compare_to_resp(self.pyprest_obj.reporter,key,value,key_val_dict,key_val_dict_legacy,tolerance)
+
+                
 

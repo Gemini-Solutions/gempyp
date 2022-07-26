@@ -84,7 +84,8 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
             final_key_value[actual_key] = each_value_list
         
         return final_key_value
-   
+
+
 def getValuesForEach(each_value_dict, keys_to_fetch):
     """Getting values in case of "each operator" """
     logger.info(f"Keys to be fetched from response - {keys_to_fetch}")
@@ -99,6 +100,27 @@ def getValuesForEach(each_value_dict, keys_to_fetch):
     return each_value_dict
 
 
+def _getAllKeysOfResponse(dict_obj):
+    for key , value in dict_obj.items():
+        yield key
+        if isinstance(value, dict):
+            for k in _getAllKeysOfResponse(value):
+                yield k
+
+
+def getKeys(response_body):
+    keyListGlobal = []
+    if isinstance(response_body, dict):
+      keyListGlobal = list(_getAllKeysOfResponse(response_body))
+    elif isinstance(response_body, list):
+        for each in response_body:
+            keyList = list(_getAllKeysOfResponse(each))
+            keyListGlobal = [*keyListGlobal, *keyList]
+    
+    return list(set(keyListGlobal))
+              
+
+
 def getNestedListData(i, json_data, key_val):
     """parse nested lists in response"""
     # check if response is empty or not, if response is empty, how did it reach here?
@@ -106,6 +128,8 @@ def getNestedListData(i, json_data, key_val):
     br_start = i.find('[')
     br_end = i.find(']')
     key_num = int(i[br_start + 1:br_end])
+    print("key_num----------", key_num)
+    print(type(json_data))
     if key_val.lower() == 'legacy' or key_val.lower() == 'response':
         if isinstance(json_data[key_num], list):
             i = i[br_end + 1:]
@@ -134,6 +158,7 @@ def dispatch_dict():
         'not_in': cf.compare_notin,
         'contains': cf.compare_contains,
         'not_supported': cf.no_operator,
+        # 'all':cf.compare_all
     }
     return dispatch
 
