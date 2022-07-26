@@ -19,6 +19,9 @@ class Gempyp:
         self.OUTPUT_FOLDER = None
         self.CATEGORY = None
         self.SET = None
+
+
+
     
     def argParser(self):
         """Argument parser to help running through CLI"""
