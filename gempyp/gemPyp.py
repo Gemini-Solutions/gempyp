@@ -21,7 +21,6 @@ class Gempyp:
         self.SET = None
 
 
-
     
     def argParser(self):
         """Argument parser to help running through CLI"""

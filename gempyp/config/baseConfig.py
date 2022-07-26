@@ -60,6 +60,7 @@ class abstarctBaseConfig(ABC):
             if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
                 print(value.get("SET"))
                 continue
+            
 
             # TODO add more filters
             
