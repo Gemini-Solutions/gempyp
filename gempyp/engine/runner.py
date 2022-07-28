@@ -1,12 +1,9 @@
 import logging
 import inspect
-import sys
 import os
 import traceback
 import uuid
 from typing import Dict, List, Tuple
-import importlib
-from gempyp.libs import common
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 from gempyp.libs.common import moduleImports
 
@@ -47,47 +44,10 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
             # make the output Dictt
             output = []
             for data in ResultData:
-                tempdict = {}
-                # TODO
-                # MAKE the TC_RUNID
-                unique_id = uuid.uuid4()
-                try:
-                    if os.environ.get('unique_id'):
-                        unique_id = os.environ.get('unique_id')
-                except Exception:
-                    traceback.print_exc()
-                tc_run_id = f"{data['NAME']}_{unique_id}"
-                tempdict["tc_run_id"] = tc_run_id
-                tempdict["name"] = data["NAME"]
-                tempdict["category"] = configData.get("CATEGORY")
-                tempdict["status"] = data["STATUS"]
-                tempdict["user"] = testcaseMeta["USER"]
-                tempdict["machine"] = testcaseMeta["MACHINE"]
-                tempdict["product_type"] = "GEMPYP"
-                tempdict["result_file"] = data["RESULT_FILE"]
-                tempdict["start_time"] = data["START_TIME"]
-                tempdict["end_time"] = data["END_TIME"]
-                tempdict["ignore"] = True if testcaseMeta.get("IGNORE") else False
-
-                all_status = data["jsonData"]["metaData"][2]
-                total = 0
-                for key in all_status:
-                    total = total + all_status[key]
-                data["jsonData"]["metaData"][2]["TOTAL"] = total
-
-                # have to look into the way on how to get the log file
-                try:
-                    # log_file = os.path.join(os.environ.get('log_dir'),data['NAME']+'_'+unique_id+'.log')
-                    # log_file= os.path.join('../../logs',data['NAME']+'_'+unique_id+'.log')
-                    log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log')
-                except Exception:
-                    log_file = None
-                tempdict["log_file"] = log_file 
-
-                singleTestcase = {}
-                singleTestcase["testcaseDict"] = tempdict
-                singleTestcase["misc"] = data.get("MISC")
-                singleTestcase["jsonData"] = data.get("jsonData")
+                data["TESTCASEMETADATA"] = testcaseMeta
+                data["configData"] = configData
+                singleTestcase = getOutput(data)
+                
                 output.append(singleTestcase)
             return output, None
 
@@ -99,6 +59,45 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
         logger.error("Some Error occured while making the testcase: {e}".format(e=e))
         return None, getError(e, configData)
 
+def getOutput(data):
+    tempdict = {}
+    # TODO
+    # MAKE the TC_RUNID
+    unique_id = uuid.uuid4()
+    try:
+        if os.environ.get('unique_id'):
+            unique_id = os.environ.get('unique_id')
+    except Exception:
+        traceback.print_exc()
+    tc_run_id = f"{data['NAME']}_{unique_id}"
+    tempdict["tc_run_id"] = tc_run_id
+    tempdict["name"] = data["NAME"]
+    tempdict["category"] = data["configData"].get("CATEGORY", None)
+    tempdict["status"] = data["STATUS"]
+    tempdict["user"] = data["TESTCASEMETADATA"]["USER"]
+    tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]
+    tempdict["product_type"] = "GEMPYP"
+    tempdict["result_file"] = data["RESULT_FILE"]
+    tempdict["start_time"] = data["START_TIME"]
+    tempdict["end_time"] = data["END_TIME"]
+    tempdict["ignore"] = True if data["TESTCASEMETADATA"].get("IGNORE") else False
+
+    all_status = data["jsonData"]["metaData"][2]
+    total = 0
+    for key in all_status:
+        total = total + all_status[key]
+    data["jsonData"]["metaData"][2]["TOTAL"] = total
+    try:
+        log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log')
+    except Exception:
+        log_file = None
+    tempdict["log_file"] = log_file 
+
+    singleTestcase = {}
+    singleTestcase["testcaseDict"] = tempdict
+    singleTestcase["misc"] = data.get("MISC")
+    singleTestcase["jsonData"] = data.get("jsonData")
+    return singleTestcase
 
 def getError(error, configData: Dict) -> Dict:
     """

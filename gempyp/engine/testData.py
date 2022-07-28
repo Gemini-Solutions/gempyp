@@ -57,7 +57,6 @@ class testData:
         """
         returns the testcase for that specific json
         """
-
         testData = self.testcaseDetails.loc[
             self.testcaseDetails["tc_run_id"].str.upper() == tc_run_id
         ]
@@ -102,7 +101,7 @@ class testData:
         suiteDict["TestCase_Details"] = testcaseDict
         testcase_counts = self.getTestcaseCounts()
         suiteDict["Testcase_Info"] = testcase_counts
-        SuiteReport["Suits_Details"] = suiteDict
+        SuiteReport["Suite_Details"] = suiteDict
         SuiteReport["reportProduct"] = "GEMPYP"        
 
         return json.dumps(SuiteReport, cls=dateTimeEncoder)

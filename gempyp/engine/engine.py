@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from gempyp.config.baseConfig import abstarctBaseConfig
 from gempyp.engine.testData import testData
 from gempyp.libs.enums.status import status
+from gempyp.reporter.reportGenerator import templateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
@@ -89,7 +90,8 @@ class Engine:
         self.start()
         self.updateSuiteData()
         dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
-        self.makeReport()
+        self.repJson, output_file_path = templateData().makeSuiteReport(self.DATA.getJSONData(), self.testcaseData, self.ouput_folder)
+        templateData().repSummary(self.repJson, output_file_path)
 
     def makeOutputFolder(self):
         """
@@ -499,53 +501,3 @@ class Engine:
                         return False
 
         return True
-
-    def makeReport(self):
-        """
-        saves the report json 
-        """
-        suiteReport = None
-
-        self.date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
-
-        suite_path = os.path.dirname(__file__)
-        suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
-        with open(suite_path, "r") as f:
-            suiteReport = f.read()
-
-        reportJson = self.DATA.getJSONData()
-        reportJson = json.loads(reportJson)
-        reportJson["TestStep_Details"] = self.testcaseData
-        self.repJson = reportJson
-        # self.testcaseData = json.dumps(self.testcaseData)
-        reportJson = json.dumps(reportJson)
-        suiteReport = suiteReport.replace("DATA", reportJson)
-
-        ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
-        self.ouput_file_path = ResultFile
-        with open(ResultFile, "w+") as f:
-            f.write(suiteReport)
-        self.repSummary()
-    
-    def repSummary(self):
-        """
-        logging some information
-        """
-        try:
-            logging.info("---------- Finalised the report --------------")
-            logging.info("============== Run Summary =============")
-            count_info = {key.lower(): val for key, val in self.repJson['Suits_Details']['Testcase_Info'].items()}
-            log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
-            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
-            for key, val in count_info.items():
-                if key in status_dict.keys():
-                    log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
-        
-
-            logging.info(log_str.strip(" | "))
-            
-            logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
-
-
-        except Exception as e:
-            logging.error(traceback.print_exc(e))

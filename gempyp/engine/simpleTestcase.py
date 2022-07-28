@@ -90,7 +90,7 @@ class AbstractSimpleTestcase(ABC):
             report.finalize_report()
             # if user has not provided its own resultfile
             if not report.resultFileName:
-                report.jsonData = report.templateData.makeReport(
+                report.jsonData = report.templateData.makeTestcaseReport(
                     kwargs.get(
                         "OUTPUT_FOLDER", DefaultSettings.DEFAULT_GEMPYP_FOLDER
                     ), testcaseSettings["NAME"])
