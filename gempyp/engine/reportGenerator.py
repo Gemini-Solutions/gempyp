@@ -58,6 +58,9 @@ class TemplateData:
         self.REPORTDATA["FilterValues"] = filter_values
 
     def _getFilters(self) -> Dict:
+        """
+        return the unique columns
+        """
 
         filter_names = list(
             set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
@@ -70,6 +73,9 @@ class TemplateData:
 
     # Converts the data to the JSON
     def _toJSON(self) -> str:
+        """
+        dump the data in REPORTDATA
+        """
         try:
             result_data = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)
 
@@ -85,6 +91,7 @@ class TemplateData:
     def makeReport(self, Result_Folder, name):
         """
         creates the html report and save it in the file
+        currently not in use
         """
         # for now do this will change to a better solution
         # TODO

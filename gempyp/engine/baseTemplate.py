@@ -115,6 +115,9 @@ class TestcaseReporter:
         """
 
     def serialize(self) -> Dict:
+        """
+        serializing the data
+        """
         result_data = {}
         result_data["NAME"] = self.testcase_name
         result_data["PROJECT_NAME"] = self.project_name
@@ -125,5 +128,4 @@ class TestcaseReporter:
         result_data["START_TIME"] = self.begin_time
         result_data["END_TIME"] = self.end_time
         result_data["jsonData"] = self.json_data
-
         return result_data

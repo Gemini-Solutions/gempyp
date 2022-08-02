@@ -7,6 +7,9 @@ from gempyp.libs.common import dateTimeEncoder
 class TestData:
     def __init__(self):
         self.testcase_detail_column = [
+        """
+        declairing some attribute the are used in testcaseDetails in report and reurn a object
+        """
             "tc_run_id",
             "start_time",
             "end_time",
@@ -105,6 +108,7 @@ class TestData:
         return json.dumps(suite_report, cls=dateTimeEncoder)
 
     def getTestcaseCounts(self):
+        """return the no. of testcases"""
 
         group = self.testcase_details.groupby(["status"]).size()
         group = group.to_dict()

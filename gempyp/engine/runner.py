@@ -10,7 +10,7 @@ from gempyp.libs.common import moduleImports
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     """
-    actually imports the testcase functions and run the functions
+    actually imports the testcase files and call the run method
     """
     logging.info("---------- In testcase Runner -----------")
     config_data: Dict = testcase_meta.get("config_data")
@@ -20,7 +20,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
         file_name = config_data.get("PATH")
         dynamic_testcase = moduleImports(file_name)
         try:
-            # TODO update the confidData to contain some default values
+            # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
             all_classes = inspect.getmembers(dynamic_testcase, inspect.isclass)
 
@@ -90,14 +90,14 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
         logger.error("Some Error occured while making the testcase: {e}".format(e=e))
         return None, getError(e, config_data)
 
-
 def getError(error, config_data: Dict) -> Dict:
-
+    """
+    returning the dictionary of error teatCase data
+    """
     error = {}
     error["testcase"] = config_data.get("NAME")
     error["message"] = str(error)
     error["product_type"] = "GEMPYP"
     error["category"] = config_data.get("CATEGORY", None)
     error['log_path'] = config_data.get('log_path', None)
-
     return error

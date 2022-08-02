@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import os
 import platform
@@ -59,11 +60,21 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
 
 class Engine:
     def __init__(self, params_config):
+        """
+        constructor used to  call run method
+        """
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
 
+<<<<<<< HEAD
     def run(self, params_config: Type[AbstarctBaseConfig]):
+=======
+    def run(self, params_config: Type[abstarctBaseConfig]):
+        """
+        main method to call other methods that are required for report generation
+        """
+>>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         logging.info("Engine Started")
         # initialize the data class
         
@@ -75,14 +86,22 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
-        dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        else:
+            logging.warning("Either username or bridgetoken is missing thus data is not uploaded in db.")
         self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
-        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         self.makeReport()
 
     def makeOutputFolder(self):
+        """
+        to make GemPyp_Report folder 
+        """
+
         logging.info("---------- Making output folders -------------")
         report_folder_name = f"{self.project_name}_{self.project_env}"
         if self.report_name:
@@ -94,8 +113,9 @@ class Engine:
                 self.PARAMS["OUTPUT_FOLDER"], report_folder_name
             )
         else:
+            home = str(Path.home())
             self.ouput_folder = os.path.join(
-                self.current_dir, "gempyp_reports", report_folder_name
+                home, "gempyp_reports", report_folder_name
             )
 
         os.makedirs(self.ouput_folder)
@@ -106,12 +126,23 @@ class Engine:
         os.makedirs(self.testcase_log_folder)
 
 
+<<<<<<< HEAD
     def setUP(self, config: Type[AbstarctBaseConfig]):
+=======
+    def setUP(self, config: Type[abstarctBaseConfig]):
+        """
+        assigning values to some attributes which will be used in method makeSuiteDetails
+        """
+        # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
+>>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
         self.testcase_data = {}
         self.machine = platform.node()
-        self.user = getpass.getuser()
+        if("USERNAME" in self.PARAMS):
+            self.user = self.PARAMS["USERNAME"]
+        else:
+            self.user=getpass.getuser()
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
@@ -125,9 +156,16 @@ class Engine:
         #add suite_vars here 
 
     def parseMails(self):
+        """
+        to get the mail from the configData
+        """
         self.mail = common.parseMails(self.PARAMS["MAIL"])
+        print(self.mail)
 
     def makeSuiteDetails(self):
+        """
+        making suite Details 
+        """
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
         self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
@@ -156,7 +194,9 @@ class Engine:
 
     def start(self):
 
-        # check the mode and start the testcases accordingly
+        """
+         check the mode and start the testcases accordingly
+        """
 
         try:
             if self.CONFIG.getTestcaseLength() <= 0:
@@ -197,6 +237,10 @@ class Engine:
         """
         start running the testcases in sequence
         """
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -272,8 +316,10 @@ class Engine:
                 pool.close()
 
     def update_df(self, output: List, error: Dict):
+
         """
         updates the testcase data in the dataframes
+        like
         """
         try:
             if error:
@@ -305,7 +351,12 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
+<<<<<<< HEAD
                 dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+=======
+                if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+>>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
 
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
@@ -318,6 +369,9 @@ class Engine:
         product_type: str = None,
         log_path: str = None
     ) -> Dict:
+        """
+        store the data of failed testcase and return it as a dict
+        """
 
         result = {}
         testcase_dict = {}
@@ -369,6 +423,9 @@ class Engine:
         )
 
     def getTestcaseData(self, testcase: str) -> Dict:
+        """
+        taking argument as the testcase name and  return
+        """
         data = {}
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
         data["PROJECTNAME"] = self.project_name
@@ -457,7 +514,7 @@ class Engine:
 
     def makeReport(self):
         """
-        saves the report json
+        saves the report json 
         """
         suite_report = None
 
@@ -468,6 +525,7 @@ class Engine:
         with open(suite_path, "r") as f:
             suite_report = f.read()
 
+<<<<<<< HEAD
         report_json = self.DATA.getJSONData()
         report_json = json.loads(report_json)
         report_json["TestStep_Details"] = self.testcase_data
@@ -475,6 +533,15 @@ class Engine:
         # self.testcase_data = json.dumps(self.testcase_data)
         report_json = json.dumps(report_json)
         suite_report = suite_report.replace("DATA", report_json)
+=======
+        reportJson = self.DATA.getJSONData()
+        reportJson = json.loads(reportJson)
+        reportJson["TestStep_Details"] = self.testcaseData
+        self.repJson = reportJson
+        # self.testcaseData = json.dumps(self.testcaseData)
+        reportJson = json.dumps(reportJson)
+        suiteReport = suiteReport.replace("DATA_1", reportJson)
+>>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
 
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
@@ -483,7 +550,14 @@ class Engine:
         # converting report_json back to dictionary by json.loads()
         self.repSummary(json.loads(report_json))
     
+<<<<<<< HEAD
     def repSummary(self, report_json):
+=======
+    def repSummary(self):
+        """
+        logging some information
+        """
+>>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         try:
             logging.info("---------- Finalised the report --------------")
             logging.info("============== Run Summary =============")

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import traceback
 from typing import Dict
 import logging
+from unicodedata import category
 
 class AbstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):
@@ -9,8 +10,7 @@ class AbstarctBaseConfig(ABC):
         self.cli_config ={}
         try:
             self.parse(*args, **kwargs)
-            # filter the testcasesData
-            self.filter()
+            # filter removed from here because we need to apply filter after updating data with cli input(if given)
             self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
@@ -19,9 +19,11 @@ class AbstarctBaseConfig(ABC):
 
     def getSuiteConfig(self) -> Dict:
         # logging.info("^^^^^^^^^^^^^ \n {suite_data} \n^^^^^^^^^".format(suite_data=self._CONFIG["SUITE_DATA"]))
+        self.filter()
         return self._CONFIG["SUITE_DATA"]
 
     def getTestcaseConfig(self) -> Dict:
+        """reutrn the testCaseData to filter method"""
         # logging.info("--------testCaseDict--------\n {testcaseDict} \n----------".format(testcaseDict=self._CONFIG["TESTCASE_DATA"]))
         return self._CONFIG["TESTCASE_DATA"]
 
@@ -30,6 +32,9 @@ class AbstarctBaseConfig(ABC):
     
 
     def getTestcaseLength(self) -> int:
+        """
+        return the length of testCase
+        """
         return len(self._CONFIG.get("TESTCASE_DATA", []))
 
     @abstractmethod
@@ -49,6 +54,12 @@ class AbstarctBaseConfig(ABC):
         for key, value in testcase_data.items():
             if value.get("RUN_FLAG", "N").upper() != "Y":
                 continue
+            if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
+                continue
+            if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
+                print(value.get("SET"))
+                continue
+
             # TODO add more filters
 
             filtered_dict[key] = value
@@ -57,10 +68,12 @@ class AbstarctBaseConfig(ABC):
 
     # TODO
     def update(self):
+        """to update the data that is passed by cli"""
         try:
             for element in self.cli_config.keys():
                 if self.cli_config[element]:
                     if str(element) in self._CONFIG['SUITE_DATA']:
+                        # print(element)
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:
             print("error occurs in update",error)
