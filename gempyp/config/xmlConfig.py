@@ -3,14 +3,14 @@ from ntpath import join
 from typing import Dict
 import lxml.etree as et
 import logging
-from gempyp.config.baseConfig import abstarctBaseConfig
+from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.libs.parsers import xmlToDict, xmlToList
 from gempyp.libs.logConfig import LoggingConfig
 import sys, os
 import warnings
 import uuid
 
-class XmlConfig(abstarctBaseConfig):
+class XmlConfig(AbstarctBaseConfig):
     def __init__(self, filePath: str):
         self.log_dir = str(os.path.join(os.getcwd(), 'logs'))
         if not os.path.exists(self.log_dir):

@@ -5,14 +5,14 @@ import logging
 import importlib
 import json
 from typing import Dict, List, Tuple
-from gempyp.engine.baseTemplate import testcaseReporter as Base
+from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
 from gempyp.libs import common
 from gempyp.engine.runner import getError
 from gempyp.pyprest.reporting import writeToReport
 from gempyp.pyprest.preVariables import PreVariables
-from gempyp.pyprest.variableReplacement import VariableReplacement as var_replacement
+from gempyp.pyprest.variableReplacement import VariableReplacement as VarReplacement
 from gempyp.pyprest.postVariables import PostVariables
 from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
@@ -25,17 +25,17 @@ class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
         # self.logger.root.setLevel(self.logger.DEBUG)
         self.data = data
-        self.logger = data["configData"]["LOGGER"] if "LOGGER" in data["configData"].keys() else logging
+        self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
-        self.logger.info(f"-------Executing testcase - \"{self.data['configData']['NAME']}\"---------")
+        self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
 
 
         # set vars
         self.setVars()
 
         # setting reporter object
-        self.reporter = Base(projectName=self.project, testcaseName=self.tcname)
-        self.reporter._miscData["REASON_OF_FAILURE"] = ""
+        self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
+        self.reporter._misc_data["REASON_OF_FAILURE"] = ""
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
 
@@ -53,18 +53,18 @@ class PypRest(Base):
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.logger.error(traceback.print_exc())
-                    self.reporter._miscData["REASON_OF_FAILURE"] += f"Something went wrong:- {str(e)}, "
+                    self.reporter._misc_data["REASON_OF_FAILURE"] += f"Something went wrong:- {str(e)}, "
                     self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
-            if self.reporter._miscData["REASON_OF_FAILURE"] == "":
-                self.reporter._miscData["REASON_OF_FAILURE"] = None
+            if self.reporter._misc_data["REASON_OF_FAILURE"] == "":
+                self.reporter._misc_data["REASON_OF_FAILURE"] = None
             ## variable replacement.val_not_found ---- replace variables with "NULL"
-            var_replacement(self).ValueNotFound()
+            VarReplacement(self).valueNotFound()
             output = writeToReport(self)
             return output, None
         except Exception as e:
             self.logger.error(traceback.print_exc())
             common.errorHandler(self.logger, e, "Error occured while running the testcas")
-            error_dict = getError(e, self.data["configData"])
+            error_dict = getError(e, self.data["config_data"])
             error_dict["jsonData"] = self.reporter.serialize()
             return None, error_dict
     
@@ -76,78 +76,78 @@ class PypRest(Base):
         self.postProcess()
         MiscVariables(self).miscVariables()
         self.logger.info("--------------------Execution Completed ------------------------")
-        self.reporter.finalize_report()
+        self.reporter.finalizeReport()
 
     def validateConf(self):
         mandate = ["API", "METHOD", "HEADERS", "BODY"]
         # ---------------------------------------adding misc data -----------------------------------------------------
         # self.reporter.addMisc(Misc="Test data")
-        # self.reporter._miscData["Reason_of_failure"] = "Mandatory keys are missing"
+        # self.reporter._misc_data["Reason_of_failure"] = "Mandatory keys are missing"
 
         # ------------------------------sample adding columns to testcase file-----------------------------------------------
         # self.reporter.addRow("User Profile Data cannot be fetched", "Token expired or incorrect", status.FAIL, test="test")
 
-        if len(set(mandate) - set([i.upper() for i in self.data["configData"].keys()])) > 0:
+        if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update reason of failure in misc
-            self.reporter._miscData["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
+            self.reporter._misc_data["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
             
     # read config and get data
     def getVals(self):
-        """This is a function to get the values from configData, store it in self object."""
+        """This is a function to get the values from config_data, store it in self object."""
   
         
         # capitalize the keys
 
-        for k, v in self.data["configData"].items():
+        for k, v in self.data["config_data"].items():
             self.data.update({k.upper(): v})
         self.env = self.data.get("ENV", "PROD").strip(" ").upper()
         # get the api url
         if self.env not in self.data.keys():
-            self.api = self.data["configData"]["API"].strip(" ")
+            self.api = self.data["config_data"]["API"].strip(" ")
         else: 
-            self.api = self.data.get(self.env, "PROD").strip(" ") + self.data["configData"]["API"].strip(" ")
+            self.api = self.data.get(self.env, "PROD").strip(" ") + self.data["config_data"]["API"].strip(" ")
 
         # get the method
-        self.method = self.data["configData"].get("METHOD", "GET")
+        self.method = self.data["config_data"].get("METHOD", "GET")
 
         # get the headers
-        # self.headers = self.data["configData"].get("HEADERS",{})
-        self.headers = json.loads(self.data["configData"].get("HEADERS", {}))
+        # self.headers = self.data["config_data"].get("HEADERS",{})
+        self.headers = json.loads(self.data["config_data"].get("HEADERS", {}))
         
 
         #get miscellaneous variables for report.
-        self.report_misc = self.data["configData"].get("REPORT_MISC","")
+        self.report_misc = self.data["config_data"].get("REPORT_MISC","")
         
         # get body
-        self.body = json.loads(self.data["configData"].get("BODY", {}))
+        self.body = json.loads(self.data["config_data"].get("BODY", {}))
 
         # get file
-        self.file = self.data["configData"].get("REQUEST_FILE", None)
+        self.file = self.data["config_data"].get("REQUEST_FILE", None)
 
         # get pre variables, not mandatory
-        self.pre_variables = self.data["configData"].get("PRE_VARIABLES", "")
+        self.pre_variables = self.data["config_data"].get("PRE_VARIABLES", "")
 
-        self.key_check = self.data["configData"].get("KEY_CHECK", None)
+        self.key_check = self.data["config_data"].get("KEY_CHECK", None)
 
-        self.exp_status_code = self.data["configData"].get("EXPECTED_STATUS_CODE", 200)
+        self.exp_status_code = self.data["config_data"].get("EXPECTED_STATUS_CODE", 200)
         self.exp_status_code = self.getExpectedStatusCode()
 
-        self.post_assertion = self.data["configData"].get("POST_ASSERTION", None)
+        self.post_assertion = self.data["config_data"].get("POST_ASSERTION", None)
 
-        self.post_variables = self.data["configData"].get("POST_VARIABLES", "")
+        self.post_variables = self.data["config_data"].get("POST_VARIABLES", "")
 
-        self.auth_type = self.data["configData"].get("AUTHENTICATION", "")
+        self.auth_type = self.data["config_data"].get("AUTHENTICATION", "")
 
-        self.username = self.data["configData"].get("USERNAME", self.data.get("USER", None))
+        self.username = self.data["config_data"].get("USERNAME", self.data.get("USER", None))
 
-        self.password = self.data["configData"].get("PASSWORD", None)
+        self.password = self.data["config_data"].get("PASSWORD", None)
 
         
         #setting variables and variable replacement
         PreVariables(self).preVariable()
-        var_replacement(self).variableReplacement()
+        VarReplacement(self).variableReplacement()
     
     def execRequest(self):
         """This function
@@ -174,7 +174,7 @@ class PypRest(Base):
         self.beforeMethod()
 
         # calling variable replacement after before method
-        var_replacement(self).variableReplacement()
+        VarReplacement(self).variableReplacement()
 
         try:
             # raise Exception(f"Error occured while sending request- test")
@@ -199,7 +199,7 @@ class PypRest(Base):
                 raise Exception("abort")
             self.logger.info(traceback.print_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
-            self.reporter._miscData["REASON_OF_FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
+            self.reporter._misc_data["REASON_OF_FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
             raise Exception(f"Error occured while sending request - {str(e)}")
 
     def setVars(self):
@@ -211,7 +211,7 @@ class PypRest(Base):
         if self.data["OUTPUT_FOLDER"].strip(" ") == "":
             self.data["OUTPUT_FOLDER"] = self.default_report_path
         self.project = self.data["PROJECTNAME"]
-        self.tcname = self.data["configData"]["NAME"]
+        self.tcname = self.data["config_data"]["NAME"]
         self.legacy_req = None
         self.req_obj = None
         self.res_obj = None
@@ -219,7 +219,7 @@ class PypRest(Base):
         self.request_file = None
         self.env = self.data["ENV"]
         self.variables = {}
-        self.category = self.data["configData"].get("CATEGORY", None)
+        self.category = self.data["config_data"].get("CATEGORY", None)
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
@@ -251,7 +251,7 @@ class PypRest(Base):
                              f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                              + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                              status.FAIL)
-            self.reporter._miscData["REASON_OF_FAILURE"] += "Response code is not as expected, "
+            self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
             self.logger.info("status codes did not match, aborting testcase.....")
             raise Exception("abort")
         self.reporter.addRow("Details of Request Execution", 
@@ -269,7 +269,7 @@ class PypRest(Base):
                              f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                              + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                              status.FAIL)
-            self.reporter._miscData["REASON_OF_FAILURE"] += "Response code is not as expected, "
+            self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
             self.logger.info("status codes did not match, aborting testcase.....")
             raise Exception("abort")
 
@@ -292,7 +292,7 @@ class PypRest(Base):
         # check for before_file
         self.logger.info("CHECKING FOR BEFORE FILE___________________________")
 
-        file_str = self.data["configData"].get("BEFORE_FILE", "")
+        file_str = self.data["config_data"].get("BEFORE_FILE", "")
         if file_str == "" or file_str == " ":
             self.logger.info("BEFORE FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for pre API steps", "No Pre API steps found", status.INFO)
@@ -337,7 +337,7 @@ class PypRest(Base):
         except Exception as e:
             self.logger.info(traceback.print_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.WARN)
-        var_replacement(self).variableReplacement()
+        VarReplacement(self).variableReplacement()
 
     def afterMethod(self):
         """This function
@@ -348,7 +348,7 @@ class PypRest(Base):
 
         self.logger.info("CHECKING FOR AFTER FILE___________________________")
 
-        file_str = self.data["configData"].get("AFTER_FILE", "")
+        file_str = self.data["config_data"].get("AFTER_FILE", "")
         if file_str == "" or file_str == " ":
             self.logger.info("AFTER FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for post API steps", "No Post API steps found", status.INFO)
@@ -387,11 +387,11 @@ class PypRest(Base):
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
             fin_obj = getattr(obj_, method_name)(after_obj)
-            self.extract_obj(fin_obj)
+            self.extractObj(fin_obj)
         except Exception as e:
             self.reporter.addRow("Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.WARN)
 
-        var_replacement(self).variableReplacement()
+        VarReplacement(self).variableReplacement()
         pass
 
     def extractObj(self, obj):

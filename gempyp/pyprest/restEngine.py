@@ -1,7 +1,7 @@
 import logging
 from gempyp.config.xmlConfig import XmlConfig
 from gempyp.pyprest.pypRest import PypRest
-from gempyp.config.baseConfig import abstarctBaseConfig
+from gempyp.config.baseConfig import AbstarctBaseConfig
 from typing import Type
 import getpass
 import platform
@@ -33,13 +33,13 @@ class REngine:
         PypRest(data).restEngine()
         logging.info("-----end-------")
 
-    def formData(self, config: Type[abstarctBaseConfig], tcname):
+    def formData(self, config: Type[AbstarctBaseConfig], tcname):
         data = {}
         # get the testcase list from config and check for the passed testcase
         
         if tcname.upper() in self.CONFIG.getTestcaseConfig().keys():
             self.PARAMS = config.getSuiteConfig()
-            data["configData"] = config.getTestcaseData(tcname)
+            data["config_data"] = config.getTestcaseData(tcname)
             data["PROJECTNAME"] = self.PARAMS["PROJECT"]
             data["ENV"] = self.PARAMS["ENV"]
             # data["S_RUN_ID"] = ""
@@ -48,7 +48,7 @@ class REngine:
             data["OUTPUT_FOLDER"] = ""
         return data
 
-    def setUp(self, config: Type[abstarctBaseConfig]):
+    def setUp(self, config: Type[AbstarctBaseConfig]):
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config 
         self.machine = platform.node()
@@ -56,8 +56,8 @@ class REngine:
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
-        self.projectName = self.PARAMS["PROJECT"]
-        self.reportName = self.PARAMS.get("REPORTNAME")
+        self.project_name = self.PARAMS["PROJECT"]
+        self.report_name = self.PARAMS.get("REPORTNAME")
         self.project_env = self.PARAMS["ENV"]
 
     def parseArguments(self, parser):
