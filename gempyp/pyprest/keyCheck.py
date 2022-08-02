@@ -133,7 +133,7 @@ class KeyCheck:
                 if _status == status.FAIL and "Some keys are missing in Current or Legacy API Response, " not in self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"]:
                     self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] += "Some keys are missing in Current or Legacy API Response, "
             else:    
-                self.pyprest_obj.reporter.addRow("Keys not required in response body", content_not_found, _status_n)
+                self.pyprest_obj.reporter.addRow("Performing key check", "Checking Keys not required in response body-</br>" + content_not_found, _status_n)
 
             if status.FAIL in [_status, _status_n]:
                 self.pyprest_obj.reporter._miscData["REASON_OF_FAILURE"] = "Status of key check is not as expected, "
