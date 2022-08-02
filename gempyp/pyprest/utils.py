@@ -128,8 +128,6 @@ def getNestedListData(i, json_data, key_val):
     br_start = i.find('[')
     br_end = i.find(']')
     key_num = int(i[br_start + 1:br_end])
-    print("key_num----------", key_num)
-    print(type(json_data))
     if key_val.lower() == 'legacy' or key_val.lower() == 'response':
         if isinstance(json_data[key_num], list):
             i = i[br_end + 1:]

@@ -1,28 +1,17 @@
 <data>
 
     <suite>
-        <mail>ankitapandey281999@gmail.com</mail>
+        <mail>arpit.mishra@geminisolutions.com</mail>
         <project>PYPREST</project>
         <report_name>feature_regression</report_name>
-        <mode>sequence</mode>
+        <mode>optimize</mode>
         <env>beta</env>
-        <bridge_token>tokentest</bridge_token>
-       <threads>8</threads>
-
+        <username>arpit.mishra</username>
+        <bridge_token>189d848f-edfc-43e9-a6ae-02005c2445fd1657018525269</bridge_token>
+        <threads>8</threads>
     </suite>
 
     <testcases>
-
-        <testcase>
-
-            <name>sample_testcase1</name>
-            <category>sample</category>
-            <run_flag>N</run_flag>
-            <path>tests.sample_testcase.sample1</path>
-            <location>test</location>
-            <extra_args1>hello</extra_args1>
-        </testcase>
-
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
@@ -174,17 +163,6 @@
             <post_assertion>compare response[0].name.common not to $[#uuid_val]</post_assertion>
             <TYPE>PYPREST</TYPE>
         </testcase>
-        <testcase>
-            <name>testcase_11</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <path>../../../../gempyp_test/Testcase_methods_11.py</path>
-            <location>test</location>
-            <type>gempyp</type>
-            <method>testcase_1</method>
-            <extra_args1>hello</extra_args1>
-        </testcase>     
-
         <testcase>
             <name>Test_Post</name>
             <category>Method</category>

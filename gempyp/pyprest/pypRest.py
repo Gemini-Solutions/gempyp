@@ -5,6 +5,7 @@ import logging
 import importlib
 import json
 from typing import Dict, List, Tuple
+from urllib import response
 from gempyp.engine.baseTemplate import testcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
@@ -28,6 +29,7 @@ class PypRest(Base):
         self.logger = data["configData"]["LOGGER"] if "LOGGER" in data["configData"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['configData']['NAME']}\"---------")
+
 
 
         # set vars
@@ -198,6 +200,7 @@ class PypRest(Base):
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
+
             # self.res_obj.response_body
             # self.res_obj.status_code
             # self.res_obj.response_time
@@ -212,9 +215,15 @@ class PypRest(Base):
                 self.logger.info(f"legacy request_body: {self.legacy_req.body}")
                 self.logger.info(f"legacy headers: {self.legacy_req.headers}")
                 self.legacy_res = api.Api().execute(self.legacy_req)
+                self.reporter.addMisc("Current Response Time", "{0:.{1}f} sec(s)".format(self.res_obj.response_time,2))
+                self.reporter.addMisc("Legacy Response Time", "{0:.{1}f} sec(s)".format(self.legacy_res.response_time,2) )
                 self.logResponse()
-            except:
-                self.logResponse()
+            except Exception as e:
+                if not hasattr(self.legacy_res, "response_body"):
+                    self.reporter.addMisc("Response Time", "{0:.{1}f} sec(s)".format(self.res_obj.response_time,2))
+                    self.logResponse()
+                elif str(e) == "abort":
+                    raise Exception("abort")
                 traceback.print_exc()
         except Exception as e:
             if str(e) == "abort":
@@ -292,25 +301,25 @@ class PypRest(Base):
                              + f"<b>LEGACY RESPONSE BODY</b>: {legacy_response_body}"
                              )
             # legacyApiComparison(self).responseComparison()
-            
-            if (self.legacy_res.status_code in self.legacy_exp_status_code) and self.res_obj.status_code in self.exp_status_code :
+            if (self.legacy_res.status_code in self.legacy_exp_status_code) and (self.res_obj.status_code in self.exp_status_code) :
                 self.reporter.addRow("Validating Response Code with Expected Status Codes", "both status codes are matching with expected status codes",
                                 status.PASS,
-                                 CURRENT_API= f"<b>Expected CURRENT RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                                  + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"<b>Expected LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code)}</br>" 
+                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code)}</br>" 
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
             else:
                 self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "both status codes are not matching with expected status codes",
                                 status.FAIL,
-                                 CURRENT_API= f"<b>Expected CURRENT RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                                  + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"<b>Expected LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code)}</br>" 
+                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code)}</br>" 
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
                 self.reporter._miscData["REASON_OF_FAILURE"] += "Response code of both api is not as expected, "
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
+                raise Exception("abort")
                 # raise Exception("abort")       
         else:
             body = self.res_obj.response_body
