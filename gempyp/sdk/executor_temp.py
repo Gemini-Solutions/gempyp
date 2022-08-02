@@ -1,4 +1,3 @@
-from ast import Suite
 import getpass
 import json
 from pathlib import Path
@@ -71,6 +70,7 @@ class Executor(testcaseReporter):
             dict_ = {}
             dict_["testcases"] = {}
             dict_["OUTPUT_FOLDER"] = self.ouput_folder
+            dict_["miscData"] = {}
             tmp_dir = os.path.join(tempfile.gettempdir(), self.s_run_id + ".txt")
 
             self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
@@ -81,9 +81,13 @@ class Executor(testcaseReporter):
             suite_data = self.DATA.getJSONData()
             if isinstance(suite_data, str):
                 suite_data = json.loads(suite_data)
+            if isinstance(self.DATA.toSuiteJson(), str):
+                suite_temp = json.loads(self.DATA.toSuiteJson())
             if not os.path.exists(tmp_dir):
                 with open(tmp_dir, "w") as f:
                     dict_[self.s_run_id] = self.updateSuiteData(suite_data)
+                    dict_["s_id"] = suite_temp["s_id"]
+                    dict_["miscData"] = suite_temp["miscData"]
                     dict_["testcases"][i["testcaseDict"].get("tc_run_id")] = i["jsonData"]
                     f.write(json.dumps(dict_))
             else:
@@ -91,10 +95,11 @@ class Executor(testcaseReporter):
                     data = f.read()
                     data = json.loads(data)
                     data[self.s_run_id] = self.updateSuiteData(suite_data, data[self.s_run_id])
+                    data["s_id"] = suite_temp["s_id"]
+                    data["miscData"] = suite_temp["miscData"]
                     data["testcases"][i["testcaseDict"].get("tc_run_id")] = i["jsonData"]
                     f.seek(0)
                     f.write(json.dumps(data))
-                    # start time and endtime are null
 
             dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcaseDict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGETOKEN"], self.data["USERNAME"])  # instead of output, I need to pass s_run id and  tc_run_id
             sys.stdout.close()
