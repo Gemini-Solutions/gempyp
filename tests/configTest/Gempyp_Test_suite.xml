@@ -4,8 +4,10 @@
         <mail>test@gmail.com</mail>
         <project>GEMPYP_TEST</project>
         <report_name>FEATURE_REGRESSION</report_name>
-        <mode>optimize</mode>
+        <mode>sequence</mode>
         <env>prod</env>
+        <username>abc</username>
+        <bridge_token>test</bridge_token>
     </suite>
 
     <testcases>
@@ -25,7 +27,7 @@
             <name>testcase_2</name>
             <category>sample1</category>
             <run_flag>Y</run_flag>
-            <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
+            <path>C:\Users\an.pandey\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
             <method>testcase_2</method>
@@ -37,7 +39,7 @@
             <name>testcase_main</name>
             <category>sample</category>
             <run_flag>N</run_flag>
-            <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
+            <path>C:\Users\an.pandey\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
             <extra_args1>hello</extra_args1>
@@ -77,7 +79,7 @@
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -96,7 +98,7 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
-            <run_flag>n</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>$[#SUITE.varGet]</method>
             <body>{}</body>
