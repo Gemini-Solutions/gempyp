@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import os
 import platform
@@ -61,11 +62,17 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
 
 class Engine:
     def __init__(self, params_config):
+        """
+        constructor used to  call run method
+        """
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
 
     def run(self, params_config: Type[abstarctBaseConfig]):
+        """
+        main method to call other methods that are required for report generation
+        """
         logging.info("Engine Started")
         # initialize the data class
         
@@ -77,14 +84,22 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
-        dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        else:
+            logging.warning("Either username or bridgetoken is missing thus data is not uploaded in db.")
         self.makeOutputFolder()
         self.start()
         self.updateSuiteData()
-        dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         self.makeReport()
 
     def makeOutputFolder(self):
+        """
+        to make GemPyp_Report folder 
+        """
+
         logging.info("---------- Making output folders -------------")
         report_folder_name = f"{self.projectName}_{self.project_env}"
         if self.reportName:
@@ -96,8 +111,9 @@ class Engine:
                 self.PARAMS["OUTPUT_FOLDER"], report_folder_name
             )
         else:
+            home = str(Path.home())
             self.ouput_folder = os.path.join(
-                self.current_dir, "gempyp_reports", report_folder_name
+                home, "gempyp_reports", report_folder_name
             )
 
         os.makedirs(self.ouput_folder)
@@ -109,12 +125,18 @@ class Engine:
 
 
     def setUP(self, config: Type[abstarctBaseConfig]):
+        """
+        assigning values to some attributes which will be used in method makeSuiteDetails
+        """
         # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
         self.testcaseData = {}
         self.machine = platform.node()
-        self.user = getpass.getuser()
+        if("USERNAME" in self.PARAMS):
+            self.user = self.PARAMS["USERNAME"]
+        else:
+            self.user=getpass.getuser()
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
@@ -128,9 +150,16 @@ class Engine:
         #add suite_vars here 
 
     def parseMails(self):
+        """
+        to get the mail from the configData
+        """
         self.mail = common.parseMails(self.PARAMS["MAIL"])
+        print(self.mail)
 
     def makeSuiteDetails(self):
+        """
+        making suite Details 
+        """
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
         self.s_run_id = f"{self.projectName}_{self.project_env}_{self.unique_id}"
@@ -159,7 +188,9 @@ class Engine:
 
     def start(self):
 
-        # check the mode and start the testcases accordingly
+        """
+         check the mode and start the testcases accordingly
+        """
 
         try:
             if self.CONFIG.getTestcaseLength() <= 0:
@@ -200,7 +231,6 @@ class Engine:
         """
         start running the testcases in sequence
         """
-
 
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
@@ -282,8 +312,10 @@ class Engine:
                 pool.close()
 
     def update_df(self, output: List, error: Dict):
+
         """
         updates the testcase data in the dataframes
+        like
         """
         try:
             if error:
@@ -315,7 +347,8 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
                 )
-                dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+                if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
@@ -328,6 +361,9 @@ class Engine:
         product_type: str = None,
         log_path: str = None
     ) -> Dict:
+        """
+        store the data of failed testcase and return it as a dict
+        """
 
         result = {}
         testcaseDict = {}
@@ -379,6 +415,9 @@ class Engine:
         )
 
     def getTestcaseData(self, testcase: str) -> Dict:
+        """
+        taking argument as the testcase name and  return
+        """
         data = {}
         data["configData"] = self.CONFIG.getTestcaseData(testcase)
         data["PROJECTNAME"] = self.projectName
@@ -468,7 +507,7 @@ class Engine:
 
     def makeReport(self):
         """
-        saves the report json
+        saves the report json 
         """
         suiteReport = None
 
@@ -485,7 +524,7 @@ class Engine:
         self.repJson = reportJson
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
-        suiteReport = suiteReport.replace("DATA", reportJson)
+        suiteReport = suiteReport.replace("DATA_1", reportJson)
 
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
@@ -494,6 +533,9 @@ class Engine:
         self.repSummary()
     
     def repSummary(self):
+        """
+        logging some information
+        """
         try:
             logging.info("---------- Finalised the report --------------")
             logging.info("============== Run Summary =============")
