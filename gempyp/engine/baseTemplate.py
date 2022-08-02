@@ -115,6 +115,9 @@ class testcaseReporter:
         """
 
     def serialize(self) -> Dict:
+        """
+        serializing the data
+        """
         resultData = {}
         resultData["NAME"] = self.testcaseName
         resultData["PROJECTNAME"] = self.projectName
