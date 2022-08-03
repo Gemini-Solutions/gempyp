@@ -1,6 +1,7 @@
 from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
+from tests.sample_testcase.GitLinkXML import fetchBridgeToken
 
 class Gempyp:
     def __init__(self):
@@ -19,6 +20,7 @@ class Gempyp:
         self.OUTPUT_FOLDER = None
         self.CATEGORY=None
         self.SET=None
+        self.USERNAME=None
 
 
     
@@ -47,7 +49,11 @@ class Gempyp:
         """
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
-        config = XmlConfig(self.config)
+        if("GIT" in self.config):
+            list_url=self.config.split(":")
+            config=XmlConfig(fetchBridgeToken(list_url[2],list_url[-1]))
+        else:
+            config = XmlConfig(self.config)
         if not self.args:
             del self.__dict__["args"]
             config.cli_config = vars(self)

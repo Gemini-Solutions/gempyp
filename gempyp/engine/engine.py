@@ -349,7 +349,7 @@ class Engine:
                 )
                 if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-
+                
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
 
@@ -522,6 +522,7 @@ class Engine:
         reportJson = json.loads(reportJson)
         reportJson["TestStep_Details"] = self.testcaseData
         self.repJson = reportJson
+
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
         suiteReport = suiteReport.replace("DATA_1", reportJson)

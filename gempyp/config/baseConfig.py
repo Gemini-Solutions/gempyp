@@ -76,6 +76,8 @@ class abstarctBaseConfig(ABC):
                     if str(element) in self._CONFIG['SUITE_DATA']:
                         # print(element)
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
+                    else:
+                        self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:
             print("error occurs in update",error)
         """
