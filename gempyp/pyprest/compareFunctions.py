@@ -47,14 +47,14 @@ def compare_to_resp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckRe
         if keyCheckResult == "FOUND":
             if actual_value == required_value:
                 if 'legacy' in key:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are equal </b>",status.PASS, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"Check if values are equal.",status.PASS, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
                 else:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are equal </b>",status.PASS, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"<b>Check if values are equal",status.PASS, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>")
             else:
                 if 'legacy' in key:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are equal </b>",status.FAIL, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"<b>Check if values are equal",status.FAIL, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
                 else:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are equal </b>",status.FAIL, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"<b>Check if values are equal",status.FAIL, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>")
     except:
         traceback.print_exc()
 
