@@ -108,8 +108,9 @@ class TestData:
         return json.dumps(suite_report, cls=dateTimeEncoder)
 
     def getTestcaseCounts(self):
-        """return the no. of testcases"""
-
+        """
+        return the no. of testcases
+        """
         group = self.testcase_details.groupby(["status"]).size()
         group = group.to_dict()
         total = 0

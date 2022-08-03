@@ -67,14 +67,10 @@ class Engine:
         # logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
 
-<<<<<<< HEAD
     def run(self, params_config: Type[AbstarctBaseConfig]):
-=======
-    def run(self, params_config: Type[abstarctBaseConfig]):
         """
         main method to call other methods that are required for report generation
         """
->>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         logging.info("Engine Started")
         # initialize the data class
         
@@ -125,16 +121,10 @@ class Engine:
         os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
         os.makedirs(self.testcase_log_folder)
 
-
-<<<<<<< HEAD
     def setUP(self, config: Type[AbstarctBaseConfig]):
-=======
-    def setUP(self, config: Type[abstarctBaseConfig]):
         """
         assigning values to some attributes which will be used in method makeSuiteDetails
         """
-        # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
->>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
         self.testcase_data = {}
@@ -237,10 +227,6 @@ class Engine:
         """
         start running the testcases in sequence
         """
-<<<<<<< HEAD
-=======
-
->>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -351,13 +337,8 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
-<<<<<<< HEAD
-                dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-=======
                 if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
->>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
-
+                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
 
@@ -524,25 +505,11 @@ class Engine:
         suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
         with open(suite_path, "r") as f:
             suite_report = f.read()
-
-<<<<<<< HEAD
         report_json = self.DATA.getJSONData()
         report_json = json.loads(report_json)
         report_json["TestStep_Details"] = self.testcase_data
-        # self.repJson = report_json
-        # self.testcase_data = json.dumps(self.testcase_data)
         report_json = json.dumps(report_json)
         suite_report = suite_report.replace("DATA", report_json)
-=======
-        reportJson = self.DATA.getJSONData()
-        reportJson = json.loads(reportJson)
-        reportJson["TestStep_Details"] = self.testcaseData
-        self.repJson = reportJson
-        # self.testcaseData = json.dumps(self.testcaseData)
-        reportJson = json.dumps(reportJson)
-        suiteReport = suiteReport.replace("DATA_1", reportJson)
->>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
-
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
         with open(ResultFile, "w+") as f:
@@ -550,14 +517,10 @@ class Engine:
         # converting report_json back to dictionary by json.loads()
         self.repSummary(json.loads(report_json))
     
-<<<<<<< HEAD
     def repSummary(self, report_json):
-=======
-    def repSummary(self):
         """
         logging some information
         """
->>>>>>> 5096f4ea55327f3ba06030bc06f34db79b64643f
         try:
             logging.info("---------- Finalised the report --------------")
             logging.info("============== Run Summary =============")

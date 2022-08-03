@@ -103,17 +103,6 @@ class TestcaseReporter:
             if self.status_count[i] > 0:
                 return i.name
 
-        """
-        if self.status_count[status.FAIL] > 0:
-            return status.FAIL
-        elif self.status_count[status.WARN] > 0:
-            return status.WARN
-        elif self.status_count[status.PASS] > 0:
-            return status.PASS
-        else:
-            return status.INFO
-        """
-
     def serialize(self) -> Dict:
         """
         serializing the data
