@@ -2,15 +2,15 @@ import logging as logger
 import re
 from inspect import getmembers, isfunction
 import traceback
-from gempyp.pyprest.predefinedFunctions import PredefinedFunctions as prefunc
-from gempyp.pyprest.variableReplacement import VariableReplacement as var_replace
+from gempyp.pyprest.predefinedFunctions import PredefinedFunctions as Prefunc
+from gempyp.pyprest.variableReplacement import VariableReplacement as VarReplace
 
 
 
 class PreVariables:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
-        functions_list = [x[0] for x in getmembers(prefunc, isfunction)]
+        functions_list = [x[0] for x in getmembers(Prefunc, isfunction)]
         self.functions_dict = {each.lower(): each for each in functions_list}
         pattern_func = r"\$\[\S[a-zA-Z0-9_.]+\(.*\)\]"
         self.regex_func = re.compile(pattern_func)
@@ -58,19 +58,19 @@ class PreVariables:
 
     def getFunctionValues(self, var_name):
         if re.match(self.regex_func, var_name):
-            functions_list = [x[0] for x in getmembers(prefunc, isfunction)]
+            functions_list = [x[0] for x in getmembers(Prefunc, isfunction)]
             self.functions_dict = {each.lower():each for each in functions_list}
             func = var_name.strip("$[#]")
             func_items = func.split("(")
             func_name = func_items[0]
             params = func_items[1].strip(")")
-            data = var_replace(self.pyprest_obj).updateDataDictionary({"params": params})
+            data = VarReplace(self.pyprest_obj).updateDataDictionary({"params": params})
             func_name = self.functions_dict.get(func_name.lower(), "invalid")
 
             try:
-                prefunc_ = prefunc(self.pyprest_obj)
-                params = prefunc_.parse_params(data["params"])
-                func_name = getattr(prefunc_, func_name) if func_name != "invalid" else None
+                Prefunc_ = Prefunc(self.pyprest_obj)
+                params = Prefunc_.parse_params(data["params"])
+                func_name = getattr(Prefunc_, func_name) if func_name != "invalid" else None
                 if func_name is not None:
                     val =  func_name(*params)
                 else:

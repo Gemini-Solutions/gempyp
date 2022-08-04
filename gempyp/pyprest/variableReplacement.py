@@ -18,7 +18,7 @@ class VariableReplacement:
         self.pyprest_obj.logger.info("**************  INSIDE VARIABLE REPLACEMENT  **************")
 
 
-    def ValueNotFound(self):
+    def valueNotFound(self):
         data = self.pyprest_obj.__dict__
         for k,v in data.copy().items():
             if isinstance(v,dict):
