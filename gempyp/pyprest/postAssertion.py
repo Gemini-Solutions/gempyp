@@ -1,5 +1,4 @@
 import logging as logger
-from tkinter import CURRENT
 import gempyp.pyprest.compareFunctions as cf
 from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest import utils
@@ -30,8 +29,9 @@ class PostAssertion:
         -gets the comparison result and update logs and reporter obj.
         """
         if self.pyprest_obj.post_assertion:
-            self.logger.info("************** INSIDE POST ASSERTION  **************")
+            self.logger.info("************** INSIDE POST ASSERTION  **************") 
             var_replacement(self.pyprest_obj).variableReplacement()
+
             #
             if self.pyprest_obj.legacy_res is not None:
                 self.logger.info("Legacy API found, proceeding for post assertion accordingly....")
@@ -65,7 +65,7 @@ class PostAssertion:
             if self.isLegacyPresent and len(self.all_keys)==0 and self.notCompareAll:
                 self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys for assertion check", status.INFO, CURRENT_API="Keys to execute assertion check in current API are: </br>" + "</br>".join(key_str),LEGACY_API="Keys to execute assertion check in legacy API are: </br>" + "</br>".join(legacy_key_str))
             elif self.isLegacyPresent and len(self.all_keys) > 0 and self.notCompareAll:
-                self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Running Assertion on legacy and current API Responses", status.INFO, CURRENT_API="Running assertion for both the APIs",LEGACY_API="Running assertion for both the APIs")
+                self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Running Assertion on legacy and current API Responses", status.INFO, CURRENT_API="Assertions for Current API",LEGACY_API="Assertions for Legacy API")
             elif self.notCompareAll:
                 self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: </br>" + "</br>".join(key_str), status.INFO)
 
@@ -139,7 +139,7 @@ class PostAssertion:
             key = list(each_assert.keys())[0]
             operator = list(each_assert.values())[0]['operator']
             value = list(each_assert.values())[0]['value']            
-            if value.split(".")[-1] in self.legacy_all_keys or value.split(".")[-1] in self.all_keys and '"' not in value and "'" not in value: 
+            if self.isLegacyPresent and value.split(".")[-1] in self.legacy_all_keys or value.split(".")[-1] in self.all_keys and '"' not in value and "'" not in value: 
                 key_part_list = value.split(".") 
                 if 'legacy' in value:
                     result_legacy = KeyCheck(self.pyprest_obj).findKeys(utils.formatRespBody(self.pyprest_obj.legacy_res.response_body), deepcopy(key_part_list), deepcopy(key_part_list))
@@ -149,10 +149,9 @@ class PostAssertion:
                     result_legacy = KeyCheck(self.pyprest_obj).findKeys(utils.formatRespBody(self.pyprest_obj.res_obj.response_body), deepcopy(key_part_list), deepcopy(key_part_list))
                     if result_legacy == 'FOUND':
                         key_val_dict_legacy = utils.fetchValueOfKey(utils.formatRespBody(self.pyprest_obj.res_obj.response_body), key_part_list, result_legacy, key_val_dict_legacy)              
-                    
-                        
-            else:
-                if 'legacy' in value:
+                                
+            elif self.isLegacyPresent and not value.isdigit() and  '"' not in value and "'" not in value:
+                if 'legacy' in value :
                     self.pyprest_obj.reporter.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"Key not found",status.FAIL, CURRENT_API=f"-", LEGACY_API=f"{value} key missing in legacy response")  
                 else:
                     self.pyprest_obj.reporter.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"Key not found",status.FAIL, CURRENT_API=f"{value} key missing in Current response", LEGACY_API=f"-")
@@ -161,10 +160,10 @@ class PostAssertion:
 
 
             tolerance = 0.1
-            if "'" not in value or '"' not in value or "." in value:
+            if result_legacy == "FOUND":
                 if operator == "notto":
                     cf.compare_notto_resp(self.pyprest_obj.reporter,key, value, key_val_dict, key_val_dict_legacy, result_legacy,tolerance)
-                elif operator == "to":
+                elif operator == "to" :
                     cf.compare_to_resp(self.pyprest_obj.reporter,key,value,key_val_dict,key_val_dict_legacy, result_legacy, tolerance)
             elif (value.split(".")[-1] not in self.all_keys) and ('legacy' in key and self.isLegacyPresent and len(key_val_dict_legacy)==0):
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance,self.isLegacyPresent, True)
