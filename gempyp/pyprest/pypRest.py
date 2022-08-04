@@ -210,7 +210,7 @@ class PypRest(Base):
         self.data["OUTPUT_FOLDER"] = self.data.get("OUTPUT_FOLDER", self.default_report_path)
         if self.data["OUTPUT_FOLDER"].strip(" ") == "":
             self.data["OUTPUT_FOLDER"] = self.default_report_path
-        self.project = self.data["PROJECTNAME"]
+        self.project = self.data["PROJECT_NAME"]
         self.tcname = self.data["config_data"]["NAME"]
         self.legacy_req = None
         self.req_obj = None

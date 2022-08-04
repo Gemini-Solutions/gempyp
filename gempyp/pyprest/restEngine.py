@@ -40,7 +40,7 @@ class REngine:
         if tcname.upper() in self.CONFIG.getTestcaseConfig().keys():
             self.PARAMS = config.getSuiteConfig()
             data["config_data"] = config.getTestcaseData(tcname)
-            data["PROJECTNAME"] = self.PARAMS["PROJECT"]
+            data["PROJECT_NAME"] = self.PARAMS["PROJECT"]
             data["ENV"] = self.PARAMS["ENV"]
             # data["S_RUN_ID"] = ""
             data["USER"] = getpass.getuser()

@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 from getpass import getuser
 import warnings
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet
 import requests
 import requests.auth
 from requests_ntlm import HttpNtlmAuth

@@ -409,7 +409,7 @@ class Engine:
         """
         data = {}
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
-        data["PROJECTNAME"] = self.project_name
+        data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
         data["S_RUN_ID"] = self.s_run_id
         data["USER"] = self.user

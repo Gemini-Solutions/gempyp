@@ -30,7 +30,7 @@ class AbstractSimpleTestcase(ABC):
         try:
             method_name = testcase_settings.get("METHOD", "main")
             logger.info(f"-------- method ---------{method_name}")
-            reporter = TestcaseReporter(kwargs["PROJECTNAME"], testcase_settings["NAME"])
+            reporter = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
             # adding logger to the reporter
             reporter.logger = logger
             try:
@@ -40,7 +40,7 @@ class AbstractSimpleTestcase(ABC):
                 logger.error(traceback.format_exc())
                 etype, value, tb = sys.exc_info()
                 info, error = traceback.format_exception(etype, value, tb)[-2:]
-                #reports = TestcaseReporter(kwargs["PROJECTNAME"], testcase_settings["NAME"])
+                #reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
                 reporter.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
             finally:
                 return reporter
@@ -65,14 +65,14 @@ class AbstractSimpleTestcase(ABC):
 
             # will never enter this  block
             # if reports is None:
-            #     reports = TestcaseReporter(kwargs["PROJECTNAME"], testcase_settings["NAME"])
+            #     reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
             #     self.logger.error("Report object was not returned from the testcase file")
             #     reports.addRow("Exception Occured", "Exception occured in testcase: Report was not generated.", status.FAIL)    
         except Exception:
             etype, value, tb = sys.exc_info()
             self.logger.error(traceback.format_exc())
             info, error = traceback.format_exception(etype, value, tb)[-2:]
-            reports = TestcaseReporter(kwargs["PROJECTNAME"], testcase_settings["NAME"])
+            reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
             reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
 
         if isinstance(reports, TestcaseReporter):
