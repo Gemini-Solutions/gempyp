@@ -17,6 +17,7 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
+
     response = _sendData(payload, DefaultSettings.urls["suiteExec"], bridge_token, user_name, mode)
     if response and response.status_code == 201:
         logging.info("data uploaded successfully")
@@ -25,9 +26,17 @@ def sendTestcaseData(payload, bridge_token, user_name):
     """
     for checking the sendTestCaseData api response
     """
-    response = _sendData(payload, DefaultSettings.urls["testcases"], bridge_token, user_name, method="POST")
-    if response and response.status_code == 201:
-        logging.info("data uploaded successfully")
+    try:
+        response = _sendData(payload, DefaultSettings.urls["testcases"], bridge_token, user_name, method="POST")
+        if response and response.status_code == 201:
+            logging.info("data uploaded successfully")
+
+        if response and response.status_code == 201:
+            logging.info("data uploaded successfully")
+
+    except Exception as e:
+        logging.error(traceback.format_exc())
+
 
 def _sendData(payload, url, bridge_token, user_name, method="POST"):
     """
@@ -35,7 +44,8 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     """
 
     if DefaultSettings.count > 3:
-        logging.critical("Incorrect bridge_token/username or APIs are down")
+        logging.warning("Incorrect bridgetoken/username or APIs are down. Skipping Data upload.")
+        # sys.exit()
         return None
     
     response = requests.request(
@@ -46,5 +56,9 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     )
     if response.status_code != 200 and response.status_code != 201:
         DefaultSettings.count += 1
+        logging.info("Data not uploaded...........")
+
     logging.info(f"status: {response.status_code}")
+    # response.raise_for_status()
+
     return response
