@@ -18,11 +18,16 @@ class Gempyp:
         self.THREADS = None
         self.BRIDGE_TOKEN = None 
         self.OUTPUT_FOLDER = None
+<<<<<<< HEAD
         self.CATEGORY=None
         self.SET=None
         self.USERNAME=None
 
 
+=======
+        self.CATEGORY = None
+        self.SET = None
+>>>>>>> 583215ade187e590ca1e7e275a42329eebb7fd92
     
     def argParser(self):
         """Argument parser to help running through CLI"""
@@ -31,7 +36,6 @@ class Gempyp:
         parser.add_argument('-config','-c',dest='config',type=str, required=False)
         parser.add_argument('-mail','-m',dest='MAIL', type=str, required=False)
         parser.add_argument('-project','-p',dest='PROJECT', type=str, required=False)
-
         parser.add_argument('-Report_name','-rn',dest='REPORT_NAME', type=str, required=False)
         parser.add_argument('-mode','-mode',dest='MODE', type=str, required=False)
         parser.add_argument('-env','-env',dest='ENV', type=str, required=False)

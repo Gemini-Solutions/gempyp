@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 import traceback
 from typing import Dict
-import argparse
 import logging
 from unicodedata import category
 
-class abstarctBaseConfig(ABC):
+class AbstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):
         self._CONFIG = {}
         self.cli_config ={}
@@ -49,11 +48,11 @@ class abstarctBaseConfig(ABC):
         """
         filter the testcases that need to be ignored based on the run value and category sets
         """
-        testcaseData = self.getTestcaseConfig()
-        filteredDict = {}
+        testcase_data = self.getTestcaseConfig()
+        filtered_dict = {}
 
-        for key, value in testcaseData.items():
-            if value.get("RUN_FLAG","N").upper() != "Y":
+        for key, value in testcase_data.items():
+            if value.get("RUN_FLAG", "N").upper() != "Y":
                 continue
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
                 continue
@@ -63,9 +62,9 @@ class abstarctBaseConfig(ABC):
 
             # TODO add more filters
 
-            filteredDict[key] = value
+            filtered_dict[key] = value
 
-        self._CONFIG["TESTCASE_DATA"] = filteredDict
+        self._CONFIG["TESTCASE_DATA"] = filtered_dict
 
     # TODO
     def update(self):

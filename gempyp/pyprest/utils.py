@@ -49,7 +49,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
                 each_value_list = []
                 br_index = key.find('[')
                 key_val = key[:br_index]
-                if key_val != "response":
+                if key_val != "response" or key_val != "legacy":
                     json_ = json_[key_val]
                 for each_value in json_:
                     index_of_key = key_partition_list.index(key)
@@ -64,7 +64,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
                 key_num = int(key[br_start + 1:br_end])
                 key_num, json_ = getNestedListData(key, json_, key_val)
 
-                if key_val == "response" and isinstance(json_, list):
+                if key_val == "response" or key_val=="legacy" and isinstance(json_, list) :
                     json_ = json_[key_num]
                 else:
                     json_ = json_[key_val][key_num]
@@ -72,7 +72,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
                 if isinstance(json_, str) and json_ != "":
                     json_ = json.dumps(json_)
                 if json_ != "":
-                    if "response" == key.lower():
+                    if "response" == key.lower() or "legacy" == key.lower():
                         json_ = json_
                     else:
                         json_ = json_[key]
@@ -84,7 +84,8 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
             final_key_value[actual_key] = each_value_list
         
         return final_key_value
-   
+
+
 def getValuesForEach(each_value_dict, keys_to_fetch):
     """Getting values in case of "each operator" """
     logger.info(f"Keys to be fetched from response - {keys_to_fetch}")
@@ -99,6 +100,27 @@ def getValuesForEach(each_value_dict, keys_to_fetch):
     return each_value_dict
 
 
+def _getAllKeysOfResponse(dict_obj):
+    for key , value in dict_obj.items():
+        yield key
+        if isinstance(value, dict):
+            for k in _getAllKeysOfResponse(value):
+                yield k
+
+
+def getKeys(response_body):
+    keyListGlobal = []
+    if isinstance(response_body, dict):
+      keyListGlobal = list(_getAllKeysOfResponse(response_body))
+    elif isinstance(response_body, list):
+        for each in response_body:
+            keyList = list(_getAllKeysOfResponse(each))
+            keyListGlobal = [*keyListGlobal, *keyList]
+    
+    return list(set(keyListGlobal))
+              
+
+
 def getNestedListData(i, json_data, key_val):
     """parse nested lists in response"""
     # check if response is empty or not, if response is empty, how did it reach here?
@@ -106,7 +128,7 @@ def getNestedListData(i, json_data, key_val):
     br_start = i.find('[')
     br_end = i.find(']')
     key_num = int(i[br_start + 1:br_end])
-    if key_val.lower() == 'response':
+    if key_val.lower() == 'legacy' or key_val.lower() == 'response':
         if isinstance(json_data[key_num], list):
             i = i[br_end + 1:]
             json_data = json_data[key_num]
@@ -124,28 +146,28 @@ def getNestedListData(i, json_data, key_val):
 
 def dispatch_dict():
     dispatch = {
-        'to': cf.compare_to,
-        'notto': cf.compare_notto,
-        'not to': cf.compare_notto,
-        'not_to': cf.compare_notto,
-        'in': cf.compare_in,
-        'notin': cf.compare_notin,
-        'not in': cf.compare_notin,
-        'not_in': cf.compare_notin,
-        'contains': cf.compare_contains,
-        'not_supported': cf.no_operator,
+        'to': cf.compareTo,
+        'notto': cf.compareNotTo,
+        'not to': cf.compareNotTo,
+        'not_to': cf.compareNotTo,
+        'in': cf.compareIn,
+        'notin': cf.compareNotIn,
+        'not in': cf.compareNotIn,
+        'not_in': cf.compareNotIn,
+        'contains': cf.compareContains,
+        'not_supported': cf.noOperator,
     }
     return dispatch
 
 
-def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1):
+def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
 
     # operators ----- to, notto, not_to, not to, contains, in, except
     gp = reporter_obj
 
     dispatch = dispatch_dict()
     if operator in list(dispatch.keys()):
-        return dispatch[operator](gp, key, value, key_val_dict, tolerance)
+        return dispatch[operator](gp, key, value, key_val_dict, tolerance, isLegacyPresent, isLegacyResponse)
     else:
         return dispatch["not_supported"](gp)
     

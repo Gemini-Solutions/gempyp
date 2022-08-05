@@ -34,7 +34,7 @@ class PredefinedFunctions:
         }  # add mode datetime formats
 
 
-    def parse_params(self, param_str):
+    def parseParams(self, param_str):
         """parsing string parameters ( all the params are strings )"""
         if '[' in param_str:
             br_start = param_str.find('[')
@@ -53,8 +53,8 @@ class PredefinedFunctions:
         """get random number out of a given range"""
         try:
             if int(start) < int(end):
-                self.randNumber = random.randint(int(start), int(end))
-                return self.randNumber
+                self.rand_number = random.randint(int(start), int(end))
+                return self.rand_number
             else:
                 self.pyprest_obj.logger.info("Start and end values are not defined properly")
         except Exception as e:
@@ -69,7 +69,7 @@ class PredefinedFunctions:
         Return epoch time in seconds
         if "milli" is passed as a parameter then returns time in epoch milli"""
         millis = False
-        type = self.parse_params(str)
+        type = self.parseParams(str)
         if len(type) > 0:
             if "mil" in type[0].lower():
                 millis = True
@@ -86,17 +86,17 @@ class PredefinedFunctions:
         Return unique number of the length given"""
         len_ = int(len_.strip('"').strip("'"))
         number_ = str(str(time.time()*1000).split('.')[0])
-        number_ = self.number_generator(number_, len_)
+        number_ = self.numberGenerator(number_, len_)
         start = len(str(number_)) - len_
         number_ = int(number_[start:])
         return number_
 
-    def number_generator(self, num, len_):
+    def numberGenerator(self, num, len_):
         """generate a number greater than the length given"""
         if len_ > len(num):
             num = num + num
             if len_ > len(num):
-                return self.number_generator(num, len_)
+                return self.numberGenerator(num, len_)
             else:
                 return num
         else:
@@ -154,60 +154,60 @@ class PredefinedFunctions:
         monddyyyy
         .
         """
-        currentTimestamp = datetime.now().strftime("%d%m%y")
+        current_timestamp = datetime.now().strftime("%d%m%y")
         try: 
             self.pyprest_obj.logger.info("inside get date ")
             if not tz:
-                dateTime = datetime.now()
+                date_time = datetime.now()
             else:
-                dateTime  = datetime.now(pytz.timezone(tz))
+                date_time  = datetime.now(pytz.timezone(tz))
             try:
-                currentTimestamp = dateTime.strftime(self.date_formats.get(dateformat.strip('"').strip("'").lower(), '%d%m%y'))
+                current_timestamp = date_time.strftime(self.date_formats.get(dateformat.strip('"').strip("'").lower(), '%d%m%y'))
             except Exception as e:
                 self.pyprest_obj.logger.info(str(e))
         except Exception as e:
             self.pyprest_obj.logger.info(str(e))
-        return currentTimestamp
+        return current_timestamp
         
 
     # TODO
-    #get time function with timezone, timeformat, twentyfourhourformat
-    def getTime(self,tz = "", timeFormat = "", twentyfourhourFormat = True):
+    #get time function with timezone, time_format, twenty_four_hour_format
+    def getTime(self,tz = "", time_format = "", twenty_four_hour_Format = True):
         try:
             self.pyprest_obj.logger.info("Execution of getTime")
             try:
                 # print(tz)
                 if not tz: 
-                    dateTime = datetime.datetime.now()  
+                    date_time = datetime.datetime.now()  
                 else:
                     try:
-                        dateTime = datetime.datetime.now(pytz.timezone(tz))
+                        date_time = datetime.datetime.now(pytz.timezone(tz))
                     except Exception as e:
                          self.pyprest_obj.logger.info(str(e))
             except Exception as e:
                 self.pyprest_obj.logger.info(str(e))
-            if not timeFormat and  twentyfourhourFormat is False  :
-                self.currentTime = dateTime.strftime("%I:%M:%S")
-            elif not timeFormat and twentyfourhourFormat is True:
-                self.currentTime = currentTime = dateTime.strftime("%H:%M:%S")
-            elif timeFormat == "hh:mm" and twentyfourhourFormat is False :
-                 self.currentTime = dateTime.strftime("%I:%M")
-                 if int(dateTime.strftime("%H"))>=12:
-                    return self.currentTime+" PM"
+            if not time_format and  twenty_four_hour_Format is False  :
+                self.current_time = date_time.strftime("%I:%M:%S")
+            elif not time_format and twenty_four_hour_Format is True:
+                self.current_time = current_time = date_time.strftime("%H:%M:%S")
+            elif time_format == "hh:mm" and twenty_four_hour_Format is False :
+                 self.current_time = date_time.strftime("%I:%M")
+                 if int(date_time.strftime("%H"))>=12:
+                    return self.current_time+" PM"
                  else:
-                    return self.currentTime+" AM"
-            elif timeFormat == "hh:mm" and twentyfourhourFormat is True :
-                self.currentTime = dateTime.strftime("%H:%M")
-            elif twentyfourhourFormat is False:
+                    return self.current_time+" AM"
+            elif time_format == "hh:mm" and twenty_four_hour_Format is True :
+                self.current_time = date_time.strftime("%H:%M")
+            elif twenty_four_hour_Format is False:
                 
-                self.currentTime = dateTime.strftime("%I:%M:%S")
-                if(int(dateTime.strftime("%H"))>=12):
-                    return self.currentTime+" PM"
+                self.current_time = date_time.strftime("%I:%M:%S")
+                if(int(date_time.strftime("%H"))>=12):
+                    return self.current_time+" PM"
                 else:
-                    return self.currentTime+" AM"
+                    return self.current_time+" AM"
             else:
-                self.currentTime = dateTime.strftime("%H:%M:%S")
-            return self.currentTime
+                self.current_time = date_time.strftime("%H:%M:%S")
+            return self.current_time
         except Exception as e:
             self.pyprest_obj.logger.info(str(e))
 
