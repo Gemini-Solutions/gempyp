@@ -179,10 +179,10 @@ class PypRest(Base):
             self.legacy_req.api = self.legacy_api
             self.legacy_req.method = self.legacy_method
             self.legacy_req.headers = self.legacy_headers
-            self.legacy_req.body = self.legacy_body           
-        self.logRequest()
+            self.legacy_req.body = self.legacy_body  
         # calling the before method after creating the request object.
         self.beforeMethod()
+        self.logRequest()
         # calling variable replacement after before method
         VarReplacement(self).variableReplacement()
 
@@ -259,7 +259,7 @@ class PypRest(Base):
             legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.legacy_req.body}" if self.legacy_req.method.upper() != "GET" else ""
             current_request_body = f"</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
                 
-            self.reporter.addRow("Executing the rest endpoint","execution of base api and legacy api symultaneously",
+            self.reporter.addRow("Executing the rest endpoint","Execution of base api and legacy api simultaneously",
                             status.INFO ,
                             CURRENT_API= f"<b>URL</b>: {self.req_obj.api}</br>" 
                              + f"<b>METHOD</b>: {self.req_obj.method}</br>" 
@@ -299,7 +299,7 @@ class PypRest(Base):
                              + f"<b>LEGACY RESPONSE BODY</b>: {legacy_response_body}"
                              )
             if (self.legacy_res.status_code in self.legacy_exp_status_code) and (self.res_obj.status_code in self.exp_status_code) :
-                self.reporter.addRow("Validating Response Code with Expected Status Codes", "both status codes are matching with expected status codes",
+                self.reporter.addRow("Validating Response Code with Expected Status Codes", "Both status codes are matching with expected status codes",
                                 status.PASS,
                                  CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
@@ -307,7 +307,7 @@ class PypRest(Base):
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
             else:
-                self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "both status codes are not matching with expected status codes",
+                self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "Both status codes are not matching with expected status codes",
                                 status.FAIL,
                                  CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                                  + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
