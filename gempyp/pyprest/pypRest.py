@@ -180,10 +180,10 @@ class PypRest(Base):
             self.legacy_req.api = self.legacy_api
             self.legacy_req.method = self.legacy_method
             self.legacy_req.headers = self.legacy_headers
-            self.legacy_req.body = self.legacy_body           
-        self.logRequest()
+            self.legacy_req.body = self.legacy_body  
         # calling the before method after creating the request object.
         self.beforeMethod()
+        self.logRequest()
         # calling variable replacement after before method
         VarReplacement(self).variableReplacement()
 
