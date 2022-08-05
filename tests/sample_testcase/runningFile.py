@@ -7,7 +7,7 @@ obj = Gempyp()
 
 """Giving the default config file location  and default mail"""
 
-obj.config = ""
+obj.config = "C:\\Users\\ta.agarwal\\gempyp\\tests\\configTest\\features_suite.xml"
 obj.MAIL = "8979149361t@gmail.com"
 
 
