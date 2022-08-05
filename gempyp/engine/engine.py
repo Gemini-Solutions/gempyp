@@ -217,7 +217,6 @@ class Engine:
             if status_dict.get(s.name, 0) > 0:
                 Suite_status = s.name
                 break
-            
         stop_time = (
             self.DATA.testcase_details["end_time"].sort_values(ascending=False).iloc[0]
         )
