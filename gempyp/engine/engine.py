@@ -509,7 +509,7 @@ class Engine:
         report_json = json.loads(report_json)
         report_json["TestStep_Details"] = self.testcase_data
         report_json = json.dumps(report_json)
-        suite_report = suite_report.replace("DATA", report_json)
+        suite_report = suite_report.replace("DATA_1", report_json)
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
         with open(ResultFile, "w+") as f:

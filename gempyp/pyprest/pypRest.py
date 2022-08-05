@@ -144,11 +144,11 @@ class PypRest(Base):
         self.password = self.data["config_data"].get("PASSWORD", None)
 
         #get values of mandatory keys of legacy apis
-        if len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["configData"].keys()) == 0:
-            self.legacy_api = self.data["configData"]["LEGACY_API"].strip(" ")
-            self.legacy_method = self.data["configData"].get("LEGACY_METHOD", "GET")
-            self.legacy_headers = json.loads(self.data["configData"].get("LEGACY_HEADERS", {}))
-            self.legacy_body = json.loads(self.data["configData"].get("LEGACY_BODY", {}))  
+        if len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
+            self.legacy_api = self.data["config_data"]["LEGACY_API"].strip(" ")
+            self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
+            self.legacy_headers = json.loads(self.data["config_data"].get("LEGACY_HEADERS", {}))
+            self.legacy_body = json.loads(self.data["config_data"].get("LEGACY_BODY", {}))  
             self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")  
         #setting variables and variable replacement
         PreVariables(self).preVariable()
@@ -481,8 +481,8 @@ class PypRest(Base):
 
     def getExpectedStatusCode(self,exp_status_code_param):
         code_list = []
-        # self.data["configData"].get("EXPECTED_STATUS_CODE", 200)
-        exp_status_code_string = self.data["configData"].get(f"{exp_status_code_param}")
+        # self.data["config_data"].get("EXPECTED_STATUS_CODE", 200)
+        exp_status_code_string = self.data["config_data"].get(f"{exp_status_code_param}")
         if "," in exp_status_code_string:
             code_list = exp_status_code_string.strip('"').strip("'").split(",")
         elif "or" in exp_status_code_string.lower():
