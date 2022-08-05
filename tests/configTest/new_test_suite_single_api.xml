@@ -1,0 +1,32 @@
+<data>
+    <suite>
+        <mail>ankitapandey281999@gmail.com</mail>
+        <project>PYPREST</project>
+        <report_name>feature_regression</report_name>
+        <mode>sequence</mode>
+        <env>beta</env>
+        <bridge_token>tokentest</bridge_token>
+        <threads>8</threads>
+
+    </suite>
+    <testcases>
+        <testcase>
+            <name>Test_functions_1</name>
+            <category>sample</category>
+            <run_flag>Y</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>GET</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables/>
+            <key_check/>
+            <post_variables/>
+            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
+            <debug_mode>false</debug_mode>
+            <report_misc/>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+    </testcases>
+</data>

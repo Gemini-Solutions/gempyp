@@ -168,7 +168,7 @@ class Api:
                     obj.response_time = elapsed_time.total_seconds()
                 logging.info(f"URL: {request.api}")
                 logging.info(f"Time elapsed: {obj.response_time} secs")
-
+                
                 result = obj
             except Exception as e:
                 print(traceback.format_exc())

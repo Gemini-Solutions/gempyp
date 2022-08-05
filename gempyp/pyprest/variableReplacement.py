@@ -1,3 +1,4 @@
+from dataclasses import replace
 import re
 import logging as logger
 from inspect import getmembers, isfunction
@@ -18,25 +19,40 @@ class VariableReplacement:
         self.pyprest_obj.logger.info("**************  INSIDE VARIABLE REPLACEMENT  **************")
 
 
-    def valueNotFound(self):
-        data = self.pyprest_obj.__dict__
+    def replaceToNull(self,data):
+        logList = []
         for k,v in data.copy().items():
             if isinstance(v,dict):
-                data[k] = self.updateDataDictionary(v)
+                data[k] = self.replaceToNull(v)
+            if isinstance(v, list):
+                for each in v:
+                    if isinstance(each,dict) or isinstance(each,str):
+                        self.replaceToNull(each)
             elif isinstance(v,str):
-                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and k is not None :
+                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:
                     var_list = self.checkAndGetVariables(data[k])
                     for var in var_list:
                         var_name = var
                         var_val = self.getVariableValues(var_name)
                         if var_val == "null" and "$[#" in str(data[k]):
-                            newValStr = "null"
+                            newValStr = data[k].replace(var_name, "Null")
+                            logger.warning("-------Value of {0} not found!!! Assigning Null".format(var_name))
                         else:
                             newValStr = data[k].replace(var_name, str(var_val))
                         del data[k]
-                        data[k] = newValStr
-                    
-            self.pyprest_obj.__dict__ = data
+                        data[k] = newValStr         
+        return data     
+        
+
+        
+    def ValueNotFound(self):
+        logger.info("------ assigning all variables to null those value not found -----") 
+        try:
+            self.replaceToNull(self.pyprest_obj.__dict__)
+            self.replaceToNull(self.pyprest_obj.reporter.templateData.__dict__)
+        except Exception as e:
+            print(e)
+
 
     def checkAndGetVariables(self, value_str) -> list:
         if value_str is not None and type(value_str) is str:
@@ -52,7 +68,6 @@ class VariableReplacement:
         try:
             if "SUITE." in varName.upper():
                 varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
-                
             else:
                 varValue = self.local_pre_variables[varName]
                 # suite_variables
