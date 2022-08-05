@@ -69,7 +69,7 @@ class PredefinedFunctions:
         Return epoch time in seconds
         if "milli" is passed as a parameter then returns time in epoch milli"""
         millis = False
-        type = self.parse_params(str)
+        type = self.parseParams(str)
         if len(type) > 0:
             if "mil" in type[0].lower():
                 millis = True
@@ -86,7 +86,7 @@ class PredefinedFunctions:
         Return unique number of the length given"""
         len_ = int(len_.strip('"').strip("'"))
         number_ = str(str(time.time()*1000).split('.')[0])
-        number_ = self.number_generator(number_, len_)
+        number_ = self.numberGenerator(number_, len_)
         start = len(str(number_)) - len_
         number_ = int(number_[start:])
         return number_
@@ -96,7 +96,7 @@ class PredefinedFunctions:
         if len_ > len(num):
             num = num + num
             if len_ > len(num):
-                return self.number_generator(num, len_)
+                return self.numberGenerator(num, len_)
             else:
                 return num
         else:

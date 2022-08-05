@@ -69,7 +69,7 @@ class PreVariables:
 
             try:
                 Prefunc_ = Prefunc(self.pyprest_obj)
-                params = Prefunc_.parse_params(data["params"])
+                params = Prefunc_.parseParams(data["params"])
                 func_name = getattr(Prefunc_, func_name) if func_name != "invalid" else None
                 if func_name is not None:
                     val =  func_name(*params)

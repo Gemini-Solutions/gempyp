@@ -12,7 +12,7 @@ def writeToReport(pyprest_obj):
     creates the testcase report if the runmode is debug mode,
     Creates the dictionary that is to be sent to gempyp"""
     result = {}
-    if not pyprest_obj.reporter.resultFileName:
+    if not pyprest_obj.reporter.result_file_name:
         try:
             try:
                 pyprest_obj.reporter.finalizeReport()   ## need to test
@@ -20,11 +20,11 @@ def writeToReport(pyprest_obj):
                     os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
             except Exception as e:
                 pyprest_obj.logger.info(traceback.print_exc())
-            pyprest_obj.reporter.jsonData = pyprest_obj.reporter.TemplateData.makeReport(
-                pyprest_obj.data.get("OUTPUT_FOLDER"), pyprest_obj.reporter.testcaseName + str(time.time()))
-            pyprest_obj.jsonData = pyprest_obj.reporter.jsonData
+            pyprest_obj.reporter.json_data = pyprest_obj.reporter.template_data.makeReport(
+                pyprest_obj.data.get("OUTPUT_FOLDER"), pyprest_obj.reporter.testcase_name + str(time.time()))
+            pyprest_obj.jsonData = pyprest_obj.reporter.json_data
             result = pyprest_obj.reporter.serialize()
-            if pyprest_obj.data["configData"].get("DEBUG_MODE", "FALSE").upper() == "TRUE":
+            if pyprest_obj.data["config_data"].get("DEBUG_MODE", "FALSE").upper() == "TRUE":
                 # make report
                 try:
                     makeReport_pypRest(pyprest_obj, json.dumps(pyprest_obj.reporter.jsonData))
