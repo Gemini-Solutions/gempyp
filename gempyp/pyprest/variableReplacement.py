@@ -24,7 +24,7 @@ class VariableReplacement:
         for k,v in data.copy().items():
             if isinstance(v,dict):
                 data[k] = self.replaceToNull(v)
-            if isinstance(v, list):
+            elif isinstance(v, list):
                 for each in v:
                     if isinstance(each,dict) or isinstance(each,str):
                         self.replaceToNull(each)

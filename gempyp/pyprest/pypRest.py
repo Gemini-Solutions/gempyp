@@ -89,8 +89,8 @@ class PypRest(Base):
 
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update reason of failure in misc
-            if "Mandatory keys are missing, " not in self.reporter._miscData["REASON_OF_FAILURE"]:
-                self.reporter._miscData["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
+            if "Mandatory keys are missing, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
+                self.reporter._misc_data["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
             
@@ -314,8 +314,8 @@ class PypRest(Base):
                                  LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code)}</br>" 
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
-                if "Response code of both api is not as expected, " not in self.reporter._miscData["REASON_OF_FAILURE"]:
-                    self.reporter._miscData["REASON_OF_FAILURE"] += "Response code of both api is not as expected, "
+                if "Response code of both api is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
+                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code of both api is not as expected, "
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
                 raise Exception("abort")
                 # raise Exception("abort")       
@@ -339,8 +339,8 @@ class PypRest(Base):
                                  f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
                                  + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                                  status.FAIL)
-                if "Response code is not as expected, " not in self.reporter._miscData["REASON_OF_FAILURE"]:
-                    self.reporter._miscData["REASON_OF_FAILURE"] += "Response code is not as expected, "
+                if "Response code is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
+                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
                 self.logger.info("status codes did not match, aborting testcase.....")
                 raise Exception("abort")
 
