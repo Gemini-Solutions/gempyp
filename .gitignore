@@ -1,6 +1,10 @@
+# ignore reports, config files etc.
+*.xml
+
 gempyp_reports/
 logs/
 .vscode/
+
 
 # Distribution / packaging
 .Python

@@ -35,7 +35,7 @@ class TemplateData:
 
         self.REPORTDATA["steps"].append(step)
 
-    # finalize the result. Calulates duration etc.
+    # finalize the result. Calculates duration etc.
     def finalizeResult(
         self, begin_time: datetime, end_time: datetime, status_counts: Dict
     ):

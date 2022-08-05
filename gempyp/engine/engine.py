@@ -217,7 +217,6 @@ class Engine:
             if status_dict.get(s.name, 0) > 0:
                 Suite_status = s.name
                 break
-
         stop_time = (
             self.DATA.testcase_details["end_time"].sort_values(ascending=False).iloc[0]
         )
@@ -510,7 +509,6 @@ class Engine:
         report_json = json.loads(report_json)
         report_json["TestStep_Details"] = self.testcase_data
         report_json = json.dumps(report_json)
-        logging.info("------------ report data-----\n", report_json, "\n---------------")
         suite_report = suite_report.replace("DATA_1", report_json)
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
