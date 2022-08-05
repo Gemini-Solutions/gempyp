@@ -28,7 +28,7 @@
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
             <location>tests</location>
             <debug_mode>false</debug_mode>
-            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
+            <report_misc></report_misc>
             <extra_args>hellp</extra_args>
             <TYPE>PYPREST</TYPE>
         </testcase>
@@ -48,7 +48,7 @@
             <post_assertion>compare response[0].id not in [2,4,3088.0];compare response[0].id in [2.0,4.0,3088]; compare response[0].name not to  'Ekaksh Singh JD'; compare response[0].name not in  ['Ekaksh Singh JD',  '1'];compare response.id to 3284;</post_assertion>
             <location>tests</location>
             <debug_mode>false</debug_mode>
-            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
+            <report_misc></report_misc>
             <TYPE>PYPREST</TYPE>
         </testcase>
         <testcase>
@@ -67,7 +67,7 @@
             <post_assertion> compare response[0].name to  "3284"; compare response[0].name to "3284";</post_assertion>
             <location>tests</location>
             <debug_mode>false</debug_mode>
-            <report_misc>set $[#misc.report_columns]=$[#post_var_meth];set $[#misc.post_var] = $[#SUITE.pst]</report_misc>
+            <report_misc></report_misc>
             <TYPE>PYPREST</TYPE>
         </testcase>
 
