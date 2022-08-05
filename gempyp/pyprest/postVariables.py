@@ -11,6 +11,7 @@ class PostVariables:
     def __init__(self, pyprest_obj):
         self.pyprest_obj = pyprest_obj
         self.logger = self.pyprest_obj.logger
+        self.isLegacyPresent = hasattr(self.pyprest_obj, "legacy_res")
         # get variable written in data["POST_VARIABLE"]
         # postdefined func
         # remove $[#]
@@ -45,7 +46,7 @@ class PostVariables:
 
                     
                     # check for postdefined functions and response variables
-                    if "$[#" in each_item[1].strip(" "):                        
+                    if "$[#" in each_item[1].strip(" "):    
                         # check for predefined function
                         self.pyprest_obj.variables[scope][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1])
                         
@@ -55,6 +56,8 @@ class PostVariables:
                         # call keycheck
                         response_key_partition = response_key.split(".")
                         response_json = utils.formatRespBody(self.pyprest_obj.res_obj.response_body)
+                        if self.isLegacyPresent and 'legacy' in response_key_partition:
+                            response_json = utils.formatRespBody(self.pyprest_obj.legacy_res.response_body)    
                         result = KeyCheck(self.pyprest_obj).findKeys(response_json, deepcopy(response_key_partition), deepcopy(response_key_partition))
                         # if result is not "FOUND" then can't set value
                         if result.upper() != "FOUND":
