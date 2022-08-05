@@ -33,7 +33,7 @@
             <headers>{}</headers>
             <expected_status_code>200</expected_status_code>
             <authentication></authentication>
-            <before_file>path=C:\Users\ta.agarwal\gempyp\gempyp\pyprest\beforeAfterSample.py,class=before,method=before_</before_file>
+            <before_file>path=gempyp.pyprest.beforeAfterSample,class=before,method=before_</before_file>
             <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
             <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var2]="SUITE_VAR2";</post_variables>
