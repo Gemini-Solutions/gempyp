@@ -4,7 +4,7 @@
         <mail>arpit.mishra@geminisolutions.com</mail>
         <project>PYPREST</project>
         <report_name>feature_regression</report_name>
-        <mode>optimize</mode>
+        <mode>sequence</mode>
         <env>beta</env>
         <username>arpit.mishra</username>
         <bridge_token>189d848f-edfc-43e9-a6ae-02005c2445fd1657018525269</bridge_token>
@@ -164,20 +164,6 @@
             <TYPE>PYPREST</TYPE>
         </testcase>
         <testcase>
-<<<<<<< HEAD
-            <name>testcase_11</name>
-            <category>sample</category>
-            <run_flag>N</run_flag>
-            <path>../../../../gempyp_test/Testcase_methods_11.py</path>
-            <location>test</location>
-            <type>gempyp</type>
-            <method>testcase_1</method>
-            <extra_args1>hello</extra_args1>
-        </testcase>     
-
-        <testcase>
-=======
->>>>>>> 188212b1702a147d24dc38389a7f944d67dba7bd
             <name>Test_Post</name>
             <category>Method</category>
             <run_flag>Y</run_flag>

@@ -309,13 +309,13 @@ class PypRest(Base):
             else:
                 self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "Both status codes are not matching with expected status codes",
                                 status.FAIL,
-                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code)}</br>" 
+                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
-                if "Response code of both api is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
-                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code of both api is not as expected, "
+                if "Response code is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
+                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
                 raise Exception("abort")
                 # raise Exception("abort")       
@@ -331,12 +331,12 @@ class PypRest(Base):
                                  status.INFO)
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                                  status.PASS)
             else:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                                  status.FAIL)
                 if "Response code is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
