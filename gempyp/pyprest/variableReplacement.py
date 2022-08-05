@@ -24,9 +24,9 @@ class VariableReplacement:
         for k,v in data.copy().items():
             if isinstance(v,dict):
                 data[k] = self.replaceToNull(v)
-            if isinstance(v, list):
+            elif isinstance(v, list):
                 for each in v:
-                    if isinstance(each,dict) or isinstance(each,str):
+                    if isinstance(each,dict):
                         self.replaceToNull(each)
             elif isinstance(v,str):
                 if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:

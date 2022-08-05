@@ -208,11 +208,11 @@ def responseReporter(reporter, legacy_key, current_key, legacy_value, current_va
         current_info = f"value = {legacy_value}"
         legacy_info = f"Value = {current_value}"
         if legacy_value == current_value:
-            description = f"values are Equal"
+            description = f"Values are Equal"
             _status = status.PASS
             reporter.addRow(title, description, _status, CURRENT_API=current_info, LEGACY_API=legacy_info)
         else:
-            description = f"values are not Equal"
+            description = f"Values are not Equal"
             _status = status.FAIL
             reporter.addRow(title, description, _status, CURRENT_API=current_info, LEGACY_API=legacy_info)
             if "Mismatches found during Assertion, " not in reporter._misc_data["REASON_OF_FAILURE"]:  

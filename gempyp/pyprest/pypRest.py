@@ -89,15 +89,14 @@ class PypRest(Base):
 
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update reason of failure in misc
-            self.reporter._misc_data["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
+            if "Mandatory keys are missing, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
+                self.reporter._misc_data["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
             
     # read config and get data
     def getVals(self):
-        """This is a function to get the values from config_data, store it in self object."""
-  
-        
+        """This is a function to get the values from configData, store it in self object."""
         # capitalize the keys
 
         for k, v in self.data["config_data"].items():
@@ -260,7 +259,7 @@ class PypRest(Base):
             legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.legacy_req.body}" if self.legacy_req.method.upper() != "GET" else ""
             current_request_body = f"</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
                 
-            self.reporter.addRow("Executing the rest endpoint","execution of base api and legacy api symultaneously",
+            self.reporter.addRow("Executing the rest endpoint","Execution of base api and legacy api simultaneously",
                             status.INFO ,
                             CURRENT_API= f"<b>URL</b>: {self.req_obj.api}</br>" 
                              + f"<b>METHOD</b>: {self.req_obj.method}</br>" 
@@ -290,7 +289,7 @@ class PypRest(Base):
             if isinstance(legacy_response_body,str):
                 if "<!DOCTYPE html>" in legacy_response_body and "</html>" in legacy_response_body:
                     legacy_response_body = f"<a href={self.legacy_res.api} target = '_blank'>Click here</a>"            
-            self.reporter.addRow("Details of the REST endpoint execution","execution of base api and legacy api simultaneously",
+            self.reporter.addRow("Details of the REST endpoint execution","Execution of Current and Legacy API simultaneously",
                             status.INFO ,
                             CURRENT_API= f"<b>CURRENT RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
                              + f"<b>CURRENT RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
@@ -299,9 +298,8 @@ class PypRest(Base):
                              + f"<b>LEGACY RESPONSE HEADERS</b>: {self.legacy_res.response_headers}</br>" 
                              + f"<b>LEGACY RESPONSE BODY</b>: {legacy_response_body}"
                              )
-            # legacyApiComparison(self).responseComparison()
             if (self.legacy_res.status_code in self.legacy_exp_status_code) and (self.res_obj.status_code in self.exp_status_code) :
-                self.reporter.addRow("Validating Response Code with Expected Status Codes", "both status codes are matching with expected status codes",
+                self.reporter.addRow("Validating Response Code with Expected Status Codes", "Both status codes are matching with expected status codes",
                                 status.PASS,
                                  CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
@@ -309,14 +307,15 @@ class PypRest(Base):
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
             else:
-                self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "both status codes are not matching with expected status codes",
+                self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "Both status codes are not matching with expected status codes",
                                 status.FAIL,
-                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code)}</br>" 
+                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
-                self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code of both api is not as expected, "
+                if "Response code is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
+                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
                 raise Exception("abort")
                 # raise Exception("abort")       
@@ -332,15 +331,16 @@ class PypRest(Base):
                                  status.INFO)
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                                  status.PASS)
             else:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"<b>Expected RESPONSE CODE</b>: {str(self.exp_status_code)}</br>" 
+                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                                  status.FAIL)
-                self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
+                if "Response code is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
+                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
                 self.logger.info("status codes did not match, aborting testcase.....")
                 raise Exception("abort")
 
