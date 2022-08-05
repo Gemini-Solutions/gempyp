@@ -7,9 +7,6 @@ from gempyp.libs.common import dateTimeEncoder
 class TestData:
     def __init__(self):
         self.testcase_detail_column = [
-        """
-        declairing some attribute the are used in testcaseDetails in report and reurn a object
-        """
             "tc_run_id",
             "start_time",
             "end_time",
@@ -41,7 +38,6 @@ class TestData:
             return {}
 
         data = self.suite_detail.to_dict(orient="records")[0]
-        # print("-------- data for suite \n", data, "\n---------")
         misc_data = self.misc_details[
             self.misc_details["table_type"].str.upper() == "SUITE"
         ]
@@ -49,7 +45,6 @@ class TestData:
         misc_data = misc_data.to_dict(orient="records")
         data["misc_data"] = misc_data
         data["s_id"] = "test_id"
-        # data["testcase_details"] = self.testcase_details.to_dict(orient="records")
 
         return json.dumps(data, cls=dateTimeEncoder)
 
@@ -69,7 +64,6 @@ class TestData:
 
         test_data["misc_data"] = misc_data
         test_data["s_run_id"] = s_run_id
-        # print("-----------\n test_data", test_data, "\n------------")
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):

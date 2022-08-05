@@ -7,6 +7,7 @@ class sample2(AbstractSimpleTestcase):
 
     def verify(self, reporter):
         reporter.addRow("test", "desc", self.Status.PASS)
+        reporter.addRow("fail test", "desc", self.Status.FAIL)
         reporter.logger.info("We are testing logger inside verify method")
         return reporter
 
