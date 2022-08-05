@@ -27,7 +27,6 @@ class Gempyp:
         parser.add_argument('-config','-c',dest='config',type=str, required=False)
         parser.add_argument('-mail','-m',dest='MAIL', type=str, required=False)
         parser.add_argument('-project','-p',dest='PROJECT', type=str, required=False)
-
         parser.add_argument('-Report_name','-rn',dest='REPORT_NAME', type=str, required=False)
         parser.add_argument('-mode','-mode',dest='MODE', type=str, required=False)
         parser.add_argument('-env','-env',dest='ENV', type=str, required=False)
