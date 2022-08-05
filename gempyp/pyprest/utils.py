@@ -124,16 +124,16 @@ def getNestedListData(i, json_data, key_val):
 
 def dispatch_dict():
     dispatch = {
-        'to': cf.compare_to,
-        'notto': cf.compare_notto,
-        'not to': cf.compare_notto,
-        'not_to': cf.compare_notto,
-        'in': cf.compare_in,
-        'notin': cf.compare_notin,
-        'not in': cf.compare_notin,
-        'not_in': cf.compare_notin,
-        'contains': cf.compare_contains,
-        'not_supported': cf.no_operator,
+        'to': cf.compareTo,
+        'notto': cf.compareNotTo,
+        'not to': cf.compareNotTo,
+        'not_to': cf.compareNotTo,
+        'in': cf.compareIn,
+        'notin': cf.compareNotIn,
+        'not in': cf.compareNotIn,
+        'not_in': cf.compareNotIn,
+        'contains': cf.compareContains,
+        'not_supported': cf.noOperator,
     }
     return dispatch
 

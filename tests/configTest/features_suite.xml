@@ -177,7 +177,7 @@
         <testcase>
             <name>testcase_11</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>../../../../gempyp_test/Testcase_methods_11.py</path>
             <location>test</location>
             <type>gempyp</type>
