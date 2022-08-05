@@ -6,7 +6,7 @@ import logging as logger
 
 ##   check if actual value is string or not
 
-def compare_to(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
+def compareTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
     """checks for equality of actual value and expected value. 
     OPERATOR -"to"
     """
@@ -34,13 +34,13 @@ def compare_to(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = F
                 obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.FAIL, CURRENT_API=f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied",LEGACY_API="-" )
         else:
             obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
-        obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+        obj._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
 
 
     return obj
 
 
-def compare_to_resp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckResult, tolerance):
+def compareToResp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckResult, tolerance):
     try:
         actual_value = key_val_dict.get(key,key)
         required_value = key_val_dict_legacy[value]
@@ -58,7 +58,7 @@ def compare_to_resp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckRe
     except:
         traceback.print_exc()
 
-def compare_notto_resp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckResult, tolerance):
+def compareNotToResp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckResult, tolerance):
     try:
         actual_value = key_val_dict.get(key,key)
         required_value = key_val_dict_legacy[value]
@@ -73,15 +73,15 @@ def compare_notto_resp(obj,key,value, key_val_dict, key_val_dict_legacy, keyChec
                     obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are not equal.</b>",status.FAIL, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
                 else:
                     obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are not equal.</b>",status.FAIL, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API="")
-                if "Mismatches found during Assertion, " not in obj._miscData["REASON_OF_FAILURE"]:  
-                    obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+                if "Mismatches found during Assertion, " not in obj._misc_data["REASON_OF_FAILURE"]:  
+                    obj._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
     except:
         traceback.print_exc()
 
             
     
 
-def compare_notto(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
+def compareNotTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
     """checks for inequality of actual value and expected value. 
     OPERATOR -"notto, not_to"
     """
@@ -111,13 +111,13 @@ def compare_notto(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent 
         else:
             obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
        
-        if "Mismatches found during Assertion, " not in obj._miscData["REASON_OF_FAILURE"]:  
-            obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+        if "Mismatches found during Assertion, " not in obj._misc_data["REASON_OF_FAILURE"]:  
+            obj._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
     
     return obj
 
 
-def compare_in(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
+def compareIn(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
     """Checks whether the actual value is in the list of expecteds value or not
     OPERATOR - "in"
     """
@@ -149,14 +149,14 @@ def compare_in(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = F
         else:
             obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
         
-        if "Mismatches found during Assertion, " not in obj._miscData["REASON_OF_FAILURE"]:  
-                obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+        if "Mismatches found during Assertion, " not in obj._misc_data["REASON_OF_FAILURE"]:  
+                obj._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
     
 
     return obj
 
 
-def compare_notin(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
+def compareNotIn(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
     """Checks whether the actual value is absent from the not expected values or not.
     OPERATOR - "notin, not_in"
     """
@@ -189,12 +189,12 @@ def compare_notin(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent 
                 obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = not in</b>",status.FAIL,CURRENT_API=f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", LEGACY_API="-")
         else:
             obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
-        if "Mismatches found during Assertion, " not in obj._miscData["REASON_OF_FAILURE"]:  
-            obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+        if "Mismatches found during Assertion, " not in obj._misc_data["REASON_OF_FAILURE"]:  
+            obj._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
         
     return obj
 
-def compare_contains(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
+def compareContains(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = False, isLegacyResponse = False):
     """Checks whether the actual value contains(substring) expected value or not
     OPERATOR - "contains"
     """
@@ -215,12 +215,12 @@ def compare_contains(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPrese
                 obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = contains</b>", status.FAIL, CURRENT_API=f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", LEGACY_API="-")
         else:
             obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
-        if "Mismatches found during Assertion, " not in obj._miscData["REASON_OF_FAILURE"]:  
-            obj._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+        if "Mismatches found during Assertion, " not in obj._misc_data["REASON_OF_FAILURE"]:  
+            obj._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
         
     return obj
 
 
-def no_operator(obj):
+def noOperator(obj):
     logger.info("operator not supported")
     return obj

@@ -4,14 +4,14 @@ import tempfile
 from typing import Dict
 import lxml.etree as et
 import logging
-from gempyp.config.baseConfig import abstarctBaseConfig
+from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.libs.parsers import xmlToDict, xmlToList
 from gempyp.libs.logConfig import LoggingConfig
 import sys, os
 import warnings
 import uuid
 
-class XmlConfig(abstarctBaseConfig):
+class XmlConfig(AbstarctBaseConfig):
     def __init__(self, filePath: str):
         
         self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
@@ -44,26 +44,21 @@ class XmlConfig(abstarctBaseConfig):
 
     def _getSuiteData(self, data) -> Dict:
 
-        suiteData = data.find("suite")
+        suite_data = data.find("suite")
 
-        suiteDict = xmlToDict(suiteData)
-        suiteDict["SUITE_VARS"] = {}
-        #Adding bridgeToken validation here
-        logging.info("--------suiteDict--------\n {suiteDict} \n----------".format(suiteDict=suiteDict))
-        # if suiteDict.get("BRIDGE_TOKEN", None) is None:
-        #     logging.critical("Bridge Token is Missing")
-        #     sys.exit("ERROR: Bridge Token is Missing in the config.")
-        # if suiteDict.get("USERNAME", None) is None:
-        #     logging.critical("Username is Missing")
-        #     sys.exit("ERROR: Username is Missing in the config.")
+        suite_dict = xmlToDict(suite_data)
+        suite_dict["SUITE_VARS"] = {}
+        logging.info("--------suite_dict--------\n {suite_dict} \n----------".format(suite_dict=suite_dict))
         # do your validations here
 
-        return suiteDict
+        return suite_dict
 
     def _getTestCaseData(self, data) -> Dict:
 
-        testcaseData = data.find("testcases")
-        testcaseList = xmlToList(testcaseData)
-        testcaseDict = {k['NAME']: k for k in testcaseList}
+        testcase_data = data.find("testcases")
+
+        testcase_list = xmlToList(testcase_data)
+        testcase_dict = {k['NAME']: k for k in testcase_list}
         # do your validation here
-        return testcaseDict
+
+        return testcase_dict

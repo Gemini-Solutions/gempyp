@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 from getpass import getuser
 import warnings
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet
 import requests
 import requests.auth
 from requests_ntlm import HttpNtlmAuth
@@ -16,7 +16,7 @@ class Api:
         pass
 
     def execute(self, request):
-        EncryptKey = "Y4irRsiBmyGMBie5gAZ8va3IOHVOYZFxC5L1-jNydZk="
+        encrypt_key = "Y4irRsiBmyGMBie5gAZ8va3IOHVOYZFxC5L1-jNydZk="
         result = Response()
         if not request.file:
             header_dict = {key.upper(): value.upper() for key, value in request.headers.items()}
@@ -32,7 +32,7 @@ class Api:
             auth = None
             try:
                 if request.auth.upper() == "PASSWORD":
-                    password = self.decrypt_(request.credentials.get("password", ""), EncryptKey)
+                    password = self.decrypt_(request.credentials.get("password", ""), encrypt_key)
                     auth = HttpNtlmAuth(request.credentials.get("username", " "), password)
             except Exception as e:
                 logging.info("Error occured while creating the auth object- " + str(e))

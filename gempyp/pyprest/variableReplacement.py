@@ -45,11 +45,11 @@ class VariableReplacement:
         
 
         
-    def ValueNotFound(self):
+    def valueNotFound(self):
         logger.info("------ assigning all variables to null those value not found -----") 
         try:
             self.replaceToNull(self.pyprest_obj.__dict__)
-            self.replaceToNull(self.pyprest_obj.reporter.templateData.__dict__)
+            self.replaceToNull(self.pyprest_obj.reporter.template_data.__dict__)
         except Exception as e:
             print(e)
 

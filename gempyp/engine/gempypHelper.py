@@ -1,16 +1,16 @@
-from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
-from gempyp.engine.baseTemplate import testcaseReporter
+from gempyp.engine.simpleTestcase import AbstarctSimpleTestcase
+from gempyp.engine.baseTemplate import TestcaseReporter
 
 
-class Gempyp(AbstractSimpleTestcase):
-    def __init__(self, projectName=None, testcaseName=None):
-        if projectName is not None and testcaseName is not None:
-            self.reporter = testcaseReporter(projectName, testcaseName)
+class Gempyp(AbstarctSimpleTestcase):
+    def __init__(self, project_name=None, testcase_name=None):
+        if project_name is not None and testcase_name is not None:
+            self.reporter = TestcaseReporter(project_name, testcase_name)
         else:
-            self.reporter = testcaseReporter("Gempyp", "testing")
+            self.reporter = TestcaseReporter("Gempyp", "testing")
         
         # access project name and testcase name
-        # self.reporter = testcaseReporter(Project, Testcase)
+        # self.reporter = TestcaseReporter(Project, Testcase)
         # user will use this reporter in their testcases
         
 
