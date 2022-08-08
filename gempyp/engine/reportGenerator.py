@@ -14,6 +14,7 @@ class templateData:
         self.REPORTDATA = {"Header": header, "steps": []}
 
     def newReport(self, projectName: str, tescaseName: str):
+        """this method is called in testcaseGenerator and will add the initial data for reports json"""
         metadata = []
         # 1st Column
         column1 = {
@@ -26,6 +27,9 @@ class templateData:
         self.REPORTDATA["metaData"] = metadata
 
     def newRow(self, title: str, description: str, status: status, **kwargs):
+        """add the rows in reportdata list
+        take the arguments given in addRow method
+        """
         step = {"title": title, "description": description, "status": status}
 
         if not kwargs.get("attachment"):
@@ -39,6 +43,8 @@ class templateData:
     def finalizeResult(
         self, beginTime: datetime, endTime: datetime, statusCounts: Dict
     ):
+
+        """add second column to reportdata and dump all the data in a single variable """
         # column2
         column2 = {
             "EXECUTION STARTED ON": {"value": beginTime, "type": "datetime"},
@@ -59,7 +65,7 @@ class templateData:
 
     def _getFilters(self) -> Dict:
         """
-        return the steps that are described in testcases reporter .addRow 
+        filter the steps so that all the rows will be displayed only once in report 
         """
 
         filterNames = list(
@@ -74,7 +80,8 @@ class templateData:
     # Converts the data to the JSON
     def _toJSON(self) -> str:
         """
-        dump the data in REPORTDATA
+        convert the reportdata dict into jsondata and return it to makeReport method
+        currently not in use
         """
         try:
             ResultData = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)

@@ -42,6 +42,7 @@ def sendTestcaseData(payload, bridgeToken, user_name):
 def _sendData(payload, url, bridgeToken, user_name, method="POST"):
     """
     calling the api to upload the data into database
+    takes data we need to send(payload),bridgeToken,userName and method as argument
     """
 
     if DefaultSettings.count > 3:

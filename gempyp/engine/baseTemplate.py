@@ -37,7 +37,8 @@ class testcaseReporter:
 
     def addMisc(self, key: str, value):
         """
-        add the misc data to the report
+        add the misc data to the report by calling it as reporter.addMisc()
+        takes two arguments one is column name and other one is value
         """
         self._miscData[key] = value
 
@@ -59,7 +60,10 @@ class testcaseReporter:
         **kwargs,
     ):
         """
-        add the new row to the file
+        add the new row to the report 
+        takes three argument first is testname,second is description of test and third is status 
+        calls the newRow method of reportGenerator 
+        
         """
         self.statusCount[status] += 1
 
@@ -82,7 +86,7 @@ class testcaseReporter:
 
     def finalize_report(self):
         """
-        the destructor after the call addRow will not work
+        the destructor after the call addRow will not work and will call finalizeResult method of reportGenerator file
         """
         # only call the destructor once
         if self._isDestructorCalled:
@@ -98,7 +102,9 @@ class testcaseReporter:
         self.templateData.finalizeResult(self.beginTime, self.endTime, self.statusCount)
 
     def findStatus(self):
-
+        """
+        method will return whether the status is pass or fail or warn
+        """
         for i in status:
             if self.statusCount[i] > 0:
                 return i.name
@@ -116,7 +122,8 @@ class testcaseReporter:
 
     def serialize(self) -> Dict:
         """
-        serializing the data
+        used to assign some values to the variables that are further used in json that is uploaded to db
+        takes values from reporter function and other variables in the same file
         """
         resultData = {}
         resultData["NAME"] = self.testcaseName

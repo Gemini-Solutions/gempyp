@@ -21,12 +21,14 @@ from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
+from gempyp.dvm.dvmRunner import DvmRunner
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     
     """
-    calls the differnt executors based on the type of the data
+    calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
+    Takes single testcase data as input
     """
 
     print("-------------- In Executor Factory --------------------\n")
@@ -49,6 +51,8 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
 
     elif data["configData"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
+        return DvmRunner(data).dvmEngine()
+
         logging.info("starting the DVM testcase")
     elif data["configData"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
@@ -65,6 +69,7 @@ class Engine:
     def __init__(self, params_config):
         """
         constructor used to  call run method
+        takes config as input
         """
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
@@ -73,6 +78,7 @@ class Engine:
     def run(self, params_config: Type[abstarctBaseConfig]):
         """
         main method to call other methods that are required for report generation
+        takes config as input
         """
         logging.info("Engine Started")
         # initialize the data class
@@ -91,11 +97,12 @@ class Engine:
         self.updateSuiteData()
         dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         self.makeReport()
-        self.sendEmail()
+        # self.sendEmail()
 
     def makeOutputFolder(self):
         """
-        to make GemPyp_Report folder 
+        make outputFolder for report named as gempyp_reports in user home directory if not given by the user and makes log fplder for log files
+        if given by user than set user given path for reports file   
         """
 
         logging.info("---------- Making output folders -------------")
@@ -187,7 +194,7 @@ class Engine:
     def start(self):
 
         """
-         check the mode and start the testcases accordingly
+         check the mode and start the testcases accordingly e.g.optimize,parallel
         """
 
         try:
@@ -227,8 +234,9 @@ class Engine:
 
     def startSequence(self):
         """
-        start running the testcases in sequence
-        """
+        start calling executoryFactory() for each testcase one by one according to their dependency
+        at last of each testcase calls the update_df() 
+        """ 
 
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
@@ -251,7 +259,8 @@ class Engine:
 
     def startParallel(self):
         """
-        start running the testcases in parallel
+        start calling executorFactory for testcases in parallel according to their drependency 
+        at last of each testcase calls the update_df()
         """
         pool = None
         try:
@@ -272,6 +281,7 @@ class Engine:
                     if self.isDependencyPassed(testcase):
                         poolList.append(self.getTestcaseData(testcase.get("NAME")))
                     else:
+
                         print("----------------here--------------------")
                         dependencyError = {
                             "message": "dependency failed",
@@ -313,6 +323,7 @@ class Engine:
 
         """
         updates the testcase data in the dataframes of testData.py
+        also upload testcasedata to db
         
         """
         try:
@@ -359,7 +370,8 @@ class Engine:
         log_path: str = None
     ) -> Dict:
         """
-        store the data of failed testcase and return it as a dict
+        store the data of failed testcase and return it as a dict to update_df
+        take message for error as input
         """
 
         result = {}
@@ -395,6 +407,7 @@ class Engine:
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):
         """
         updates the misc data for the testcases in testData.py
+        accept miscellaneous rows and tc_run_id as parameters
         """
         miscList = []
 
@@ -430,6 +443,7 @@ class Engine:
         """
         yields the testcases with least dependncy first
         Reverse toplogical sort
+        accept all testcases dictionary as arguments
         """
 
         adjList = {
@@ -448,6 +462,9 @@ class Engine:
 
             adjList[key] = set(new_list)
         while adjList:
+            """
+            return testcases that doesn't depend on other testcase
+            """
             top_dep = set(
                 i for dependents in list(adjList.values()) for i in dependents
             ) - set(adjList.keys())
@@ -506,7 +523,9 @@ class Engine:
 
     def makeReport(self):
         """
-        saves the report json 
+        creates the reports by replacing the json object in final_report.html by reportjson
+        and write the result file in output folder
+
         """
         suiteReport = None
 
@@ -524,7 +543,6 @@ class Engine:
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
         suiteReport = suiteReport.replace("DATA", reportJson)
-
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
         with open(ResultFile, "w+") as f:
@@ -533,7 +551,7 @@ class Engine:
     
     def repSummary(self):
         """
-        logging some information
+        logging information at the end of cli about passed, failed testcases and report generation
         """
         try:
             logging.info("---------- Finalised the report --------------")

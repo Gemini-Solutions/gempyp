@@ -7,7 +7,7 @@ from gempyp.libs.common import dateTimeEncoder
 class testData:
     def __init__(self):
         """
-        declairing some attribute the are used in testcaseDetails in report and reurn a object
+        declairing some attribute the are used in testcaseDetails in report and return a object that is used to update data
         """
         self.testcaseDetailColumn = [
             "tc_run_id",
@@ -35,7 +35,8 @@ class testData:
 
     def toSuiteJson(self):
         """
-        converts the dataframe to suiteJson
+        converts the dataframe to Json
+        used in uploadsuitedata (run() method in engine.py)
         """
         if self.suiteDetail.empty:
             return {}
@@ -55,7 +56,8 @@ class testData:
 
     def totestcaseJson(self, tc_run_id, s_run_id):
         """
-        returns the testcase for that specific json
+        returns the json for testcasedata
+        used in update_df method of engine.py
         """
 
         testData = self.testcaseDetails.loc[
@@ -80,7 +82,7 @@ class testData:
 
     def getJSONData(self):
         """
-        provide the report json
+        provide the report json to makereport() method of engine file
         """
         SuiteReport = {}
         suiteDict = self.suiteDetail.to_dict(orient="records")[0]

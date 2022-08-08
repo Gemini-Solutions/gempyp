@@ -13,7 +13,8 @@ from gempyp.libs.common import moduleImports
 
 def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
     """
-    actually imports the testcase files and call the run method
+    actually imports the testcase files and call the run method 
+    set the json data that is required to update in db
     """
     logging.info("------------------ In testcase Runner --------------")
     configData: Dict = testcaseMeta.get("configData")
