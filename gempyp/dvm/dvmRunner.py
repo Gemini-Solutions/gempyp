@@ -8,7 +8,7 @@ import pandas as pd
 from pyparsing import originalTextFor
 import json
 import mysql.connector
-from gempyp.engine.baseTemplate import testcaseReporter as Base
+from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.dvm.dvmReporting import writeToReport
 import sys

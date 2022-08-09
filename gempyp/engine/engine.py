@@ -41,7 +41,6 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
 
-
     if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
         #custom_logger.setLevel(logging.INFO)
@@ -455,15 +454,15 @@ class Engine:
                 else:
                     new_list.append(testcase[0])
 
-            adjList[key] = set(new_list)
-        while adjList:
+            adj_list[key] = set(new_list)
+        while adj_list:
             """
             return testcases that doesn't depend on other testcase
             """
             top_dep = set(
-                i for dependents in list(adjList.values()) for i in dependents
-            ) - set(adjList.keys())
-            top_dep.update(key for key, value in adjList.items() if not value)
+                i for dependents in list(adj_list.values()) for i in dependents
+            ) - set(adj_list.keys())
+            top_dep.update(key for key, value in adj_list.items() if not value)
 
             if not top_dep:
                 logging.critical(

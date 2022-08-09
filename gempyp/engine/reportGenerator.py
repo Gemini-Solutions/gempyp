@@ -13,13 +13,13 @@ class TemplateData:
         # initliza the data to be stored as a JSON
         self.REPORTDATA = {"Header": header, "steps": []}
 
-    def newReport(self, projectName: str, tescaseName: str):
+    def newReport(self, projectName: str, testcaseName: str):
         """this method is called in testcaseGenerator and will add the initial data for reports json"""
         metadata = []
         # 1st Column
         column1 = {
-            "TESTCASE NAME": tescase_name,
-            "SERVICE PROJECT": project_name,
+            "TESTCASE NAME": testcaseName,
+            "SERVICE PROJECT": projectName,
             "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"},
         }
         metadata.append(column1)

@@ -30,7 +30,7 @@ class TestData:
         # this should always have one row so it can be made a dict or something instad of a dataframe
         self.suite_detail = pd.DataFrame()
 
-        self.testcase_details = pd.DataFrame(columns=self.testcase_detail_column)
+        self.testcase_details = pd.DataFrame(columns=self.testcaseDetailColumn)
         self.misc_details = pd.DataFrame(columns=self.misc_detail_column)
 
     def toSuiteJson(self):
