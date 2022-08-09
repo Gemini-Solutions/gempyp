@@ -1,14 +1,12 @@
 <data>
 
     <suite>
-
         <mail>test@gmail.com</mail>
-        <project>gempyp</project>
-        <report_name>testcase</report_name>
-        <mode>optimize</mode>
+        <project>GEMPYP_TEST</project>
+        <report_name>FEATURE_REGRESSION</report_name>
+        <mode>sequence</mode>
         <env>prod</env>
-        <bridge_token>tokentest</bridge_token>
-        <username>tanya</username>
+
     </suite>
 
     <testcases>
@@ -16,7 +14,7 @@
 
             <name>testcase_except_</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <method>testcase_except_</method>
@@ -27,11 +25,12 @@
         <testcase>
             <name>testcase_2</name>
             <category>sample1</category>
-            <run_flag>Y</run_flag>
-            <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
+            <run_flag>N</run_flag>
+            <path>C:\Users\an.pandey\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
             <method>testcase_2</method>
+            <category>sample</category>
             <extra_args1>hello</extra_args1>
         </testcase>
 
@@ -39,7 +38,7 @@
             <name>testcase_main</name>
             <category>sample</category>
             <run_flag>N</run_flag>
-            <path>..\sample_testcase\Testcase_methods_1.py</path>
+            <path>C:\Users\an.pandey\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <dependency>testcase_2</dependency>
             <type>gempyp</type>
@@ -49,7 +48,7 @@
         <testcase>
             <name>verify_testcase</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <dependency>testcase_except_,testcase_main</dependency>
@@ -59,10 +58,29 @@
         </testcase>
 
         <testcase>
+            <name>Test_Pre_Variables</name>
+            <category>Pre_variables</category>
+            <run_flag>N</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>$[#method_name]</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#method_name]=GET;set $[#method_second]=10</pre_variables>
+            <key_check></key_check>
+            <post_variables></post_variables>
+            <post_assertion></post_assertion>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+
+        <testcase>
             <name>Main_testcase</name>
             <set>sample</set>
             <run_flag>Y</run_flag>
             <category>sample</category>
+            <run_flag>Y</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>Main</method>
@@ -102,7 +120,7 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
-            <run_flag>n</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>$[#SUITE.varGet]</method>
             <body>{}</body>
