@@ -92,7 +92,7 @@ class Engine:
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
-        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcaseData, self.ouput_folder)
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getjson_data(), self.testcaseData, self.ouput_folder)
         TemplateData().repSummary(self.repJson, output_file_path)
 
     def makeOutputFolder(self):
@@ -275,7 +275,7 @@ class Engine:
                             "category": testcase.get("CATEGORY", None),
                             "product_type": testcase.get("PRODUCT_TYPE", None),
                         }
-                        # handle dependency error in jsondata(update_df)
+                        # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
 
@@ -321,15 +321,15 @@ class Engine:
                 output = [output]
             for i in output:
 
-                i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
+                i["testcase_dict"]["steps"] = i["json_data"]["steps"]
                 
-                testcase_dict = i["testcaseDict"]
+                testcase_dict = i["testcase_dict"]
                 try:
                     """ update suite vars here from testcase_dict["suite_variables"] append it in the suite vars of _config"""
     
                     self.user_suite_variables.update(i.get("suite_variables", {}))
                     
-                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["jsonData"]
+                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["json_data"]
                 except Exception as e:
                     logging.error(e)
 
@@ -378,7 +378,7 @@ class Engine:
         if product_type:
             testcase_dict["product_type"] = product_type
 
-        result["testcaseDict"] = testcase_dict
+        result["testcase_dict"] = testcase_dict
 
         misc["REASON_OF_FAILURE"] = message
 

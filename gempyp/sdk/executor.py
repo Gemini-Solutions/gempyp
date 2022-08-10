@@ -4,9 +4,9 @@ from pathlib import Path
 import sys
 import uuid
 from datetime import datetime
-from gempyp.engine.baseTemplate import testcaseReporter
+from gempyp.engine.baseTemplate import TestcaseReporter
 from gempyp.engine.runner import getOutput
-from gempyp.engine.testData import testData
+from gempyp.engine.testData import TestData
 from gempyp.engine import dataUpload
 import configparser
 import inspect
@@ -21,17 +21,17 @@ import pandas as pd
 from gempyp.libs.enums.status import status
 
 
-class Executor(testcaseReporter):
+class Executor(TestcaseReporter):
     def __init__(self):
         self.log_file = tempfile.gettempdir() + "logs.log"
         sys.stdout = sys.stderr =  open(self.log_file, 'w')
         self.data = self.getTestcaseData()
         self.makeOutputFolder()
-        self.reporter = testcaseReporter(self.data["PROJECT"], self.data["NAME"])
+        self.reporter = TestcaseReporter(self.data["PROJECT"], self.data["NAME"])
 
         path = __file__
         path = path.rsplit(os.sep, 1)[0]
-        self.DATA = testData()
+        self.DATA = TestData()
         # make suite details and upload it
         self.makeSuiteDetails()
         if not os.getenv("PID"):
@@ -52,42 +52,43 @@ class Executor(testcaseReporter):
         output = []
         
         # destructor of reporter object called
-        self.reporter.finalize_report()
+        self.reporter.finalizeReport()
         
         # create testcase reporter json
-        self.reporter.jsonData = self.reporter.templateData.makeTestcaseReport("" ,"")
+        self.reporter.json_data = self.reporter.template_data.makeTestcaseReport("" ,"")
         # serializing data, adding suite data
-        reportDict = self.reporter.serialize()
+        report_dict = self.reporter.serialize()
 
-        reportDict["TESTCASEMETADATA"] = self.getMetaData()
-        reportDict["configData"] = self.getConfigData()
+        report_dict["TESTCASEMETADATA"] = self.getMetaData()
+        report_dict["config_data"] = self.getConfigData()
 
         # creating output json
-        output.append(getOutput(reportDict))
+        output.append(getOutput(report_dict))
         for i in output:
-            i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
+            i["testcase_dict"]["steps"] = i["json_data"]["steps"]
             dict_ = {}
             dict_["testcases"] = {}
             dict_["OUTPUT_FOLDER"] = self.ouput_folder
-            dict_["miscData"] = {}
+            dict_["misc_data"] = {}
             tmp_dir = os.path.join(tempfile.gettempdir(), self.s_run_id + ".txt")
 
-            self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
-                i["testcaseDict"], ignore_index=True
+            self.DATA.testcase_details = self.DATA.testcase_details.append(
+                i["testcase_dict"], ignore_index=True
             )
-            # self.DATA.testcaseDetails = pd.concat([self.DATA.testcaseDetails, pd.DataFrame(list(i["testcaseDict"].items()))])
-            self.updateTestcaseMiscData(i["misc"], tc_run_id=i["testcaseDict"].get("tc_run_id"))
+            # self.DATA.testcaseDetails = pd.concat([self.DATA.testcaseDetails, pd.DataFrame(list(i["testcase_dict"].items()))])
+            self.updateTestcaseMiscData(i["misc"], tc_run_id=i["testcase_dict"].get("tc_run_id"))
             suite_data = self.DATA.getJSONData()
             if isinstance(suite_data, str):
                 suite_data = json.loads(suite_data)
+                print(suite_data)
             if isinstance(self.DATA.toSuiteJson(), str):
                 suite_temp = json.loads(self.DATA.toSuiteJson())
             if not os.path.exists(tmp_dir):
                 with open(tmp_dir, "w") as f:
                     dict_[self.s_run_id] = self.updateSuiteData(suite_data)
                     dict_["s_id"] = suite_temp["s_id"]
-                    dict_["miscData"] = suite_temp["miscData"]
-                    dict_["testcases"][i["testcaseDict"].get("tc_run_id")] = i["jsonData"]
+                    dict_["misc_data"] = suite_temp["misc_data"]
+                    dict_["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.write(json.dumps(dict_))
             else:
                 with open(tmp_dir, "r+") as f:
@@ -95,12 +96,12 @@ class Executor(testcaseReporter):
                     data = json.loads(data)
                     data[self.s_run_id] = self.updateSuiteData(suite_data, data[self.s_run_id])
                     data["s_id"] = suite_temp["s_id"]
-                    data["miscData"] = suite_temp["miscData"]
-                    data["testcases"][i["testcaseDict"].get("tc_run_id")] = i["jsonData"]
+                    data["misc_data"] = suite_temp["misc_data"]
+                    data["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.seek(0)
                     f.write(json.dumps(data))
 
-            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcaseDict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
+            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
             sys.stdout.close()
             os.rename(self.log_file, tmp_dir.split(".")[0] + "log")
 
@@ -166,7 +167,7 @@ class Executor(testcaseReporter):
         run_mode = "LINUX_CLI"
         if os.name == 'nt':
             run_mode = "WINDOWS"
-        SuiteDetails = {
+        Suite_details = {
             "s_run_id": self.data["S_RUN_ID"],
             "s_start_time": datetime.now(timezone.utc),
             "s_end_time": None,
@@ -180,10 +181,9 @@ class Executor(testcaseReporter):
             "initiated_by": self.data["USER_NAME"],
             "run_mode": run_mode,
         }
-        self.DATA.suiteDetail = self.DATA.suiteDetail.append(
-            SuiteDetails, ignore_index=True
+        self.DATA.suite_detail = self.DATA.suite_detail.append(
+            Suite_details, ignore_index=True
         )
-        # self.DATA.suiteDetail = pd.concat([self.DATA.suiteDetail, pd.DataFrame(list(SuiteDetails.items()))])
 
         
 
@@ -193,16 +193,16 @@ class Executor(testcaseReporter):
         """
         miscList = []
 
-        for miscData in misc:
+        for misc_data in misc:
             temp = {}
             # storing all the key in upper so that no duplicate data is stored
-            temp["key"] = miscData.upper()
-            temp["value"] = misc[miscData]
+            temp["key"] = misc_data.upper()
+            temp["value"] = misc[misc_data]
             temp["run_id"] = tc_run_id
             temp["table_type"] = "TESTCASE"
             miscList.append(temp)
 
-        self.DATA.miscDetails = self.DATA.miscDetails.append(
+        self.DATA.misc_details = self.DATA.misc_details.append(
             miscList, ignore_index=True
         )
 

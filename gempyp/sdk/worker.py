@@ -5,7 +5,7 @@ import configparser
 import psutil
 import sys
 from gempyp.engine import dataUpload
-from gempyp.reporter.reportGenerator import templateData
+from gempyp.reporter.reportGenerator import TemplateData
 
 
 def pid_running(pid):
@@ -19,15 +19,13 @@ def pid_running(pid):
 def create_report(data, s_run_id):
 
     data = json.loads(data)
-    jsonData = data[s_run_id]
+    json_data = data[s_run_id]
     testcaseData = data["testcases"]
     output_folder = data["OUTPUT_FOLDER"]
-    print(json.dumps(jsonData), "=========================")
-    print(testcaseData, "00000000000000000000000000000")
-    repJson, ouput_file_path = templateData().makeSuiteReport(json.dumps(jsonData), testcaseData, output_folder)
-    suite_data = jsonData["Suite_Details"]
+    repJson, ouput_file_path = TemplateData().makeSuiteReport(json.dumps(json_data), testcaseData, output_folder)
+    suite_data = json_data["Suite_Details"]
     suite_data["s_id"] = data["s_id"]
-    suite_data["miscData"] = data["miscData"]
+    suite_data["misc_data"] = data["misc_data"]
     username = suite_data["initiated_by"]
     del suite_data["TestCase_Details"]
     del suite_data["Testcase_Info"]

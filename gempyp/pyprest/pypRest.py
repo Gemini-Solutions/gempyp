@@ -66,7 +66,7 @@ class PypRest(Base):
             self.logger.error(traceback.print_exc())
             common.errorHandler(self.logger, e, "Error occured while running the testcas")
             error_dict = getError(e, self.data["config_data"])
-            error_dict["jsonData"] = self.reporter.serialize()
+            error_dict["json_data"] = self.reporter.serialize()
             return None, error_dict
     
     def run(self):

@@ -118,8 +118,8 @@ class TemplateData:
         index_path = os.path.join(os.path.split(index_path)[0], "testcase.html")
         with open(index_path, "r") as f:
             Result_data = f.read()
-        jsonData = self._toJSON()
-        return json.loads(jsonData)
+        json_data = self._toJSON()
+        return json.loads(json_data)
 
     def repSummary(self, repJson, output_file_path):
         """

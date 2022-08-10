@@ -96,7 +96,7 @@ class TestData:
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
         suite_dict["Testcase_Info"] = testcase_counts
-        suite_report["Suits_Details"] = suite_dict
+        suite_report["Suite_Details"] = suite_dict
         suite_report["reportProduct"] = "GEMPYP"        
 
         return json.dumps(suite_report, cls=dateTimeEncoder)
