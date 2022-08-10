@@ -338,12 +338,7 @@ class Engine:
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
                 if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-<<<<<<< HEAD
-                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-                
-=======
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
->>>>>>> 583215ade187e590ca1e7e275a42329eebb7fd92
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
 
@@ -509,26 +504,12 @@ class Engine:
         suite_path = os.path.dirname(__file__)
         suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
         with open(suite_path, "r") as f:
-<<<<<<< HEAD
-            suiteReport = f.read()
-
-        reportJson = self.DATA.getJSONData()
-        reportJson = json.loads(reportJson)
-        reportJson["TestStep_Details"] = self.testcaseData
-        self.repJson = reportJson
-
-        # self.testcaseData = json.dumps(self.testcaseData)
-        reportJson = json.dumps(reportJson)
-        suiteReport = suiteReport.replace("DATA_1", reportJson)
-
-=======
             suite_report = f.read()
         report_json = self.DATA.getJSONData()
         report_json = json.loads(report_json)
         report_json["TestStep_Details"] = self.testcase_data
         report_json = json.dumps(report_json)
         suite_report = suite_report.replace("DATA_1", report_json)
->>>>>>> 583215ade187e590ca1e7e275a42329eebb7fd92
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
         with open(ResultFile, "w+") as f:

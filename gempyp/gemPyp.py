@@ -18,16 +18,10 @@ class Gempyp:
         self.THREADS = None
         self.BRIDGE_TOKEN = None 
         self.OUTPUT_FOLDER = None
-<<<<<<< HEAD
         self.CATEGORY=None
         self.SET=None
         self.USERNAME=None
 
-
-=======
-        self.CATEGORY = None
-        self.SET = None
->>>>>>> 583215ade187e590ca1e7e275a42329eebb7fd92
     
     def argParser(self):
         """Argument parser to help running through CLI"""
