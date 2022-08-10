@@ -91,6 +91,8 @@ class templateData:
         """
         saves the report json 
         """
+        print(jsonData, "=========================")
+        print(testcaseData, "888888888888888888888888888888")
         suiteReport = None
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
 
@@ -105,7 +107,7 @@ class templateData:
         repJson = reportJson
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
-        suiteReport = suiteReport.replace("DATA", reportJson)
+        suiteReport = suiteReport.replace("DATA_1", reportJson)
 
         ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
         ouput_file_path = ResultFile
