@@ -9,11 +9,10 @@ from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
 import uuid
 from datetime import datetime, timezone
-# from tomlkit import date
-from gempyp.config.baseConfig import abstarctBaseConfig
-from gempyp.engine.testData import testData
+from gempyp.config.baseConfig import AbstarctBaseConfig
+from gempyp.engine.testData import TestData
 from gempyp.libs.enums.status import status
-from gempyp.reporter.reportGenerator import templateData
+from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
@@ -29,28 +28,27 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     calls the differnt executors based on the type of the data
     """
 
-    print("-------------- In Executor Factory --------------------\n")
-    # print("!!!!!!!!!!!!!!", data["configData"]["TYPE"])
+    print("--------- In Executor Factory ----------\n")
+
 
     if not custom_logger:
-        # log_path = os.path.join(os.environ.get('log_dir'),data['configData'].get('NAME') + '_'
-        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['configData'].get('NAME') + '_'
+        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.log')
         custom_logger = my_custom_logger(log_path)
-    data['configData']['LOGGER'] = custom_logger
-    if 'log_path' not in data['configData']:
-        data['configData']['LOG_PATH'] = log_path
+    data['config_data']['LOGGER'] = custom_logger
+    if 'log_path' not in data['config_data']:
+        data['config_data']['LOG_PATH'] = log_path
 
 
-    if "TYPE" not in data["configData"] or data["configData"].get("TYPE").upper() == "GEMPYP":
+    if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
         #custom_logger.setLevel(logging.INFO)
         return testcaseRunner(data)
 
-    elif data["configData"].get("TYPE").upper() == "DVM":
+    elif data["config_data"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
         logging.info("starting the DVM testcase")
-    elif data["configData"].get("TYPE").upper() == "PYPREST":
+    elif data["config_data"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
         custom_logger.info("starting the PYPREST testcase")
         try:
@@ -58,7 +56,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         except Exception as e:
             traceback.print_exc()
             print(e)
-            return None, getError(e, data["configData"])
+            return None, getError(e, data["config_data"])
 
 
 class Engine:
@@ -70,7 +68,7 @@ class Engine:
         # logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
 
-    def run(self, params_config: Type[abstarctBaseConfig]):
+    def run(self, params_config: Type[AbstarctBaseConfig]):
         """
         main method to call other methods that are required for report generation
         """
@@ -78,7 +76,7 @@ class Engine:
         # initialize the data class
         
 
-        self.DATA = testData()
+        self.DATA = TestData()
         # get the env for the engine Runner
         self.ENV = os.getenv("ENV_BASE", "BETA").upper()
         # initial SETUP
@@ -94,8 +92,8 @@ class Engine:
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
-        self.repJson, output_file_path = templateData().makeSuiteReport(self.DATA.getJSONData(), self.testcaseData, self.ouput_folder)
-        templateData().repSummary(self.repJson, output_file_path)
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcaseData, self.ouput_folder)
+        TemplateData().repSummary(self.repJson, output_file_path)
 
     def makeOutputFolder(self):
         """
@@ -103,9 +101,9 @@ class Engine:
         """
 
         logging.info("---------- Making output folders -------------")
-        report_folder_name = f"{self.projectName}_{self.project_env}"
-        if self.reportName:
-            report_folder_name = report_folder_name + f"_{self.reportName}"
+        report_folder_name = f"{self.project_name}_{self.project_env}"
+        if self.report_name:
+            report_folder_name = report_folder_name + f"_{self.report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if "OUTPUT_FOLDER" in self.PARAMS and self.PARAMS["OUTPUT_FOLDER"]:
@@ -125,15 +123,13 @@ class Engine:
         os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
         os.makedirs(self.testcase_log_folder)
 
-
-    def setUP(self, config: Type[abstarctBaseConfig]):
+    def setUP(self, config: Type[AbstarctBaseConfig]):
         """
         assigning values to some attributes which will be used in method makeSuiteDetails
         """
-        # method_list = inspect.getmembers(MyClass, predicate=inspect.ismethod)
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
-        self.testcaseData = {}
+        self.testcase_data = {}
         self.machine = platform.node()
         if("USERNAME" in self.PARAMS):
             self.user = self.PARAMS["USERNAME"]
@@ -142,8 +138,8 @@ class Engine:
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
-        self.projectName = self.PARAMS["PROJECT"]
-        self.reportName = self.PARAMS.get("REPORT_NAME")
+        self.project_name = self.PARAMS["PROJECT"]
+        self.report_name = self.PARAMS.get("REPORT_NAME")
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
@@ -164,28 +160,28 @@ class Engine:
         """
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
-        self.s_run_id = f"{self.projectName}_{self.project_env}_{self.unique_id}"
+        self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
         self.s_run_id = self.s_run_id.upper()
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         run_mode = "LINUX_CLI"
         if os.name == 'nt':
             run_mode = "WINDOWS"
-        SuiteDetails = {
+        suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
             "s_end_time": None,
             "status": status.EXE.name,
-            "project_name": self.projectName,
+            "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "report_type": self.reportName,
+            "report_type": self.report_name,
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
         }
-        self.DATA.suiteDetail = self.DATA.suiteDetail.append(
-            SuiteDetails, ignore_index=True
+        self.DATA.suite_detail = self.DATA.suite_detail.append(
+            suite_details, ignore_index=True
         )
 
     def start(self):
@@ -215,34 +211,31 @@ class Engine:
         """
 
         # get the status count of the status
-        statusDict = self.DATA.testcaseDetails["status"].value_counts().to_dict()
-        SuiteStatus = status.FAIL.name
+        status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
+        Suite_status = status.FAIL.name
 
         # based on the status priority
         for s in status:
-            if statusDict.get(s.name, 0) > 0:
-                SuiteStatus = s.name
-
-        stoptime = (
-            self.DATA.testcaseDetails["end_time"].sort_values(ascending=False).iloc[0]
+            if status_dict.get(s.name, 0) > 0:
+                Suite_status = s.name
+                break
+        stop_time = (
+            self.DATA.testcase_details["end_time"].sort_values(ascending=False).iloc[0]
         )
-        self.DATA.suiteDetail.at[0, "status"] = SuiteStatus
-        self.DATA.suiteDetail.at[0, "s_end_time"] = stoptime
+        self.DATA.suite_detail.at[0, "status"] = Suite_status
+        self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
 
     def startSequence(self):
         """
         start running the testcases in sequence
         """
-
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
-                # log_path = os.path.join(self.CONFIG.getSuiteConfig()['LOG_DIR'],
                 log_path = os.path.join(self.testcase_log_folder,
-                data['configData'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
+                data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
                 custom_logger = my_custom_logger(log_path)
-                data['configData']['log_path'] = log_path
-                #LoggingConfig(data['configData'].get('NAME')+'.log')
+                data['config_data']['log_path'] = log_path
                 output, error = executorFactory(data, custom_logger)
                 
                 if error:
@@ -269,30 +262,27 @@ class Engine:
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
-                poolList = []
+                pool_list = []
                 for testcase in testcases:
-                    #custom_logger = my_custom_logger(testcase.get("NAME")+'.log')
                     # only append testcases whose dependency are passed otherwise just update the database
                     if self.isDependencyPassed(testcase):
-                        poolList.append(self.getTestcaseData(testcase.get("NAME")))
+                        pool_list.append(self.getTestcaseData(testcase.get("NAME")))
                     else:
                         print("----------------here--------------------")
-                        dependencyError = {
+                        dependency_error = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
                             "product_type": testcase.get("PRODUCT_TYPE", None),
                         }
-                        ####### handle dependency error in jsondata(update_df)
-
+                        # handle dependency error in jsondata(update_df)
                         # update the testcase in the database with failed dependency
-                        self.update_df(None, dependencyError)
+                        self.update_df(None, dependency_error)
 
-                if len(poolList) == 0:
+                if len(pool_list) == 0:
                     continue
                 # runs the testcase in parallel here
-                results = pool.map(executorFactory, poolList)
-                # sys.exit()  
+                results = pool.map(executorFactory, pool_list)
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
@@ -333,32 +323,31 @@ class Engine:
 
                 i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
                 
-                testcaseDict = i["testcaseDict"]
+                testcase_dict = i["testcaseDict"]
                 try:
-                    """ update suite vars here from testcaseDict["suite_variables"] append it in the suite vars of _config"""
+                    """ update suite vars here from testcase_dict["suite_variables"] append it in the suite vars of _config"""
     
                     self.user_suite_variables.update(i.get("suite_variables", {}))
                     
-                    self.testcaseData[testcaseDict.get("tc_run_id")] = i["jsonData"]
+                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["jsonData"]
                 except Exception as e:
                     logging.error(e)
 
-                self.DATA.testcaseDetails = self.DATA.testcaseDetails.append(
-                    testcaseDict, ignore_index=True
+                self.DATA.testcase_details = self.DATA.testcase_details.append(
+                    testcase_dict, ignore_index=True
                 )
                 self.updateTestcaseMiscData(
-                    i["misc"], tc_run_id=testcaseDict.get("tc_run_id")
+                    i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
                 if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcaseDict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-
+                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
 
     def getErrorTestcase(
         self,
         message: str,
-        testcaseName: str,
+        testcase_name: str,
         category: str = None,
         product_type: str = None,
         log_path: str = None
@@ -368,28 +357,28 @@ class Engine:
         """
 
         result = {}
-        testcaseDict = {}
+        testcase_dict = {}
         misc = {}
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
-        tc_run_id = f"{testcaseName}_{self.project_env}_{self.unique_id}"
+        tc_run_id = f"{testcase_name}_{self.project_env}_{self.unique_id}"
         tc_run_id = tc_run_id.upper()
-        testcaseDict["tc_run_id"] = tc_run_id
-        testcaseDict["status"] = status.FAIL.name
-        testcaseDict["start_time"] = datetime.now(timezone.utc)
-        testcaseDict["end_time"] = datetime.now(timezone.utc)
-        testcaseDict["name"] = testcaseName
-        testcaseDict["ignore"] = False
+        testcase_dict["tc_run_id"] = tc_run_id
+        testcase_dict["status"] = status.FAIL.name
+        testcase_dict["start_time"] = datetime.now(timezone.utc)
+        testcase_dict["end_time"] = datetime.now(timezone.utc)
+        testcase_dict["name"] = testcase_name
+        testcase_dict["ignore"] = False
         if category:
-            testcaseDict["category"] = category
-        testcaseDict["log_file"] = log_path
-        testcaseDict["result_file"] = None
-        testcaseDict["user"] = self.user
-        testcaseDict["machine"] = self.machine
+            testcase_dict["category"] = category
+        testcase_dict["log_file"] = log_path
+        testcase_dict["result_file"] = None
+        testcase_dict["user"] = self.user
+        testcase_dict["machine"] = self.machine
         if product_type:
-            testcaseDict["product_type"] = product_type
+            testcase_dict["product_type"] = product_type
 
-        result["testcaseDict"] = testcaseDict
+        result["testcaseDict"] = testcase_dict
 
         misc["REASON_OF_FAILURE"] = message
 
@@ -401,19 +390,19 @@ class Engine:
         """
         updates the misc data for the testcases
         """
-        miscList = []
+        misc_list = []
 
-        for miscData in misc:
+        for misc_data in misc:
             temp = {}
             # storing all the key in upper so that no duplicate data is stored
-            temp["key"] = miscData.upper()
-            temp["value"] = misc[miscData]
+            temp["key"] = misc_data.upper()
+            temp["value"] = misc[misc_data]
             temp["run_id"] = tc_run_id
             temp["table_type"] = "TESTCASE"
-            miscList.append(temp)
+            misc_list.append(temp)
 
-        self.DATA.miscDetails = self.DATA.miscDetails.append(
-            miscList, ignore_index=True
+        self.DATA.misc_details = self.DATA.misc_details.append(
+            misc_list, ignore_index=True
         )
 
     def getTestcaseData(self, testcase: str) -> Dict:
@@ -421,8 +410,8 @@ class Engine:
         taking argument as the testcase name and  return
         """
         data = {}
-        data["configData"] = self.CONFIG.getTestcaseData(testcase)
-        data["PROJECTNAME"] = self.projectName
+        data["config_data"] = self.CONFIG.getTestcaseData(testcase)
+        data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
         data["S_RUN_ID"] = self.s_run_id
         data["USER"] = self.user
@@ -437,11 +426,11 @@ class Engine:
         Reverse toplogical sort
         """
 
-        adjList = {
+        adj_list = {
             key: list(set(list(value.get("DEPENDENCY", "").split(","))) - set([""])) for key, value in testcases.items()
         }
 
-        for key, value in adjList.items():
+        for key, value in adj_list.items():
             new_list = []
             for testcase in value:
                 testcase = testcase.split(":")
@@ -450,22 +439,21 @@ class Engine:
                 else:
                     new_list.append(testcase[0])
 
-            adjList[key] = set(new_list)
-        while adjList:
+            adj_list[key] = set(new_list)
+        while adj_list:
             top_dep = set(
-                i for dependents in list(adjList.values()) for i in dependents
-            ) - set(adjList.keys())
-            top_dep.update(key for key, value in adjList.items() if not value)
+                i for dependents in list(adj_list.values()) for i in dependents
+            ) - set(adj_list.keys())
+            top_dep.update(key for key, value in adj_list.items() if not value)
 
             if not top_dep:
                 logging.critical(
                     "circular dependency found please remove the cirular dependency"
                 )
                 logging.debug("possible testcase with circular dependencies")
-                # logging.error(adjList.keys())
                 sys.exit(1)
 
-            adjList = {key: value - top_dep for key, value in adjList.items() if value}
+            adj_list = {key: value - top_dep for key, value in adj_list.items() if value}
 
             result = []
             for key in testcases:
@@ -478,29 +466,29 @@ class Engine:
         cheks if the dependency is passed for the testcase or not
         """
 
-        ###### split on ','
+        # split on ','
         for dep in list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""])):
 
             dep_split = list(dep.split(":"))
 
             if len(dep_split) == 1:
-                ####### NAME to name, to_list()
-                if dep_split[0] not in self.DATA.testcaseDetails["name"].to_list():
+                # NAME to name, to_list()
+                if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
                     return False
 
             else:
                 if dep_split[0].upper() == "P":
-                    if dep_split[1] not in self.DATA.testcaseDetails["name"].to_list():
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
                         return False
-                    ####### way to parsing the df    
-                    if ((self.DATA.testcaseDetails[self.DATA.testcaseDetails["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
+                    # way to parsing the df    
+                    if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
                         return False
 
                 if dep_split[0].upper() == "F":
-                    if dep_split[1] not in self.DATA.testcaseDetails["name"].to_list():
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
                         return False
                     if (
-                        (self.DATA.testcaseDetails[self.DATA.testcaseDetails["name"] == dep_split[1]]['status'].iloc[0])
+                        (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
                         != status.FAIL.name
                     ):
                         return False

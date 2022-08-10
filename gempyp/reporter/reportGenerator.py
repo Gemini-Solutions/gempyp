@@ -9,17 +9,17 @@ from gempyp.libs.common import findDuration, dateTimeEncoder
 import traceback
 
 
-class templateData:
+class TemplateData:
     def __init__(self, header="Gemini Report"):
         # initliza the data to be stored as a JSON
         self.REPORTDATA = {"Header": header, "steps": []}
 
-    def newReport(self, projectName: str, tescaseName: str):
+    def newReport(self, project_name: str, tescase_name: str):
         metadata = []
         # 1st Column
         column1 = {
-            "TESTCASE NAME": tescaseName,
-            "SERVICE PROJECT": projectName,
+            "TESTCASE NAME": tescase_name,
+            "SERVICE PROJECT": project_name,
             "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"},
         }
         metadata.append(column1)
@@ -36,39 +36,40 @@ class templateData:
 
         self.REPORTDATA["steps"].append(step)
 
-    # finalize the result. Calulates duration etc.
+    # finalize the result. Calculates duration etc.
     def finalizeResult(
-        self, beginTime: datetime, endTime: datetime, statusCounts: Dict
+        self, begin_time: datetime, end_time: datetime, status_counts: Dict
     ):
         # column2
         column2 = {
-            "EXECUTION STARTED ON": {"value": beginTime, "type": "datetime"},
-            "EXECUTION ENDED ON": {"value": endTime, "type": "datetime"},
-            "EXECUTION DURATION": findDuration(beginTime, endTime),
+            "EXECUTION STARTED ON": {"value": begin_time, "type": "datetime"},
+            "EXECUTION ENDED ON": {"value": end_time, "type": "datetime"},
+            "EXECUTION DURATION": findDuration(begin_time, end_time),
         }
 
         # column3
-        column3 = {k.name: v for k, v in statusCounts.items()}
+        column3 = {k.name: v for k, v in status_counts.items()}
         self.REPORTDATA["metaData"].append(column2)
         self.REPORTDATA["metaData"].append(column3)
+        # filters
         self.REPORTDATA["FilterNames"] = self._getFilters()
-        filterValues = {}
-        filterValues["status"] = [value.name for value in statusCounts.keys()]
-        self.REPORTDATA["FilterValues"] = filterValues
+        filter_values = {}
+        filter_values["status"] = [value.name for value in status_counts.keys()]
+        self.REPORTDATA["FilterValues"] = filter_values
 
     def _getFilters(self) -> Dict:
         """
         return the unique columns
         """
 
-        filterNames = list(
+        filter_names = list(
             set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
         )
-        # filterNames.pop("status")
-        filterDict = {name: "Input" for name in filterNames}
-        filterDict["status"] = "Dropdown"
+        # filter_names.pop("status")
+        filter_dict = {name: "Input" for name in filter_names}
+        filter_dict["status"] = "Dropdown"
 
-        return filterDict
+        return filter_dict
 
     # Converts the data to the JSON
     def _toJSON(self) -> str:
@@ -76,9 +77,8 @@ class templateData:
         dump the data in REPORTDATA
         """
         try:
-            ResultData = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)
-
-            return ResultData
+            result_data = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)
+            return result_data
         except TypeError as error:
             logging.error("Error occured while serializing the testcase Result Data")
             logging.error(f"Error: {error}")
@@ -87,12 +87,10 @@ class templateData:
             logging.error(f"Error: {e}")
         return "Error"
     
-    def makeSuiteReport(self, jsonData, testcaseData, ouput_folder):
+    def makeSuiteReport(self, json_data, testcase_data, ouput_folder):
         """
         saves the report json 
         """
-        print(jsonData, "=========================")
-        print(testcaseData, "888888888888888888888888888888")
         suiteReport = None
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
 
@@ -101,9 +99,9 @@ class templateData:
         with open(suite_path, "r") as f:
             suiteReport = f.read()
 
-        reportJson = jsonData
+        reportJson = json_data
         reportJson = json.loads(reportJson)
-        reportJson["TestStep_Details"] = testcaseData
+        reportJson["TestStep_Details"] = testcase_data
         repJson = reportJson
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)

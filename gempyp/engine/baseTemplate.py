@@ -1,45 +1,45 @@
 from datetime import datetime, timezone
 from typing import Dict
 from gempyp.libs.enums.status import status
-from gempyp.reporter.reportGenerator import templateData
+from gempyp.reporter.reportGenerator import TemplateData
 
 
-class testcaseReporter:
+class TestcaseReporter:
     """the class need to be extended by all the testcases"""
 
-    def __init__(self, projectName: str = None, testcaseName: str = None):
+    def __init__(self, project_name: str = None, testcase_name: str = None):
         """initializes the reportfile to start making the report
-        :param projectName: The name of the project. Will be overidden by the name
+        :param project_name: The name of the project. Will be overidden by the name
                             present in the config if the config is given.
-        :param testcasename: testcase name. Will be overidden by the name present in the
+        :param testcase_name: testcase name. Will be overidden by the name present in the
                             config if the config is present.
         :param destructor: to call the destructor function if True. if False user have to manually call the function.
         :param extraColumns: any extra column required in the result file
         """
-        self.projectName = projectName.strip()
-        self.testcaseName = testcaseName.strip()
-        self.beginTime = datetime.now(timezone.utc)
-        self.endTime = None
-        self._miscData = {}
-        self.jsonData = None
-        self._isDestructorCalled = False
-        self.statusCount = {k: 0 for k in status}
-        self.templateData = templateData()
+        self.project_name = project_name.strip()
+        self.testcase_name = testcase_name.strip()
+        self.begin_time = datetime.now(timezone.utc)
+        self.end_time = None
+        self._misc_data = {}
+        self.json_data = None
+        self._is_destructor_called = False
+        self.status_count = {k: 0 for k in status}
+        self.template_data = TemplateData()
         self.logger = None
 
         # can be overiiden for custom result file
-        self.resultFileName = None
+        self.result_file_name = None
         # can be overiiden or will be automatically decided in the end
         self.status = None
 
         # starting the new Report
-        self.templateData.newReport(self.projectName, self.testcaseName)
+        self.template_data.newReport(self.project_name, self.testcase_name)
 
     def addMisc(self, key: str, value):
         """
         add the misc data to the report
         """
-        self._miscData[key] = value
+        self._misc_data[key] = value
 
     def getMisc(self, key: str):
         """
@@ -47,29 +47,29 @@ class testcaseReporter:
         returns none if no data is found
         """
 
-        return self._miscData.get(key, None)
+        return self._misc_data.get(key, None)
 
     def addRow(
         self,
-        testStep: str,
+        test_step: str,
         description: str,
         status: status,
         file: str = None,
-        linkName: str = "Click Here",
+        link_name: str = "Click Here",
         **kwargs,
     ):
         """
         add the new row to the file
         """
-        self.statusCount[status] += 1
+        self.status_count[status] += 1
 
         attachment = None
         if file:
             # link = self.addLink(file, linkName)
-            attachment = {"URL": file, "linkName": linkName}
+            attachment = {"URL": file, "linkName": link_name}
         # add the new row
-        self.templateData.newRow(
-            testStep, description, status.name, attachment=attachment, **kwargs
+        self.template_data.newRow(
+            test_step, description, status.name, attachment=attachment, **kwargs
         )
 
     def addLink(self, file: str, linkName: str):
@@ -80,53 +80,41 @@ class testcaseReporter:
 
         return f""" <a href='{file}'>{linkName}</a> """
 
-    def finalize_report(self):
+    def finalizeReport(self):
         """
         the destructor after the call addRow will not work
         """
         # only call the destructor once
-        if self._isDestructorCalled:
+        if self._is_destructor_called:
             return
-        self._isDestructorCalled = True
+        self._is_destructor_called = True
 
         if not self.status:
             self.status = self.findStatus()
-        self.endTime = datetime.now(timezone.utc)
-        for key in list(self.statusCount):
-            if self.statusCount[key] == 0:
-                del self.statusCount[key]
-        self.templateData.finalizeResult(self.beginTime, self.endTime, self.statusCount)
+        self.end_time = datetime.now(timezone.utc)
+        for key in list(self.status_count):
+            if self.status_count[key] == 0:
+                del self.status_count[key]
+        self.template_data.finalizeResult(self.begin_time, self.end_time, self.status_count)
 
     def findStatus(self):
 
         for i in status:
-            if self.statusCount[i] > 0:
+            if self.status_count[i] > 0:
                 return i.name
-
-        """
-        if self.statusCount[status.FAIL] > 0:
-            return status.FAIL
-        elif self.statusCount[status.WARN] > 0:
-            return status.WARN
-        elif self.statusCount[status.PASS] > 0:
-            return status.PASS
-        else:
-            return status.INFO
-        """
 
     def serialize(self) -> Dict:
         """
         serializing the data
         """
-        resultData = {}
-        resultData["NAME"] = self.testcaseName
-        resultData["PROJECTNAME"] = self.projectName
-        resultData["STATUS"] = self.status
-        resultData["RESULT_FILE"] = self.resultFileName
-        resultData["STEPS_COUNT"] = self.statusCount
-        resultData["MISC"] = self._miscData
-        resultData["START_TIME"] = self.beginTime
-        resultData["END_TIME"] = self.endTime
-        resultData["jsonData"] = self.jsonData
-
-        return resultData
+        result_data = {}
+        result_data["NAME"] = self.testcase_name
+        result_data["PROJECT_NAME"] = self.project_name
+        result_data["STATUS"] = self.status
+        result_data["RESULT_FILE"] = self.result_file_name
+        result_data["STEPS_COUNT"] = self.status_count
+        result_data["MISC"] = self._misc_data
+        result_data["START_TIME"] = self.begin_time
+        result_data["END_TIME"] = self.end_time
+        result_data["jsonData"] = self.json_data
+        return result_data

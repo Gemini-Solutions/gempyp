@@ -8,27 +8,23 @@ from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 from gempyp.libs.common import moduleImports
 
 
-def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
+def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     """
     actually imports the testcase files and call the run method
     """
-    logging.info("------------------ In testcase Runner --------------")
-    configData: Dict = testcaseMeta.get("configData")
-    logger = configData.get("LOGGER")
-    testcaseMeta.pop("configData")
+    logging.info("---------- In testcase Runner -----------")
+    config_data: Dict = testcase_meta.get("config_data")
+    logger = config_data.get("LOGGER")
+    testcase_meta.pop("config_data")
     try:
-        fileName = configData.get("PATH")
-        dynamicTestcase = moduleImports(fileName)
-        
-        print("-----------------------------------------------------------")
-
+        file_name = config_data.get("PATH")
+        dynamic_testcase = moduleImports(file_name)
         try:
-            # TODO update the confidData to contain some default values
+            # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
-            allClasses = inspect.getmembers(dynamicTestcase, inspect.isclass)
-            # print("!!!!!!!!!!! allclasses \n", allClasses, "\n!!!!!!!!!!!!!!")
+            all_classes = inspect.getmembers(dynamic_testcase, inspect.isclass)
 
-            for name, cls in allClasses:
+            for name, cls in all_classes:
                 # currently running only one class easily extensible to run multiple classes
                 # from single file
                 if (
@@ -37,15 +33,15 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
                 ):
 
                     print("------- In subclass check --------")
-                    ResultData = cls().RUN(cls, configData, **testcaseMeta)
+                    result_data = cls().RUN(cls, config_data, **testcase_meta)
 
                     break
             # testcase has successfully ran
-            # make the output Dictt
+            # make the output Dict
             output = []
-            for data in ResultData:
-                data["TESTCASEMETADATA"] = testcaseMeta
-                data["configData"] = configData
+            for data in result_data:
+                data["TESTCASEMETADATA"] = testcase_meta
+                data["configData"] = config_data
                 singleTestcase = getOutput(data)
                 
                 output.append(singleTestcase)
@@ -53,11 +49,11 @@ def testcaseRunner(testcaseMeta: Dict) -> Tuple[List, Dict]:
 
         except Exception as e:
             logger.error("Error occured while running the testcase: {e}".format(e=e))
-            return None, getError(e, configData)
+            return None, getError(e, config_data)
  
     except Exception as e:
         logger.error("Some Error occured while making the testcase: {e}".format(e=e))
-        return None, getError(e, configData)
+        return None, getError(e, config_data)
 
 def getOutput(data):
     tempdict = {}
@@ -99,16 +95,14 @@ def getOutput(data):
     singleTestcase["jsonData"] = data.get("jsonData")
     return singleTestcase
 
-def getError(error, configData: Dict) -> Dict:
+def getError(error, config_data: Dict) -> Dict:
     """
     returning the dictionary of error teatCase data
     """
-
     error = {}
-    error["testcase"] = configData.get("NAME")
+    error["testcase"] = config_data.get("NAME")
     error["message"] = str(error)
     error["product_type"] = "GEMPYP"
-    error["category"] = configData.get("CATEGORY", None)
-    error['log_path'] = configData.get('log_path', None)
-
+    error["category"] = config_data.get("CATEGORY", None)
+    error['log_path'] = config_data.get('log_path', None)
     return error
