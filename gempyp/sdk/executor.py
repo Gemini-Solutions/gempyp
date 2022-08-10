@@ -31,20 +31,19 @@ class Executor(testcaseReporter):
 
         path = __file__
         path = path.rsplit(os.sep, 1)[0]
-        if not os.getenv("PID"):
-            os.environ["PID"] = str(os.getpid())
-            subprocess.Popen([os.environ["_"], os.path.join(path, "worker.py")], shell=True)
         self.DATA = testData()
         # make suite details and upload it
         self.makeSuiteDetails()
-
-        try:
-            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGETOKEN"], self.data["USERNAME"]) # check with deamon, should insert only once
-            
-            logging.info("Suite data inserted")  # logging not working
-        except Exception as e:
-            print('ignore exception')
-            pass
+        if not os.getenv("PID"):
+            os.environ["PID"] = str(os.getpid())
+            subprocess.Popen([os.environ["_"], os.path.join(path, "worker.py")], shell=True)
+            try:
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"]) # check with deamon, should insert only once
+                
+                logging.info("Suite data inserted")  # logging not working
+            except Exception as e:
+                print(f"Exception occured - {e}")
+                pass
 
     def __del__(self):
         self.final()
@@ -101,7 +100,7 @@ class Executor(testcaseReporter):
                     f.seek(0)
                     f.write(json.dumps(data))
 
-            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcaseDict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGETOKEN"], self.data["USERNAME"])  # instead of output, I need to pass s_run id and  tc_run_id
+            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcaseDict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
             sys.stdout.close()
             os.rename(self.log_file, tmp_dir.split(".")[0] + "log")
 
@@ -116,8 +115,8 @@ class Executor(testcaseReporter):
         self.projectName = data["PROJECT"] = config_file['ReportSetting']["project"]
         self.testcaseName = data["NAME"] = self.getMethodName()
         self.env = data["ENV"] = config_file['ReportSetting'].get("env", "PROD")
-        data["USERNAME"] = config_file['ReportSetting'].get("username", getpass.getuser())
-        data["BRIDGETOKEN"] = config_file['ReportSetting'].get("bridgetoken", None)
+        data["USER_NAME"] = config_file['ReportSetting'].get("USER_NAME", getpass.getuser())
+        data["BRIDGE_TOKEN"] = config_file['ReportSetting'].get("BRIDGE_TOKEN", None)
         data["OUTPUT_FOLDER"] = config_file['ReportSetting'].get("outputfolder", None)
         data["MACHINE"] = platform.node()
         data["MAIL"] = config_file['ReportSetting'].get("mail", None)
@@ -133,7 +132,7 @@ class Executor(testcaseReporter):
             'PROJECTNAME': self.data["PROJECT"], 
             'ENV': self.data["ENV"], 
             'S_RUN_ID': self.data["S_RUN_ID"], 
-            'USER': self.data["USERNAME"], 
+            'USER': self.data["USER_NAME"], 
             'MACHINE': self.data["MACHINE"], 
             'OUTPUT_FOLDER': self.data["OUTPUT_FOLDER"]}
         return data
@@ -175,10 +174,10 @@ class Executor(testcaseReporter):
             "project_name": self.data["PROJECT"],
             "run_type": "ON DEMAND",
             "report_type": self.data["REPORT_TYPE"],
-            "user": self.data["USERNAME"],
+            "user": self.data["USER_NAME"],
             "env": self.data["ENV"],
             "machine": self.data["MACHINE"],
-            "initiated_by": self.data["USERNAME"],
+            "initiated_by": self.data["USER_NAME"],
             "run_mode": run_mode,
         }
         self.DATA.suiteDetail = self.DATA.suiteDetail.append(
