@@ -177,6 +177,7 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
+            "testcase_analytics": None,
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -210,6 +211,8 @@ class Engine:
 
         # get the status count of the status
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
+        total = sum(status_dict.values())
+        status_dict["TOTAL"] = total
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -222,6 +225,7 @@ class Engine:
         )
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
+        self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
 
     def startSequence(self):
         """
