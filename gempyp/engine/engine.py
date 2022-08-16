@@ -178,6 +178,7 @@ class Engine:
             "initiated_by": self.user,
             "run_mode": run_mode,
             "testcase_analytics": None,
+            "framework_name": "GEMPYP"  # later this will be dynamic( GEMPYP-PR for pyprest)
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
