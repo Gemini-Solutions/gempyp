@@ -78,8 +78,19 @@ class TestData:
                 print("--- misc key", miscs.get("key", None))             
                 test_data[miscs["key"]] = miscs["value"]
 
-        meta_data = [{"TESTCASE NAME": test_data["name"], "SERVICE PROJECT": "None", "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"}}, 
-        {"EXECUTION STARTED ON": test_data["start_time"], "EXECUTION ENDED ON": test_data["end_time"], "EXECUTION DURATION": findDuration(test_data["start_time"], test_data["end_time"])}, test_status]
+        meta_data = [
+            {
+                "TESTCASE NAME": test_data["name"], 
+                "SERVICE PROJECT": "None", 
+                "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"}
+            }, 
+            {
+                "EXECUTION STARTED ON": {"value": test_data["start_time"], "type": "datetime"},
+                "EXECUTION ENDED ON": {"value": test_data["end_time"], "type": "datetime"}, 
+                "EXECUTION DURATION": findDuration(test_data["start_time"], test_data["end_time"])
+            }, 
+            test_status]
+
 
         test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
