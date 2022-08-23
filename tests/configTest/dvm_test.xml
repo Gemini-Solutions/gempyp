@@ -7,8 +7,8 @@
         <report_name>testcase</report_name>
         <mode>sequence</mode>
         <env>prod</env>
-        <bridge_token>189d848f-edfc-43e9-a6ae-02005c2445fd1657018525269</bridge_token>
-        <username>arpit.mishra</username>
+        <bridge_token>90f0c2c3-3781-4a63-81a1-bec51fb879a31661233041108</bridge_token>
+        <username>sachin.garg</username>
     </suite>
 
     <testcases>
@@ -17,22 +17,17 @@
             <name>testcase_except_</name>
             <category>sample</category>
             <run_flag>Y</run_flag>
-            <db>sql</db>
             <location>test</location>
-            <db_config_path>C:\Users\sa.chand\Desktop\vt2\gempyp\gempyp\config.ini</db_config_path>
+            <db_config_path>C:\Users\sa.chand\Desktop\vt2\gempyp\gempyp\config.conf</db_config_path>
             <type>dvm</type>
-            <db>mysql</db>
-        </testcase>
-        <testcase>
+            <database>mysql</database>
+            <source_sql>SELECT * from new_table</source_sql>
+            <target_sql>SELECT * from table2</target_sql>
+            <source_db>source1</source_db>
+            <target_db>target1</target_db>
+            <keys>player</keys>
 
-            <name>testcase</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <db>sql</db>
-            <location>test</location>
-            <db_config_path>C:\Users\sa.chand\Desktop\vt2\gempyp\gempyp\config.ini</db_config_path>
-            <type>dvm</type>
-            <db>mysql</db>
+
         </testcase>
     </testcases>
 </data>

@@ -12,32 +12,33 @@ def writeToReport(dvm_obj):
     creates the testcase report if the runmode is debug mode,
     Creates the dictionary that is to be sent to gempyp"""
     result = {}
-    if not dvm_obj.reporter.resultFileName:
+    if not dvm_obj.reporter.result_file_name:
         try:
             try:
-                dvm_obj.reporter.finalize_report()   ## need to test
+                dvm_obj.reporter.finalizeReport()   ## need to test
                 if dvm_obj.data.get("OUTPUT_FOLDER", dvm_obj.default_report_path) is None:
                     os.makedirs(dvm_obj.data.get("OUTPUT_FOLDER", dvm_obj.default_report_path))
             except Exception as e:
                 dvm_obj.logger.info(traceback.print_exc())
-            dvm_obj.reporter.jsonData = dvm_obj.reporter.templateData.makeReport(
-                dvm_obj.data.get("OUTPUT_FOLDER"), dvm_obj.reporter.testcaseName + str(time.time()))
-            dvm_obj.jsonData = dvm_obj.reporter.jsonData
+            dvm_obj.reporter.json_data = dvm_obj.reporter.template_data.makeReport()
+            dvm_obj.json_data = dvm_obj.reporter.json_data
             result = dvm_obj.reporter.serialize()
-
         except Exception as e:
             # dvm_obj.logger.info(traceback.print_exc())
             traceback.print_exc()
+    result = dvm_obj.reporter.serialize()
     output = []
     tempdict = {} 
     tc_run_id = f"{dvm_obj.tcname}_{uuid.uuid4()}"
     tempdict["tc_run_id"] = tc_run_id
+    print("tc_run_id=",tc_run_id)
     tempdict["name"] = result["NAME"]
     tempdict["category"] = dvm_obj.category
     tempdict["status"] = result["STATUS"]
     tempdict["user"] = dvm_obj.data.get("USER")
     tempdict["machine"] = dvm_obj.data.get("MACHINE")
     tempdict["product_type"] = "DVM"
+    tempdict["steps"] = result["jsonData"]['steps']
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
@@ -50,12 +51,12 @@ def writeToReport(dvm_obj):
 
     # getting the log file ( the custom gempyp logger)
     
-    tempdict["log_file"] = dvm_obj.data.get("LOG_PATH", "N.A")
+    tempdict["log_file"] = dvm_obj.configData.get("log_path","N.A")
 
     singleTestcase = {}
     singleTestcase["testcaseDict"] = tempdict
     singleTestcase["misc"] = result.get("MISC")
-    singleTestcase["jsonData"] = dvm_obj.jsonData
+    singleTestcase["jsonData"] = dvm_obj.json_data
     output.append(singleTestcase)
     
     return output
