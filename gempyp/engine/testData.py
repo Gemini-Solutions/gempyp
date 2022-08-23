@@ -1,7 +1,8 @@
 import pandas as pd
 import traceback
 import json
-from gempyp.libs.common import dateTimeEncoder
+from gempyp.libs.common import dateTimeEncoder, findDuration
+from datetime import datetime, timezone
 
 
 class TestData:
@@ -20,6 +21,8 @@ class TestData:
             "result_file",
             "product_type",
             "ignore",
+            "miscData",
+            "userDefinedData",
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -61,8 +64,41 @@ class TestData:
         test_data = test_data.to_dict(orient="records")[0]
         misc_data = self.misc_details.loc[self.misc_details["run_id"].str.upper() == tc_run_id]
         misc_data = misc_data.to_dict(orient="records")
+        test_status = {}
+        for step in test_data["steps"]:
+            key = step.get("status")
+            if test_status.get(key, None) is not None:
+                test_status.get(key) + 1
+            else:
+                test_status[key] = 1
+        test_status["TOTAL"] = sum(test_status.values())
 
-        test_data["misc_data"] = misc_data
+        test_data["userDefinedData"] = dict()
+        """ Adding misc data to userDefinedData column for each testcase
+        Here misc data is only for one testcase.
+        {"key1": "value1", "key2": "value2"...}"""
+        if len(misc_data) > 0:
+            for miscs in misc_data:
+                print("--- misc key", miscs.get("key", None))
+                key = str(miscs["key"])
+                val = str(miscs["value"])
+                test_data["userDefinedData"][key] = val
+
+        meta_data = [
+            {
+                "TESTCASE NAME": test_data["name"], 
+                "SERVICE PROJECT": "None", 
+                "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"}
+            }, 
+            {
+                "EXECUTION STARTED ON": {"value": test_data["start_time"], "type": "datetime"},
+                "EXECUTION ENDED ON": {"value": test_data["end_time"], "type": "datetime"}, 
+                "EXECUTION DURATION": findDuration(test_data["start_time"], test_data["end_time"])
+            }, 
+            test_status]
+
+
+        test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
         return json.dumps(test_data, cls=dateTimeEncoder)
 
