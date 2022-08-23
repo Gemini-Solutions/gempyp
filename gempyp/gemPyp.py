@@ -1,7 +1,7 @@
 from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
-from tests.sample_testcase.GitLinkXML import fetchBridgeToken
+from gempyp.config.GitLinkXML import fetchBridgeToken
 
 class Gempyp:
     def __init__(self):
@@ -49,7 +49,7 @@ class Gempyp:
         """
         if("GIT" in self.config):
             list_url=self.config.split(":")
-            config=XmlConfig(fetchBridgeToken(list_url[2],list_url[-1]))
+            config=XmlConfig(fetchBridgeToken(list_url[2],list_url[3],list_url[4],list_url[5]))
         else:
             config = XmlConfig(self.config)
         if not self.args:
