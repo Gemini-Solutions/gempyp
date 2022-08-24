@@ -94,7 +94,16 @@ class PostAssertion:
                         if "Some keys are missing in Response, " not in self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"]:
                             self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"] += "Some keys are missing in Response, "   
                 else:
+                    # logger.warning(f"response json:  {response_json}\n\n")
+                    logger.warning(f"key_part_list :  {key_part_list}\n\n")
+                    logger.warning(f"result:  {result}\n\n")
+                    logger.warning(f"keyvaldict:  {key_val_dict}\n\n")
                     key_val_dict = utils.fetchValueOfKey(response_json, key_part_list, result, key_val_dict)
+                    logger.warning("after changes::  ")
+                    # logger.warning(f"response json:  {response_json}\n\n")
+                    logger.warning(f"key_part_list :  {key_part_list}\n\n")
+                    logger.warning(f"result:  {result}\n\n")
+                    logger.warning(f"keyvaldict:  {key_val_dict}\n\n")
             self.postAssertionFunc(key_val_dict, assertion_list)
 
     def getAssertionDict(self, string_list):     

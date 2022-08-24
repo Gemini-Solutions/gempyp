@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import traceback
 from typing import Dict
 import logging
-from unicodedata import category
+
 
 class AbstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):

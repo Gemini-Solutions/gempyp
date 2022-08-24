@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import os
 import traceback
 import time
@@ -28,7 +29,8 @@ class PypRest(Base):
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
-
+        self.isLegacyPresent = self.isLegacyPresent()
+        self.logger.warning(f"is legacy present: {self.isLegacyPresent} ")
 
 
         # set vars
@@ -143,13 +145,16 @@ class PypRest(Base):
         self.password = self.data["config_data"].get("PASSWORD", None)
 
         #get values of mandatory keys of legacy apis
-        if len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
+        if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
             self.legacy_api = self.data["config_data"]["LEGACY_API"].strip(" ")
             self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
             self.legacy_headers = json.loads(self.data["config_data"].get("LEGACY_HEADERS", {}))
             self.legacy_body = json.loads(self.data["config_data"].get("LEGACY_BODY", {}))  
-            self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")  
+            self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
+            self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
+            self.logger.warning(f"auth type: {self.legacy_auth_type}")
         #setting variables and variable replacement
+
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
     
@@ -222,7 +227,8 @@ class PypRest(Base):
                     self.logResponse()
                 elif str(e) == "abort":
                     raise Exception("abort")
-                traceback.print_exc()
+                if self.isLegacyPresent:
+                    traceback.print_exc()
         except Exception as e:
             if str(e) == "abort":
                 raise Exception("abort")
@@ -491,4 +497,27 @@ class PypRest(Base):
             code_list = [exp_status_code_string.strip("'").strip(" ").strip('"')]
         code_list = [int(each.strip(" ")) for each in code_list if each not in ["", " "]]
         return code_list
+    
+    def isLegacyPresent(self):
+        if self.data["config_data"].get("LEGACY_API") is not None:
+            if self.data["config_data"].get("LEGACY_METHOD") is not None:
+                if json.loads(self.data["config_data"].get("LEGACY_HEADERS")) is not None:
+                        if json.loads(self.data["config_data"].get("LEGACY_BODY")) is not None:
+                            if self.data["config_data"].get("LEGACY_EXPECTED_STATUS_CODE") is not None:
+                                if self.data["config_data"].get("LEGACY_AUTHENTICATION", "") is not None:
+                                    return True
+                                else:
+                                    return False
+                            else:
+                                return False
+                        else:
+                            return False
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+    
+
 

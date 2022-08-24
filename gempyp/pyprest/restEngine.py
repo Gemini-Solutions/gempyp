@@ -68,6 +68,6 @@ class REngine:
 
 
 if __name__ == "__main__":
-    config = XmlConfig('C:\\Users\\an.pandey\\gempyp\\tests\\configTest\\sampleTest_pyprest.xml')
-    tcname = "GOREST"
+    config = XmlConfig('C:\\Users\\ar.mishra\\gempyp\\tests\\configTest\\legacy_test.xml')
+    tcname = "Legacy- Execution-GET"
     REngine(data=config, tcname=tcname)
