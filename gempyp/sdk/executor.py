@@ -22,11 +22,12 @@ from gempyp.libs.enums.status import status
 
 
 class Executor(TestcaseReporter):
-    def __init__(self):
-        self.log_file = tempfile.gettempdir() + "logs.log"
-        sys.stdout = sys.stderr =  open(self.log_file, 'w')
+    def __init__(self, **kwargs):
+        self.method = kwargs.get("tc_name", self.getMethodName())
+        #self.log_file = tempfile.gettempdir() + "logs.log"
+        #sys.stdout = sys.stderr =  open(self.log_file, 'w')
+        logging.info("inside constructor here--------------------")
         self.data = self.getTestcaseData()
-        self.makeOutputFolder()
         self.reporter = TestcaseReporter(self.data["PROJECT"], self.data["NAME"])
 
         path = __file__
@@ -35,6 +36,7 @@ class Executor(TestcaseReporter):
         # make suite details and upload it
         self.makeSuiteDetails()
         if not os.getenv("PID"):
+            self.makeOutputFolder()
             os.environ["PID"] = str(os.getpid())
             subprocess.Popen([os.environ["_"], os.path.join(path, "worker.py")], shell=True)
             try:
@@ -68,9 +70,10 @@ class Executor(TestcaseReporter):
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
             dict_ = {}
             dict_["testcases"] = {}
-            dict_["OUTPUT_FOLDER"] = self.ouput_folder
+            dict_["OUTPUT_FOLDER"] = os.getenv("OUTPUT_FOLDER")
             dict_["misc_data"] = {}
             tmp_dir = os.path.join(tempfile.gettempdir(), self.s_run_id + ".txt")
+            
 
             self.DATA.testcase_details = self.DATA.testcase_details.append(
                 i["testcase_dict"], ignore_index=True
@@ -80,7 +83,6 @@ class Executor(TestcaseReporter):
             suite_data = self.DATA.getJSONData()
             if isinstance(suite_data, str):
                 suite_data = json.loads(suite_data)
-                print(suite_data)
             if isinstance(self.DATA.toSuiteJson(), str):
                 suite_temp = json.loads(self.DATA.toSuiteJson())
             if not os.path.exists(tmp_dir):
@@ -102,19 +104,20 @@ class Executor(TestcaseReporter):
                     f.write(json.dumps(data))
 
             dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
-            sys.stdout.close()
-            os.rename(self.log_file, tmp_dir.split(".")[0] + "log")
+            # sys.stdout.close()
+            # os.rename(self.log_file, tmp_dir.rsplit(".")[0] + "log")
 
     def getTestcaseData(self):
         config_file = configparser.ConfigParser()
         directory_path = os.getcwd()
+
         if not os.path.exists(directory_path + os.sep + "gempyp.conf"):
             print("Config file is missing. Aborting  gempyp report......")
             sys.exit()
         config_file.read("gempyp.conf")
         data = {}
         self.projectName = data["PROJECT"] = config_file['ReportSetting']["project"]
-        self.testcaseName = data["NAME"] = self.getMethodName()
+        self.testcaseName = data["NAME"] = self.method
         self.env = data["ENV"] = config_file['ReportSetting'].get("env", "PROD")
         data["USER_NAME"] = config_file['ReportSetting'].get("USER_NAME", getpass.getuser())
         data["BRIDGE_TOKEN"] = config_file['ReportSetting'].get("BRIDGE_TOKEN", None)
@@ -144,10 +147,10 @@ class Executor(TestcaseReporter):
             callframe = inspect.getouterframes(currframe, 2)
             count = -1
             while count < 0:
-                if callframe[count][3] != '<module>':
-                    method = callframe[count][3]
-                    filename = callframe[count][1].split(os.sep)[-1].split(".")[0]
-                    method = callframe[count][3] + "_" + filename
+                if callframe[2][3] != '<module>':
+                    # method = callframe[2][3]
+                    filename = callframe[2][1].split(os.sep)[-1].split(".")[0]
+                    method = callframe[2][3] + "_" + filename
                     break
                 count = (count - 1)%(-len(callframe))
         except Exception as e:
@@ -226,6 +229,7 @@ class Executor(TestcaseReporter):
             self.ouput_folder = os.path.join(
                 home, "gempyp_reports", report_folder_name
             )
+        os.environ["OUTPUT_FOLDER"] = self.ouput_folder
 
         os.makedirs(self.ouput_folder)
 
@@ -233,13 +237,13 @@ class Executor(TestcaseReporter):
         """
         updates the suiteData after all the runs have been executed
         """
-        start_time = current_data["Suite_Details"]["s_start_time"]
-        end_time = current_data["Suite_Details"]["TestCase_Details"][0]["end_time"]
-        testcaseData = current_data["Suite_Details"]["TestCase_Details"]
+        start_time = current_data["Suits_Details"]["s_start_time"]
+        end_time = current_data["Suits_Details"]["TestCase_Details"][0]["end_time"]
+        testcaseData = current_data["Suits_Details"]["TestCase_Details"]
         if old_data:
-            testcaseData = (old_data["Suite_Details"]["TestCase_Details"]
-             + current_data["Suite_Details"]["TestCase_Details"])
-            start_time = old_data["Suite_Details"]["s_start_time"]
+            testcaseData = (old_data["Suits_Details"]["TestCase_Details"]
+             + current_data["Suits_Details"]["TestCase_Details"])
+            start_time = old_data["Suits_Details"]["s_start_time"]
         statusDict = {k.name: 0 for k in status}
         for i in testcaseData:
             statusDict[i["status"]] += 1
@@ -251,10 +255,10 @@ class Executor(TestcaseReporter):
             if statusDict.get(s.name, 0) > 0:
                 SuiteStatus = s.name
 
-        current_data["Suite_Details"]["status"] = SuiteStatus
-        current_data["Suite_Details"]["TestCase_Details"] = testcaseData
-        current_data["Suite_Details"]["s_start_time"] = start_time
-        current_data["Suite_Details"]["s_end_time"] = end_time
+        current_data["Suits_Details"]["status"] = SuiteStatus
+        current_data["Suits_Details"]["TestCase_Details"] = testcaseData
+        current_data["Suits_Details"]["s_start_time"] = start_time
+        current_data["Suits_Details"]["s_end_time"] = end_time
         count = 0
         for key in list(statusDict.keys()):
             if statusDict[key] == 0:
@@ -262,6 +266,6 @@ class Executor(TestcaseReporter):
             else:
                 count += statusDict[key]
         statusDict["Total"] = count
-        current_data["Suite_Details"]["Testcase_Info"] = statusDict
+        current_data["Suits_Details"]["Testcase_Info"] = statusDict
 
         return current_data

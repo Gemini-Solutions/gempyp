@@ -23,7 +23,7 @@ def create_report(data, s_run_id):
     testcaseData = data["testcases"]
     output_folder = data["OUTPUT_FOLDER"]
     repJson, ouput_file_path = TemplateData().makeSuiteReport(json.dumps(json_data), testcaseData, output_folder)
-    suite_data = json_data["Suite_Details"]
+    suite_data = json_data["Suits_Details"]
     suite_data["s_id"] = data["s_id"]
     suite_data["misc_data"] = data["misc_data"]
     username = suite_data["initiated_by"]
