@@ -51,15 +51,14 @@ class TemplateData:
         self.REPORTDATA["metaData"].append(column2)
         self.REPORTDATA["metaData"].append(column3)
         # filters
-        self.REPORTDATA["FilterNames"] = self._getFilters()
-        filter_values = {}
-        filter_values["status"] = [value.name for value in status_counts.keys()]
-        self.REPORTDATA["FilterValues"] = filter_values
+        # self.REPORTDATA["FilterNames"] = self._getFilters()
+        # filter_values = {}
+        # filter_values["status"] = [value.name for value in status_counts.keys()]
+        # self.REPORTDATA["FilterValues"] = filter_values
 
-    def _getFilters(self) -> Dict:
-        """
-        return the unique columns
-        """
+    """def _getFilters(self) -> Dict:
+        
+        # return the unique columns
 
         filter_names = list(
             set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
@@ -68,7 +67,7 @@ class TemplateData:
         filter_dict = {name: "Input" for name in filter_names}
         filter_dict["status"] = "Dropdown"
 
-        return filter_dict
+        return filter_dict"""
 
     # Converts the data to the JSON
     def _toJSON(self) -> str:
@@ -95,4 +94,3 @@ class TemplateData:
         # TODO
         jsonData = self._toJSON()
         return json.loads(jsonData)
-

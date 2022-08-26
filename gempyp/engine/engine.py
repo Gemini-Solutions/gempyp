@@ -141,6 +141,7 @@ class Engine:
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
+        self.report_info = self.PARAMS.get("REPORT_INFO")
         
 
         #add suite_vars here 
@@ -177,6 +178,9 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
+            "testcase_analytics": None,
+            "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
+            "report_name": self.report_info
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -210,6 +214,8 @@ class Engine:
 
         # get the status count of the status
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
+        total = sum(status_dict.values())
+        status_dict["TOTAL"] = total
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -222,6 +228,7 @@ class Engine:
         )
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
+        self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
 
     def startSequence(self):
         """
