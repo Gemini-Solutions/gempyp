@@ -58,7 +58,6 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
             return PypRest(data).restEngine()
         except Exception as e:
             traceback.print_exc()
-            print(e)
             return None, getError(e, data["config_data"])
 
 
@@ -283,7 +282,7 @@ class Engine:
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
-                            "product_type": testcase.get("PRODUCT_TYPE", None),
+                            "product type": testcase.get("product type", None),
                         }
                         # handle dependency error in jsondata(update_df)
                         # update the testcase in the database with failed dependency
@@ -293,6 +292,7 @@ class Engine:
                     continue
                 # runs the testcase in parallel here
                 results = pool.map(executorFactory, pool_list)
+                print(results)
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
@@ -326,7 +326,7 @@ class Engine:
                     error["message"],
                     error["testcase"],
                     error.get("category"),
-                    error.get("product_type"),
+                    error.get("product type"),
                     error.get('log_path', None)
                 )
                 output = [output]
@@ -388,11 +388,11 @@ class Engine:
         testcase_dict["user"] = self.user
         testcase_dict["machine"] = self.machine
         if product_type:
-            testcase_dict["product_type"] = product_type
+            testcase_dict["product type"] = product_type
 
         result["testcaseDict"] = testcase_dict
 
-        misc["REASON_OF_FAILURE"] = message
+        misc["REASON OF FAILURE"] = message
 
         result["misc"] = misc
 

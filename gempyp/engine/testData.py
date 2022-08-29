@@ -21,7 +21,7 @@ class TestData:
             "user",
             "machine",
             "result_file",
-            "product_type",
+            "product type",
             "ignore",
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]

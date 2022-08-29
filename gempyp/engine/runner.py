@@ -57,7 +57,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
                 tempdict["status"] = data["STATUS"]
                 tempdict["user"] = testcase_meta["USER"]
                 tempdict["machine"] = testcase_meta["MACHINE"]
-                tempdict["product_type"] = "GEMPYP"
+                tempdict["product type"] = "GEMPYP"
                 tempdict["result_file"] = data["RESULT_FILE"]
                 tempdict["start_time"] = data["START_TIME"]
                 tempdict["end_time"] = data["END_TIME"]
@@ -98,7 +98,7 @@ def getError(error, config_data: Dict) -> Dict:
     error = {}
     error["testcase"] = config_data.get("NAME")
     error["message"] = str(error)
-    error["product_type"] = "GEMPYP"
+    error["product type"] = "GEMPYP"
     error["category"] = config_data.get("CATEGORY", None)
     error['log_path'] = config_data.get('log_path', None)
     return error
