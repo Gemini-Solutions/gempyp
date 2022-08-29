@@ -45,7 +45,6 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
 
     if DefaultSettings.count > 3:
         logging.warning("Incorrect bridgetoken/username or APIs are down. Skipping Data upload.")
-        # sys.exit()
         return None
     
     response = requests.request(
@@ -57,8 +56,5 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     if response.status_code != 200 and response.status_code != 201:
         DefaultSettings.count += 1
         logging.info("Data not uploaded...........")
-
     logging.info(f"status: {response.status_code}")
-    # response.raise_for_status()
-
     return response

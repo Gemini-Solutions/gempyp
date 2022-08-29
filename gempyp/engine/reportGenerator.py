@@ -50,17 +50,15 @@ class TemplateData:
         column3 = {k.name: v for k, v in status_counts.items()}
         self.REPORTDATA["metaData"].append(column2)
         self.REPORTDATA["metaData"].append(column3)
-        # print("----------- steps", self.REPORTDATA["steps"])
         # filters
-        self.REPORTDATA["FilterNames"] = self._getFilters()
-        filter_values = {}
-        filter_values["status"] = [value.name for value in status_counts.keys()]
-        self.REPORTDATA["FilterValues"] = filter_values
+        # self.REPORTDATA["FilterNames"] = self._getFilters()
+        # filter_values = {}
+        # filter_values["status"] = [value.name for value in status_counts.keys()]
+        # self.REPORTDATA["FilterValues"] = filter_values
 
-    def _getFilters(self) -> Dict:
-        """
-        return the unique columns
-        """
+    """def _getFilters(self) -> Dict:
+        
+        # return the unique columns
 
         filter_names = list(
             set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
@@ -69,7 +67,7 @@ class TemplateData:
         filter_dict = {name: "Input" for name in filter_names}
         filter_dict["status"] = "Dropdown"
 
-        return filter_dict
+        return filter_dict"""
 
     # Converts the data to the JSON
     def _toJSON(self) -> str:
@@ -78,7 +76,6 @@ class TemplateData:
         """
         try:
             result_data = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)
-
             return result_data
         except TypeError as error:
             logging.error("Error occured while serializing the testcase Result Data")
@@ -88,18 +85,12 @@ class TemplateData:
             logging.error(f"Error: {e}")
         return "Error"
 
-    def makeReport(self, Result_Folder, name):
+    def makeReport(self):
         """
         creates the html report and save it in the file
         currently not in use
         """
         # for now do this will change to a better solution
         # TODO
-        Result_data = ""
-        index_path = os.path.dirname(__file__)
-        index_path = os.path.join(os.path.split(index_path)[0], "testcase.html")
-        with open(index_path, "r") as f:
-            Result_data = f.read()
         jsonData = self._toJSON()
         return json.loads(jsonData)
-

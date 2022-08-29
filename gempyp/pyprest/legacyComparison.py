@@ -71,8 +71,8 @@ class legacyApiComparison:
                                 else:
                                     self.reporter.addRow("Comparing | Record Count of both responses", "Record Count MissMatch", status.FAIL, CURRENT_API="Record Count: {}".format(len(self.current_response_body)), LEGACY_API="Record Count: {}".format(len(self.legacy_response_body)))
                                     
-                                    if "Record Count Missmatch, " not in self.reporter._miscData["REASON_OF_FAILURE"]:  
-                                        self.reporter._miscData["REASON_OF_FAILURE"] += "Record Count Missmatch, "
+                                    if "Record Count Missmatch, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:  
+                                        self.reporter._misc_data["REASON_OF_FAILURE"] += "Record Count Missmatch, "
                             
                             elif isinstance(self.current_response_body,dict) and isinstance(self.legacy_response_body,dict):
                                 compareResponses(self.reporter, self.current_response_body, self.legacy_response_body)
@@ -85,8 +85,8 @@ class legacyApiComparison:
                             current_desc = f"<b>LIST OF KEYS IN CURRENT RESPONSE:</b> {self.current_response_keys}"
                             self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                             
-                            if "Set of keys do not match, " not in self.reporter._miscData["REASON_OF_FAILURE"]:  
-                                        self.reporter._miscData["REASON_OF_FAILURE"] += "Set of keys do not match, "
+                            if "Set of keys do not match, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:  
+                                        self.reporter._misc_data["REASON_OF_FAILURE"] += "Set of keys do not match, "
                     
                     else:
                         title = "Comparing Count of keys in responses"
@@ -96,8 +96,8 @@ class legacyApiComparison:
                         current_desc = f"<b>NUMBER OF KEYS IN CURRENT RESPONSE:</b> {len(self.current_response_keys)}"
                         self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                         
-                        if "Key Count MissMatch, " not in self.reporter._miscData["REASON_OF_FAILURE"]:  
-                                        self.reporter._miscData["REASON_OF_FAILURE"] += "Key Count MissMatch, "
+                        if "Key Count MissMatch, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:  
+                                        self.reporter._misc_data["REASON_OF_FAILURE"] += "Key Count MissMatch, "
 
                 else:
                     title = "Comparing type of both the responses."
@@ -108,8 +108,8 @@ class legacyApiComparison:
                     self.logger.warning("---------- Missmatch in responses status codes. ")
                     self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                     
-                    if "Response Type Missmatch, " not in self.reporter._miscData["REASON_OF_FAILURE"]:  
-                                        self.reporter._miscData["REASON_OF_FAILURE"] += "Response Type Missmatch, "
+                    if "Response Type Missmatch, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:  
+                                        self.reporter._misc_data["REASON_OF_FAILURE"] += "Response Type Missmatch, "
 
             else:
                 title = "Comparing status codes of both the responses."
@@ -119,13 +119,13 @@ class legacyApiComparison:
                 current_desc = f"<b>CURRENT RESPONSE CODE: </b> {self.current_status_code}"
                 self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                 
-                if "Response status code missmatch, " not in self.reporter._miscData["REASON_OF_FAILURE"]:  
-                                        self.reporter._miscData["REASON_OF_FAILURE"] += "Response status code missmatch, "
+                if "Response status code missmatch, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:  
+                                        self.reporter._misc_data["REASON_OF_FAILURE"] += "Response status code missmatch, "
                 self.logger.warning("---------- Missmatch in responses status codes. ")
 
         except Exception as e:
             self.logger.info(traceback.print_exc())
-            self.reporter._miscData["REASON_OF_FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
+            self.reporter._misc_data["REASON_OF_FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
             raise Exception("Error occured while sending request - {0}".format(str(e)))
 
 
@@ -171,8 +171,8 @@ def listComparator(reporter,legacy_key, current_key, legacy_value, current_value
             description = "Record count is not equal"
             _status = status.FAIL
             reporter.addRow(title,description,_status,CURRENT_API=len(current_value), LEGACY_API=len(legacy_value))
-            if "Record count not equal, " not in reporter._miscData["REASON_OF_FAILURE"]:  
-                    reporter._miscData["REASON_OF_FAILURE"] += "Record count not equal, "
+            if "Record count not equal, " not in reporter._misc_data["REASON_OF_FAILURE"]:  
+                    reporter._misc_data["REASON_OF_FAILURE"] += "Record count not equal, "
         elif len(legacy_value) == len(current_value) and len(legacy_value)>0 and len(current_value)>0:
             title = "Comparing | record count of <b>{}</b> for legacy and current API".format(legacy_key)
             description = "Record count is equal"
@@ -188,8 +188,8 @@ def listComparator(reporter,legacy_key, current_key, legacy_value, current_value
                 description = "Values are not equal"
                 _status = status.FAIL
                 reporter.addRow(title,description,_status,CURRENT_API=current_info, LEGACY_API=legacy_info)
-                if "Mismatches found during Assertion, " not in reporter._miscData["REASON_OF_FAILURE"]:  
-                    reporter._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+                if "Mismatches found during Assertion, " not in reporter._misc_data["REASON_OF_FAILURE"]:  
+                    reporter._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
         elif len(legacy_value)==0 and len(current_value)==0:
             title = f"Comparing | list of <b>{legacy_key}</b> for Legacy & Current API"
             description = "Empty List"
@@ -208,15 +208,15 @@ def responseReporter(reporter, legacy_key, current_key, legacy_value, current_va
         current_info = f"value = {legacy_value}"
         legacy_info = f"Value = {current_value}"
         if legacy_value == current_value:
-            description = f"values are Equal"
+            description = f"Values are Equal"
             _status = status.PASS
             reporter.addRow(title, description, _status, CURRENT_API=current_info, LEGACY_API=legacy_info)
         else:
-            description = f"values are not Equal"
+            description = f"Values are not Equal"
             _status = status.FAIL
             reporter.addRow(title, description, _status, CURRENT_API=current_info, LEGACY_API=legacy_info)
-            if "Mismatches found during Assertion, " not in reporter._miscData["REASON_OF_FAILURE"]:  
-                    reporter._miscData["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
+            if "Mismatches found during Assertion, " not in reporter._misc_data["REASON_OF_FAILURE"]:  
+                    reporter._misc_data["REASON_OF_FAILURE"] += "Mismatches found during Assertion, "
 
 
 def compareTypeOfResponses(legacy_response, current_response):

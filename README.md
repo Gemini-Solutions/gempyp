@@ -52,7 +52,7 @@ It allows-
 - Email integration
 - Parallel execution of testcases
 - Customization of test Suite reports
-- Platform independence (Supports Linux,Windows and MacOS)
+- Platform independence (Supports Linux, Windows and MacOS)
 
 ## Installation[![]()](#installation)
 
@@ -95,11 +95,12 @@ $ pip install gempyp
 1. Easy to use.
 2. Cross Platform.
 3. Multiple modes of execution.
-4. Static Report generated after execution .
+4. Static Report generated after execution.
+5. Saves Time
 
 ## Usage[![]()](#usage)
 
-### Can be used in API Automation and testing of APIs.
+### Can be used in API Automation and testing python testcases.
 
 ## Documentations[![]()](#docs)
 

@@ -6,8 +6,7 @@
         <report_name>FEATURE_REGRESSION</report_name>
         <mode>sequence</mode>
         <env>prod</env>
-        <username>abc</username>
-        <bridge_token>test</bridge_token>
+
     </suite>
 
     <testcases>
@@ -15,7 +14,7 @@
 
             <name>testcase_except_</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <method>testcase_except_</method>
@@ -26,7 +25,7 @@
         <testcase>
             <name>testcase_2</name>
             <category>sample1</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>C:\Users\an.pandey\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
@@ -57,9 +56,27 @@
         </testcase>
 
         <testcase>
+            <name>Test_Pre_Variables</name>
+            <category>Pre_variables</category>
+            <run_flag>N</run_flag>
+            <api>https://restcountries.com/v3.1/lang/german</api>
+            <method>$[#method_name]</method>
+            <body>{}</body>
+            <headers>{}</headers>
+            <expected_status_code>200</expected_status_code>
+            <authentication></authentication>
+            <pre_variables>set $[#method_name]=GET;set $[#method_second]=10</pre_variables>
+            <key_check></key_check>
+            <post_variables></post_variables>
+            <post_assertion></post_assertion>
+            <TYPE>PYPREST</TYPE>
+        </testcase>
+
+
+        <testcase>
             <name>Main_testcase</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>Main</method>
@@ -79,7 +96,7 @@
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -98,7 +115,7 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>$[#SUITE.varGet]</method>
             <body>{}</body>

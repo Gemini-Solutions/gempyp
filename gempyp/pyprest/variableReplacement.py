@@ -24,9 +24,9 @@ class VariableReplacement:
         for k,v in data.copy().items():
             if isinstance(v,dict):
                 data[k] = self.replaceToNull(v)
-            if isinstance(v, list):
+            elif isinstance(v, list):
                 for each in v:
-                    if isinstance(each,dict) or isinstance(each,str):
+                    if isinstance(each,dict):
                         self.replaceToNull(each)
             elif isinstance(v,str):
                 if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:
@@ -45,11 +45,11 @@ class VariableReplacement:
         
 
         
-    def ValueNotFound(self):
+    def valueNotFound(self):
         logger.info("------ assigning all variables to null those value not found -----") 
         try:
             self.replaceToNull(self.pyprest_obj.__dict__)
-            self.replaceToNull(self.pyprest_obj.reporter.templateData.__dict__)
+            self.replaceToNull(self.pyprest_obj.reporter.template_data.__dict__)
         except Exception as e:
             print(e)
 

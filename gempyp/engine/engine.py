@@ -141,6 +141,7 @@ class Engine:
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
+        self.report_info = self.PARAMS.get("REPORT_INFO")
         
 
         #add suite_vars here 
@@ -177,6 +178,9 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
+            "testcase_analytics": None,
+            "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
+            "report_name": self.report_info
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -210,18 +214,21 @@ class Engine:
 
         # get the status count of the status
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
+        total = sum(status_dict.values())
+        status_dict["TOTAL"] = total
         Suite_status = status.FAIL.name
 
         # based on the status priority
         for s in status:
             if status_dict.get(s.name, 0) > 0:
                 Suite_status = s.name
-
+                break
         stop_time = (
             self.DATA.testcase_details["end_time"].sort_values(ascending=False).iloc[0]
         )
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
+        self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
 
     def startSequence(self):
         """
@@ -504,6 +511,7 @@ class Engine:
         suite_path = os.path.dirname(__file__)
         suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
         with open(suite_path, "r") as f:
+<<<<<<<<< Temporary merge branch 1
             suiteReport = f.read()
 
         reportJson = self.DATA.getJSONData()
@@ -515,6 +523,14 @@ class Engine:
         reportJson = json.dumps(reportJson)
         suiteReport = suiteReport.replace("DATA_1", reportJson)
 
+=========
+            suite_report = f.read()
+        report_json = self.DATA.getJSONData()
+        report_json = json.loads(report_json)
+        report_json["TestStep_Details"] = self.testcase_data
+        report_json = json.dumps(report_json)
+        suite_report = suite_report.replace("DATA", report_json)
+>>>>>>>>> Temporary merge branch 2
         ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
         self.ouput_file_path = ResultFile
         with open(ResultFile, "w+") as f:
