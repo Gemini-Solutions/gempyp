@@ -135,7 +135,13 @@ class TestData:
         except Exception as e:
             traceback.print_exc()
 
-
+        # testcase_dict.remove("userDefinedData")
+        # testcase_dict.remove("miscData")
+        for i in range(len(testcase_dict)):
+            if("miscData" in testcase_dict[i].keys()):
+                testcase_dict[i].pop("miscData")
+            if("userDefinedData" in testcase_dict[i].keys()):
+                testcase_dict[i].pop("userDefinedData")
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
         suite_dict["Testcase_Info"] = testcase_counts
