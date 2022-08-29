@@ -5,10 +5,9 @@ from gempyp.gemPyp import Gempyp
 obj = Gempyp()
 
 """Giving the default config file location  and default mail"""
-
-
 obj.config = "C:\\Users\\ar.mishra\gempyp\\tests\configTest\\legacy_test.xml"
 obj.MAIL = "arpit.mishra@geminisolutions.com"
+
 
 
 
