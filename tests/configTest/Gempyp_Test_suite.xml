@@ -14,7 +14,7 @@
 
             <name>testcase_except_</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <method>testcase_except_</method>
@@ -47,7 +47,7 @@
         <testcase>
             <name>verify_testcase</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>verify</method>
@@ -76,7 +76,7 @@
         <testcase>
             <name>Main_testcase</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>Main</method>

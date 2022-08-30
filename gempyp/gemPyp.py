@@ -22,11 +22,6 @@ class Gempyp:
         self.SET=None
         self.USERNAME=None
 
-
-=========
-        self.CATEGORY = None
-        self.SET = None
->>>>>>>>> Temporary merge branch 2
     
     def argParser(self):
         """Argument parser to help running through CLI"""
