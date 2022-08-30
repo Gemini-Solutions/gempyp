@@ -21,7 +21,7 @@ def writeToReport(pyprest_obj):
                     os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
             except Exception as e:
                 pyprest_obj.logger.info(traceback.print_exc())
-            pyprest_obj.reporter.json_data = pyprest_obj.reporter.template_data.makeReport()
+            pyprest_obj.reporter.json_data = pyprest_obj.reporter.template_data.makeTestcaseReport()
             pyprest_obj.json_data = pyprest_obj.reporter.json_data
             result = pyprest_obj.reporter.serialize()
             if pyprest_obj.data["config_data"].get("DEBUG_MODE", "FALSE").upper() == "TRUE":
@@ -48,23 +48,22 @@ def writeToReport(pyprest_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
-    all_status = result["jsonData"]["metaData"][2]
+    all_status = result["json_data"]["metaData"][2]
     total = 0
     for key in all_status:
         total += all_status[key]
-    result["jsonData"]["metaData"][2]["TOTAL"] = total
+    result["json_data"]["metaData"][2]["TOTAL"] = total
 
     # getting the log file ( the custom gempyp logger)
     
     tempdict["log_file"] = pyprest_obj.data.get("LOG_PATH", "N.A")
 
     singleTestcase = {}
-    singleTestcase["testcaseDict"] = tempdict
+    singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = result.get("MISC")
     singleTestcase["json_data"] = pyprest_obj.json_data
     singleTestcase["suite_variables"] = pyprest_obj.variables["suite"]
     output.append(singleTestcase)
-    
     return output
 
 

@@ -90,7 +90,7 @@ class AbstractSimpleTestcase(ABC):
             report.finalizeReport()
             # if user has not provided its own resultfile
             if not report.result_file_name:
-                report.json_data = report.template_data.makeReport()
+                report.json_data = report.template_data.makeTestcaseReport()
             result = report.serialize()
             Data.append(result)
 

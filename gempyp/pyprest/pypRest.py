@@ -18,6 +18,7 @@ from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
+from gempyp.libs.common import moduleImports
 
 
 
@@ -385,7 +386,7 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            file_obj = importlib.import_module(file_name)
+            file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
@@ -440,7 +441,7 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            file_obj = importlib.import_module(file_name)
+            file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
             after_obj = RestObj(

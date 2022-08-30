@@ -52,15 +52,14 @@ class TemplateData:
         self.REPORTDATA["metaData"].append(column2)
         self.REPORTDATA["metaData"].append(column3)
         # filters
-        self.REPORTDATA["FilterNames"] = self._getFilters()
-        filter_values = {}
-        filter_values["status"] = [value.name for value in status_counts.keys()]
-        self.REPORTDATA["FilterValues"] = filter_values
+        # self.REPORTDATA["FilterNames"] = self._getFilters()
+        # filter_values = {}
+        # filter_values["status"] = [value.name for value in status_counts.keys()]
+        # self.REPORTDATA["FilterValues"] = filter_values
 
-    def _getFilters(self) -> Dict:
-        """
-        return the unique columns
-        """
+    """def _getFilters(self) -> Dict:
+        
+        # return the unique columns
 
         filter_names = list(
             set(chain.from_iterable(step.keys() for step in self.REPORTDATA["steps"]))
@@ -69,7 +68,7 @@ class TemplateData:
         filter_dict = {name: "Input" for name in filter_names}
         filter_dict["status"] = "Dropdown"
 
-        return filter_dict
+        return filter_dict"""
 
     # Converts the data to the JSON
     def _toJSON(self) -> str:
@@ -113,7 +112,7 @@ class TemplateData:
             f.write(suiteReport)
         return repJson, ouput_file_path
     
-    def makeTestcaseReport(self, Result_Folder, name):
+    def makeTestcaseReport(self):
         index_path = os.path.dirname(__file__)
         index_path = os.path.join(os.path.split(index_path)[0], "testcase.html")
         with open(index_path, "r") as f:
@@ -128,7 +127,7 @@ class TemplateData:
         try:
             logging.info("---------- Finalised the report --------------")
             logging.info("============== Run Summary =============")
-            count_info = {key.lower(): val for key, val in repJson['Suite_Details']['Testcase_Info'].items()}
+            count_info = {key.lower(): val for key, val in repJson['Suits_Details']['Testcase_Info'].items()}
             log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
             status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
             for key, val in count_info.items():
@@ -143,3 +142,4 @@ class TemplateData:
 
         except Exception as e:
             logging.error(traceback.print_exc(e))
+

@@ -92,7 +92,7 @@ class Engine:
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
-        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getjson_data(), self.testcaseData, self.ouput_folder)
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
         TemplateData().repSummary(self.repJson, output_file_path)
 
     def makeOutputFolder(self):
@@ -173,12 +173,14 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "report_type": self.report_name,
+            "s_report_type": self.report_name,
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
+            "testcase_analytics": None,
+            "framework_name": "GEMPYP"  # later this will be dynamic( GEMPYP-PR for pyprest)
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -212,6 +214,8 @@ class Engine:
 
         # get the status count of the status
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
+        total = sum(status_dict.values())
+        status_dict["TOTAL"] = total
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -224,6 +228,7 @@ class Engine:
         )
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
+        self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
 
     def startSequence(self):
         """
