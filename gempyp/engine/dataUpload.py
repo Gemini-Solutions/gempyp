@@ -26,7 +26,6 @@ def sendTestcaseData(payload, bridge_token, user_name):
     """
     for checking the sendTestCaseData api response
     """
-    print(payload, "****************************************")
     try:
         response = _sendData(payload, DefaultSettings.urls["testcases"], bridge_token, user_name, method="POST")
         if response and response.status_code == 201:

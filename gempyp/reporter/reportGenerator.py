@@ -142,4 +142,3 @@ class TemplateData:
 
         except Exception as e:
             logging.error(traceback.print_exc(e))
-
