@@ -24,8 +24,8 @@ from gempyp.libs.enums.status import status
 class Executor(TestcaseReporter):
     def __init__(self, **kwargs):
         self.method = kwargs.get("tc_name", self.getMethodName())
-        #self.log_file = tempfile.gettempdir() + "logs.log"
-        #sys.stdout = sys.stderr =  open(self.log_file, 'w')
+        self.log_file = tempfile.gettempdir() + "logs.log"
+        sys.stdout = sys.stderr =  open(self.log_file, 'w')
         logging.info("inside constructor here--------------------")
         self.data = self.getTestcaseData()
         self.reporter = TestcaseReporter(self.data["PROJECT"], self.data["NAME"])
@@ -104,8 +104,8 @@ class Executor(TestcaseReporter):
                     f.write(json.dumps(data))
 
             dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
-            # sys.stdout.close()
-            # os.rename(self.log_file, tmp_dir.rsplit(".")[0] + "log")
+            sys.stdout.close()
+            os.rename(self.log_file, tmp_dir.rsplit(".")[0] + "log")
 
     def getTestcaseData(self):
         config_file = configparser.ConfigParser()
