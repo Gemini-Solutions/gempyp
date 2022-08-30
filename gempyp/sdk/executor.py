@@ -57,7 +57,7 @@ class Executor(TestcaseReporter):
         self.reporter.finalizeReport()
         
         # create testcase reporter json
-        self.reporter.json_data = self.reporter.template_data.makeTestcaseReport("" ,"")
+        self.reporter.json_data = self.reporter.template_data.makeTestcaseReport()
         # serializing data, adding suite data
         report_dict = self.reporter.serialize()
 
