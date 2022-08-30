@@ -31,7 +31,6 @@ class PypRest(Base):
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
         self.isLegacyPresent = self.isLegacyPresent()
-        self.logger.warning(f"is legacy present: {self.isLegacyPresent} ")
 
 
         # set vars
@@ -153,7 +152,6 @@ class PypRest(Base):
             self.legacy_body = json.loads(self.data["config_data"].get("LEGACY_BODY", {}))  
             self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
             self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
-            self.logger.warning(f"auth type: {self.legacy_auth_type}")
         #setting variables and variable replacement
 
         PreVariables(self).preVariable()
