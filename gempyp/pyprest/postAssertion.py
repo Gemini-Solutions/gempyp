@@ -2,6 +2,7 @@ import logging as logger
 import gempyp.pyprest.compareFunctions as cf
 from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest import utils
+from gempyp.pyprest.utils import getKeyList
 from copy import deepcopy
 from gempyp.pyprest.legacyComparison import legacyApiComparison
 from gempyp.libs.enums.status import status
@@ -36,8 +37,8 @@ class PostAssertion:
             if self.pyprest_obj.legacy_res is not None:
                 self.logger.info("Legacy API found, proceeding for post assertion accordingly....")
                 self.isLegacyPresent = True
-                self.legacy_all_keys = utils.getKeys(utils.formatRespBody(self.pyprest_obj.legacy_res.response_body))
-                self.all_keys = utils.getKeys(utils.formatRespBody(self.pyprest_obj.res_obj.response_body))
+                self.legacy_all_keys = getKeyList().getKeys(utils.formatRespBody(self.pyprest_obj.legacy_res.response_body))
+                self.all_keys = getKeyList().getKeys(utils.formatRespBody(self.pyprest_obj.res_obj.response_body))
             self.post_assertion_str = " ".join(self.pyprest_obj.post_assertion.split())
             
             if 'COMPARE ALL' in self.post_assertion_str.upper():

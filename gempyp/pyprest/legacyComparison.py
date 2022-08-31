@@ -5,7 +5,7 @@ import json
 import traceback
 from numpy import isin
 from gempyp.libs.enums.status import status
-from gempyp.pyprest import utils
+from gempyp.pyprest.utils import getKeyList 
 
 
 
@@ -19,8 +19,8 @@ class legacyApiComparison:
         self.legacy_status_code = self.legacy_api_response.status_code
         self.legacy_response_body = json.loads(self.legacy_api_response.response_body)
         self.current_response_body = json.loads(self.current_api_response.response_body)
-        self.legacy_response_keys = utils.getKeys(self.legacy_response_body)
-        self.current_response_keys = utils.getKeys(self.current_response_body)
+        self.legacy_response_keys = getKeyList().getKeys(self.legacy_response_body)
+        self.current_response_keys = getKeyList().getKeys(self.current_response_body)
         self.logger = self.pyprest_obj.logger
         self.reporter = self.pyprest_obj.reporter
 
