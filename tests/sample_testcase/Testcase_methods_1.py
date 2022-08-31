@@ -6,7 +6,7 @@ class Combined(AbstractSimpleTestcase):
         pass
 
     def testcase_1(self, reporter):
-        reporter.addRow("test", "desc", self.Status.PASS)
+        reporter.addRow("test", "desc", self.Status.EXE)
         reporter.logger.info("Testing logger -  this is testcase 1--------------------------")
         reporter.addMisc("TEST 1", "Test")
 

@@ -6,6 +6,9 @@
         <report_name>FEATURE_REGRESSION</report_name>
         <mode>sequence</mode>
         <env>prod</env>
+        <username>kiran.kumari</username>
+        <bridge_token>ef5212ed-c9b2-4488-8da5-6a216252c6281659702166991</bridge_token>
+        <threads>8</threads>
 
     </suite>
 
@@ -14,7 +17,7 @@
 
             <name>testcase_except_</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <method>testcase_except_</method>
@@ -25,11 +28,11 @@
         <testcase>
             <name>testcase_2</name>
             <category>sample1</category>
-            <run_flag>N</run_flag>
-            <path>C:\Users\an.pandey\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
+            <run_flag>Y</run_flag>
+            <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <type>gempyp</type>
-            <method>testcase_2</method>
+            <method>testcase_1</method>
             <category>sample</category>
             <extra_args1>hello</extra_args1>
         </testcase>
@@ -48,7 +51,7 @@
         <testcase>
             <name>verify_testcase</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <dependency>testcase_except_,testcase_main</dependency>
@@ -80,7 +83,7 @@
             <set>sample</set>
             <run_flag>Y</run_flag>
             <category>sample</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
             <location>test</location>
             <method>Main</method>
@@ -101,7 +104,7 @@
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -120,7 +123,7 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>$[#SUITE.varGet]</method>
             <body>{}</body>
@@ -159,7 +162,11 @@
         </testcase>
         <testcase>
             <name>Test_functions_4</name>
+<<<<<<< HEAD
             <category>sample1</category>
+=======
+            <category>sample</category>
+>>>>>>> 1b08812ce7ffbb47cf300dcc8ff79871304d8052
             <run_flag>Y</run_flag>
             <api>https://github.com/in/null</api>
             <method>GET</method>

@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.engine.testData import TestData
 from gempyp.libs.enums.status import status
+from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
@@ -96,8 +97,8 @@ class Engine:
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
-        self.makeReport()
-        # self.sendEmail()
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
+        TemplateData().repSummary(self.repJson, output_file_path)
 
     def makeOutputFolder(self):
         """
@@ -148,6 +149,7 @@ class Engine:
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
+        self.report_info = self.PARAMS.get("REPORT_INFO")
         
 
         #add suite_vars here 
@@ -184,6 +186,9 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
+            "testcase_analytics": None,
+            "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
+            "report_name": self.report_info
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -217,6 +222,8 @@ class Engine:
 
         # get the status count of the status
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
+        total = sum(status_dict.values())
+        status_dict["TOTAL"] = total
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -229,6 +236,7 @@ class Engine:
         )
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
+        self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
 
     def startSequence(self):
         """
@@ -284,7 +292,7 @@ class Engine:
                             "category": testcase.get("CATEGORY", None),
                             "product type": testcase.get("product type", None),
                         }
-                        # handle dependency error in jsondata(update_df)
+                        # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
 
@@ -332,15 +340,15 @@ class Engine:
                 output = [output]
             for i in output:
 
-                i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
+                i["testcase_dict"]["steps"] = i["json_data"]["steps"]
                 
-                testcase_dict = i["testcaseDict"]
+                testcase_dict = i["testcase_dict"]
                 try:
                     """ update suite vars here from testcase_dict["suite_variables"] append it in the suite vars of _config"""
     
                     self.user_suite_variables.update(i.get("suite_variables", {}))
                     
-                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["jsonData"]
+                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["json_data"]
                 except Exception as e:
                     logging.error(e)
 
@@ -390,7 +398,7 @@ class Engine:
         if product_type:
             testcase_dict["product type"] = product_type
 
-        result["testcaseDict"] = testcase_dict
+        result["testcase_dict"] = testcase_dict
 
         misc["REASON OF FAILURE"] = message
 
@@ -512,52 +520,4 @@ class Engine:
                         return False
 
         return True
-
-    def makeReport(self):
-        """
-        creates the reports by replacing the json object in final_report.html by reportjson
-        and write the result file in output folder
-
-        """
-        suite_report = None
-
-        self.date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
-
-        suite_path = os.path.dirname(__file__)
-        suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
-        with open(suite_path, "r") as f:
-            suite_report = f.read()
-        report_json = self.DATA.getJSONData()
-        report_json = json.loads(report_json)
-        report_json["TestStep_Details"] = self.testcase_data
-        report_json = json.dumps(report_json)
-        suite_report = suite_report.replace("DATA_1", report_json)
-        ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
-        self.ouput_file_path = ResultFile
-        with open(ResultFile, "w+") as f:
-            f.write(suite_report)
-        # converting report_json back to dictionary by json.loads()
-        self.repSummary(json.loads(report_json))
-    
-    def repSummary(self, report_json):
-        """
-        logging information at the end of cli about passed, failed testcases and report generation
-        """
-        try:
-            logging.info("---------- Finalised the report --------------")
-            logging.info("============== Run Summary =============")
-            count_info = {key.lower(): val for key, val in report_json['Suits_Details']['Testcase_Info'].items()}
-            log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
-            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
-            for key, val in count_info.items():
-                if key in status_dict.keys():
-                    log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
-        
-
-            logging.info(log_str.strip(" | "))
-            
-            logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
-
-
-        except Exception as e:
-            logging.error(traceback.print_exc(e))
+<<<<<<< HEAD
