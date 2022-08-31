@@ -20,7 +20,7 @@ def writeToReport(dvm_obj):
                     os.makedirs(dvm_obj.data.get("OUTPUT_FOLDER", dvm_obj.default_report_path))
             except Exception as e:
                 dvm_obj.logger.info(traceback.print_exc())
-            dvm_obj.reporter.json_data = dvm_obj.reporter.template_data.makeReport()
+            dvm_obj.reporter.json_data = dvm_obj.reporter.template_data.makeTestcaseReport()
             dvm_obj.json_data = dvm_obj.reporter.json_data
             result = dvm_obj.reporter.serialize()
         except Exception as e:
@@ -37,25 +37,25 @@ def writeToReport(dvm_obj):
     tempdict["user"] = dvm_obj.data.get("USER")
     tempdict["machine"] = dvm_obj.data.get("MACHINE")
     tempdict["product type"] = "DVM"
-    tempdict["steps"] = result["jsonData"]['steps']
+    tempdict["steps"] = result["json_data"]['steps']
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
-    all_status = result["jsonData"]["metaData"][2]
+    all_status = result["json_data"]["metaData"][2]
     total = 0
     for key in all_status:
         total += all_status[key]
-    result["jsonData"]["metaData"][2]["TOTAL"] = total
+    result["json_data"]["metaData"][2]["TOTAL"] = total
 
     # getting the log file ( the custom gempyp logger)
     
     tempdict["log_file"] = dvm_obj.configData.get("log_path","N.A")
 
     singleTestcase = {}
-    singleTestcase["testcaseDict"] = tempdict
+    singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = result.get("MISC")
-    singleTestcase["jsonData"] = dvm_obj.json_data
+    singleTestcase["json_data"] = dvm_obj.json_data
     output.append(singleTestcase)
     
     return output
