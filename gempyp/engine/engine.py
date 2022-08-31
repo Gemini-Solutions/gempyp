@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.engine.testData import TestData
 from gempyp.libs.enums.status import status
+from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
@@ -91,7 +92,8 @@ class Engine:
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
-        self.makeReport()
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
+        TemplateData().repSummary(self.repJson, output_file_path)
 
     def makeOutputFolder(self):
         """
@@ -280,7 +282,7 @@ class Engine:
                             "category": testcase.get("CATEGORY", None),
                             "product_type": testcase.get("PRODUCT_TYPE", None),
                         }
-                        # handle dependency error in jsondata(update_df)
+                        # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
 
@@ -326,15 +328,15 @@ class Engine:
                 output = [output]
             for i in output:
 
-                i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
+                i["testcase_dict"]["steps"] = i["json_data"]["steps"]
                 
-                testcase_dict = i["testcaseDict"]
+                testcase_dict = i["testcase_dict"]
                 try:
                     """ update suite vars here from testcase_dict["suite_variables"] append it in the suite vars of _config"""
     
                     self.user_suite_variables.update(i.get("suite_variables", {}))
                     
-                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["jsonData"]
+                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["json_data"]
                 except Exception as e:
                     logging.error(e)
 
@@ -383,7 +385,7 @@ class Engine:
         if product_type:
             testcase_dict["product_type"] = product_type
 
-        result["testcaseDict"] = testcase_dict
+        result["testcase_dict"] = testcase_dict
 
         misc["REASON_OF_FAILURE"] = message
 
@@ -499,45 +501,3 @@ class Engine:
                         return False
 
         return True
-
-    def makeReport(self):
-        """
-        saves the report json 
-        """
-        suite_report = None
-
-        self.date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
-
-        suite_path = os.path.dirname(__file__)
-        suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
-        with open(suite_path, "r") as f:
-            suite_report = f.read()
-        report_json = self.DATA.getJSONData()
-        report_json = json.loads(report_json)
-        report_json["TestStep_Details"] = self.testcase_data
-        report_json = json.dumps(report_json)
-        suite_report = suite_report.replace("DATA_1", report_json)
-        ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
-        self.ouput_file_path = ResultFile
-        with open(ResultFile, "w+") as f:
-            f.write(suite_report)
-        # converting report_json back to dictionary by json.loads()
-        self.repSummary(json.loads(report_json))
-    
-    def repSummary(self, report_json):
-        """
-        logging some information
-        """
-        try:
-            logging.info("---------- Finalised the report --------------")
-            logging.info("============== Run Summary =============")
-            count_info = {key.lower(): val for key, val in report_json['Suits_Details']['Testcase_Info'].items()}
-            log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
-            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
-            for key, val in count_info.items():
-                if key in status_dict.keys():
-                    log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
-            logging.info(log_str.strip(" | "))            
-            logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
-        except Exception as e:
-            logging.error(traceback.print_exc(e))
