@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Dict
 from gempyp.libs.enums.status import status
-from gempyp.engine.reportGenerator import TemplateData
+from gempyp.reporter.reportGenerator import TemplateData
 
 
 class TestcaseReporter:
@@ -116,5 +116,5 @@ class TestcaseReporter:
         result_data["MISC"] = self._misc_data
         result_data["START_TIME"] = self.begin_time
         result_data["END_TIME"] = self.end_time
-        result_data["jsonData"] = self.json_data
+        result_data["json_data"] = self.json_data
         return result_data
