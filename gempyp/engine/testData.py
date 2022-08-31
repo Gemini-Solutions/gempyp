@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 import traceback
 import json
@@ -120,6 +121,12 @@ class TestData:
 
             # converting testcase_dict to dict for easy parsing
             test_dict = {d['tc_run_id']: d for d in testcase_dict}
+            key = list(test_dict.keys())
+            key = key[0]
+            test_data = test_dict[key]
+            test_data.pop("userDefinedData")
+            test_data.pop("miscData")
+            test_dict[key] = test_data
             for each_misc in misc_dict:
                 test_dict[each_misc['run_id']][each_misc["key"]] = each_misc["value"]
 
@@ -128,7 +135,13 @@ class TestData:
         except Exception as e:
             traceback.print_exc()
 
-
+        # testcase_dict.remove("userDefinedData")
+        # testcase_dict.remove("miscData")
+        for i in range(len(testcase_dict)):
+            if("miscData" in testcase_dict[i].keys()):
+                testcase_dict[i].pop("miscData")
+            if("userDefinedData" in testcase_dict[i].keys()):
+                testcase_dict[i].pop("userDefinedData")
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
         suite_dict["Testcase_Info"] = testcase_counts
