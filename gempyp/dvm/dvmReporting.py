@@ -31,13 +31,12 @@ def writeToReport(dvm_obj):
     tempdict = {} 
     tc_run_id = f"{dvm_obj.tcname}_{uuid.uuid4()}"
     tempdict["tc_run_id"] = tc_run_id
-    print("tc_run_id=",tc_run_id)
     tempdict["name"] = result["NAME"]
     tempdict["category"] = dvm_obj.category
     tempdict["status"] = result["STATUS"]
     tempdict["user"] = dvm_obj.data.get("USER")
     tempdict["machine"] = dvm_obj.data.get("MACHINE")
-    tempdict["product_type"] = "DVM"
+    tempdict["product type"] = "DVM"
     tempdict["steps"] = result["jsonData"]['steps']
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]

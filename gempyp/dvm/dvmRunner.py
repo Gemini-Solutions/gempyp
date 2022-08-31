@@ -1,3 +1,4 @@
+import configparser
 import mysql.connector
 import os
 from configparser import ConfigParser
@@ -10,6 +11,7 @@ import json
 import mysql.connector
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
+from gempyp.libs.common import readPath
 from gempyp.dvm.dvmReporting import writeToReport
 import sys
 from telnetlib import STATUS
@@ -18,6 +20,8 @@ from numpy import sort
 import pandas as pd
 import xlsxwriter
 import logging
+import math
+import numpy
 
 
 class DvmRunner(Base):
@@ -25,7 +29,7 @@ class DvmRunner(Base):
     def __init__(self, data):
         
         self.data = data
-        print(self.data)
+
         self.configData: Dict = self.data.get("config_data")
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
@@ -41,10 +45,17 @@ class DvmRunner(Base):
         
         try:
             column =[]
-            configPath= self.configData["DB_CONFIG_PATH"]
-            configur = ConfigParser()
-            configur.read(configPath)
             try:
+                configPath= self.configData["DB_CONFIG_PATH"]
+                configur = ConfigParser()
+                config = readPath(configPath)
+                configur.read(config)
+            except Exception as e:
+                self.reporter.addRow("Config File","Path is not Correct",status.FAIL)
+                output = writeToReport(self)
+                return output, None
+            try:
+
                 userCred ={"host":configur.get(self.configData["SOURCE_DB"],'host'),"dbName":configur.get(self.configData["SOURCE_DB"],'databaseName'),"userName":configur.get(self.configData["SOURCE_DB"],'userName'),"password":configur.get(self.configData["SOURCE_DB"],'password')}
                 targetCred ={"host":configur.get(self.configData["TARGET_DB"],'host'),"dbName":configur.get(self.configData["TARGET_DB"],'databaseName'),"userName":configur.get(self.configData["TARGET_DB"],'userName'),"password":configur.get(self.configData["TARGET_DB"],'password')} 
                 # sys.exit("Not able to parse config file data")
@@ -52,6 +63,8 @@ class DvmRunner(Base):
             except Exception as e:
                 self.logger.error(str(e))
                 self.reporter.addRow("Parsing DB Conf","Exception Occurred",status.FAIL)
+                output = writeToReport(self)
+                return output, None
             self.keys = self.configData["KEYS"].split(',')
             self.reporter.addMisc("KEYS","--".join(self.keys))
             # parsing row and connection row
@@ -81,12 +94,12 @@ class DvmRunner(Base):
                 # sys.exit("Not Able to Ececute SOURCE_SQL ")
                 self.reporter.addRow("Executing Source SQL","Exception Occurred",status.FAIL)
             sorKeys =[]
-            for i in self.keys:
-                if i in sourceColumns:
-                    continue
-                else:
-                    sorKeys.append(i)
             try:
+                for i in self.keys:
+                    if i in sourceColumns:
+                        continue
+                    else:
+                        sorKeys.append(i)
                 if len(sorKeys) == 0:
                     self.reporter.addRow("Matching Given Keys in Source SQL","Keys are Present in SourceDB",status.PASS)
                 else:
@@ -94,6 +107,7 @@ class DvmRunner(Base):
             except Exception:
                 keyString1 = ", ".join(sorKeys)
                 self.reporter.addRow("Matching Given Keys in Source SQL","Keys: " + keyString1 +" are not Present in SourceDB",status.FAIL)
+                self.logger.info("------Given Keys are not present in DB------")
             results = myCursor.fetchall()
             db_1 = pd.DataFrame(results, 
                                 columns=sourceColumns)
@@ -110,19 +124,19 @@ class DvmRunner(Base):
             try:
                 myCur.execute(self.configData['TARGET_SQL'])
                 self.reporter.addRow("Executing Target SQL","Source SQL executed Successfull",status.PASS)
+                targetColumns = [i[0] for i in myCur.description]
             except Exception as e:
                 self.logger.error(str(e))
                     # sys.exit("Not Able to Ececute TARGET_SQL ")
                 self.reporter.addRow("Executing Target SQL","Exception Occurred",status.FAIL)
-            targetColumns = [i[0] for i in myCursor.description]
             tarKeys =[]
-            for i in self.keys:
+            try:
+                for i in self.keys:
             
                     if i in targetColumns:
                         continue
                     else:
                         tarKeys.append(i)
-            try:
                 if len(tarKeys)==0:
                     self.reporter.addRow("Matching Given Keys in Target SQL","Keys are Present in TargetDB",status.PASS)
                 else:
@@ -130,6 +144,16 @@ class DvmRunner(Base):
             except Exception:
                     keyString2 = ", ".join(tarKeys)
                     self.reporter.addRow("Matching Given Keys in Target SQL","Keys: " + keyString2 +" are not Present in TargetDB",status.FAIL)
+            try:
+                if sourceColumns==targetColumns:
+                    pass
+                else:
+                    raise Exception
+            except Exception:
+                self.reporter.addRow("Column in Table","Not Found",status.FAIL)
+                self.logger.info("--------Same Column not Present in Both Table--------")
+                output = writeToReport(self)
+                return output, None
             result1 = myCur.fetchall()
             db_2 = pd.DataFrame(result1, 
                                 columns=targetColumns)
@@ -141,8 +165,7 @@ class DvmRunner(Base):
             return output, None
         except Exception as e:
             self.logger.error(str(e))
-            # traceback.print_exc()
-            # self.logger.error(traceback.print_exc())
+            traceback.print_exc()
 
 
     def setVars(self):
@@ -182,10 +205,11 @@ class DvmRunner(Base):
     
         except Exception:
             traceback.print_exc()
-        
+    def truncate(self,f, n):
+        return math.floor(f * 10 ** n) / 10 ** n
     def addExcel(self):
         try:
-            statusCheck = 0
+            
             # dict1 = { 'Id1':[], 'Id2':[], 'Reason_Of_Failure':[]}
             dict1 = { 'Reason_Of_Failure':[]}
             dict3 = {}
@@ -195,6 +219,7 @@ class DvmRunner(Base):
             outputFolder = self.data['OUTPUT_FOLDER'] + "\\"
             excelPath = outputFolder + self.configData['NAME'] + '.xlsx'
             excel = ".\\testcases\\" + self.configData['NAME'] + '.xlsx'
+            keysCheck =0
 
             if self.keys_only_in_src:
             
@@ -210,7 +235,7 @@ class DvmRunner(Base):
                         value = self.li1[i]
                         dict3[key] = value
                     dict1.get("Reason_Of_Failure").append("keys only in source")
-                    statusCheck +=1
+                    keysCheck +=1
             if self.keys_only_in_tgt:
                 for i in self.keys_only_in_tgt:
                     # self.reporter.addRow(str(i),"Key Only In Target",status=status.FAIL)
@@ -223,16 +248,23 @@ class DvmRunner(Base):
                 # dict1.get("Id1").append(li[0])
                 # dict1.get("Id2").append(li[1])
                     dict1.get("Reason_Of_Failure").append("keys only in target")
-                    statusCheck += 1
-         
+                    keysCheck +=1
+            valueCheck =0
             if self.common_keys:
                 
                 for key_val in self.common_keys:
                     for field in self.headers:
                         src_val = self.df_1.loc[key_val,field]
                         tgt_val = self.df_2.loc[key_val,field]
+                        if self.configData["THRESHOLD"]:
+                            
+                            if type(src_val)== numpy.float64 :
+                                src_val = self.truncate(src_val,int(self.configData["THRESHOLD"]))
+                            if type(tgt_val)== numpy.float64:
+                                tgt_val = self.truncate(tgt_val,int(self.configData["THRESHOLD"]))
+
                         if src_val != tgt_val and type(src_val)==type(tgt_val):
-                        
+                            valueCheck +=1
                             li = key_val.split('--')
                         # dict2.get('Id1').append(li[0])
                         # dict2.get('Id2').append(li[1])
@@ -246,10 +278,10 @@ class DvmRunner(Base):
                             dict2.get('Source_Value').append(src_val)
                             dict2.get('Target_Value').append(tgt_val)
                             dict2.get('Reason_Of_Failure').append("Difference In Value")
-                            statusCheck += 1
                     
                         elif type(src_val)!= type(tgt_val):
-                            
+
+                            valueCheck +=1
                             li = key_val.split('--')
                         # dict2.get('Id1').append(li[0])
                         # dict2.get('Id2').append(li[1])
@@ -262,18 +294,28 @@ class DvmRunner(Base):
                             dict2.get('Source_Value').append(src_val)
                             dict2.get('Target_Value').append(tgt_val)
                             dict2.get('Reason_Of_Failure').append("Difference In Datatype")
-                            statusCheck += 1
             dict3.update(dict1)
             dict4.update(dict2)
             df1_res = pd.DataFrame(dict3)
             df2_res = pd.DataFrame(dict4)
-            with pd.ExcelWriter(excelPath) as writer1:
-                df1_res.to_excel(writer1, sheet_name = 'key_difference', index = False)
-                df2_res.to_excel(writer1, sheet_name = 'value_difference', index = False)
+            if (keysCheck+valueCheck) == 0:
+                self.reporter.addRow("Data Validation Report","No MisMatch Value Found", status= status.PASS )
+            else:
+                with pd.ExcelWriter(excelPath) as writer1:
+                    if keysCheck == 0:
+                        pass
+                    else:
+                        df1_res.to_excel(writer1, sheet_name = 'key_difference', index = False)
+                    if valueCheck ==0:
+                        pass
+                    else:
+                        df2_res.to_excel(writer1, sheet_name = 'value_difference', index = False)
+                self.reporter.addRow("Data Validation Report","DVM Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
-            self.reporter.addMisc("keys_only_in_src",str(len(self.keys_only_in_src)))
-            self.reporter.addMisc("Keys_Only_In_target", str(len(self.keys_only_in_tgt)))
-            self.reporter.addRow("Data_Validation_Report","DVM Result File: "+'<a href='+excel+'>Result File</a>', status= status.PASS if statusCheck==0 else status.FAIL )
+            self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
+            self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))
+            if self.configData["THRESHOLD"]:
+                self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
 
         except Exception as e :
             self.logger.error(str(e))
