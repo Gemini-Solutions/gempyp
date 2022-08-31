@@ -210,11 +210,11 @@ class DvmRunner(Base):
     def addExcel(self):
         try:
             
-            # dict1 = { 'Id1':[], 'Id2':[], 'Reason_Of_Failure':[]}
-            dict1 = { 'Reason_Of_Failure':[]}
+            # dict1 = { 'Id1':[], 'Id2':[], 'REASON OF FAILURE':[]}
+            dict1 = { 'REASON OF FAILURE':[]}
             dict3 = {}
-            # dict2 = { 'Id1':[], 'Id2':[], 'Column_Name':[],'Source_Value':[],'Target_Value':[],'Reason_Of_Failure':[]}
-            dict2 = { 'Column_Name':[],'Source_Value':[],'Target_Value':[],'Reason_Of_Failure':[]}
+            # dict2 = { 'Id1':[], 'Id2':[], 'Column_Name':[],'Source_Value':[],'Target_Value':[],'REASON OF FAILURE':[]}
+            dict2 = { 'Column_Name':[],'Source_Value':[],'Target_Value':[],'REASON OF FAILURE':[]}
             dict4 ={}
             outputFolder = self.data['OUTPUT_FOLDER'] + "\\"
             excelPath = outputFolder + self.configData['NAME'] + '.xlsx'
@@ -234,7 +234,7 @@ class DvmRunner(Base):
                         self.li1[i].append(li[i])
                         value = self.li1[i]
                         dict3[key] = value
-                    dict1.get("Reason_Of_Failure").append("keys only in source")
+                    dict1.get("REASON OF FAILURE").append("keys only in source")
                     keysCheck +=1
             if self.keys_only_in_tgt:
                 for i in self.keys_only_in_tgt:
@@ -247,7 +247,7 @@ class DvmRunner(Base):
                         dict3[key] = value
                 # dict1.get("Id1").append(li[0])
                 # dict1.get("Id2").append(li[1])
-                    dict1.get("Reason_Of_Failure").append("keys only in target")
+                    dict1.get("REASON OF FAILURE").append("keys only in target")
                     keysCheck +=1
             valueCheck =0
             if self.common_keys:
@@ -277,7 +277,7 @@ class DvmRunner(Base):
                             dict2.get('Column_Name').append(field)
                             dict2.get('Source_Value').append(src_val)
                             dict2.get('Target_Value').append(tgt_val)
-                            dict2.get('Reason_Of_Failure').append("Difference In Value")
+                            dict2.get('REASON OF FAILURE').append("Difference In Value")
                     
                         elif type(src_val)!= type(tgt_val):
 
@@ -293,7 +293,7 @@ class DvmRunner(Base):
                             dict2.get('Column_Name').append(field)
                             dict2.get('Source_Value').append(src_val)
                             dict2.get('Target_Value').append(tgt_val)
-                            dict2.get('Reason_Of_Failure').append("Difference In Datatype")
+                            dict2.get('REASON OF FAILURE').append("Difference In Datatype")
             dict3.update(dict1)
             dict4.update(dict2)
             df1_res = pd.DataFrame(dict3)
