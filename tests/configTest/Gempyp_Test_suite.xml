@@ -6,6 +6,9 @@
         <report_name>FEATURE_REGRESSION</report_name>
         <mode>sequence</mode>
         <env>prod</env>
+        <username>kiran.kumari</username>
+        <bridge_token>ef5212ed-c9b2-4488-8da5-6a216252c6281659702166991</bridge_token>
+        <threads>8</threads>
 
     </suite>
 
@@ -14,7 +17,7 @@
 
             <name>testcase_except_</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <path>C:\Users\ta.agarwal\gempyp\tests\sample_testcase\Testcase_methods_1.py</path>
             <location>test</location>
             <method>testcase_except_</method>
@@ -96,7 +99,7 @@
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -115,7 +118,7 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>$[#SUITE.varGet]</method>
             <body>{}</body>
@@ -155,7 +158,7 @@
         <testcase>
             <name>Test_functions_4</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://github.com/in/null</api>
             <method>GET</method>
             <body>{}</body>
