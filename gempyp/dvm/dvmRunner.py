@@ -7,13 +7,11 @@ from sqlite3 import connect
 from typing import Dict
 import pandas as pd
 from pyparsing import originalTextFor
-import json
 import mysql.connector
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
 from gempyp.dvm.dvmReporting import writeToReport
-import sys
 from telnetlib import STATUS
 import traceback
 from numpy import sort
@@ -55,10 +53,9 @@ class DvmRunner(Base):
                 output = writeToReport(self)
                 return output, None
             try:
-
+                self.logger.info("----Parsing the Config File----")
                 userCred ={"host":configur.get(self.configData["SOURCE_DB"],'host'),"dbName":configur.get(self.configData["SOURCE_DB"],'databaseName'),"userName":configur.get(self.configData["SOURCE_DB"],'userName'),"password":configur.get(self.configData["SOURCE_DB"],'password')}
                 targetCred ={"host":configur.get(self.configData["TARGET_DB"],'host'),"dbName":configur.get(self.configData["TARGET_DB"],'databaseName'),"userName":configur.get(self.configData["TARGET_DB"],'userName'),"password":configur.get(self.configData["TARGET_DB"],'password')} 
-                # sys.exit("Not able to parse config file data")
                 self.reporter.addRow("Parsing DB Conf","Parsing of DB config is Successfull",status.PASS)
             except Exception as e:
                 self.logger.error(str(e))
@@ -66,7 +63,7 @@ class DvmRunner(Base):
                 output = writeToReport(self)
                 return output, None
             self.keys = self.configData["KEYS"].split(',')
-            self.reporter.addMisc("KEYS","--".join(self.keys))
+            self.reporter.addMisc("KEYS",", ".join(self.keys))
             # parsing row and connection row
             self.li1 = []
             self.li2 = []
@@ -77,22 +74,24 @@ class DvmRunner(Base):
             
             """connecting to sourceDB"""
             try:
+                self.logger.info("----Connecting to SourceDB----")
                 myDB = mysql.connector.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'])
                 self.reporter.addRow("Connection to SourceDB: "+ str(userCred["host"]),"Connection to SourceDB is Successfull",status.PASS)
                 myCursor = myDB.cursor()
             except Exception as e:
                 self.logger.error(str(e))
-                    # sys.exit("Can't connect with SourceDB")
                 self.reporter.addRow("Connection to SourceDB: "+ str(userCred["host"]),"Exception Occurred",status.FAIL)
-            
+
             try:
+                self.logger.info("----Executing the SourceSQL----")
                 myCursor.execute(self.configData['SOURCE_SQL'])
                 self.reporter.addRow("Executing Source SQL","Source SQL executed Successfull",status.PASS)
                 sourceColumns = [i[0] for i in myCursor.description]
             except Exception as e:
                 self.logger.error(str(e))
-                # sys.exit("Not Able to Ececute SOURCE_SQL ")
                 self.reporter.addRow("Executing Source SQL","Exception Occurred",status.FAIL)
+                output = writeToReport(self)
+                return output, None
             sorKeys =[]
             try:
                 for i in self.keys:
@@ -114,21 +113,23 @@ class DvmRunner(Base):
             
             """Connecting to TargetDB"""
             try:
+                self.logger.info("----Connecting to TargetDB----")
                 myDB1 = mysql.connector.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'])
                 self.reporter.addRow("Connection to TargetDB: "+ str(targetCred['host']),"Connection to TargetDB is Successfull",status.PASS)
                 myCur = myDB1.cursor()
             except Exception as e:
                 self.logger.error(str(e))
-                # sys.exit("Can't connect with TargetDB")
                 self.reporter.addRow("Connection to TargetDB: "+ str(userCred["host"]),"Exception Occurred",status.FAIL)
             try:
+                self.logger.info("----Executing the TargetSQL----")
                 myCur.execute(self.configData['TARGET_SQL'])
                 self.reporter.addRow("Executing Target SQL","Source SQL executed Successfull",status.PASS)
                 targetColumns = [i[0] for i in myCur.description]
             except Exception as e:
                 self.logger.error(str(e))
-                    # sys.exit("Not Able to Ececute TARGET_SQL ")
                 self.reporter.addRow("Executing Target SQL","Exception Occurred",status.FAIL)
+                output = writeToReport(self)
+                return output, None
             tarKeys =[]
             try:
                 for i in self.keys:
@@ -186,7 +187,6 @@ class DvmRunner(Base):
         try:
             self.df_1 = df_1
             self.df_2 = df_2
-            
             self.df_1['key'] = self.df_1[key].apply(lambda row: '--'.join(row.values.astype(str)), axis=1)
             self.df_2['key'] = self.df_2[key].apply(lambda row: '--'.join(row.values.astype(str)), axis=1)
             self.df_1.set_index('key', inplace=True)
@@ -199,8 +199,7 @@ class DvmRunner(Base):
             self.common_keys = list(set(src_key_values) & set(tgt_key_values))
             self.keys_only_in_src = list(set(src_key_values) - set(tgt_key_values))
             self.keys_only_in_tgt = list(set(tgt_key_values) - set(src_key_values))
-            diff_list = []
-            # self.reporter.addMisc("KEYS","--".join(key))
+
             self.addExcel()
     
         except Exception:
@@ -210,10 +209,8 @@ class DvmRunner(Base):
     def addExcel(self):
         try:
             
-            # dict1 = { 'Id1':[], 'Id2':[], 'REASON OF FAILURE':[]}
             dict1 = { 'REASON OF FAILURE':[]}
             dict3 = {}
-            # dict2 = { 'Id1':[], 'Id2':[], 'Column_Name':[],'Source_Value':[],'Target_Value':[],'REASON OF FAILURE':[]}
             dict2 = { 'Column_Name':[],'Source_Value':[],'Target_Value':[],'REASON OF FAILURE':[]}
             dict4 ={}
             outputFolder = self.data['OUTPUT_FOLDER'] + "\\"
@@ -226,9 +223,6 @@ class DvmRunner(Base):
                 for i in self.keys_only_in_src:
             
                     li = i.split("--")
-                    # self.reporter.addRow(str(i),"Key Only In Source",status=status.FAIL)
-                    # dict1.get("Id1").append(li[0])
-                    #  dict1.get("Id2").append(li[1])
                     for i in range(len(li)):
                         key = self.keys[i]
                         self.li1[i].append(li[i])
@@ -238,15 +232,12 @@ class DvmRunner(Base):
                     keysCheck +=1
             if self.keys_only_in_tgt:
                 for i in self.keys_only_in_tgt:
-                    # self.reporter.addRow(str(i),"Key Only In Target",status=status.FAIL)
                     li = i.split("--")
                     for i in range(len(li)):
                         key = self.keys[i]
                         self.li1[i].append(li[i])
                         value = self.li1[i]
                         dict3[key] = value
-                # dict1.get("Id1").append(li[0])
-                # dict1.get("Id2").append(li[1])
                     dict1.get("REASON OF FAILURE").append("keys only in target")
                     keysCheck +=1
             valueCheck =0
@@ -256,8 +247,8 @@ class DvmRunner(Base):
                     for field in self.headers:
                         src_val = self.df_1.loc[key_val,field]
                         tgt_val = self.df_2.loc[key_val,field]
-                        if self.configData["THRESHOLD"]:
-                            
+                        if "THRESHOLD" in self.configData:
+                            self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
                             if type(src_val)== numpy.float64 :
                                 src_val = self.truncate(src_val,int(self.configData["THRESHOLD"]))
                             if type(tgt_val)== numpy.float64:
@@ -266,8 +257,6 @@ class DvmRunner(Base):
                         if src_val != tgt_val and type(src_val)==type(tgt_val):
                             valueCheck +=1
                             li = key_val.split('--')
-                        # dict2.get('Id1').append(li[0])
-                        # dict2.get('Id2').append(li[1])
                         
                             for i in range(len(li)):
                                 key = self.keys[i]
@@ -283,8 +272,6 @@ class DvmRunner(Base):
 
                             valueCheck +=1
                             li = key_val.split('--')
-                        # dict2.get('Id1').append(li[0])
-                        # dict2.get('Id2').append(li[1])
                             for i in range(len(li)):
                                 key = self.keys[i]
                                 self.li2[i].append(li[i])
@@ -300,7 +287,9 @@ class DvmRunner(Base):
             df2_res = pd.DataFrame(dict4)
             if (keysCheck+valueCheck) == 0:
                 self.reporter.addRow("Data Validation Report","No MisMatch Value Found", status= status.PASS )
+                self.logger.info("----No MisMatch Value Found----")
             else:
+                self.logger.info("----Adding Data to Excel----")
                 with pd.ExcelWriter(excelPath) as writer1:
                     if keysCheck == 0:
                         pass
@@ -314,8 +303,6 @@ class DvmRunner(Base):
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
             self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))
-            if self.configData["THRESHOLD"]:
-                self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
 
         except Exception as e :
             self.logger.error(str(e))
