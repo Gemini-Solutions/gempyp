@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.engine.testData import TestData
 from gempyp.libs.enums.status import status
+from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
@@ -19,12 +20,15 @@ import logging
 from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
+import smtplib
+from gempyp.dvm.dvmRunner import DvmRunner
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     
     """
-    calls the differnt executors based on the type of the data
+    calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
+    Takes single testcase data as input
     """
 
     print("--------- In Executor Factory ----------\n")
@@ -38,7 +42,6 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
 
-
     if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
         #custom_logger.setLevel(logging.INFO)
@@ -46,6 +49,8 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
 
     elif data["config_data"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
+        return DvmRunner(data).dvmEngine()
+
         logging.info("starting the DVM testcase")
     elif data["config_data"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
@@ -54,7 +59,6 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
             return PypRest(data).restEngine()
         except Exception as e:
             traceback.print_exc()
-            print(e)
             return None, getError(e, data["config_data"])
 
 
@@ -62,6 +66,7 @@ class Engine:
     def __init__(self, params_config):
         """
         constructor used to  call run method
+        takes config as input
         """
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
@@ -70,6 +75,7 @@ class Engine:
     def run(self, params_config: Type[AbstarctBaseConfig]):
         """
         main method to call other methods that are required for report generation
+        takes config as input
         """
         logging.info("Engine Started")
         # initialize the data class
@@ -91,11 +97,13 @@ class Engine:
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
-        self.makeReport()
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
+        TemplateData().repSummary(self.repJson, output_file_path)
 
     def makeOutputFolder(self):
         """
-        to make GemPyp_Report folder 
+        make outputFolder for report named as gempyp_reports in user home directory if not given by the user and makes log fplder for log files
+        if given by user than set user given path for reports file   
         """
 
         logging.info("---------- Making output folders -------------")
@@ -155,7 +163,7 @@ class Engine:
 
     def makeSuiteDetails(self):
         """
-        making suite Details 
+        making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
@@ -189,7 +197,7 @@ class Engine:
     def start(self):
 
         """
-         check the mode and start the testcases accordingly
+         check the mode and start the testcases accordingly e.g.optimize,parallel
         """
 
         try:
@@ -232,8 +240,10 @@ class Engine:
 
     def startSequence(self):
         """
-        start running the testcases in sequence
-        """
+        start calling executoryFactory() for each testcase one by one according to their dependency
+        at last of each testcase calls the update_df() 
+        """ 
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -253,7 +263,8 @@ class Engine:
 
     def startParallel(self):
         """
-        start running the testcases in parallel
+        start calling executorFactory for testcases in parallel according to their drependency 
+        at last of each testcase calls the update_df()
         """
         pool = None
         try:
@@ -273,14 +284,15 @@ class Engine:
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
                     else:
+
                         print("----------------here--------------------")
                         dependency_error = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
-                            "product_type": testcase.get("PRODUCT_TYPE", None),
+                            "product type": testcase.get("product type", None),
                         }
-                        # handle dependency error in jsondata(update_df)
+                        # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
 
@@ -288,6 +300,7 @@ class Engine:
                     continue
                 # runs the testcase in parallel here
                 results = pool.map(executorFactory, pool_list)
+                print(results)
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
@@ -311,8 +324,9 @@ class Engine:
     def update_df(self, output: List, error: Dict):
 
         """
-        updates the testcase data in the dataframes
-        like
+        updates the testcase data in the dataframes of testData.py
+        also upload testcasedata to db
+        
         """
         try:
             if error:
@@ -320,21 +334,21 @@ class Engine:
                     error["message"],
                     error["testcase"],
                     error.get("category"),
-                    error.get("product_type"),
+                    error.get("product type"),
                     error.get('log_path', None)
                 )
                 output = [output]
             for i in output:
 
-                i["testcaseDict"]["steps"] = i["jsonData"]["steps"]
+                i["testcase_dict"]["steps"] = i["json_data"]["steps"]
                 
-                testcase_dict = i["testcaseDict"]
+                testcase_dict = i["testcase_dict"]
                 try:
                     """ update suite vars here from testcase_dict["suite_variables"] append it in the suite vars of _config"""
     
                     self.user_suite_variables.update(i.get("suite_variables", {}))
                     
-                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["jsonData"]
+                    self.testcase_data[testcase_dict.get("tc_run_id")] = i["json_data"]
                 except Exception as e:
                     logging.error(e)
 
@@ -358,7 +372,8 @@ class Engine:
         log_path: str = None
     ) -> Dict:
         """
-        store the data of failed testcase and return it as a dict
+        store the data of failed testcase and return it as a dict to update_df
+        take message for error as input
         """
 
         result = {}
@@ -381,11 +396,11 @@ class Engine:
         testcase_dict["user"] = self.user
         testcase_dict["machine"] = self.machine
         if product_type:
-            testcase_dict["product_type"] = product_type
+            testcase_dict["product type"] = product_type
 
-        result["testcaseDict"] = testcase_dict
+        result["testcase_dict"] = testcase_dict
 
-        misc["REASON_OF_FAILURE"] = message
+        misc["REASON OF FAILURE"] = message
 
         result["misc"] = misc
 
@@ -393,7 +408,8 @@ class Engine:
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):
         """
-        updates the misc data for the testcases
+        updates the misc data for the testcases in testData.py
+        accept miscellaneous rows and tc_run_id as parameters
         """
         misc_list = []
 
@@ -412,7 +428,7 @@ class Engine:
 
     def getTestcaseData(self, testcase: str) -> Dict:
         """
-        taking argument as the testcase name and  return
+        taking argument as the testcase name and  return dictionary containing information about testCase
         """
         data = {}
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
@@ -429,6 +445,7 @@ class Engine:
         """
         yields the testcases with least dependncy first
         Reverse toplogical sort
+        accept all testcases dictionary as arguments
         """
 
         adj_list = {
@@ -438,6 +455,7 @@ class Engine:
         for key, value in adj_list.items():
             new_list = []
             for testcase in value:
+
                 testcase = testcase.split(":")
                 if len(testcase) > 1:
                     new_list.append(testcase[1])
@@ -446,6 +464,9 @@ class Engine:
 
             adj_list[key] = set(new_list)
         while adj_list:
+            """
+            return testcases that doesn't depend on other testcase
+            """
             top_dep = set(
                 i for dependents in list(adj_list.values()) for i in dependents
             ) - set(adj_list.keys())
@@ -500,44 +521,3 @@ class Engine:
 
         return True
 
-    def makeReport(self):
-        """
-        saves the report json 
-        """
-        suite_report = None
-
-        self.date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
-
-        suite_path = os.path.dirname(__file__)
-        suite_path = os.path.join(os.path.split(suite_path)[0], "final_report.html")
-        with open(suite_path, "r") as f:
-            suite_report = f.read()
-        report_json = self.DATA.getJSONData()
-        report_json = json.loads(report_json)
-        report_json["TestStep_Details"] = self.testcase_data
-        report_json = json.dumps(report_json)
-        suite_report = suite_report.replace("DATA_1", report_json)
-        ResultFile = os.path.join(self.ouput_folder, "Result_{}.html".format(self.date))
-        self.ouput_file_path = ResultFile
-        with open(ResultFile, "w+") as f:
-            f.write(suite_report)
-        # converting report_json back to dictionary by json.loads()
-        self.repSummary(json.loads(report_json))
-    
-    def repSummary(self, report_json):
-        """
-        logging some information
-        """
-        try:
-            logging.info("---------- Finalised the report --------------")
-            logging.info("============== Run Summary =============")
-            count_info = {key.lower(): val for key, val in report_json['Suits_Details']['Testcase_Info'].items()}
-            log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
-            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
-            for key, val in count_info.items():
-                if key in status_dict.keys():
-                    log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
-            logging.info(log_str.strip(" | "))            
-            logging.info('-------- Report created Successfully at: {path}'.format(path=self.ouput_file_path))
-        except Exception as e:
-            logging.error(traceback.print_exc(e))

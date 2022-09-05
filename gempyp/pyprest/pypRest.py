@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import os
 import traceback
 import time
@@ -29,7 +30,7 @@ class PypRest(Base):
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
-
+        self.isLegacyPresent = self.isLegacyPresent()
 
 
         # set vars
@@ -37,7 +38,7 @@ class PypRest(Base):
 
         # setting reporter object
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
-        self.reporter._misc_data["REASON_OF_FAILURE"] = ""
+        self.reporter._misc_data["REASON OF FAILURE"] = ""
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
 
@@ -55,10 +56,10 @@ class PypRest(Base):
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.logger.error(traceback.print_exc())
-                    self.reporter._misc_data["REASON_OF_FAILURE"] += f"Something went wrong:- {str(e)}, "
+                    self.reporter._misc_data["REASON OF FAILURE"] += f"Something went wrong:- {str(e)}, "
                     self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
-            if self.reporter._misc_data["REASON_OF_FAILURE"] == "":
-                self.reporter._misc_data["REASON_OF_FAILURE"] = None
+            if self.reporter._misc_data["REASON OF FAILURE"] == "":
+                self.reporter._misc_data["REASON OF FAILURE"] = None
             ## variable replacement.val_not_found ---- replace variables with "NULL"
             VarReplacement(self).valueNotFound()
             output = writeToReport(self)
@@ -67,7 +68,7 @@ class PypRest(Base):
             self.logger.error(traceback.print_exc())
             common.errorHandler(self.logger, e, "Error occured while running the testcas")
             error_dict = getError(e, self.data["config_data"])
-            error_dict["jsonData"] = self.reporter.serialize()
+            error_dict["json_data"] = self.reporter.serialize()
             return None, error_dict
     
     def run(self):
@@ -83,15 +84,15 @@ class PypRest(Base):
         mandate = ["API", "METHOD", "HEADERS", "BODY"]
         # ---------------------------------------adding misc data -----------------------------------------------------
         # self.reporter.addMisc(Misc="Test data")
-        # self.reporter._misc_data["Reason_of_failure"] = "Mandatory keys are missing"
+        # self.reporter._misc_data["REASON OF FAILURE"] = "Mandatory keys are missing"
 
         # ------------------------------sample adding columns to testcase file-----------------------------------------------
         # self.reporter.addRow("User Profile Data cannot be fetched", "Token expired or incorrect", status.FAIL, test="test")
 
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
-            # update reason of failure in misc
-            if "Mandatory keys are missing, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
-                self.reporter._misc_data["REASON_OF_FAILURE"] += "Mandatory keys are missing, "
+            # update REASON OF FAILURE in misc
+            if "Mandatory keys are missing, " not in self.reporter._misc_data["REASON OF FAILURE"]:
+                self.reporter._misc_data["REASON OF FAILURE"] += "Mandatory keys are missing, "
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
             
@@ -144,13 +145,15 @@ class PypRest(Base):
         self.password = self.data["config_data"].get("PASSWORD", None)
 
         #get values of mandatory keys of legacy apis
-        if len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
+        if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
             self.legacy_api = self.data["config_data"]["LEGACY_API"].strip(" ")
             self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
             self.legacy_headers = json.loads(self.data["config_data"].get("LEGACY_HEADERS", {}))
             self.legacy_body = json.loads(self.data["config_data"].get("LEGACY_BODY", {}))  
-            self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")  
+            self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
+            self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
         #setting variables and variable replacement
+
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
     
@@ -223,13 +226,14 @@ class PypRest(Base):
                     self.logResponse()
                 elif str(e) == "abort":
                     raise Exception("abort")
-                traceback.print_exc()
+                if self.isLegacyPresent:
+                    traceback.print_exc()
         except Exception as e:
             if str(e) == "abort":
                 raise Exception("abort")
             self.logger.info(traceback.print_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
-            self.reporter._misc_data["REASON_OF_FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
+            self.reporter._misc_data["REASON OF FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
             raise Exception(f"Error occured while sending request - {str(e)}")
 
     def setVars(self):
@@ -315,8 +319,8 @@ class PypRest(Base):
                                  LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
-                if "Response code is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
-                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
+                if "Response code is not as expected, " not in self.reporter._misc_data["REASON OF FAILURE"]:
+                    self.reporter._misc_data["REASON OF FAILURE"] += "Response code is not as expected, "
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
                 raise Exception("abort")
                 # raise Exception("abort")       
@@ -340,8 +344,8 @@ class PypRest(Base):
                                  f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                                  status.FAIL)
-                if "Response code is not as expected, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
-                    self.reporter._misc_data["REASON_OF_FAILURE"] += "Response code is not as expected, "
+                if "Response code is not as expected, " not in self.reporter._misc_data["REASON OF FAILURE"]:
+                    self.reporter._misc_data["REASON OF FAILURE"] += "Response code is not as expected, "
                 self.logger.info("status codes did not match, aborting testcase.....")
                 raise Exception("abort")
 
@@ -492,4 +496,27 @@ class PypRest(Base):
             code_list = [exp_status_code_string.strip("'").strip(" ").strip('"')]
         code_list = [int(each.strip(" ")) for each in code_list if each not in ["", " "]]
         return code_list
+    
+    def isLegacyPresent(self):
+        if self.data["config_data"].get("LEGACY_API") is not None:
+            if self.data["config_data"].get("LEGACY_METHOD") is not None:
+                if json.loads(self.data["config_data"].get("LEGACY_HEADERS")) is not None:
+                        if json.loads(self.data["config_data"].get("LEGACY_BODY")) is not None:
+                            if self.data["config_data"].get("LEGACY_EXPECTED_STATUS_CODE") is not None:
+                                if self.data["config_data"].get("LEGACY_AUTHENTICATION", "") is not None:
+                                    return True
+                                else:
+                                    return False
+                            else:
+                                return False
+                        else:
+                            return False
+                else:
+                    return False
+            else:
+                return False
+        else:
+            return False
+    
+
 
