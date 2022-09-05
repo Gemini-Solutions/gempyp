@@ -18,6 +18,20 @@ def read_json(file_path):
     except Exception:
         res = None
     return res
+def readPath(file_name):
+        try:
+            conf = file_name.split(os.sep)
+            if conf[0] == ".." or conf[0]==".":
+                script_path, script_name = importFromPath(file_name)
+                for each in sys.path:
+                    if isinstance(each,dict) and each is not None:
+                        logging.info("--------- Fetching config path - {} ------".format( each['XMLConfigDir']))
+                        lib_path = os.path.join(each['XMLConfigDir'], file_name)
+                        return lib_path
+            else:
+                return file_name
+        except Exception as e:
+            traceback.print_exc()
 
 
 def findDuration(start_time: datetime, end_time: datetime):
@@ -94,7 +108,7 @@ def moduleImports(file_name):
             if script_path is not None:
                 sys.path.append(script_path)
             try:
-                dynamicTestcase = importlib.import_module(script_name)   
+                dynamicTestcase = importlib.import_module(script_name) 
             except Exception:
                 logging.info("when absolute and module import both failed")
                 try:
@@ -103,7 +117,7 @@ def moduleImports(file_name):
                             logging.info("--------- Fetching config path - {} ------".format( each['XMLConfigDir']))
                             lib_path = os.path.join(each['XMLConfigDir'], script_path)
                     sys.path.append(lib_path)
-                    dynamicTestcase = importlib.import_module(script_name.split(".")[0])  
+                    dynamicTestcase = importlib.import_module(script_name.split(".")[0])
                     import_flag = 1 
                 except Exception:
                     traceback.print_exc()
@@ -114,3 +128,4 @@ def moduleImports(file_name):
             logging.error("----- Error occured file could not be imported using any of the methods.-----")
             traceback.print_exc()
             return e
+

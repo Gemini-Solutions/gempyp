@@ -54,6 +54,8 @@ class AbstractSimpleTestcase(ABC):
     def RUN(self, cls, testcase_settings: Dict, **kwargs) -> List:
         """
         the main function which will be called by the executor
+        take argument as testcaseDict and call the gempypMethodExecutor() method
+        and later on call basetemplate finalizereport method and reurn data to testcaseRunner method 
         """
         # set the values from the report if not s et automatically
         self.logger = testcase_settings.get('LOGGER')
