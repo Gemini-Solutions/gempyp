@@ -152,8 +152,9 @@ class Engine:
         """
         to get the mail from the configData
         """
-        self.mail = common.parseMails(self.PARAMS["MAIL"])
-        print(self.mail)
+        if("MAIL" in self.PARAMS.keys()):
+            self.mail = common.parseMails(self.PARAMS["MAIL"])
+            print(self.mail)
 
     def makeSuiteDetails(self):
         """
