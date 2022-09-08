@@ -7,6 +7,7 @@ import json
 import traceback
 from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
+from unittest import TestCase
 import uuid
 from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
@@ -55,7 +56,6 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
             return PypRest(data).restEngine()
         except Exception as e:
             traceback.print_exc()
-            print(e)
             return None, getError(e, data["config_data"])
 
 
@@ -67,6 +67,7 @@ class Engine:
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
+        
 
     def run(self, params_config: Type[AbstarctBaseConfig]):
         """
@@ -152,8 +153,9 @@ class Engine:
         """
         to get the mail from the configData
         """
-        self.mail = common.parseMails(self.PARAMS["MAIL"])
-        print(self.mail)
+        if("MAIL" in self.PARAMS.keys()):
+            self.mail = common.parseMails(self.PARAMS["MAIL"])
+            print(self.mail)
 
     def makeSuiteDetails(self):
         """
@@ -236,6 +238,7 @@ class Engine:
         """
         start running the testcases in sequence
         """
+        
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -257,6 +260,7 @@ class Engine:
         """
         start running the testcases in parallel
         """
+        
         pool = None
         try:
             threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
@@ -266,14 +270,32 @@ class Engine:
                 threads = DefaultSettings.THREADS
             pool = Pool(threads)
             # decide the dependency order:
+            # for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
+            #     if len(testcases) == 0:
+            #         raise Exception("No testcase to run")
+            #     pool_list_subtestcase = []
+            #     for testcase in testcases:
+            #         # only append testcases whose dependency are passed otherwise just update the database
+            #         if self.executeSubtestcases(testcase):
+            #             pool_list_subtestcase.append(self.getTestcaseData(testcase.get("NAME")))
+            # subtestcases=[]
+            # parent=""
+            # for key,value in self.CONFIG.getTestcaseConfig().items():
+            #     if("SUBTESTCASES" in value.keys()):
+            #         subtestcases=list(set(list(value.get("SUBTESTCASES").split(",")))  - set([""]))
+            #         parent=key
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
                 pool_list = []
                 for testcase in testcases:
-                    # only append testcases whose dependency are passed otherwise just update the database
+                    # only append testcases whose dependency are passed otherwise just update the databasee
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
+                        if("SUBTESTCASES" in testcase.keys()):
+                            for key1 in testcase["SUBTESTCASES"].split(","):
+                                pool_list.append(self.getSubtestcaseData(key1))
+                        # pool_list.append(self.CONFIG.getSubTestcaseData(testcase.get("NAME")))
                     else:
                         print("----------------here--------------------")
                         dependency_error = {
@@ -285,17 +307,30 @@ class Engine:
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
-
+       
                 if len(pool_list) == 0:
                     continue
                 # runs the testcase in parallel here
+                print(pool_list)
+                print("#########################")
                 results = pool.map(executorFactory, pool_list)
+                print(results)
+                print("&&&&&&&&&&&&&&&&&&&&&&")
+                # for i in len(self.DATA.getJSONData()["TestCase Details"]):
+                #     if(self.DATA.getJSONData()["TestCase Details"][i]["NAME"] in self.subtestcases and self.DATA.getJSONData()["TestCase Details"][i]["status"]=="FAIL"):
+                #         results
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
                             "Some error occured while running the testcases"
                         )
                     output = row[0]
+                    # json_data=json.loads(self.DATA.getJSONData())
+                    # if(output[0]["testcase_dict"]["name"]==parent):
+                    #     for i in range(len(json_data["Suits_Details"]["TestCase_Details"])):
+                    #         if(json_data["Suits_Details"]["TestCase_Details"][i]["name"] in subtestcases and json_data["Suits_Details"]["TestCase_Details"][i]["status"]=="FAIL"):
+                    #             output[0]["testcase_dict"]["status"]="FAIL"
+                    
                     error = row[1]
                     if error:
                         logging.error(
@@ -427,15 +462,34 @@ class Engine:
         data["SUITE_VARS"] = self.user_suite_variables
         return data
 
+    def getSubtestcaseData(self, testcase: str) -> Dict:
+        """
+        taking argument as the testcase name and  return
+        """
+        data = {}
+        data["config_data"] = self.CONFIG.getSubTestcaseData(testcase)
+        data["PROJECT_NAME"] = self.project_name
+        data["ENV"] = self.project_env
+        data["S_RUN_ID"] = self.s_run_id
+        data["USER"] = self.user
+        data["MACHINE"] = self.machine
+        data["OUTPUT_FOLDER"] = self.testcase_folder
+        data["SUITE_VARS"] = self.user_suite_variables
+        return data
+
     def getDependency(self, testcases: Dict):
         """
         yields the testcases with least dependncy first
         Reverse toplogical sort
         """
-
-        adj_list = {
-            key: list(set(list(value.get("DEPENDENCY", "").split(","))) - set([""])) for key, value in testcases.items()
-        }
+        adj_list={}
+        for key,value in testcases.items():
+                adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""])) 
+        # #     if("SUBTESTCASES" in value.keys()):
+        # #             adj_list[key]=list(set(list(value.get("SUBTESTCASES").split(",")))  - set([""]))
+        #     else:
+        # adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""])) 
+      
 
         for key, value in adj_list.items():
             new_list = []
@@ -447,12 +501,13 @@ class Engine:
                     new_list.append(testcase[0])
 
             adj_list[key] = set(new_list)
+        
         while adj_list:
             top_dep = set(
                 i for dependents in list(adj_list.values()) for i in dependents
             ) - set(adj_list.keys())
             top_dep.update(key for key, value in adj_list.items() if not value)
-
+        
             if not top_dep:
                 logging.critical(
                     "circular dependency found please remove the cirular dependency"
@@ -461,12 +516,13 @@ class Engine:
                 sys.exit(1)
 
             adj_list = {key: value - top_dep for key, value in adj_list.items() if value}
-
             result = []
             for key in testcases:
                 if key in top_dep:
                     result.append(testcases[key])
             yield result
+
+   
 
     def isDependencyPassed(self, testcase: Dict) -> bool:
         """
@@ -474,30 +530,34 @@ class Engine:
         """
 
         # split on ','
-        for dep in list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""])):
+        listOfTestcases=[]
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""]))
+        for dep in listOfTestcases:
 
-            dep_split = list(dep.split(":"))
+                    dep_split = list(dep.split(":"))
+                    if len(dep_split) == 1:
+                        # NAME to name, to_list()
+                        if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
+                            return False
 
-            if len(dep_split) == 1:
-                # NAME to name, to_list()
-                if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
-                    return False
+                    else:
+                        if dep_split[0].upper() == "P":
+                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                                return False
+                            # way to parsing the df    
+                            if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
+                                return False
 
-            else:
-                if dep_split[0].upper() == "P":
-                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                        return False
-                    # way to parsing the df    
-                    if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
-                        return False
-
-                if dep_split[0].upper() == "F":
-                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                        return False
-                    if (
-                        (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
-                        != status.FAIL.name
-                    ):
-                        return False
+                        if dep_split[0].upper() == "F":
+                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                                return False
+                            if (
+                                (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
+                                != status.FAIL.name
+                            ):
+                                return False
 
         return True
+    
+ 
+                

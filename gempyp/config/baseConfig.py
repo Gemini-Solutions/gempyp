@@ -26,10 +26,16 @@ class AbstarctBaseConfig(ABC):
         """reutrn the testCaseData to filter method"""
         # logging.info("--------testCaseDict--------\n {testcaseDict} \n----------".format(testcaseDict=self._CONFIG["TESTCASE_DATA"]))
         return self._CONFIG["TESTCASE_DATA"]
+    
+    def getSubtestcasesConfig(self) -> Dict:
+
+        return self._CONFIG["SUBTESTCASES_DATA"]
 
     def getTestcaseData(self, testcaseName: str) -> Dict:
         return self._CONFIG["TESTCASE_DATA"].get(testcaseName, None)
     
+    def getSubTestcaseData(self, testcaseName: str) -> Dict:
+        return self._CONFIG["SUBTESTCASES_DATA"].get(testcaseName, None)
 
     def getTestcaseLength(self) -> int:
         """
@@ -50,8 +56,13 @@ class AbstarctBaseConfig(ABC):
         """
         testcase_data = self.getTestcaseConfig()
         filtered_dict = {}
+        filtered_dict_subtestcases = {}
+        testcases=[]
 
         for key, value in testcase_data.items():
+            if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
+                testcases=value.get("SUBTESTCASES").split(",")
+                testcases.append(key)
             if value.get("RUN_FLAG", "N").upper() != "Y":
                 continue
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
@@ -62,7 +73,13 @@ class AbstarctBaseConfig(ABC):
 
             # TODO add more filters
 
+
             filtered_dict[key] = value
+        if(len(testcases)>0):
+            for i in range(len(testcases)):
+                if(testcases[i] in testcase_data.keys()):
+                    filtered_dict_subtestcases[testcases[i]]=testcase_data.get(testcases[i])
+        self._CONFIG["SUBTESTCASES_DATA"]=filtered_dict_subtestcases
 
         self._CONFIG["TESTCASE_DATA"] = filtered_dict
 
