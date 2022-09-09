@@ -84,6 +84,9 @@ def getOutput(data):
     for key in all_status:
         total = total + all_status[key]
     data["json_data"]["metaData"][2]["TOTAL"] = total
+    unsorted_dict = data["json_data"]["metaData"][2]
+    sorted_dict = dict( sorted(unsorted_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
+    data["json_data"]["metaData"][2] = sorted_dict
     try:
         log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log')
     except Exception:

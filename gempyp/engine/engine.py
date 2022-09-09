@@ -224,6 +224,7 @@ class Engine:
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
         total = sum(status_dict.values())
         status_dict["TOTAL"] = total
+        status_dict = dict( sorted(status_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -300,7 +301,6 @@ class Engine:
                     continue
                 # runs the testcase in parallel here
                 results = pool.map(executorFactory, pool_list)
-                print(results)
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(

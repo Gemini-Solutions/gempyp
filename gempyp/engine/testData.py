@@ -149,6 +149,7 @@ class TestData:
                 testcase_dict[i].pop("userDefinedData")
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
+        testcase_counts = dict( sorted(testcase_counts.items(), key=lambda x: x[0].lower(), reverse=True) )
         suite_dict["Testcase_Info"] = testcase_counts
         suite_report["Suits_Details"] = suite_dict
         suite_report["reportProduct"] = "GEMPYP"        
