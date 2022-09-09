@@ -2,6 +2,7 @@ from typing import Dict, List
 
 
 def xmlToDict(root) -> Dict:
+    """convert data from xml to dict"""
     Result = {}
     for element in root:
         # if element has children

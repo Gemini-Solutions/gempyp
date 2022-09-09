@@ -8,7 +8,10 @@ from datetime import datetime, timezone
 
 class TestData:
     def __init__(self):
-        self.testcase_detail_column = [
+        """
+        declairing some attribute the are used in testcaseDetails in report and return a object that is used to update data
+        """
+        self.testcaseDetailColumn = [
             "tc_run_id",
             "start_time",
             "end_time",
@@ -20,7 +23,7 @@ class TestData:
             "user",
             "machine",
             "result_file",
-            "product_type",
+            "product type",
             "ignore",
             "miscData",
             "userDefinedData",
@@ -31,12 +34,13 @@ class TestData:
         # this should always have one row so it can be made a dict or something instad of a dataframe
         self.suite_detail = pd.DataFrame()
 
-        self.testcase_details = pd.DataFrame(columns=self.testcase_detail_column)
+        self.testcase_details = pd.DataFrame(columns=self.testcaseDetailColumn)
         self.misc_details = pd.DataFrame(columns=self.misc_detail_column)
 
     def toSuiteJson(self):
         """
-        converts the dataframe to suiteJson
+        converts the dataframe to Json
+        used in uploadsuitedata (run() method in engine.py)
         """
         if self.suite_detail.empty:
             return {}
@@ -54,7 +58,8 @@ class TestData:
 
     def totestcaseJson(self, tc_run_id, s_run_id):
         """
-        returns the testcase for that specific json
+        returns the json for testcasedata
+        used in update_df method of engine.py
         """
 
         test_data = self.testcase_details.loc[
@@ -111,7 +116,7 @@ class TestData:
 
     def getJSONData(self):
         """
-        provide the report json
+        provide the report json to makereport() method of engine file
         """
         suite_report = {}
         suite_dict = self.suite_detail.to_dict(orient="records")[0]
