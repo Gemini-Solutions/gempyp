@@ -73,7 +73,7 @@ def getOutput(data):
     tempdict["status"] = data["STATUS"]
     tempdict["user"] = data["TESTCASEMETADATA"]["USER"]
     tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]
-    tempdict["product_type"] = "GEMPYP"
+    tempdict["product type"] = "GEMPYP"
     tempdict["result_file"] = data["RESULT_FILE"]
     tempdict["start_time"] = data["START_TIME"]
     tempdict["end_time"] = data["END_TIME"]

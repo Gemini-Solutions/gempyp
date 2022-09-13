@@ -27,6 +27,7 @@ class TestData:
             "ignore",
             "miscData",
             "userDefinedData",
+            "duration",
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -78,6 +79,7 @@ class TestData:
             else:
                 test_status[key] = 1
         test_status["TOTAL"] = sum(test_status.values())
+        test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
         """ Adding misc data to userDefinedData column for each testcase

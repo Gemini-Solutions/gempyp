@@ -176,7 +176,7 @@ class Engine:
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
-            "s_end_time": None,
+            "s_end_time": self.start_time,
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
@@ -188,7 +188,8 @@ class Engine:
             "run_mode": run_mode,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
-            "report_name": self.report_info
+            "report_name": self.report_info,
+            "duration": None
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -238,6 +239,7 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
+        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)
 
     def startSequence(self):
         """
