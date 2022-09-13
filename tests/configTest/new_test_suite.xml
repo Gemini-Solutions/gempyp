@@ -101,26 +101,7 @@
 
 
         </testcase>
-        <testcase>
-            <name>Test_functions_A</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://restcountries.com/v3.1/lang/german</api>
-            <method>GET</method>
-            <body>{}</body>
-            <headers>{}</headers>
-            <expected_status_code>200</expected_status_code>
-            <authentication></authentication>
-            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
-            <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
-            <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var2]="SUITE_VAR2";</post_variables>
-            <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
-            <location>tests</location>
-            <debug_mode>false</debug_mode>
-            <report_misc>set $[#misc.report_columns]=$[#post_var_meth]</report_misc>
-            <extra_args>hellp</extra_args>
-            <TYPE>PYPREST</TYPE>
-        </testcase>
+       
         <testcase>
             <name>legacy key check and post assertion check with rest Country</name>
             <category>sample</category>
@@ -216,73 +197,6 @@
             <TYPE>PYPREST</TYPE>
 
         </testcase>
-
-
-        <testcase>
-            <name>Test_functions_1</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://restcountries.com/v3.1/lang/german</api>
-            <method>GET</method>
-            <body>{}</body>
-            <headers>{}</headers>
-            <expected_status_code>300,400</expected_status_code>
-            <authentication></authentication>
-            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
-            <key_check></key_check>
-            <post_variables></post_variables>
-            <post_assertion></post_assertion>
-            <legacy_api>https://gorest.co.in/public/v2/users</legacy_api>
-            <legacy_method>POST</legacy_method>
-            <legacy_headers>{"accept":"application/json"}</legacy_headers>
-            <legacy_body>{}</legacy_body>
-            <legacy_expected_status_code>200,300</legacy_expected_status_code>
-            <debug_mode>false</debug_mode>
-            <report_misc></report_misc>
-            <TYPE>PYPREST</TYPE>
-        </testcase>
-        <testcase>
-            <name>Test_functions_11</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://gorest.co.in/public/v2/users</api>
-            <method>GET</method>
-            <body>{}</body>
-            <headers>{}</headers>
-            <expected_status_code>200</expected_status_code>
-            <authentication></authentication>
-            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
-            <key_check></key_check>
-            <post_variables></post_variables>
-            <post_assertion></post_assertion>
-            <legacy_api>https://gorest.co.in/public/v2/users</legacy_api>
-            <legacy_method>GET</legacy_method>
-            <legacy_headers>{"accept":"application/json"}</legacy_headers>
-            <legacy_body>{}</legacy_body>
-            <legacy_expected_status_code>200</legacy_expected_status_code>
-            <debug_mode>false</debug_mode>
-            <report_misc></report_misc>
-            <TYPE>PYPREST</TYPE>
-        </testcase>
-
-        <testcase>
-            <name>TC_2</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://apis-beta.gemecosystem.com/company</api>
-            <method>GET</method>
-            <body>{}</body>
-            <headers>{}</headers>
-            <expected_status_code>200,300,400,500</expected_status_code>
-            <authentication></authentication>
-            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
-            <key_check>keys are response.data</key_check>
-            <post_variables></post_variables>
-            <post_assertion></post_assertion>
-            <debug_mode>false</debug_mode>
-            <report_misc></report_misc>
-            <TYPE>PYPREST</TYPE>
-        </testcase>
         <testcase>
             <name>fail_case</name>
             <category>sample</category>
@@ -300,24 +214,6 @@
             <debug_mode>false</debug_mode>
             <report_misc></report_misc>
             <TYPE>PYPREST</TYPE>
-        </testcase>
-
-        <testcase>
-            <name>Single api restcountry</name>
-            <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://restcountries.com/v3.1/lang/german</api>
-            <method>GET</method>
-            <body>{}</body>
-            <headers>{}</headers>
-            <expected_status_code>200,300,400</expected_status_code>
-            <authentication></authentication>
-            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
-            <post_assertion>compare response[0].name.common not to 'germany'; compare name.common to 'namibia'</post_assertion>
-            <debug_mode>false</debug_mode>
-            <report_misc></report_misc>
-            <TYPE>PYPREST</TYPE>
-
         </testcase>
     </testcases>
 
