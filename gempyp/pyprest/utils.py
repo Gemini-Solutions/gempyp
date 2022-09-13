@@ -65,7 +65,7 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
                 key_num = int(key[br_start + 1:br_end])
                 key_num, json_ = getNestedListData(key, json_, key_val)
 
-                if key_val == "response" or key_val=="legacy" and isinstance(json_, list) :
+                if key_val == "response" or key_val == "legacy" and isinstance(json_, list) :
                     json_ = json_[key_num]
                 else:
                     json_ = json_[key_val][key_num]
@@ -85,6 +85,20 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
             final_key_value[actual_key] = each_value_list
         
         return final_key_value
+
+
+def getValuesForEach(each_value_dict, keys_to_fetch):
+    """Getting values in case of "each operator" """
+    logger.info(f"Keys to be fetched from response - {keys_to_fetch}")
+    for key in keys_to_fetch:
+        if key in each_value_dict:
+            each_value_dict = each_value_dict[key]
+            if each_value_dict is None:
+                each_value_dict = "null"
+                break
+        else:
+            return "not found"
+    return each_value_dict
 
 
 def getNestedListData(i, json_data, key_val):
