@@ -181,7 +181,7 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "report_type": self.report_name,
+            "s_report_type": self.report_name,
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
