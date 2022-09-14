@@ -79,6 +79,15 @@ class TestData:
             else:
                 test_status[key] = 1
         test_status["TOTAL"] = sum(test_status.values())
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in test_status :
+                sorted_dict[key] = test_status[key]
+                test_status.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(test_status)
         test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
@@ -103,8 +112,7 @@ class TestData:
                 "EXECUTION ENDED ON": {"value": test_data["end_time"], "type": "datetime"}, 
                 "EXECUTION DURATION": findDuration(test_data["start_time"], test_data["end_time"])
             }, 
-            test_status]
-
+            sorted_dict]
 
         test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
@@ -151,7 +159,16 @@ class TestData:
                 testcase_dict[i].pop("userDefinedData")
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
-        testcase_counts = dict( sorted(testcase_counts.items(), key=lambda x: x[0].lower(), reverse=True) )
+        prio_list = ['total', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in testcase_counts :
+                sorted_dict[key] = testcase_counts[key]
+                testcase_counts.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(testcase_counts)
+        testcase_counts = sorted_dict
         suite_dict["Testcase_Info"] = testcase_counts
         suite_report["Suits_Details"] = suite_dict
         suite_report["reportProduct"] = "GEMPYP"        

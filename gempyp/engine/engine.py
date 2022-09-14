@@ -225,7 +225,18 @@ class Engine:
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
         total = sum(status_dict.values())
         status_dict["TOTAL"] = total
-        status_dict = dict( sorted(status_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
+        unsorted_dict = status_dict
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in unsorted_dict :
+                sorted_dict[key] = unsorted_dict[key]
+                unsorted_dict.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0    
+        sorted_dict.update(unsorted_dict)
+        status_dict = sorted_dict
+        # status_dict = dict( sorted(status_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -255,7 +266,6 @@ class Engine:
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 output, error = executorFactory(data, custom_logger)
-                
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -340,6 +350,7 @@ class Engine:
                     error.get('log_path', None)
                 )
                 output = [output]
+            self.totalOrder(output)
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -523,3 +534,17 @@ class Engine:
 
         return True
 
+    def totalOrder(self,output):
+        
+        
+        unsorted_dict = output[0]['json_data']['metaData'][2]
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in unsorted_dict :
+                sorted_dict[key] = unsorted_dict[key]
+                unsorted_dict.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(unsorted_dict)
+        output[0]['json_data']['metaData'][2] = sorted_dict

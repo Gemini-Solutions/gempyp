@@ -47,9 +47,6 @@ def writeToReport(dvm_obj):
     for key in all_status:
         total += all_status[key]
     result["json_data"]["metaData"][2]["TOTAL"] = total
-    unsorted_dict = result["json_data"]["metaData"][2]
-    sorted_dict = dict( sorted(unsorted_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
-    result["json_data"]["metaData"][2] = sorted_dict
 
     # getting the log file ( the custom gempyp logger)
     
