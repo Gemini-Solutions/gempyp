@@ -1,7 +1,6 @@
 <data>
 
     <suite>
-        <mail>test@gmail.com</mail>
         <project>GEMPYP_TEST</project>
         <report_name>FEATURE_REGRESSION</report_name>
         <mode>sequence</mode>
@@ -80,8 +79,11 @@
 
         <testcase>
             <name>Main_testcase</name>
+<<<<<<< HEAD
+=======
             <set>sample</set>
             <run_flag>Y</run_flag>
+>>>>>>> 4911324e2a2e85be3882128ade84f56dd3fb9f0a
             <category>sample</category>
             <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
