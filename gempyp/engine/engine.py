@@ -158,8 +158,9 @@ class Engine:
         """
         to get the mail from the configData
         """
-        self.mail = common.parseMails(self.PARAMS["MAIL"])
-        print(self.mail)
+        if("MAIL" in self.PARAMS.keys()):
+            self.mail = common.parseMails(self.PARAMS["MAIL"])
+            print(self.mail)
 
     def makeSuiteDetails(self):
         """
@@ -176,11 +177,11 @@ class Engine:
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
-            "s_end_time": None,
+            "s_end_time": self.start_time,
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "report_type": self.report_name,
+            "s_report_type": self.report_name,
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
@@ -188,7 +189,8 @@ class Engine:
             "run_mode": run_mode,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
-            "report_name": self.report_info
+            "report_name": self.report_info,
+            "duration": None
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -224,6 +226,18 @@ class Engine:
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
         total = sum(status_dict.values())
         status_dict["TOTAL"] = total
+        unsorted_dict = status_dict
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in unsorted_dict :
+                sorted_dict[key] = unsorted_dict[key]
+                unsorted_dict.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0    
+        sorted_dict.update(unsorted_dict)
+        status_dict = sorted_dict
+        # status_dict = dict( sorted(status_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -237,6 +251,7 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
+        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)
 
     def startSequence(self):
         """
@@ -252,7 +267,6 @@ class Engine:
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 output, error = executorFactory(data, custom_logger)
-                
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -300,7 +314,6 @@ class Engine:
                     continue
                 # runs the testcase in parallel here
                 results = pool.map(executorFactory, pool_list)
-                print(results)
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
@@ -338,6 +351,7 @@ class Engine:
                     error.get('log_path', None)
                 )
                 output = [output]
+            self.totalOrder(output)
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -521,3 +535,17 @@ class Engine:
 
         return True
 
+    def totalOrder(self,output):
+        
+        
+        unsorted_dict = output[0]['json_data']['metaData'][2]
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in unsorted_dict :
+                sorted_dict[key] = unsorted_dict[key]
+                unsorted_dict.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(unsorted_dict)
+        output[0]['json_data']['metaData'][2] = sorted_dict
