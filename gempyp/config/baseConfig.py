@@ -11,7 +11,7 @@ class AbstarctBaseConfig(ABC):
         try:
             self.parse(*args, **kwargs)
             # filter removed from here because we need to apply filter after updating data with cli input(if given)
-            self.update()
+            # self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
             traceback.print_exc()
@@ -87,7 +87,5 @@ class AbstarctBaseConfig(ABC):
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:
             print("error occurs in update",error)
-        """
-        update the suiteData that is given in CLI inputs
-        """
+        
         

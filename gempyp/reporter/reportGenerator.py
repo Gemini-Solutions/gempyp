@@ -130,7 +130,7 @@ class TemplateData:
         json_data = self._toJSON()
         return json.loads(json_data)
 
-    def repSummary(self, repJson, output_file_path):
+    def repSummary(self, repJson, output_file_path, jewel_link):
         """
         logging some information
         """
@@ -143,10 +143,12 @@ class TemplateData:
             for key, val in count_info.items():
                 if key in status_dict.keys():
                     log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
-        
+            
 
             logging.info(log_str.strip(" | "))
             
+            if len(jewel_link)>0:
+                logging.info('Report at Jewel: {link}'.format(link = jewel_link))
             logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
 
 

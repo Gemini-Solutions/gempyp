@@ -88,8 +88,11 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
+        #jewel variable is to print jewel link in rep summary
+        self.jewel = ''
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            self.jewel = f'https://jewel.gemecosystem.com/#/autolytics/extent-report?s_run_id={self.s_run_id}'
         else:
             logging.warning("Either username or bridgetoken is missing thus data is not uploaded in db.")
         self.makeOutputFolder()
@@ -98,7 +101,7 @@ class Engine:
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
-        TemplateData().repSummary(self.repJson, output_file_path)
+        TemplateData().repSummary(self.repJson, output_file_path,self.jewel)
 
     def makeOutputFolder(self):
         """
@@ -150,7 +153,6 @@ class Engine:
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
         self.report_info = self.PARAMS.get("REPORT_INFO")
-        
 
         #add suite_vars here 
 
