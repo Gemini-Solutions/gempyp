@@ -4,7 +4,8 @@ import time
 import logging
 import importlib
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Type
+from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
@@ -88,6 +89,19 @@ class PypRest(Base):
         # ------------------------------sample adding columns to testcase file-----------------------------------------------
         # self.reporter.addRow("User Profile Data cannot be fetched", "Token expired or incorrect", status.FAIL, test="test")
 
+        if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()):
+            self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
+            list_subtestcases=self.data["config_data"]["SUBTESTCASES_DATA"]
+            for i in range(len(list_subtestcases)):
+                # print(self.data["config_data"]["SUBTESTCASES_DATA"][i]["NAME"])
+                self.reporter.addRow("Subtestcase",f'Subtestcase Name: {list_subtestcases[i]["NAME"]}',status.INFO)
+                self.data["config_data"]=list_subtestcases[i]
+                self.getVals()
+                 # execute and format result 
+                self.execRequest()
+                self.postProcess()
+                MiscVariables(self).miscVariables()
+                
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update reason of failure in misc
             if "Mandatory keys are missing, " not in self.reporter._misc_data["REASON_OF_FAILURE"]:
@@ -492,4 +506,6 @@ class PypRest(Base):
             code_list = [exp_status_code_string.strip("'").strip(" ").strip('"')]
         code_list = [int(each.strip(" ")) for each in code_list if each not in ["", " "]]
         return code_list
+
+   
 

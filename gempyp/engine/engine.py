@@ -292,9 +292,6 @@ class Engine:
                     # only append testcases whose dependency are passed otherwise just update the databasee
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
-                        if("SUBTESTCASES" in testcase.keys()):
-                            for key1 in testcase["SUBTESTCASES"].split(","):
-                                pool_list.append(self.getSubtestcaseData(key1))
                         # pool_list.append(self.CONFIG.getSubTestcaseData(testcase.get("NAME")))
                     else:
                         print("----------------here--------------------")
@@ -312,10 +309,8 @@ class Engine:
                     continue
                 # runs the testcase in parallel here
                 print(pool_list)
-                print("#########################")
+                print("##############################")
                 results = pool.map(executorFactory, pool_list)
-                print(results)
-                print("&&&&&&&&&&&&&&&&&&&&&&")
                 # for i in len(self.DATA.getJSONData()["TestCase Details"]):
                 #     if(self.DATA.getJSONData()["TestCase Details"][i]["NAME"] in self.subtestcases and self.DATA.getJSONData()["TestCase Details"][i]["status"]=="FAIL"):
                 #         results
@@ -452,7 +447,12 @@ class Engine:
         taking argument as the testcase name and  return
         """
         data = {}
+        list_subtestcases=[]
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
+        if("SUBTESTCASES" in data["config_data"].keys()):
+            for key1 in data["config_data"]["SUBTESTCASES"].split(","):
+                list_subtestcases.append(self.CONFIG.getSubTestcaseData(key1))
+            data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
         data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
         data["S_RUN_ID"] = self.s_run_id
@@ -462,20 +462,7 @@ class Engine:
         data["SUITE_VARS"] = self.user_suite_variables
         return data
 
-    def getSubtestcaseData(self, testcase: str) -> Dict:
-        """
-        taking argument as the testcase name and  return
-        """
-        data = {}
-        data["config_data"] = self.CONFIG.getSubTestcaseData(testcase)
-        data["PROJECT_NAME"] = self.project_name
-        data["ENV"] = self.project_env
-        data["S_RUN_ID"] = self.s_run_id
-        data["USER"] = self.user
-        data["MACHINE"] = self.machine
-        data["OUTPUT_FOLDER"] = self.testcase_folder
-        data["SUITE_VARS"] = self.user_suite_variables
-        return data
+    
 
     def getDependency(self, testcases: Dict):
         """
