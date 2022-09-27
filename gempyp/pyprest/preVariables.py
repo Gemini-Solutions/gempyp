@@ -25,6 +25,7 @@ class PreVariables:
     def preVariable(self):
         """
         Maintaining 2 types of dictionaries- local and suile level"""
+        
         self.pyprest_obj.variables["local"] = {}
         # self.pyprest_obj.variables["suite"] = {}
         self.pyprest_obj.variables["suite"] = self.pyprest_obj.data.get("SUITE_VARS",{})
@@ -51,7 +52,8 @@ class PreVariables:
                         
                         self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1])
                     self.pyprest_obj.variables[scope][key] = self.getFunctionValues(each_item[1])
-                  
+            print(self.pyprest_obj.variables)
+            print("@@@@@@@@@@@@@@@@@@@@@@@@")
 
                     
             self.pyprest_obj.logger.info(f"Setting PRE VARIABLES: -------- {str(self.pyprest_obj.variables)}")
