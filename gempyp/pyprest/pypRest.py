@@ -97,31 +97,31 @@ class PypRest(Base):
             
             self.variables["local"] = {}
             # self.pyprest_obj.variables["suite"] = {}
-            self.variables["suite"] = self.data["config_data"]["SUITE_VARS"]
+            self.variables["suite"] = self.data["SUITE_VARS"]
             for i in range(len(self.list_subtestcases)):
                 # print(self.data["config_data"]["SUBTESTCASES_DATA"][i]["NAME"])
                 self.reporter.addRow("<b>Subtestcase</b>",f'<b>Subtestcase Name: {self.list_subtestcases[i]["NAME"]}</b>',status.INFO)
                 self.data["config_data"]=self.list_subtestcases[i]
                 self.getVals()
 
-                # requestObj=api.Request()
-                # requestObj.api = self.api
-                # requestObj.method = self.method
-                # requestObj.body = self.body
-                # requestObj.headers = self.headers
-                # requestObj.file = self.file
-                # if self.auth_type == "NTLM":
-                #     requestObj.credentials = {"username": self.username, "password": self.password}
-                #     requestObj.auth = "PASSWORD"
-                # self.request_obj.append(requestObj)
+                requestObj=api.Request()
+                requestObj.api = self.api
+                requestObj.method = self.method
+                requestObj.body = self.body
+                requestObj.headers = self.headers
+                requestObj.file = self.file
+                if self.auth_type == "NTLM":
+                    requestObj.credentials = {"username": self.username, "password": self.password}
+                    requestObj.auth = "PASSWORD"
+                self.request_obj.append(requestObj)
                 self.execRequest()
 
 
                 # self.getVals()
                 #  # execute and format result 
                 # self.execRequest()
-                # self.postProcess()
-                # MiscVariables(self).miscVariables()
+                self.postProcess()
+                MiscVariables(self).miscVariables()
                 
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update reason of failure in misc
@@ -197,8 +197,8 @@ class PypRest(Base):
         -sends request
         -log response 
         -stores it in self object"""
-        # if(len(self.request_obj)>0):
-        #     self.req_obj.api=self.request_obj[-1].api
+        if(len(self.request_obj)>0):
+            self.req_obj=self.request_obj[-1]
 
         # if(len(self.request_obj)>0):
         #     self.req_obj=self.request_obj[-1]
@@ -211,15 +211,15 @@ class PypRest(Base):
             #     self.req_obj.credentials = self.request_obj[-1].credentials
             #     self.req_obj.auth = self.request_obj[-1].auth
 
-        # else:
-        self.req_obj = api.Request()
+        else:
+            self.req_obj = api.Request()
             # create request
-        self.req_obj.api = self.api
-        self.req_obj.method = self.method
-        self.req_obj.body = self.body
-        self.req_obj.headers = self.headers
-        self.req_obj.file = self.file
-        if self.auth_type == "NTLM":
+            self.req_obj.api = self.api
+            self.req_obj.method = self.method
+            self.req_obj.body = self.body
+            self.req_obj.headers = self.headers
+            self.req_obj.file = self.file
+            if self.auth_type == "NTLM":
                 self.req_obj.credentials = {"username": self.username, "password": self.password}
                 self.req_obj.auth = "PASSWORD"
 

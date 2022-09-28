@@ -14,13 +14,14 @@
             <name>Test_functions_1</name>
             <category>sample</category>
             <run_flag>N</run_flag>
-            <api>https://restcountries.com/v3.1/lang/german</api>
-            <method>GET</method>
+            <api>""</api>
+            <method>""</method>
             <body>{}</body>
             <headers>{}</headers>
+            <before_file>path=C:\Users\ta.agarwal\Desktop\Gempyp_apis\gempyp\tests\sample_testcase\BeforeFile.py,class=before,method=before_</before_file>
             <expected_status_code>200,404,201</expected_status_code>
             <authentication></authentication>
-            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
+            <pre_variables>set $[#varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#user]=users; set $[#SUITE.var1]=VAR_1</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
             <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var2]="SUITE_VAR2";</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
