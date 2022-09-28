@@ -139,6 +139,7 @@ class Engine:
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
         self.testcase_data = {}
+        self.total_runable_testcase = config.total_yflag_testcase
         self.machine = platform.node()
         if("USERNAME" in self.PARAMS):
             self.user = self.PARAMS["USERNAME"]
@@ -189,6 +190,7 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
+            "expected_testcase": self.total_runable_testcase,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
             "report_name": self.report_info,

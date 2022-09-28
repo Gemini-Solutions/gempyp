@@ -8,6 +8,8 @@ class AbstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):
         self._CONFIG = {}
         self.cli_config ={}
+        self.total_yflag_testcase =0
+        
         try:
             self.parse(*args, **kwargs)
             # filter removed from here because we need to apply filter after updating data with cli input(if given)
@@ -54,6 +56,8 @@ class AbstarctBaseConfig(ABC):
         for key, value in testcase_data.items():
             if value.get("RUN_FLAG", "N").upper() != "Y":
                 continue
+            if value.get("RUN_FLAG", "Y").upper() == "Y":
+                self.total_yflag_testcase += 1
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
                 continue
             if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
@@ -71,7 +75,7 @@ class AbstarctBaseConfig(ABC):
                 continue
 
             filtered_dict[key] = value
-
+        
         self._CONFIG["TESTCASE_DATA"] = filtered_dict
 
     # TODO
