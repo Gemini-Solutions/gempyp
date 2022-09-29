@@ -79,14 +79,8 @@
 
         <testcase>
             <name>Main_testcase</name>
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
             <set>sample</set>
             <run_flag>Y</run_flag>
->>>>>>> 4911324e2a2e85be3882128ade84f56dd3fb9f0a
->>>>>>> c111a1e8a96ae05ba42759cde2fdc2c94dcc81ce
             <category>sample</category>
             <run_flag>N</run_flag>
             <path>..\sample_testcase\Testcase_methods_2.py</path>
@@ -167,11 +161,7 @@
         </testcase>
         <testcase>
             <name>Test_functions_4</name>
-<<<<<<< HEAD
-            <category>sample1</category>
-=======
             <category>sample</category>
->>>>>>> 1b08812ce7ffbb47cf300dcc8ff79871304d8052
             <run_flag>Y</run_flag>
             <api>https://github.com/in/null</api>
             <method>GET</method>
