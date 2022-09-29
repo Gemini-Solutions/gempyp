@@ -2,6 +2,7 @@ import json
 import logging as logger
 import ast
 import re
+from urllib import response
 import gempyp.pyprest.compareFunctions as cf
 
 
@@ -86,41 +87,6 @@ def fetchValueOfKey(json_, key_partition_list, key_search_result, final_key_valu
         return final_key_value
 
 
-def getValuesForEach(each_value_dict, keys_to_fetch):
-    """Getting values in case of "each operator" """
-    logger.info(f"Keys to be fetched from response - {keys_to_fetch}")
-    for key in keys_to_fetch:
-        if key in each_value_dict:
-            each_value_dict = each_value_dict[key]
-            if each_value_dict is None:
-                each_value_dict = "null"
-                break
-        else:
-            return "not found"
-    return each_value_dict
-
-
-def _getAllKeysOfResponse(dict_obj):
-    for key , value in dict_obj.items():
-        yield key
-        if isinstance(value, dict):
-            for k in _getAllKeysOfResponse(value):
-                yield k
-
-
-def getKeys(response_body):
-    keyListGlobal = []
-    if isinstance(response_body, dict):
-      keyListGlobal = list(_getAllKeysOfResponse(response_body))
-    elif isinstance(response_body, list):
-        for each in response_body:
-            keyList = list(_getAllKeysOfResponse(each))
-            keyListGlobal = [*keyListGlobal, *keyList]
-    
-    return list(set(keyListGlobal))
-              
-
-
 def getNestedListData(i, json_data, key_val):
     """parse nested lists in response"""
     # check if response is empty or not, if response is empty, how did it reach here?
@@ -170,5 +136,33 @@ def compare(reporter_obj, key, operator, value, key_val_dict, tolerance=0.1, isL
         return dispatch[operator](gp, key, value, key_val_dict, tolerance, isLegacyPresent, isLegacyResponse)
     else:
         return dispatch["not_supported"](gp)
-    
 
+class getKeyList:
+    def __init__(self):
+        self.keyList = []
+
+    def parseList(self,response):
+        if isinstance(response,list):
+            for i in range(len(response)):
+                if isinstance(response[i],dict):
+                    self.parseDict(response[i])
+                elif isinstance(response[i],list):
+                    self.parseList(response[i])
+
+
+    def parseDict(self,response):
+        if isinstance(response,dict):
+            for k,v in response.items():
+                self.keyList.append(k)
+                if isinstance(v,dict):
+                    self.parseDict(v)
+                elif isinstance(v,list):
+                    self.parseList(v)
+        elif isinstance(response,list):
+            self.parseList(response)
+
+
+    def getKeys(self, response_body):
+        self.parseDict(response_body)
+        return list(set(self.keyList)) 
+    
