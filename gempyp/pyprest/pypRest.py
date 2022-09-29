@@ -123,6 +123,7 @@ class PypRest(Base):
         # get body
         self.body = json.loads(self.data["config_data"].get("BODY", {}))
 
+
         # get file
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
 
