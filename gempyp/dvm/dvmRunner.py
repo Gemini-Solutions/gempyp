@@ -30,7 +30,7 @@ class DvmRunner(Base):
 
         self.configData: Dict = self.data.get("config_data")
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
-        self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
+        self.logger.info("---------------------Inside DVM ------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
         # # set vars
         self.setVars()

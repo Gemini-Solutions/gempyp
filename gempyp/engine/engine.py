@@ -42,6 +42,19 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
 
+    print(data["config_data"])
+    
+    # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
+    # "dvm": {"function": DvmRunner(data).dvmEngine(), "log": custom_logger.info("Starting the DVM testcase")}, 
+    # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
+
+    # val = (data.get("config_data"))
+    # print("-----------", val, "++++++++++")
+    # import sys
+    # sys.exit()
+    # engine_control[val.lower()]["log"]
+    # return engine_control[val.lower()]["function"]
+
     if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
         #custom_logger.setLevel(logging.INFO)
@@ -49,9 +62,9 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
 
     elif data["config_data"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
+        logging.info("starting the DVM testcase")
         return DvmRunner(data).dvmEngine()
 
-        logging.info("starting the DVM testcase")
     elif data["config_data"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
         custom_logger.info("starting the PYPREST testcase")
