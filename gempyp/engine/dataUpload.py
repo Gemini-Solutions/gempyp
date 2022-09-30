@@ -5,6 +5,7 @@ from gempyp.config import DefaultSettings
 import logging
 import sys
 
+not_uploaded = []
 
 def _getHeaders(bridge_token, user_name):
     """
@@ -30,9 +31,13 @@ def sendTestcaseData(payload, bridge_token, user_name):
         response = _sendData(payload, DefaultSettings.urls["testcases"], bridge_token, user_name, method="POST")
         if response and response.status_code == 201:
             logging.info("data uploaded successfully")
+            if payload in not_uploaded:
+                not_uploaded.remove(payload)
 
-        if response and response.status_code == 201:
-            logging.info("data uploaded successfully")
+    ### code for rerun of unuploaded testcases
+        if response.status_code != 201:
+            if payload not in not_uploaded:
+                not_uploaded.append(payload)
 
     except Exception as e:
         logging.error(traceback.format_exc())
@@ -44,10 +49,9 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     takes data we need to send(payload),bridgeToken,userName and method as argument
     """
     
-    if DefaultSettings.count > 3:
-        logging.warning("Incorrect bridgetoken/username or APIs are down. Skipping Data upload.")
-        return None
-    
+    # if DefaultSettings.count > 3:
+    #     logging.warning("Incorrect bridgetoken/username or APIs are down. Skipping Data upload.")
+    #     return None
     response = requests.request(
         method=method,
         url=url,

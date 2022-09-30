@@ -130,7 +130,7 @@ class TemplateData:
         json_data = self._toJSON()
         return json.loads(json_data)
 
-    def repSummary(self, repJson, output_file_path, jewel_link):
+    def repSummary(self, repJson, output_file_path, jewel_link, failed_testcases, unuploaded_path):
         """
         logging some information
         """
@@ -146,6 +146,10 @@ class TemplateData:
             
 
             logging.info(log_str.strip(" | "))
+
+            if failed_testcases != 0:
+                logging.info(f"Number of Testcases not Uploaded:{failed_testcases}")
+                logging.info(f"Unuploaded Testcase File Path:{unuploaded_path}")
             
             if len(jewel_link)>0:
                 logging.info('Report at Jewel: {link}'.format(link = jewel_link))

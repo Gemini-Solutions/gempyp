@@ -97,11 +97,24 @@ class Engine:
             logging.warning("Either username or bridgetoken is missing thus data is not uploaded in db.")
         self.makeOutputFolder()
         self.start()
+        ### Trying to rerun Testcases
+        if len(dataUpload.not_uploaded) != 0:
+            print("------Trying again to Upload Testcase------")
+            for testcase in dataUpload.not_uploaded:
+                dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        failed_Utestcases = len(dataUpload.not_uploaded) 
+        unuploaded_path = ""
+        ### Creating file for unuploaded testcases
+        if len(dataUpload.not_uploaded) != 0:
+            listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
+            unuploaded_path = os.path.join(self.ouput_folder, "not_uploaded_testCases.json")
+            with open(unuploaded_path,'w') as w:
+                w.write(listToStr)
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
-        TemplateData().repSummary(self.repJson, output_file_path,self.jewel)
+        TemplateData().repSummary(self.repJson, output_file_path, self.jewel, failed_Utestcases, unuploaded_path)
 
     def makeOutputFolder(self):
         """
@@ -190,7 +203,7 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
-            "expected_testcase": self.total_runable_testcase,
+            "miscData":[{"expected_testcases": self.total_runable_testcase}],
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
             "report_name": self.report_info,
@@ -231,15 +244,7 @@ class Engine:
         total = sum(status_dict.values())
         status_dict["TOTAL"] = total
         unsorted_dict = status_dict
-        prio_list = ['TOTAL', 'PASS', 'FAIL']
-        sorted_dict = {}
-        for key in prio_list:
-            if key in unsorted_dict :
-                sorted_dict[key] = unsorted_dict[key]
-                unsorted_dict.pop(key)
-            elif key == "PASS" or key == 'FAIL':
-                sorted_dict[key] = 0    
-        sorted_dict.update(unsorted_dict)
+        sorted_dict = self.totalOrder(unsorted_dict)
         status_dict = sorted_dict
         # status_dict = dict( sorted(status_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
         Suite_status = status.FAIL.name
@@ -355,7 +360,10 @@ class Engine:
                     error.get('log_path', None)
                 )
                 output = [output]
-            self.totalOrder(output)
+            unsorted_dict = output[0]['json_data']['metaData'][2]
+            sorted_dict = self.totalOrder(unsorted_dict)
+            output[0]['json_data']['metaData'][2] = sorted_dict
+
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -539,10 +547,9 @@ class Engine:
 
         return True
 
-    def totalOrder(self,output):
-        
-        
-        unsorted_dict = output[0]['json_data']['metaData'][2]
+    ### Function for sending total, pass, fail in order
+    def totalOrder(self, unsorted_dict):
+           
         prio_list = ['TOTAL', 'PASS', 'FAIL']
         sorted_dict = {}
         for key in prio_list:
@@ -551,5 +558,5 @@ class Engine:
                 unsorted_dict.pop(key)
             elif key == "PASS" or key == 'FAIL':
                 sorted_dict[key] = 0
-        sorted_dict.update(unsorted_dict)
-        output[0]['json_data']['metaData'][2] = sorted_dict
+        return sorted_dict.update(unsorted_dict)
+
