@@ -7,6 +7,7 @@ import json
 import traceback
 from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
+from unittest import TestCase
 import uuid
 from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
@@ -71,6 +72,7 @@ class Engine:
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
+        
 
     def run(self, params_config: Type[AbstarctBaseConfig]):
         """
@@ -257,8 +259,7 @@ class Engine:
         """
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
-        """ 
-
+        """
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -280,6 +281,7 @@ class Engine:
         start calling executorFactory for testcases in parallel according to their drependency 
         at last of each testcase calls the update_df()
         """
+        
         pool = None
         try:
             threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
@@ -288,15 +290,16 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             pool = Pool(threads)
-            # decide the dependency order:
+           
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
                 pool_list = []
                 for testcase in testcases:
-                    # only append testcases whose dependency are passed otherwise just update the database
+                    # only append testcases whose dependency are passed otherwise just update the databasee
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
+                    
                     else:
 
                         print("----------------here--------------------")
@@ -309,10 +312,11 @@ class Engine:
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
-
+       
                 if len(pool_list) == 0:
                     continue
                 # runs the testcase in parallel here
+
                 results = pool.map(executorFactory, pool_list)
                 for row in results:
                     if not row or len(row) < 2:
@@ -320,6 +324,7 @@ class Engine:
                             "Some error occured while running the testcases"
                         )
                     output = row[0]
+                    
                     error = row[1]
                     if error:
                         logging.error(
@@ -445,7 +450,12 @@ class Engine:
         taking argument as the testcase name and  return dictionary containing information about testCase
         """
         data = {}
+        list_subtestcases=[]
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
+        if("SUBTESTCASES" in data["config_data"].keys()):
+            for key1 in data["config_data"]["SUBTESTCASES"].split(","):
+                list_subtestcases.append(self.CONFIG.getSubTestcaseData(key1))
+            data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
         data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
         data["S_RUN_ID"] = self.s_run_id
@@ -455,16 +465,17 @@ class Engine:
         data["SUITE_VARS"] = self.user_suite_variables
         return data
 
+    
+
     def getDependency(self, testcases: Dict):
         """
         yields the testcases with least dependncy first
         Reverse toplogical sort
         accept all testcases dictionary as arguments
         """
-
-        adj_list = {
-            key: list(set(list(value.get("DEPENDENCY", "").split(","))) - set([""])) for key, value in testcases.items()
-        }
+        adj_list={}
+        for key,value in testcases.items():
+                adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
             new_list = []
@@ -477,6 +488,7 @@ class Engine:
                     new_list.append(testcase[0])
 
             adj_list[key] = set(new_list)
+        
         while adj_list:
             """
             return testcases that doesn't depend on other testcase
@@ -485,7 +497,7 @@ class Engine:
                 i for dependents in list(adj_list.values()) for i in dependents
             ) - set(adj_list.keys())
             top_dep.update(key for key, value in adj_list.items() if not value)
-
+        
             if not top_dep:
                 logging.critical(
                     "circular dependency found please remove the cirular dependency"
@@ -494,12 +506,13 @@ class Engine:
                 sys.exit(1)
 
             adj_list = {key: value - top_dep for key, value in adj_list.items() if value}
-
             result = []
             for key in testcases:
                 if key in top_dep:
                     result.append(testcases[key])
             yield result
+
+   
 
     def isDependencyPassed(self, testcase: Dict) -> bool:
         """
@@ -507,31 +520,32 @@ class Engine:
         """
 
         # split on ','
-        for dep in list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""])):
+        listOfTestcases=[]
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""]))
+        for dep in listOfTestcases:
 
-            dep_split = list(dep.split(":"))
+                    dep_split = list(dep.split(":"))
+                    if len(dep_split) == 1:
+                        # NAME to name, to_list()
+                        if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
+                            return False
 
-            if len(dep_split) == 1:
-                # NAME to name, to_list()
-                if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
-                    return False
+                    else:
+                        if dep_split[0].upper() == "P":
+                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                                return False
+                            # way to parsing the df    
+                            if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
+                                return False
 
-            else:
-                if dep_split[0].upper() == "P":
-                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                        return False
-                    # way to parsing the df    
-                    if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
-                        return False
-
-                if dep_split[0].upper() == "F":
-                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                        return False
-                    if (
-                        (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
-                        != status.FAIL.name
-                    ):
-                        return False
+                        if dep_split[0].upper() == "F":
+                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                                return False
+                            if (
+                                (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
+                                != status.FAIL.name
+                            ):
+                                return False
 
         return True
 

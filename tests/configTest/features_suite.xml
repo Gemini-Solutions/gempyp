@@ -5,25 +5,28 @@
         <report_name>PypRest Regression</report_name>
         <mode>optimize</mode>
         <mail>arpit.mishra@geminisolutions.com</mail>
-        <env>PROD</env>
-        <bridge_token>224b66f4-6317-40d6-9ba5-544bfaf6e2041661707653710</bridge_token>
-        <username>arpit.mishra</username>
-        <report_info>Test Suite to check all the features of pyprest</report_info>
+
+        <project>PYPREST</project>
+        <report_name>feature_regression</report_name>
+        <mode>optimize</mode>
+        <env>beta</env>
+        <threads>8</threads>
+
     </suite>
 
     <testcases>
         <testcase>
             <name>Test_functions_1</name>
             <category>sample</category>
-            <run_flag>Y</run_flag>
-            <api>https://restcountries.com/v3.1/lang/german</api>
-            <method>GET</method>
+            <run_flag>N</run_flag>
+            <api>""</api>
+            <method>""</method>
             <body>{}</body>
             <headers>{}</headers>
+            <before_file>path=C:\Users\ta.agarwal\Desktop\Gempyp_apis\gempyp\tests\sample_testcase\BeforeFile.py,class=before,method=before_</before_file>
             <expected_status_code>200,404,201</expected_status_code>
             <authentication></authentication>
-            <before_file>path=gempyp.pyprest.beforeAfterSample,class=before,method=before_</before_file>
-            <pre_variables>set $[#SUITE.varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#SUITE.user] = users; set $[#SUITE.var1] = VAR_1</pre_variables>
+            <pre_variables>set $[#varpost]=posts;set $[#epochmilli]=$[#epoch(milli)]; set $[#user]=users; set $[#SUITE.var1]=VAR_1</pre_variables>
             <key_check>keys are response[0].name, response[0].name.common, response[each].common;</key_check>
             <post_variables>set $[#new_var]=$[#response[0].name.common];set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var2]="SUITE_VAR2";</post_variables>
             <post_assertion>compare response[0].name.common not to German;compare response[0].name.common to Germany;compare response[0].name.common not in [a,b];compare response[0].name.common in ["germany", "france"];compare response[0].na.common in [a, b];compare response[0].name.official contains "Germany"</post_assertion>
@@ -36,14 +39,16 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
+
             <run_flag>Y</run_flag>
             <api>https://gorest.co.in/public/v2/$[#SUITE.user]</api>
+
             <method>GET</method>
             <body>{}</body>
             <headers>{}</headers>
             <expected_status_code>200</expected_status_code>
             <authentication></authentication>
-            <pre_variables>set $[#SUITE.pst]=posts;set $[#SUITE.user]=users;set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var2] = VAR_1</pre_variables>
+            <pre_variables>set $[#SUITE.pst]=posts;set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var2] = VAR_1</pre_variables>
             <key_check></key_check>
             <post_variables>set $[#post_var_meth]=$[#epochmilli];set $[#SUITE.var3]="SUITE_VAR2";</post_variables>
             <post_assertion>compare response[0].id not in [2,4,3088.0];compare response[0].id in [2.0,4.0,3088]; compare response[0].name not to  'Ekaksh Singh JD'; compare response[0].name not in  ['Ekaksh Singh JD',  '1'];compare response.id to 3284;</post_assertion>
@@ -61,6 +66,7 @@
             <body>{}</body>
             <headers>{}</headers>
             <expected_status_code>200</expected_status_code>
+            <subtestcases>Test_functions_1,Test_functions_2</subtestcases>
             <authentication></authentication>
             <pre_variables>set $[#user]=users;set $[#epochmilli]=$[#epoch(milli)];set $[#SUITE.var4] = $[#SUITE.var3]</pre_variables>
             <key_check></key_check>
@@ -99,7 +105,7 @@
             <headers>{}</headers>
             <expected_status_code>200</expected_status_code>
             <authentication></authentication>
-            <pre_variables>set $[#lang]=german</pre_variables>
+            <pre_variables>set $[#lang]=german;set $[#user]=users;</pre_variables>
             <key_check></key_check>
             <post_variables></post_variables>
             <post_assertion></post_assertion>
@@ -109,8 +115,10 @@
         <testcase>
             <name>Test_Pre_Variable_in_Body</name>
             <category>Pre_variables</category>
-            <run_flag>Y</run_flag>
-            <api>https://gorest.co.in/public/v2/users</api>
+
+            <run_flag>N</run_flag>
+            <api>https://gorest.co.in/public/v2/$[#user]</api>
+
             <method>POST</method>
             <body> {        
                 "name": " JOhn",
@@ -141,6 +149,7 @@
             }</body>
             <headers>{"content-type":"application/json","accept":"application/json", "$[#auth]":"Bearer 7cf300a3954980370df0803705cb1fb157b4dea84eecf0f2d206f41d48c4a8b5"}</headers>
             <expected_status_code>201</expected_status_code>
+            <subtestcases>Test_Pre_Variable_in_api,Test_Pre_Variable_in_Body</subtestcases>
             <key_check></key_check>
             <pre_variable>set $[#auth]=Authorization</pre_variable>
             <key_check></key_check>
@@ -517,7 +526,7 @@
         <testcase>
             <name>Legacy- Execution-GET</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis.gemecosystem.com/suiteexe?s_run_id=PYPREST_BETA_F8C0CEA5-A2BE-4FEA-822F-DB2C52D52413</api>
             <method>GET</method>
             <body>{}</body>
@@ -540,7 +549,7 @@
         <testcase>
             <name>Legacy- Execution-GET-fail</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis.gemecosystem.com/suiteexe?s_run_id=PYPREST_BETA_F8C0CEA5-A2BE-4FE822F-DB2C52D52413</api>
             <method>GET</method>
             <body>{}</body>
@@ -563,7 +572,7 @@
         <testcase>
             <name>Legacy- Execution-POST</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>POST</method>
             <body>{
@@ -606,7 +615,7 @@
         <testcase>
             <name>Legacy- Execution-PUT</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users/$[#SUITE.curr_id]</api>
             <method>PUT</method>
             <body>{
@@ -643,7 +652,7 @@
         <testcase>
             <name>Legacy- Execution-GET-fail-variable</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis.gemecosystem.com/suiteexe?s_run_id=$[#SUITE.curr_s_run_id]</api>
             <method>GET</method>
             <body>{}</body>
@@ -666,7 +675,7 @@
         <testcase>
             <name>Legacy- expected status codes check</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis.gemecosystem.com/suiteexe?s_run_id=PYPREST_BETA_F8C0CEA5-A2BE-4FEA-822F-DB2C52D52413</api>
             <method>GET</method>
             <body>{}</body>
@@ -689,7 +698,7 @@
         <testcase>
             <name>Legacy- expected status codes check-fail</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis.gemecosystem.com/suiteexe?s_run_id=PYPREST_BETA_F8C0CEA5-A2BE-4FEA-822F-DB2C52D52413</api>
             <method>GET</method>
             <body>{}</body>
@@ -712,7 +721,7 @@
         <testcase>
             <name>Legacy- keycheck </name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -736,7 +745,7 @@
         <testcase>
             <name>Legacy- keycheck with variables</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -760,7 +769,7 @@
         <testcase>
             <name>Legacy- keycheck with list of response</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>GET</method>
             <body>{}</body>
@@ -783,7 +792,7 @@
         <testcase>
             <name>Legacy- postassertion with values- to</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -806,7 +815,7 @@
         <testcase>
             <name>Legacy- postassertion with values- not to</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -829,7 +838,7 @@
         <testcase>
             <name>Legacy- postassertion with values- in</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -852,7 +861,7 @@
         <testcase>
             <name>Legacy- postassertion with values- not in</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -875,7 +884,7 @@
         <testcase>
             <name>Legacy- postassertion with values- contains</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -898,7 +907,7 @@
         <testcase>
             <name>Legacy- postassertion with values with variables</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://apis-beta.gemecosystem.com/suiteexe?s_run_id=7e5b4ce8-d44c-4c7f-9ba2-bbf745c38a99</api>
             <method>GET</method>
             <body>{}</body>
@@ -921,7 +930,7 @@
         <testcase>
             <name>Legacy- postassertion between keys</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>GET</method>
             <body>{}</body>
@@ -944,7 +953,7 @@
         <testcase>
             <name>Legacy- postassertion between keys with variables</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>GET</method>
             <body>{}</body>
@@ -967,7 +976,7 @@
         <testcase>
             <name>Legacy- postassertion compare all operator</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/users</api>
             <method>GET</method>
             <body>{}</body>
@@ -990,7 +999,7 @@
         <testcase>
             <name>Replacement of null values when no variable present</name>
             <category>Legacy API Features</category>
-            <run_flag>Y</run_flag>
+            <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/$[#users]</api>
             <method>GET</method>
             <body>{}</body>

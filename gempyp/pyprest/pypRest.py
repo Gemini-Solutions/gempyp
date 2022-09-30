@@ -5,7 +5,8 @@ import time
 import logging
 import importlib
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Type
+from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
@@ -88,7 +89,35 @@ class PypRest(Base):
 
         # ------------------------------sample adding columns to testcase file-----------------------------------------------
         # self.reporter.addRow("User Profile Data cannot be fetched", "Token expired or incorrect", status.FAIL, test="test")
+        self.list_subtestcases=[]
+        self.request_obj=[]
+        self.response_obj=[]
+        if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()):
+            # self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
+            self.list_subtestcases=self.data["config_data"]["SUBTESTCASES_DATA"]
+            
+            
+            self.variables["local"] = {}
+            self.variables["suite"] = self.data["SUITE_VARS"]
+            for i in range(len(self.list_subtestcases)):
+                self.reporter.addRow("<b>Subtestcase</b>",f'<b>Subtestcase Name: {self.list_subtestcases[i]["NAME"]}</b>',status.INFO)
+                self.data["config_data"]=self.list_subtestcases[i]
+                self.getVals()
 
+                requestObj=api.Request()
+                requestObj.api = self.api
+                requestObj.method = self.method
+                requestObj.body = self.body
+                requestObj.headers = self.headers
+                requestObj.file = self.file
+                if self.auth_type == "NTLM":
+                    requestObj.credentials = {"username": self.username, "password": self.password}
+                    requestObj.auth = "PASSWORD"
+                self.request_obj.append(requestObj)
+                self.execRequest()
+                self.postProcess()
+                MiscVariables(self).miscVariables()
+                
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update REASON OF FAILURE in misc
             if "Mandatory keys are missing, " not in self.reporter._misc_data["REASON OF FAILURE"]:
@@ -123,6 +152,7 @@ class PypRest(Base):
         
         # get body
         self.body = json.loads(self.data["config_data"].get("BODY", {}))
+
 
         # get file
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
@@ -165,17 +195,23 @@ class PypRest(Base):
         -sends request
         -log response 
         -stores it in self object"""
-        self.req_obj = api.Request()
-        # create request
-        self.req_obj.api = self.api
-        self.req_obj.method = self.method
-        self.req_obj.body = self.body
-        self.req_obj.headers = self.headers
-        self.req_obj.file = self.file
-        if self.auth_type == "NTLM":
-            self.req_obj.credentials = {"username": self.username, "password": self.password}
-            self.req_obj.auth = "PASSWORD"
+        if(len(self.request_obj)>0):
+            self.req_obj=self.request_obj[-1]
+            
+        else:
+            self.req_obj = api.Request()
+            # create request
+            self.req_obj.api = self.api
+            self.req_obj.method = self.method
+            self.req_obj.body = self.body
+            self.req_obj.headers = self.headers
+            self.req_obj.file = self.file
+            if self.auth_type == "NTLM":
+                self.req_obj.credentials = {"username": self.username, "password": self.password}
+                self.req_obj.auth = "PASSWORD"
 
+
+    
         """legacy api request"""
         # create legacy request
         if hasattr(self,'legacy_api'):
@@ -201,6 +237,8 @@ class PypRest(Base):
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
+            if(len(self.request_obj)>0):
+                self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
 
             # self.res_obj.response_body
@@ -260,6 +298,7 @@ class PypRest(Base):
         if self.legacy_req is not None and self.legacy_req.api != '':
             self.logger.info(f"{self.legacy_req.__dict__}")
             self.logger.info(f"{self.req_obj.__dict__}")
+            
 
             legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.legacy_req.body}" if self.legacy_req.method.upper() != "GET" else ""
             current_request_body = f"</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
@@ -519,4 +558,6 @@ class PypRest(Base):
             return False
     
 
+
+   
 
