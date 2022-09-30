@@ -549,7 +549,7 @@ class Engine:
 
     ### Function for sending total, pass, fail in order
     def totalOrder(self, unsorted_dict):
-           
+        
         prio_list = ['TOTAL', 'PASS', 'FAIL']
         sorted_dict = {}
         for key in prio_list:
@@ -558,5 +558,7 @@ class Engine:
                 unsorted_dict.pop(key)
             elif key == "PASS" or key == 'FAIL':
                 sorted_dict[key] = 0
-        return sorted_dict.update(unsorted_dict)
+        sorted_dict.update(unsorted_dict)
+        return sorted_dict
+
 
