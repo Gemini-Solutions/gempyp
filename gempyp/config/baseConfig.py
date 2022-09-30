@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import traceback
 from typing import Dict
 import logging
-from unicodedata import category
+
 
 class AbstarctBaseConfig(ABC):
     def __init__(self, *args, **kwargs):
@@ -70,8 +70,16 @@ class AbstarctBaseConfig(ABC):
             if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
                 print(value.get("SET"))
                 continue
+            
 
             # TODO add more filters
+            
+            if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
+                print(value.get("CATEGORY"))
+                continue
+            if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
+                print(value.get("SET"))
+                continue
 
 
             filtered_dict[key] = value

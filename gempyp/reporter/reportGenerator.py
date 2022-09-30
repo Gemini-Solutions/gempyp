@@ -16,6 +16,7 @@ class TemplateData:
 
     def newReport(self, project_name: str, tescase_name: str):
         metadata = []
+        self.kwargs_list=[]
         # 1st Column
         column1 = {
             "TESTCASE NAME": tescase_name,
@@ -28,12 +29,12 @@ class TemplateData:
 
     def newRow(self, title: str, description: str, status: status, **kwargs):
         step = {"title": title, "description": description, "status": status}
-
         if not kwargs.get("attachment"):
             kwargs.pop("attachment")
-
+        if kwargs:
+            if kwargs not in self.kwargs_list:
+                self.kwargs_list.append(kwargs)
         step.update(kwargs)
-
         self.REPORTDATA["steps"].append(step)
 
     # finalize the result. Calculates duration etc.
@@ -75,6 +76,15 @@ class TemplateData:
         """
         dump the data in REPORTDATA
         """
+        kwargs_list_comm =  dict(j for i in self.kwargs_list for j in i.items())
+        lis = kwargs_list_comm.keys()
+        for i in self.REPORTDATA["steps"]:
+            for j in lis:
+                if j in i:
+                    continue
+                else:
+                    i.update({j:"-"})
+
         try:
             result_data = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)
             return result_data

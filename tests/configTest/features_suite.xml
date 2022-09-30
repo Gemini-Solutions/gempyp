@@ -1,12 +1,17 @@
 <data>
 
     <suite>
+        <project>PYPREST_FEATURE_SUITE</project>
+        <report_name>PypRest Regression</report_name>
+        <mode>optimize</mode>
         <mail>arpit.mishra@geminisolutions.com</mail>
+
         <project>PYPREST</project>
         <report_name>feature_regression</report_name>
         <mode>optimize</mode>
         <env>beta</env>
         <threads>8</threads>
+
     </suite>
 
     <testcases>
@@ -34,8 +39,10 @@
         <testcase>
             <name>Test_functions_2</name>
             <category>sample</category>
-            <run_flag>N</run_flag>
-            <api>https://gorest.co.in/public/v2/$[#user]</api>
+
+            <run_flag>Y</run_flag>
+            <api>https://gorest.co.in/public/v2/$[#SUITE.user]</api>
+
             <method>GET</method>
             <body>{}</body>
             <headers>{}</headers>
@@ -74,7 +81,7 @@
         <testcase>
             <name>Test_Pre_Variables</name>
             <category>Pre_variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>$[#method_name]</method>
             <body>{}</body>
@@ -91,7 +98,7 @@
         <testcase>
             <name>Test_Pre_Variable_in_api</name>
             <category>Pre_variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/$[#lang]</api>
             <method>GET</method>
             <body>{}</body>
@@ -108,8 +115,10 @@
         <testcase>
             <name>Test_Pre_Variable_in_Body</name>
             <category>Pre_variables</category>
+
             <run_flag>N</run_flag>
             <api>https://gorest.co.in/public/v2/$[#user]</api>
+
             <method>POST</method>
             <body> {        
                 "name": " JOhn",
@@ -151,7 +160,7 @@
         <testcase>
             <name>Test_Pre_variables_with_func</name>
             <category>Pre_variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -188,7 +197,7 @@
         <testcase>
             <name>Test_functions_uuid</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -205,7 +214,7 @@
         <testcase>
             <name>Test_function_rand</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -222,7 +231,7 @@
         <testcase>
             <name>Test_function_epoch</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -240,7 +249,7 @@
         <testcase>
             <name>Test_function_epoch_milli</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -258,7 +267,7 @@
         <testcase>
             <name>Test_functions_getRandomFromAlist</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -275,7 +284,7 @@
         <testcase>
             <name>Test_function_getRandomFromAlist_var</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -292,7 +301,7 @@
         <testcase>
             <name>Test_function_unique</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -309,7 +318,7 @@
         <testcase>
             <name>Test_function_curr_timestamp</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -326,7 +335,7 @@
         <testcase>
             <name>Test_function_getDateFromNow</name>
             <category>Predefined_functions</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -343,7 +352,7 @@
         <testcase>
             <name>Test_Assertion_notto</name>
             <category>Post_Assertion</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -361,7 +370,7 @@
         <testcase>
             <name>Test_Assertion_to</name>
             <category>Post_Assertion</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -379,7 +388,7 @@
         <testcase>
             <name>Test_Assertion_contains</name>
             <category>Post_Assertion</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -397,7 +406,7 @@
         <testcase>
             <name>Test_Assertion_not_in</name>
             <category>Post_Assertion</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -415,7 +424,7 @@
         <testcase>
             <name>Test_Assertion_in</name>
             <category>Post_Assertion</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -433,7 +442,7 @@
         <testcase>
             <name>Test_Post_Variables_Simple</name>
             <category>Post_Variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -450,7 +459,7 @@
         <testcase>
             <name>Test_Post_Variables_functions</name>
             <category>Post_Variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -467,7 +476,7 @@
         <testcase>
             <name>Test_Post_Variables_in_assertion</name>
             <category>Post_Variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -484,7 +493,7 @@
         <testcase>
             <name>Test_Post_Variables_with_preVar</name>
             <category>Post_Variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>
@@ -501,7 +510,7 @@
         <testcase>
             <name>Test_Suite_variable</name>
             <category>SUITE_Variables</category>
-            <run_flag>N</run_flag>
+            <run_flag>Y</run_flag>
             <api>https://restcountries.com/v3.1/lang/german</api>
             <method>GET</method>
             <body>{}</body>

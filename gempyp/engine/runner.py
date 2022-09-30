@@ -10,7 +10,8 @@ from gempyp.libs.common import moduleImports
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     """
-    actually imports the testcase files and call the run method
+    actually imports the testcase files and call the run method 
+    set the json data that is required to update in db
     """
     logging.info("---------- In testcase Runner -----------")
     config_data: Dict = testcase_meta.get("config_data")
@@ -72,7 +73,7 @@ def getOutput(data):
     tempdict["status"] = data["STATUS"]
     tempdict["user"] = data["TESTCASEMETADATA"]["USER"]
     tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]
-    tempdict["product_type"] = "GEMPYP"
+    tempdict["product type"] = "GEMPYP"
     tempdict["result_file"] = data["RESULT_FILE"]
     tempdict["start_time"] = data["START_TIME"]
     tempdict["end_time"] = data["END_TIME"]
@@ -102,7 +103,7 @@ def getError(error, config_data: Dict) -> Dict:
     error = {}
     error["testcase"] = config_data.get("NAME")
     error["message"] = str(error)
-    error["product_type"] = "GEMPYP"
+    error["product type"] = "GEMPYP"
     error["category"] = config_data.get("CATEGORY", None)
     error['log_path'] = config_data.get('log_path', None)
     return error

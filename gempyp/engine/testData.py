@@ -8,7 +8,10 @@ from datetime import datetime, timezone
 
 class TestData:
     def __init__(self):
-        self.testcase_detail_column = [
+        """
+        declairing some attribute the are used in testcaseDetails in report and return a object that is used to update data
+        """
+        self.testcaseDetailColumn = [
             "tc_run_id",
             "start_time",
             "end_time",
@@ -20,10 +23,11 @@ class TestData:
             "user",
             "machine",
             "result_file",
-            "product_type",
+            "product type",
             "ignore",
             "miscData",
             "userDefinedData",
+            "duration",
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -31,12 +35,13 @@ class TestData:
         # this should always have one row so it can be made a dict or something instad of a dataframe
         self.suite_detail = pd.DataFrame()
 
-        self.testcase_details = pd.DataFrame(columns=self.testcase_detail_column)
+        self.testcase_details = pd.DataFrame(columns=self.testcaseDetailColumn)
         self.misc_details = pd.DataFrame(columns=self.misc_detail_column)
 
     def toSuiteJson(self):
         """
-        converts the dataframe to suiteJson
+        converts the dataframe to Json
+        used in uploadsuitedata (run() method in engine.py)
         """
         if self.suite_detail.empty:
             return {}
@@ -54,7 +59,8 @@ class TestData:
 
     def totestcaseJson(self, tc_run_id, s_run_id):
         """
-        returns the testcase for that specific json
+        returns the json for testcasedata
+        used in update_df method of engine.py
         """
 
         test_data = self.testcase_details.loc[
@@ -73,6 +79,16 @@ class TestData:
             else:
                 test_status[key] = 1
         test_status["TOTAL"] = sum(test_status.values())
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in test_status :
+                sorted_dict[key] = test_status[key]
+                test_status.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(test_status)
+        test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
         """ Adding misc data to userDefinedData column for each testcase
@@ -96,8 +112,7 @@ class TestData:
                 "EXECUTION ENDED ON": {"value": test_data["end_time"], "type": "datetime"}, 
                 "EXECUTION DURATION": findDuration(test_data["start_time"], test_data["end_time"])
             }, 
-            test_status]
-
+            sorted_dict]
 
         test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
@@ -111,7 +126,7 @@ class TestData:
 
     def getJSONData(self):
         """
-        provide the report json
+        provide the report json to makereport() method of engine file
         """
         suite_report = {}
         suite_dict = self.suite_detail.to_dict(orient="records")[0]
@@ -144,6 +159,16 @@ class TestData:
                 testcase_dict[i].pop("userDefinedData")
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
+        prio_list = ['total', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in testcase_counts :
+                sorted_dict[key] = testcase_counts[key]
+                testcase_counts.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(testcase_counts)
+        testcase_counts = sorted_dict
         suite_dict["Testcase_Info"] = testcase_counts
         suite_report["Suits_Details"] = suite_dict
         suite_report["reportProduct"] = "GEMPYP"        

@@ -21,12 +21,15 @@ import logging
 from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
+import smtplib
+from gempyp.dvm.dvmRunner import DvmRunner
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     
     """
-    calls the differnt executors based on the type of the data
+    calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
+    Takes single testcase data as input
     """
 
     print("--------- In Executor Factory ----------\n")
@@ -40,7 +43,6 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
 
-
     if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
         #custom_logger.setLevel(logging.INFO)
@@ -48,6 +50,8 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
 
     elif data["config_data"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
+        return DvmRunner(data).dvmEngine()
+
         logging.info("starting the DVM testcase")
     elif data["config_data"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
@@ -63,6 +67,7 @@ class Engine:
     def __init__(self, params_config):
         """
         constructor used to  call run method
+        takes config as input
         """
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
@@ -72,6 +77,7 @@ class Engine:
     def run(self, params_config: Type[AbstarctBaseConfig]):
         """
         main method to call other methods that are required for report generation
+        takes config as input
         """
         logging.info("Engine Started")
         # initialize the data class
@@ -98,7 +104,8 @@ class Engine:
 
     def makeOutputFolder(self):
         """
-        to make GemPyp_Report folder 
+        make outputFolder for report named as gempyp_reports in user home directory if not given by the user and makes log fplder for log files
+        if given by user than set user given path for reports file   
         """
 
         logging.info("---------- Making output folders -------------")
@@ -159,7 +166,7 @@ class Engine:
 
     def makeSuiteDetails(self):
         """
-        making suite Details 
+        making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
@@ -172,11 +179,11 @@ class Engine:
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
-            "s_end_time": None,
+            "s_end_time": self.start_time,
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "report_type": self.report_name,
+            "s_report_type": self.report_name,
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
@@ -184,7 +191,8 @@ class Engine:
             "run_mode": run_mode,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
-            "report_name": self.report_info
+            "report_name": self.report_info,
+            "duration": None
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -193,7 +201,7 @@ class Engine:
     def start(self):
 
         """
-         check the mode and start the testcases accordingly
+         check the mode and start the testcases accordingly e.g.optimize,parallel
         """
 
         try:
@@ -220,6 +228,18 @@ class Engine:
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
         total = sum(status_dict.values())
         status_dict["TOTAL"] = total
+        unsorted_dict = status_dict
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in unsorted_dict :
+                sorted_dict[key] = unsorted_dict[key]
+                unsorted_dict.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0    
+        sorted_dict.update(unsorted_dict)
+        status_dict = sorted_dict
+        # status_dict = dict( sorted(status_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -233,12 +253,13 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
+        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)
 
     def startSequence(self):
         """
-        start running the testcases in sequence
+        start calling executoryFactory() for each testcase one by one according to their dependency
+        at last of each testcase calls the update_df() 
         """
-        
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -247,7 +268,6 @@ class Engine:
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 output, error = executorFactory(data, custom_logger)
-                
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -258,7 +278,8 @@ class Engine:
 
     def startParallel(self):
         """
-        start running the testcases in parallel
+        start calling executorFactory for testcases in parallel according to their drependency 
+        at last of each testcase calls the update_df()
         """
         
         pool = None
@@ -280,12 +301,13 @@ class Engine:
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
                     
                     else:
+
                         print("----------------here--------------------")
                         dependency_error = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
-                            "product_type": testcase.get("PRODUCT_TYPE", None),
+                            "product type": testcase.get("product type", None),
                         }
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
@@ -320,8 +342,9 @@ class Engine:
     def update_df(self, output: List, error: Dict):
 
         """
-        updates the testcase data in the dataframes
-        like
+        updates the testcase data in the dataframes of testData.py
+        also upload testcasedata to db
+        
         """
         try:
             if error:
@@ -329,10 +352,11 @@ class Engine:
                     error["message"],
                     error["testcase"],
                     error.get("category"),
-                    error.get("product_type"),
+                    error.get("product type"),
                     error.get('log_path', None)
                 )
                 output = [output]
+            self.totalOrder(output)
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -367,7 +391,8 @@ class Engine:
         log_path: str = None
     ) -> Dict:
         """
-        store the data of failed testcase and return it as a dict
+        store the data of failed testcase and return it as a dict to update_df
+        take message for error as input
         """
 
         result = {}
@@ -390,11 +415,11 @@ class Engine:
         testcase_dict["user"] = self.user
         testcase_dict["machine"] = self.machine
         if product_type:
-            testcase_dict["product_type"] = product_type
+            testcase_dict["product type"] = product_type
 
         result["testcase_dict"] = testcase_dict
 
-        misc["REASON_OF_FAILURE"] = message
+        misc["REASON OF FAILURE"] = message
 
         result["misc"] = misc
 
@@ -402,7 +427,8 @@ class Engine:
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):
         """
-        updates the misc data for the testcases
+        updates the misc data for the testcases in testData.py
+        accept miscellaneous rows and tc_run_id as parameters
         """
         misc_list = []
 
@@ -421,7 +447,7 @@ class Engine:
 
     def getTestcaseData(self, testcase: str) -> Dict:
         """
-        taking argument as the testcase name and  return
+        taking argument as the testcase name and  return dictionary containing information about testCase
         """
         data = {}
         list_subtestcases=[]
@@ -445,6 +471,7 @@ class Engine:
         """
         yields the testcases with least dependncy first
         Reverse toplogical sort
+        accept all testcases dictionary as arguments
         """
         adj_list={}
         for key,value in testcases.items():
@@ -453,6 +480,7 @@ class Engine:
         for key, value in adj_list.items():
             new_list = []
             for testcase in value:
+
                 testcase = testcase.split(":")
                 if len(testcase) > 1:
                     new_list.append(testcase[1])
@@ -462,6 +490,9 @@ class Engine:
             adj_list[key] = set(new_list)
         
         while adj_list:
+            """
+            return testcases that doesn't depend on other testcase
+            """
             top_dep = set(
                 i for dependents in list(adj_list.values()) for i in dependents
             ) - set(adj_list.keys())
@@ -517,6 +548,18 @@ class Engine:
                                 return False
 
         return True
-    
- 
-                
+
+    def totalOrder(self,output):
+        
+        
+        unsorted_dict = output[0]['json_data']['metaData'][2]
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in unsorted_dict :
+                sorted_dict[key] = unsorted_dict[key]
+                unsorted_dict.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(unsorted_dict)
+        output[0]['json_data']['metaData'][2] = sorted_dict
