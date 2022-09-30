@@ -182,10 +182,13 @@ class Engine:
         """
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
-        if not self.unique_id:
-            self.unique_id = uuid.uuid4()
-        self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
-        self.s_run_id = self.s_run_id.upper()
+        if "RUN_ID" in self.PARAMS:
+            self.s_run_id = self.PARAMS["RUN_ID"]
+        else:
+            if not self.unique_id:
+                self.unique_id = uuid.uuid4()
+            self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
+            self.s_run_id = self.s_run_id.upper()
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         run_mode = "LINUX_CLI"
         if os.name == 'nt':
