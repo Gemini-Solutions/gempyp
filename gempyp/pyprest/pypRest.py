@@ -88,18 +88,17 @@ class PypRest(Base):
 
         # ------------------------------sample adding columns to testcase file-----------------------------------------------
         # self.reporter.addRow("User Profile Data cannot be fetched", "Token expired or incorrect", status.FAIL, test="test")
-
+        self.list_subtestcases=[]
+        self.request_obj=[]
+        self.response_obj=[]
         if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()):
             # self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
             self.list_subtestcases=self.data["config_data"]["SUBTESTCASES_DATA"]
-            self.request_obj=[]
-            self.response_obj=[]
+            
             
             self.variables["local"] = {}
-            # self.pyprest_obj.variables["suite"] = {}
             self.variables["suite"] = self.data["SUITE_VARS"]
             for i in range(len(self.list_subtestcases)):
-                # print(self.data["config_data"]["SUBTESTCASES_DATA"][i]["NAME"])
                 self.reporter.addRow("<b>Subtestcase</b>",f'<b>Subtestcase Name: {self.list_subtestcases[i]["NAME"]}</b>',status.INFO)
                 self.data["config_data"]=self.list_subtestcases[i]
                 self.getVals()
@@ -115,11 +114,6 @@ class PypRest(Base):
                     requestObj.auth = "PASSWORD"
                 self.request_obj.append(requestObj)
                 self.execRequest()
-
-
-                # self.getVals()
-                #  # execute and format result 
-                # self.execRequest()
                 self.postProcess()
                 MiscVariables(self).miscVariables()
                 
@@ -157,6 +151,7 @@ class PypRest(Base):
         
         # get body
         self.body = json.loads(self.data["config_data"].get("BODY", {}))
+
 
         # get file
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
@@ -199,18 +194,7 @@ class PypRest(Base):
         -stores it in self object"""
         if(len(self.request_obj)>0):
             self.req_obj=self.request_obj[-1]
-
-        # if(len(self.request_obj)>0):
-        #     self.req_obj=self.request_obj[-1]
-            # self.req_obj.api=self.request_obj[-1].api
-            # self.req_obj.method = self.request_obj[-1].method
-            # self.req_obj.body = self.request_obj[-1].body
-            # self.req_obj.headers = self.request_obj[-1].headers
-            # self.req_obj.file = self.request_obj[-1].file
-            # if self.auth_type == "NTLM":
-            #     self.req_obj.credentials = self.request_obj[-1].credentials
-            #     self.req_obj.auth = self.request_obj[-1].auth
-
+            
         else:
             self.req_obj = api.Request()
             # create request
