@@ -269,21 +269,7 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             pool = Pool(threads)
-            # decide the dependency order:
-            # for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
-            #     if len(testcases) == 0:
-            #         raise Exception("No testcase to run")
-            #     pool_list_subtestcase = []
-            #     for testcase in testcases:
-            #         # only append testcases whose dependency are passed otherwise just update the database
-            #         if self.executeSubtestcases(testcase):
-            #             pool_list_subtestcase.append(self.getTestcaseData(testcase.get("NAME")))
-            # subtestcases=[]
-            # parent=""
-            # for key,value in self.CONFIG.getTestcaseConfig().items():
-            #     if("SUBTESTCASES" in value.keys()):
-            #         subtestcases=list(set(list(value.get("SUBTESTCASES").split(",")))  - set([""]))
-            #         parent=key
+           
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
@@ -292,7 +278,7 @@ class Engine:
                     # only append testcases whose dependency are passed otherwise just update the databasee
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
-                        # pool_list.append(self.CONFIG.getSubTestcaseData(testcase.get("NAME")))
+                    
                     else:
                         print("----------------here--------------------")
                         dependency_error = {
@@ -311,9 +297,6 @@ class Engine:
                 print(pool_list)
                 print("##############################")
                 results = pool.map(executorFactory, pool_list)
-                # for i in len(self.DATA.getJSONData()["TestCase Details"]):
-                #     if(self.DATA.getJSONData()["TestCase Details"][i]["NAME"] in self.subtestcases and self.DATA.getJSONData()["TestCase Details"][i]["status"]=="FAIL"):
-                #         results
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
@@ -453,6 +436,8 @@ class Engine:
             for key1 in data["config_data"]["SUBTESTCASES"].split(","):
                 list_subtestcases.append(self.CONFIG.getSubTestcaseData(key1))
             data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
+            print(data["config_data"]["SUBTESTCASES_DATA"])
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
         data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
         data["S_RUN_ID"] = self.s_run_id

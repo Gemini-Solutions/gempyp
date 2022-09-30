@@ -53,8 +53,6 @@ class PreVariables:
                         self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1])
 
                     self.pyprest_obj.variables[scope][key] = self.getFunctionValues(each_item[1])
-            print(self.pyprest_obj.variables)
-            print("After prevariable@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
                     
             self.pyprest_obj.logger.info(f"Setting PRE VARIABLES: -------- {str(self.pyprest_obj.variables)}")
