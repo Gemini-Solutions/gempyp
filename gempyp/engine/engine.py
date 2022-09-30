@@ -294,8 +294,7 @@ class Engine:
                 if len(pool_list) == 0:
                     continue
                 # runs the testcase in parallel here
-                print(pool_list)
-                print("##############################")
+
                 results = pool.map(executorFactory, pool_list)
                 for row in results:
                     if not row or len(row) < 2:
@@ -303,11 +302,6 @@ class Engine:
                             "Some error occured while running the testcases"
                         )
                     output = row[0]
-                    # json_data=json.loads(self.DATA.getJSONData())
-                    # if(output[0]["testcase_dict"]["name"]==parent):
-                    #     for i in range(len(json_data["Suits_Details"]["TestCase_Details"])):
-                    #         if(json_data["Suits_Details"]["TestCase_Details"][i]["name"] in subtestcases and json_data["Suits_Details"]["TestCase_Details"][i]["status"]=="FAIL"):
-                    #             output[0]["testcase_dict"]["status"]="FAIL"
                     
                     error = row[1]
                     if error:
@@ -436,8 +430,6 @@ class Engine:
             for key1 in data["config_data"]["SUBTESTCASES"].split(","):
                 list_subtestcases.append(self.CONFIG.getSubTestcaseData(key1))
             data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
-            print(data["config_data"]["SUBTESTCASES_DATA"])
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
         data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
         data["S_RUN_ID"] = self.s_run_id
@@ -456,12 +448,7 @@ class Engine:
         """
         adj_list={}
         for key,value in testcases.items():
-                adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""])) 
-        # #     if("SUBTESTCASES" in value.keys()):
-        # #             adj_list[key]=list(set(list(value.get("SUBTESTCASES").split(",")))  - set([""]))
-        #     else:
-        # adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""])) 
-      
+                adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
             new_list = []
