@@ -43,16 +43,35 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
 
-    if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
+    
+    # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
+    # "dvm": {"function": DvmRunner(data).dvmEngine(), "log": custom_logger.info("Starting the DVM testcase")}, 
+    # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
+
+    engine_control = {
+        "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
+        "dvm":{"class": DvmRunner, "classParam": data, "function": "DVMEngine"},
+        "gempyp":{"function": testcaseRunner, "functionParam": data}
+    }
+    _type = data.get("config_data")["TYPE"]
+    _type_dict = engine_control[_type.lower()]
+    custom_logger.info(f"Starting {_type} testcase")
+
+    if _type_dict.get("class", None):
+        return getattr(_type_dict["class"](_type_dict['classParam']), _type_dict['function'])()  # need to make it generic for functionParam too
+    else:
+        return _type_dict["function"](_type_dict["functionParam"])  # we need to dissolve this else condition too somehow
+
+    """if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
         #custom_logger.setLevel(logging.INFO)
         return testcaseRunner(data)
 
     elif data["config_data"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
+        logging.info("starting the DVM testcase")
         return DvmRunner(data).dvmEngine()
 
-        logging.info("starting the DVM testcase")
     elif data["config_data"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
         custom_logger.info("starting the PYPREST testcase")
@@ -60,7 +79,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
             return PypRest(data).restEngine()
         except Exception as e:
             traceback.print_exc()
-            return None, getError(e, data["config_data"])
+            return None, getError(e, data["config_data"])"""
 
 
 class Engine:
