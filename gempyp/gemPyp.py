@@ -22,6 +22,7 @@ class Gempyp:
         self.SET=None
         self.USERNAME=None
         self.RUN_ID = None
+        self.TESTCASES = None
 
     
     def argParser(self):
@@ -41,6 +42,7 @@ class Gempyp:
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
         parser.add_argument('-set','-set',dest='SET',type=str, required=False)
         parser.add_argument('-run_id','-run_id',dest='RUN_ID',type=str, required=False)
+        parser.add_argument('-tc','-testcases',dest='TESTCASES',type=str, required=False)
 
 
         args = parser.parse_args()

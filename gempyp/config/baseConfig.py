@@ -52,6 +52,19 @@ class AbstarctBaseConfig(ABC):
         """
         testcase_data = self.getTestcaseConfig()
         filtered_dict = {}
+        ###code for passing testcases through cli jira-113
+        if "TESTCASES" in self._CONFIG['SUITE_DATA']:
+            test = {}
+            testcase = self._CONFIG['SUITE_DATA']["TESTCASES"]
+            if testcase[0] == '[':
+                testcase = testcase[1:-1]
+                testcase = testcase.split(",")
+            else:
+                testcase = testcase.split(",")
+            for key, value in testcase_data.items():
+                if key in testcase:
+                    test[key] = value
+            testcase_data = test
 
         for key, value in testcase_data.items():
             if value.get("RUN_FLAG", "N").upper() != "Y":
