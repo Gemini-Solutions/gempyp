@@ -49,9 +49,11 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     takes data we need to send(payload),bridgeToken,userName and method as argument
     """
     
-    # if DefaultSettings.count > 3:
+    # Not needed anymore as we will be reuploading the data to db.
+    # if DefaultSettings.count > 3:         
     #     logging.warning("Incorrect bridgetoken/username or APIs are down. Skipping Data upload.")
     #     return None
+
     response = requests.request(
         method=method,
         url=url,
@@ -59,7 +61,7 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
         headers=_getHeaders(bridge_token, user_name),
     )
     if response.status_code != 200 and response.status_code != 201:
-        DefaultSettings.count += 1
+        # DefaultSettings.count += 1
         logging.info("Data not uploaded...........")
     logging.info(f"status: {response.status_code}")
     return response
