@@ -25,7 +25,7 @@ class TestData:
             "user",
             "machine",
             "result_file",
-            "product type",
+            "product_type",
             "ignore",
             "miscData",
             "userDefinedData",
@@ -48,7 +48,7 @@ class TestData:
         if self.suite_detail.empty:
             return {}
 
-        self.suite_detail = self.suite_detail.replace(np.nan, ' ', regex=True)
+        self.suite_detail = self.suite_detail.replace(np.nan, '-', regex=True)
         data = self.suite_detail.to_dict(orient="records")[0]
         misc_data = self.misc_details[
             self.misc_details["table_type"].str.upper() == "SUITE"
@@ -65,7 +65,7 @@ class TestData:
         used in update_df method of engine.py
         """
 
-        self.testcase_details = self.testcase_details.replace(np.nan, ' ', regex=True)
+        self.testcase_details = self.testcase_details.replace(np.nan, '-', regex=True)
         test_data = self.testcase_details.loc[
             self.testcase_details["tc_run_id"].str.upper() == tc_run_id
         ]
@@ -132,7 +132,7 @@ class TestData:
         provide the report json to makereport() method of engine file
         """
         suite_report = {}
-        self.suite_detail = self.suite_detail.replace(np.nan, regex=True)
+        self.suite_detail = self.suite_detail.replace(np.nan, "-", regex=True)
         suite_dict = self.suite_detail.to_dict(orient="records")[0]
         testcase_dict = self.testcase_details.to_dict(orient="records")
         misc_dict=self.misc_details.to_dict(orient="records")

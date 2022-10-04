@@ -73,7 +73,7 @@ def getOutput(data):
     tempdict["status"] = data["STATUS"]
     tempdict["user"] = data["TESTCASEMETADATA"]["USER"]
     tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]
-    tempdict["product type"] = "GEMPYP"
+    tempdict["product_type"] = "GEMPYP"
     tempdict["result_file"] = data["RESULT_FILE"]
     tempdict["start_time"] = data["START_TIME"]
     tempdict["end_time"] = data["END_TIME"]
@@ -103,7 +103,7 @@ def getError(error, config_data: Dict) -> Dict:
     error = {}
     error["testcase"] = config_data.get("NAME")
     error["message"] = str(error)
-    error["product type"] = "GEMPYP"
+    error["product_type"] = "GEMPYP"
     error["category"] = config_data.get("CATEGORY", None)
     error['log_path'] = config_data.get('log_path', None)
     return error
