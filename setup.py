@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='gempyp',
-    version='0.2.12',
+    version='1.0.1-beta.0',
     packages=find_packages()
 
 )
