@@ -7,6 +7,7 @@ import json
 import traceback
 from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
+from unittest import TestCase
 import uuid
 from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
@@ -42,16 +43,35 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
 
-    if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
+    
+    # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
+    # "dvm": {"function": DvmRunner(data).dvmEngine(), "log": custom_logger.info("Starting the DVM testcase")}, 
+    # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
+
+    engine_control = {
+        "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
+        "dvm":{"class": DvmRunner, "classParam": data, "function": "DVMEngine"},
+        "gempyp":{"function": testcaseRunner, "functionParam": data}
+    }
+    _type = data.get("config_data")["TYPE"]
+    _type_dict = engine_control[_type.lower()]
+    custom_logger.info(f"Starting {_type} testcase")
+
+    if _type_dict.get("class", None):
+        return getattr(_type_dict["class"](_type_dict['classParam']), _type_dict['function'])()  # need to make it generic for functionParam too
+    else:
+        return _type_dict["function"](_type_dict["functionParam"])  # we need to dissolve this else condition too somehow
+
+    """if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
         #custom_logger.setLevel(logging.INFO)
         return testcaseRunner(data)
 
     elif data["config_data"].get("TYPE").upper() == "DVM":
         # TODO do the DVM stuff
+        logging.info("starting the DVM testcase")
         return DvmRunner(data).dvmEngine()
 
-        logging.info("starting the DVM testcase")
     elif data["config_data"].get("TYPE").upper() == "PYPREST":
         # TODO do the resttest stuff here
         custom_logger.info("starting the PYPREST testcase")
@@ -59,7 +79,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
             return PypRest(data).restEngine()
         except Exception as e:
             traceback.print_exc()
-            return None, getError(e, data["config_data"])
+            return None, getError(e, data["config_data"])"""
 
 
 class Engine:
@@ -71,6 +91,7 @@ class Engine:
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
         self.run(params_config)
+        
 
     def run(self, params_config: Type[AbstarctBaseConfig]):
         """
@@ -88,17 +109,33 @@ class Engine:
         self.setUP(params_config)
         self.parseMails()
         self.makeSuiteDetails()
+        #jewel variable is to print jewel link in rep summary
+        self.jewel = ''
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            self.jewel = f'https://jewel.gemecosystem.com/#/autolytics/extent-report?s_run_id={self.s_run_id}'
         else:
             logging.warning("Either username or bridgetoken is missing thus data is not uploaded in db.")
         self.makeOutputFolder()
         self.start()
+        ### Trying to rerun Testcases
+        if len(dataUpload.not_uploaded) != 0:
+            print("------Trying again to Upload Testcase------")
+            for testcase in dataUpload.not_uploaded:
+                dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        failed_Utestcases = len(dataUpload.not_uploaded) 
+        unuploaded_path = ""
+        ### Creating file for unuploaded testcases
+        if len(dataUpload.not_uploaded) != 0:
+            listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
+            unuploaded_path = os.path.join(self.ouput_folder, "not_uploaded_testCases.json")
+            with open(unuploaded_path,'w') as w:
+                w.write(listToStr)
         self.updateSuiteData()
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
-        TemplateData().repSummary(self.repJson, output_file_path)
+        TemplateData().repSummary(self.repJson, output_file_path, self.jewel, failed_Utestcases, unuploaded_path)
 
     def makeOutputFolder(self):
         """
@@ -136,6 +173,7 @@ class Engine:
         self.PARAMS = config.getSuiteConfig()
         self.CONFIG = config
         self.testcase_data = {}
+        self.total_runable_testcase = config.total_yflag_testcase
         self.machine = platform.node()
         if("USERNAME" in self.PARAMS):
             self.user = self.PARAMS["USERNAME"]
@@ -150,7 +188,6 @@ class Engine:
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
         self.report_info = self.PARAMS.get("REPORT_INFO")
-        
 
         #add suite_vars here 
 
@@ -158,17 +195,21 @@ class Engine:
         """
         to get the mail from the configData
         """
-        self.mail = common.parseMails(self.PARAMS["MAIL"])
-        print(self.mail)
+        if("MAIL" in self.PARAMS.keys()):
+            self.mail = common.parseMails(self.PARAMS["MAIL"])
+            print(self.mail)
 
     def makeSuiteDetails(self):
         """
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
-        if not self.unique_id:
-            self.unique_id = uuid.uuid4()
-        self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
-        self.s_run_id = self.s_run_id.upper()
+        if "RUN_ID" in self.PARAMS:
+            self.s_run_id = self.PARAMS["RUN_ID"]
+        else:
+            if not self.unique_id:
+                self.unique_id = uuid.uuid4()
+            self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
+            self.s_run_id = self.s_run_id.upper()
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         run_mode = "LINUX_CLI"
         if os.name == 'nt':
@@ -176,19 +217,21 @@ class Engine:
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
-            "s_end_time": None,
+            "s_end_time": self.start_time,
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "report_type": self.report_name,
+            "s_report_type": self.report_name,
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
+            "miscData":[{"expected_testcases": self.total_runable_testcase}],
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
-            "report_name": self.report_info
+            "report_name": self.report_info,
+            "duration": None
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -224,6 +267,10 @@ class Engine:
         status_dict = self.DATA.testcase_details["status"].value_counts().to_dict()
         total = sum(status_dict.values())
         status_dict["TOTAL"] = total
+        unsorted_dict = status_dict
+        sorted_dict = self.totalOrder(unsorted_dict)
+        status_dict = sorted_dict
+        # status_dict = dict( sorted(status_dict.items(), key=lambda x: x[0].lower(), reverse=True) )
         Suite_status = status.FAIL.name
 
         # based on the status priority
@@ -237,13 +284,13 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
+        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)
 
     def startSequence(self):
         """
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
-        """ 
-
+        """
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -252,7 +299,6 @@ class Engine:
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 output, error = executorFactory(data, custom_logger)
-                
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -266,6 +312,7 @@ class Engine:
         start calling executorFactory for testcases in parallel according to their drependency 
         at last of each testcase calls the update_df()
         """
+        
         pool = None
         try:
             threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
@@ -274,15 +321,16 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             pool = Pool(threads)
-            # decide the dependency order:
+           
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
                 pool_list = []
                 for testcase in testcases:
-                    # only append testcases whose dependency are passed otherwise just update the database
+                    # only append testcases whose dependency are passed otherwise just update the databasee
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
+                    
                     else:
 
                         print("----------------here--------------------")
@@ -295,18 +343,19 @@ class Engine:
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
-
+       
                 if len(pool_list) == 0:
                     continue
                 # runs the testcase in parallel here
+
                 results = pool.map(executorFactory, pool_list)
-                print(results)
                 for row in results:
                     if not row or len(row) < 2:
                         raise Exception(
                             "Some error occured while running the testcases"
                         )
                     output = row[0]
+                    
                     error = row[1]
                     if error:
                         logging.error(
@@ -338,6 +387,10 @@ class Engine:
                     error.get('log_path', None)
                 )
                 output = [output]
+            unsorted_dict = output[0]['json_data']['metaData'][2]
+            sorted_dict = self.totalOrder(unsorted_dict)
+            output[0]['json_data']['metaData'][2] = sorted_dict
+
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -431,7 +484,12 @@ class Engine:
         taking argument as the testcase name and  return dictionary containing information about testCase
         """
         data = {}
+        list_subtestcases=[]
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
+        if("SUBTESTCASES" in data["config_data"].keys()):
+            for key1 in data["config_data"]["SUBTESTCASES"].split(","):
+                list_subtestcases.append(self.CONFIG.getSubTestcaseData(key1))
+            data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
         data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
         data["S_RUN_ID"] = self.s_run_id
@@ -441,16 +499,17 @@ class Engine:
         data["SUITE_VARS"] = self.user_suite_variables
         return data
 
+    
+
     def getDependency(self, testcases: Dict):
         """
         yields the testcases with least dependncy first
         Reverse toplogical sort
         accept all testcases dictionary as arguments
         """
-
-        adj_list = {
-            key: list(set(list(value.get("DEPENDENCY", "").split(","))) - set([""])) for key, value in testcases.items()
-        }
+        adj_list={}
+        for key,value in testcases.items():
+                adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
             new_list = []
@@ -463,6 +522,7 @@ class Engine:
                     new_list.append(testcase[0])
 
             adj_list[key] = set(new_list)
+        
         while adj_list:
             """
             return testcases that doesn't depend on other testcase
@@ -471,7 +531,7 @@ class Engine:
                 i for dependents in list(adj_list.values()) for i in dependents
             ) - set(adj_list.keys())
             top_dep.update(key for key, value in adj_list.items() if not value)
-
+        
             if not top_dep:
                 logging.critical(
                     "circular dependency found please remove the cirular dependency"
@@ -480,12 +540,13 @@ class Engine:
                 sys.exit(1)
 
             adj_list = {key: value - top_dep for key, value in adj_list.items() if value}
-
             result = []
             for key in testcases:
                 if key in top_dep:
                     result.append(testcases[key])
             yield result
+
+   
 
     def isDependencyPassed(self, testcase: Dict) -> bool:
         """
@@ -493,31 +554,46 @@ class Engine:
         """
 
         # split on ','
-        for dep in list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""])):
+        listOfTestcases=[]
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""]))
+        for dep in listOfTestcases:
 
-            dep_split = list(dep.split(":"))
+                    dep_split = list(dep.split(":"))
+                    if len(dep_split) == 1:
+                        # NAME to name, to_list()
+                        if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
+                            return False
 
-            if len(dep_split) == 1:
-                # NAME to name, to_list()
-                if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
-                    return False
+                    else:
+                        if dep_split[0].upper() == "P":
+                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                                return False
+                            # way to parsing the df    
+                            if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
+                                return False
 
-            else:
-                if dep_split[0].upper() == "P":
-                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                        return False
-                    # way to parsing the df    
-                    if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
-                        return False
-
-                if dep_split[0].upper() == "F":
-                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                        return False
-                    if (
-                        (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
-                        != status.FAIL.name
-                    ):
-                        return False
+                        if dep_split[0].upper() == "F":
+                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                                return False
+                            if (
+                                (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
+                                != status.FAIL.name
+                            ):
+                                return False
 
         return True
 
+    ### Function for sending total, pass, fail in order
+    def totalOrder(self, unsorted_dict):
+        
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in unsorted_dict :
+                sorted_dict[key] = unsorted_dict[key]
+                unsorted_dict.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(unsorted_dict)
+
+        return sorted_dict
