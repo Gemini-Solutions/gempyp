@@ -38,6 +38,7 @@ def writeToReport(pyprest_obj):
     tempdict = {} 
     tc_run_id = f"{pyprest_obj.tcname}_{uuid.uuid4()}"
     tempdict["tc_run_id"] = tc_run_id
+    print("tc_run_id=",tc_run_id)
     tempdict["name"] = result["NAME"]
     tempdict["category"] = pyprest_obj.category
     tempdict["status"] = result["STATUS"]

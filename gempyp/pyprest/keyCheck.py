@@ -90,12 +90,12 @@ class KeyCheck:
                         _status = status.PASS
             if self.isLegacyPresent:
                 self.pyprest_obj.reporter.addRow("Keys to be check for presence/absence in response body of current and legacy api","Keys are present status",_status ,CURRENT_API= content_found, LEGACY_API= legacy_content_found)
-                if _status == status.FAIL and "Some keys are missing in Current or Legacy API Response, " not in self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"]:
-                    self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"] += "Some keys are missing in Current or Legacy API Response, "
+                if _status == status.FAIL and "Some keys are missing in Current or Legacy API Response, " not in self.pyprest_obj.reporter._misc_data["REASON OF FAILURE"]:
+                    self.pyprest_obj.reporter._misc_data["REASON OF FAILURE"] += "Some keys are missing in Current or Legacy API Response, "
             else:   
                 self.pyprest_obj.reporter.addRow("Keys to be check for PRESENCE in response body", content_found, _status)
-                if _status == status.FAIL and "Some keys are missing in Response, " not in self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"]:
-                    self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"] += "Some keys are missing in Response, "
+                if _status == status.FAIL and "Some keys are missing in Response, " not in self.pyprest_obj.reporter._misc_data["REASON OF FAILURE"]:
+                    self.pyprest_obj.reporter._misc_data["REASON OF FAILURE"] += "Some keys are missing in Response, "
 
         if len(self.keys_not) > 0:
             for each_key in self.keys_not:
@@ -131,14 +131,14 @@ class KeyCheck:
             
             if self.isLegacyPresent:
                 self.pyprest_obj.reporter.addRow("Keys to be check for presence/absence in response body of current and legacy api","Keys are not present in the response status",_status ,CURRENT_API= content_found, LEGACY_API= legacy_content_found)
-                if _status == status.FAIL and "Some keys are missing in Current or Legacy API Response, " not in self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"]:
-                    self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"] += "Some keys are missing in Current or Legacy API Response, "
+                if _status == status.FAIL and "Some keys are missing in Current or Legacy API Response, " not in self.pyprest_obj.reporter._misc_data["REASON OF FAILURE"]:
+                    self.pyprest_obj.reporter._misc_data["REASON OF FAILURE"] += "Some keys are missing in Current or Legacy API Response, "
             else:    
                 self.pyprest_obj.reporter.addRow("Performing key check", "Checking Keys not required in response body-</br>" + content_not_found, _status_n)
 
             if status.FAIL in [_status, _status_n]:
-                self.pyprest_obj.reporter._misc_data["REASON_OF_FAILURE"] = "Status of key check is not as expected, "
-            # self.pyprest_obj.reporter.addMisc("Reason_of_failure", "Status of key check is not as expected")
+                self.pyprest_obj.reporter._misc_data["REASON OF FAILURE"] = "Status of key check is not as expected, "
+            # self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Status of key check is not as expected")
 
 # change adding another param typeOfResponse to make findkeys reusable for legacy and current responses
 
