@@ -12,7 +12,7 @@ repository = "https://github.com/Gemini-Solutions/gempyp"
 include = ["suite.html", "testcase.html", "final_report.html"]
 
 [tool.poetry.dependencies]
-python = "^3.6.0"
+python = "^3.6.8"
 pytest = "^6.2.4"
 certifi = "^2022.6.15"
 cffi = "^1.15.0"
