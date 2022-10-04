@@ -19,5 +19,9 @@ pytz==2022.2.1
 requests==2.27.1
 requests-ntlm==1.1.0
 six==1.16.0
-urllib3==1.26.12
+urllib3==1.26.9
 XlsxWriter==3.0.3
+mysql-connector-python==8.0.30
+psycopg2==2.9.3
+dataclasses==0.8
+importlib-resources==5.4.0
