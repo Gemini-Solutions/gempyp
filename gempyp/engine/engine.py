@@ -338,7 +338,7 @@ class Engine:
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
-                            "product type": testcase.get("product type", None),
+                            "product_type": testcase.get("product_type", None),
                         }
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
@@ -383,7 +383,7 @@ class Engine:
                     error["message"],
                     error["testcase"],
                     error.get("category"),
-                    error.get("product type"),
+                    error.get("product_type"),
                     error.get('log_path', None)
                 )
                 output = [output]
@@ -449,7 +449,7 @@ class Engine:
         testcase_dict["user"] = self.user
         testcase_dict["machine"] = self.machine
         if product_type:
-            testcase_dict["product type"] = product_type
+            testcase_dict["product_type"] = product_type
 
         result["testcase_dict"] = testcase_dict
 
