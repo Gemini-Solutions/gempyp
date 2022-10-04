@@ -1,4 +1,4 @@
-from importlib.resources import path
+from importlib_resources import path
 from ntpath import join
 import tempfile
 from typing import Dict
