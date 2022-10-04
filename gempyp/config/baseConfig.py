@@ -73,8 +73,8 @@ class AbstarctBaseConfig(ABC):
                     test[key] = value
             testcase_data = test
 
-
         for key, value in testcase_data.items():
+            testcases = ""
             if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
                 testcases=value.get("SUBTESTCASES").split(",")
                 testcases.append(key)
@@ -100,12 +100,12 @@ class AbstarctBaseConfig(ABC):
 
 
             filtered_dict[key] = value
-
+            filtered_dict_subtestcases = {}
             if(len(testcases)>0):
                 for i in range(len(testcases)):
                     if(testcases[i] in testcase_data.keys()):
                         filtered_dict_subtestcases[testcases[i]]=testcase_data.get(testcases[i])
-        self._CONFIG["SUBTESTCASES_DATA"]=filtered_dict_subtestcases
+        self._CONFIG["SUBTESTCASES_DATA"] = filtered_dict_subtestcases
 
         self._CONFIG["TESTCASE_DATA"] = filtered_dict
 
