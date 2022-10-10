@@ -8,7 +8,7 @@ import logging
 
 def writeToReport(dvm_obj):
     """
-    This function takes pyprest obj,
+    This function takes DVM obj,
     creates the testcase report if the runmode is debug mode,
     Creates the dictionary that is to be sent to gempyp"""
     result = {}
@@ -36,7 +36,7 @@ def writeToReport(dvm_obj):
     tempdict["status"] = result["STATUS"]
     tempdict["user"] = dvm_obj.data.get("USER")
     tempdict["machine"] = dvm_obj.data.get("MACHINE")
-    tempdict["product type"] = "DVM"
+    tempdict["product_type"] = "GEMPYP-DV"
     tempdict["steps"] = result["json_data"]['steps']
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]

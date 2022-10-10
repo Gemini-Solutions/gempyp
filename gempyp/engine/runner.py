@@ -103,7 +103,7 @@ def getError(error, config_data: Dict) -> Dict:
     error = {}
     error["testcase"] = config_data.get("NAME")
     error["message"] = str(error)
-    error["product type"] = "GEMPYP"
+    error["product_type"] = "GEMPYP"
     error["category"] = config_data.get("CATEGORY", None)
     error['log_path'] = config_data.get('log_path', None)
     return error

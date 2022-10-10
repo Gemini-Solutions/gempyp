@@ -1,9 +1,11 @@
+from cmath import nan
 import logging
 import pandas as pd
 import traceback
 import json
 from gempyp.libs.common import dateTimeEncoder, findDuration
 from datetime import datetime, timezone
+import numpy as np
 
 
 class TestData:
@@ -23,10 +25,11 @@ class TestData:
             "user",
             "machine",
             "result_file",
-            "product type",
+            "product_type",
             "ignore",
             "miscData",
             "userDefinedData",
+            "duration",
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -45,6 +48,7 @@ class TestData:
         if self.suite_detail.empty:
             return {}
 
+        self.suite_detail = self.suite_detail.replace(np.nan, '-', regex=True)
         data = self.suite_detail.to_dict(orient="records")[0]
         misc_data = self.misc_details[
             self.misc_details["table_type"].str.upper() == "SUITE"
@@ -53,7 +57,6 @@ class TestData:
         misc_data = misc_data.to_dict(orient="records")
         data["misc_data"] = misc_data
         data["s_id"] = "test_id"
-
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):
@@ -62,6 +65,7 @@ class TestData:
         used in update_df method of engine.py
         """
 
+        self.testcase_details = self.testcase_details.replace(np.nan, '-', regex=True)
         test_data = self.testcase_details.loc[
             self.testcase_details["tc_run_id"].str.upper() == tc_run_id
         ]
@@ -78,6 +82,16 @@ class TestData:
             else:
                 test_status[key] = 1
         test_status["TOTAL"] = sum(test_status.values())
+        prio_list = ['TOTAL', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in test_status:
+                sorted_dict[key] = test_status[key]
+                test_status.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(test_status)
+        test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
         """ Adding misc data to userDefinedData column for each testcase
@@ -101,8 +115,7 @@ class TestData:
                 "EXECUTION ENDED ON": {"value": test_data["end_time"], "type": "datetime"}, 
                 "EXECUTION DURATION": findDuration(test_data["start_time"], test_data["end_time"])
             }, 
-            test_status]
-
+            sorted_dict]
 
         test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
@@ -119,6 +132,7 @@ class TestData:
         provide the report json to makereport() method of engine file
         """
         suite_report = {}
+        self.suite_detail = self.suite_detail.replace(np.nan, "-", regex=True)
         suite_dict = self.suite_detail.to_dict(orient="records")[0]
         testcase_dict = self.testcase_details.to_dict(orient="records")
         misc_dict=self.misc_details.to_dict(orient="records")
@@ -149,10 +163,19 @@ class TestData:
                 testcase_dict[i].pop("userDefinedData")
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
+        prio_list = ['total', 'PASS', 'FAIL']
+        sorted_dict = {}
+        for key in prio_list:
+            if key in testcase_counts :
+                sorted_dict[key] = testcase_counts[key]
+                testcase_counts.pop(key)
+            elif key == "PASS" or key == 'FAIL':
+                sorted_dict[key] = 0
+        sorted_dict.update(testcase_counts)
+        testcase_counts = sorted_dict
         suite_dict["Testcase_Info"] = testcase_counts
         suite_report["Suits_Details"] = suite_dict
-        suite_report["reportProduct"] = "GEMPYP"        
-
+        suite_report["reportProduct"] = "GEMPYP"       
         return json.dumps(suite_report, cls=dateTimeEncoder)
 
     def getTestcaseCounts(self):

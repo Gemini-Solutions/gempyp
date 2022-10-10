@@ -20,7 +20,7 @@ import xlsxwriter
 import logging
 import math
 import numpy
-
+import psycopg2
 
 class DvmRunner(Base):
 
@@ -30,7 +30,9 @@ class DvmRunner(Base):
 
         self.configData: Dict = self.data.get("config_data")
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
-        self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
+
+        self.logger.info("---------------------Inside DVM FRAMEWORK------------------------")
+
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
         # # set vars
         self.setVars()
@@ -54,8 +56,8 @@ class DvmRunner(Base):
                 return output, None
             try:
                 self.logger.info("----Parsing the Config File----")
-                userCred ={"host":configur.get(self.configData["SOURCE_DB"],'host'),"dbName":configur.get(self.configData["SOURCE_DB"],'databaseName'),"userName":configur.get(self.configData["SOURCE_DB"],'userName'),"password":configur.get(self.configData["SOURCE_DB"],'password')}
-                targetCred ={"host":configur.get(self.configData["TARGET_DB"],'host'),"dbName":configur.get(self.configData["TARGET_DB"],'databaseName'),"userName":configur.get(self.configData["TARGET_DB"],'userName'),"password":configur.get(self.configData["TARGET_DB"],'password')} 
+                userCred ={"host":configur.get(self.configData["SOURCE_DB"],'host'),"dbName":configur.get(self.configData["SOURCE_DB"],'databaseName'),"userName":configur.get(self.configData["SOURCE_DB"],'userName'),"password":configur.get(self.configData["SOURCE_DB"],'password'),"port":configur.get(self.configData["SOURCE_DB"],'port')}
+                targetCred ={"host":configur.get(self.configData["TARGET_DB"],'host'),"dbName":configur.get(self.configData["TARGET_DB"],'databaseName'),"userName":configur.get(self.configData["TARGET_DB"],'userName'),"password":configur.get(self.configData["TARGET_DB"],'password'),"port":configur.get(self.configData["TARGET_DB"],'port')} 
                 self.reporter.addRow("Parsing DB Conf","Parsing of DB config is Successfull",status.PASS)
             except Exception as e:
                 self.logger.error(str(e))
@@ -75,7 +77,10 @@ class DvmRunner(Base):
             """connecting to sourceDB"""
             try:
                 self.logger.info("----Connecting to SourceDB----")
-                myDB = mysql.connector.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'])
+                if self.configData["DATABASE"].lower() == 'mysql':
+                    myDB = mysql.connector.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'])
+                elif self.configData["DATABASE"].lower() == 'postgresql':
+                    myDB = psycopg2.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'], port = userCred['port'])
                 self.reporter.addRow("Connection to SourceDB: "+ str(userCred["host"]),"Connection to SourceDB is Successfull",status.PASS)
                 myCursor = myDB.cursor()
             except Exception as e:
@@ -110,16 +115,20 @@ class DvmRunner(Base):
             results = myCursor.fetchall()
             db_1 = pd.DataFrame(results, 
                                 columns=sourceColumns)
+            myDB.close()
             
             """Connecting to TargetDB"""
             try:
                 self.logger.info("----Connecting to TargetDB----")
-                myDB1 = mysql.connector.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'])
+                if self.configData["DATABASE"].lower() == 'mysql':
+                    myDB1 = mysql.connector.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'])
+                elif self.configData["DATABASE"].lower() == 'postgresql':
+                    myDB1 = psycopg2.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'],port= targetCred['port'])
                 self.reporter.addRow("Connection to TargetDB: "+ str(targetCred['host']),"Connection to TargetDB is Successfull",status.PASS)
                 myCur = myDB1.cursor()
             except Exception as e:
                 self.logger.error(str(e))
-                self.reporter.addRow("Connection to TargetDB: "+ str(userCred["host"]),"Exception Occurred",status.FAIL)
+                self.reporter.addRow("Connection to TargetDB: "+ str(targetCred["host"]),"Exception Occurred",status.FAIL)
             try:
                 self.logger.info("----Executing the TargetSQL----")
                 myCur.execute(self.configData['TARGET_SQL'])

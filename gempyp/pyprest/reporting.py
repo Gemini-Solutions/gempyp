@@ -44,7 +44,7 @@ def writeToReport(pyprest_obj):
     tempdict["status"] = result["STATUS"]
     tempdict["user"] = pyprest_obj.data.get("USER")
     tempdict["machine"] = pyprest_obj.data.get("MACHINE")
-    tempdict["product type"] = "GEMPYP-PR"
+    tempdict["product_type"] = "GEMPYP-PR"
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
