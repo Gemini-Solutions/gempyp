@@ -50,7 +50,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
 
     engine_control = {
         "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
-        "dvm":{"class": DvmRunner, "classParam": data, "function": "DVMEngine"},
+        "dvm":{"class": DvmRunner, "classParam": data, "function": "dvmEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
     _type = data.get("config_data")["TYPE"]
