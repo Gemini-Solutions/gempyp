@@ -116,8 +116,11 @@ class AbstarctBaseConfig(ABC):
             for element in self.cli_config.keys():
                 if self.cli_config[element]:
                     if str(element) in self._CONFIG['SUITE_DATA']:
-                        # print(element)
-                        self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
+                        if(element=="ENV" and len(self.cli_config[element].split(","))>0):
+                            self._CONFIG['SUITE_DATA']["ENV"]=self.cli_config[element].split(",")[0]
+                            self._CONFIG['SUITE_DATA'][self.cli_config[element].split(",")[0].upper()]=self.cli_config[element].split(",")[1]
+                        else:
+                            self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
                     else:
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:

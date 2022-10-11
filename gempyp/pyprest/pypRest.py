@@ -138,6 +138,7 @@ class PypRest(Base):
             self.api = self.data["config_data"]["API"].strip(" ")
         else: 
             self.api = self.data.get(self.env, "PROD").strip(" ") + self.data["config_data"]["API"].strip(" ")
+            
 
         # get the method
         self.method = self.data["config_data"].get("METHOD", "GET")
