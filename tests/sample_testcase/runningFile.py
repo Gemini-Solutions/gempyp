@@ -8,7 +8,7 @@ obj = Gempyp()
 
 
 
-obj.config = "C:\\Users\\ta.agarwal\\Pictures\\gempyp\\tests\\configTest\\Flask_APIs_suite (1).xml"
+obj.config = "C:\\Users\\ta.agarwal\\Pictures\\gempyp\\tests\\configTest\\features_suite.xml"
 obj.MAIL = "tanya.agarwal@geminisolutions.com"
 
 # main condition is necessary

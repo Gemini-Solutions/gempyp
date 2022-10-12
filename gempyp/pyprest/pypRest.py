@@ -130,6 +130,8 @@ class PypRest(Base):
         """This is a function to get the values from configData, store it in self object."""
         # capitalize the keys
 
+
+
         for k, v in self.data["config_data"].items():
             self.data.update({k.upper(): v})
         self.env = self.data.get("ENV", "PROD").strip(" ").upper()
@@ -138,21 +140,22 @@ class PypRest(Base):
             self.api = self.data["config_data"]["API"].strip(" ")
         else: 
             self.api = self.data.get(self.env, "PROD").strip(" ") + self.data["config_data"]["API"].strip(" ")
-            
+        
 
+        
         # get the method
         self.method = self.data["config_data"].get("METHOD", "GET")
 
         # get the headers
         # self.headers = self.data["config_data"].get("HEADERS",{})
-        self.headers = json.loads(self.data["config_data"].get("HEADERS", {}))
+        self.headers = self.data["config_data"].get("HEADERS", {})
         
 
         #get miscellaneous variables for report.
         self.report_misc = self.data["config_data"].get("REPORT_MISC","")
         
         # get body
-        self.body = json.loads(self.data["config_data"].get("BODY", {}))
+        self.body = self.data["config_data"].get("BODY", {})
 
 
         # get file
@@ -185,8 +188,14 @@ class PypRest(Base):
             self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
         #setting variables and variable replacement
 
+        
+        
+
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
+        self.body=json.loads(self.body)
+        self.headers=json.loads(self.headers)
+        
     
     def execRequest(self):
         """This function
@@ -226,6 +235,7 @@ class PypRest(Base):
         self.logRequest()
         # calling variable replacement after before method
         VarReplacement(self).variableReplacement()
+    
 
 
         try:
@@ -241,6 +251,7 @@ class PypRest(Base):
             if(len(self.request_obj)>0):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
+            
 
             # self.res_obj.response_body
             # self.res_obj.status_code
@@ -268,6 +279,8 @@ class PypRest(Base):
                 if self.isLegacyPresent:
                     traceback.print_exc()
         except Exception as e:
+            print(e)
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$")
             if str(e) == "abort":
                 raise Exception("abort")
             self.logger.info(traceback.print_exc())
