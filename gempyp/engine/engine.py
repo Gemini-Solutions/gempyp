@@ -47,7 +47,6 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
     # "dvm": {"function": DvmRunner(data).dvmEngine(), "log": custom_logger.info("Starting the DVM testcase")}, 
     # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
-
     engine_control = {
         "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
         "dvm":{"class": DvmRunner, "classParam": data, "function": "dvmEngine"},
@@ -518,6 +517,8 @@ class Engine:
             data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
         data["PROJECT_NAME"] = self.project_name
         data["ENV"] = self.project_env
+        if(self.project_env.upper() in self.PARAMS.keys()):
+            data[self.project_env.upper()]=self.PARAMS[self.project_env.upper()]
         data["S_RUN_ID"] = self.s_run_id
         data["USER"] = self.user
         data["MACHINE"] = self.machine
