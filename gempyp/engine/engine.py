@@ -137,13 +137,13 @@ class Engine:
                     dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             failed_Utestcases = len(dataUpload.not_uploaded) 
             ### Creating file for unuploaded testcases
-        if len(dataUpload.not_uploaded) != 0:
-            if dataUpload.flag == True:
-                logging.warning("Testcase may be present with same tc_run_id in database")
-            listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
-            unuploaded_path = os.path.join(self.ouput_folder, "Unploaded_testCases.json")
-            with open(unuploaded_path,'w') as w:
-                w.write(listToStr)
+            if len(dataUpload.not_uploaded) != 0:
+                if dataUpload.flag == True:
+                    logging.warning("Testcase may be present with same tc_run_id in database")
+                listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
+                unuploaded_path = os.path.join(self.ouput_folder, "Unploaded_testCases.json")
+                with open(unuploaded_path,'w') as w:
+                    w.write(listToStr)
         self.updateSuiteData()
         ### checking if suite post request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_not_uploaded == True:
@@ -310,7 +310,7 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
-        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)
+        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  
 
     def startSequence(self):
         """
