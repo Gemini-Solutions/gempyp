@@ -229,7 +229,7 @@ class Request:
 
 
 class Response:
-    def __init__(self, body="", code=200, response_time=0, headers={}):
+    def __init__(self, body="", code=0, response_time=0, headers={}):
         self.response_body = body
         self.status_code = code
         self.response_time = response_time

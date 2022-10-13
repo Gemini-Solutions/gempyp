@@ -1,5 +1,3 @@
-from importlib_resources import path
-from ntpath import join
 import tempfile
 from typing import Dict
 import lxml.etree as et
