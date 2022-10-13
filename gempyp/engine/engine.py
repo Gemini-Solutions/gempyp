@@ -243,7 +243,7 @@ class Engine:
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
-            "s_end_time": self.start_time,
+            "s_end_time": None,
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
