@@ -1,4 +1,3 @@
-import configparser
 import mysql.connector
 import os
 from configparser import ConfigParser
@@ -20,7 +19,7 @@ import xlsxwriter
 import logging
 import math
 import numpy
-import psycopg2
+import pg8000
 
 class DvmRunner(Base):
 
@@ -80,7 +79,7 @@ class DvmRunner(Base):
                 if self.configData["DATABASE"].lower() == 'mysql':
                     myDB = mysql.connector.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'])
                 elif self.configData["DATABASE"].lower() == 'postgresql':
-                    myDB = psycopg2.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'], port = userCred['port'])
+                    myDB = pg8000.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'], port = userCred['port'])
                 self.reporter.addRow("Connection to SourceDB: "+ str(userCred["host"]),"Connection to SourceDB is Successfull",status.PASS)
                 myCursor = myDB.cursor()
             except Exception as e:
@@ -123,7 +122,7 @@ class DvmRunner(Base):
                 if self.configData["DATABASE"].lower() == 'mysql':
                     myDB1 = mysql.connector.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'])
                 elif self.configData["DATABASE"].lower() == 'postgresql':
-                    myDB1 = psycopg2.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'],port= targetCred['port'])
+                    myDB1 = pg8000.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'],port= targetCred['port'])
                 self.reporter.addRow("Connection to TargetDB: "+ str(targetCred['host']),"Connection to TargetDB is Successfull",status.PASS)
                 myCur = myDB1.cursor()
             except Exception as e:

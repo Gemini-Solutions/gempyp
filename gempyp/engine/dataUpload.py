@@ -4,9 +4,14 @@ import logging
 from gempyp.config import DefaultSettings
 import logging
 import sys
+import re
+import json
 
 not_uploaded = []
-
+suite_data = []
+flag = False
+s_flag = False
+suite_not_uploaded = False
 def _getHeaders(bridge_token, user_name):
     """
     for getting the bridgeToken in _sendData method
@@ -18,10 +23,27 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
+    ### for removing none value in payload
+    try:
+        payload = noneRemover(payload)
+        response = _sendData(payload, DefaultSettings.urls["suiteExec"], bridge_token, user_name, mode)
+        ### Applying regex to the response
+        x = re.search("already present",response.text,re.IGNORECASE)
 
-    response = _sendData(payload, DefaultSettings.urls["suiteExec"], bridge_token, user_name, mode)
-    if response and response.status_code == 201:
-        logging.info("data uploaded successfully")
+        if response and response.status_code == 201:
+            logging.info("data uploaded successfully")
+            global suite_not_uploaded
+            suite_not_uploaded = True
+            if payload in suite_data:
+                suite_data.remove(payload)
+        else:
+            if payload not in suite_data:
+                suite_data.append(payload)
+                if x != None:
+                    global s_flag
+                    s_flag = True
+    except Exception as e:
+        logging.error(traceback.format_exc())
 
 def sendTestcaseData(payload, bridge_token, user_name):
     """
@@ -29,6 +51,8 @@ def sendTestcaseData(payload, bridge_token, user_name):
     """
     try:
         response = _sendData(payload, DefaultSettings.urls["testcases"], bridge_token, user_name, method="POST")
+        ### Applying regex to the response
+        x = re.search("already present",response.text,re.IGNORECASE)
         if response and response.status_code == 201:
             logging.info("data uploaded successfully")
             if payload in not_uploaded:
@@ -38,6 +62,9 @@ def sendTestcaseData(payload, bridge_token, user_name):
         if response.status_code != 201:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)
+            if response.status_code == 400:
+                global flag
+                flag = True
 
     except Exception as e:
         logging.error(traceback.format_exc())
@@ -65,3 +92,11 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
         logging.info("Data not uploaded...........")
     logging.info(f"status: {response.status_code}")
     return response
+
+def noneRemover(payload):
+    
+    data = json.loads(payload)
+    for key,value in dict(data).items():
+        if value == "-":
+            del data[key]
+    return json.dumps(data)
