@@ -49,7 +49,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
     engine_control = {
         "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
-        "dvm":{"class": DvmRunner, "classParam": data, "function": "DVMEngine"},
+        "dvm":{"class": DvmRunner, "classParam": data, "function": "dvmEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
     _type = data.get("config_data")["TYPE"]
@@ -110,29 +110,55 @@ class Engine:
         self.makeSuiteDetails()
         #jewel variable is to print jewel link in rep summary
         self.jewel = ''
+        unuploaded_path = ""
+        failed_Utestcases = 0
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-            self.jewel = f'https://jewel.gemecosystem.com/#/autolytics/extent-report?s_run_id={self.s_run_id}'
-        else:
-            logging.warning("Either username or bridgetoken is missing thus data is not uploaded in db.")
+        ### first try to rerun the data
+            if dataUpload.suite_not_uploaded == False and dataUpload.s_flag == False:
+                print("------Retrying to Upload Suite Data------")
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        
         self.makeOutputFolder()
         self.start()
-        ### Trying to rerun Testcases
-        if len(dataUpload.not_uploaded) != 0:
-            print("------Trying again to Upload Testcase------")
-            for testcase in dataUpload.not_uploaded:
-                dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        failed_Utestcases = len(dataUpload.not_uploaded) 
-        unuploaded_path = ""
-        ### Creating file for unuploaded testcases
-        if len(dataUpload.not_uploaded) != 0:
-            listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
-            unuploaded_path = os.path.join(self.ouput_folder, "not_uploaded_testCases.json")
+        ### Trying to reupload suite data
+        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+            if dataUpload.suite_not_uploaded == False and dataUpload.s_flag == False:
+                print("------Retrying to Upload Suite Data------")
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+
+        ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
+        if dataUpload.suite_not_uploaded == True:
+            self.jewel = f'https://jewel.gemecosystem.com/#/autolytics/extent-report?s_run_id={self.s_run_id}'
+            if len(dataUpload.not_uploaded) != 0:
+                print("------Trying again to Upload Testcase------")
+                for testcase in dataUpload.not_uploaded:
+                    dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            failed_Utestcases = len(dataUpload.not_uploaded) 
+            ### Creating file for unuploaded testcases
+            if len(dataUpload.not_uploaded) != 0:
+                if dataUpload.flag == True:
+                    logging.warning("Testcase may be present with same tc_run_id in database")
+                listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
+                unuploaded_path = os.path.join(self.ouput_folder, "Unploaded_testCases.json")
+                with open(unuploaded_path,'w') as w:
+                    w.write(listToStr)
+        self.updateSuiteData()
+        ### checking if suite post request is successful to call put request otherwise writing suite data in a file
+        if dataUpload.suite_not_uploaded == True:
+            if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+                dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+        else:
+            if dataUpload.s_flag == True:
+                logging.warning("S_RUN_ID is already present in Database")
+            else:
+                logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
+            dataUpload.suite_data.append(self.DATA.toSuiteJson())
+            listToStr = ',\n'.join(map(str, dataUpload.suite_data))
+            unuploaded_path = os.path.join(self.ouput_folder, "Unuploaded_suiteData.json")
             with open(unuploaded_path,'w') as w:
                 w.write(listToStr)
-        self.updateSuiteData()
-        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
         TemplateData().repSummary(self.repJson, output_file_path, self.jewel, failed_Utestcases, unuploaded_path)
 
@@ -216,7 +242,7 @@ class Engine:
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
-            "s_end_time": self.start_time,
+            "s_end_time": None,
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
@@ -283,7 +309,7 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
-        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)
+        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  
 
     def startSequence(self):
         """
