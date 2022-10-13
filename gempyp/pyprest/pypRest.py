@@ -195,8 +195,21 @@ class PypRest(Base):
         VarReplacement(self).variableReplacement()
         self.body=json.loads(self.body)
         self.headers=json.loads(self.headers)
-        
     
+    
+    def file_upload(self,json_form_data): 
+        files_data=[]
+        json_form_data_1={}  
+        for key,value in json_form_data.items():
+            files_data_tuple=tuple()
+            if(os.path.exists(json_form_data[key])):
+                files_data_tuple+=(key,json_form_data[key])
+            files_data.append(files_data_tuple)
+        return files_data
+
+
+
+
     def execRequest(self):
         """This function
         -creates a request object, 
@@ -215,7 +228,8 @@ class PypRest(Base):
             self.req_obj.method = self.method
             self.req_obj.body = self.body
             self.req_obj.headers = self.headers
-            self.req_obj.file = self.file
+            if(self.file is not None):
+                self.req_obj.file = self.file_upload(json.loads(self.file))
             if self.auth_type == "NTLM":
                 self.req_obj.credentials = {"username": self.username, "password": self.password}
                 self.req_obj.auth = "PASSWORD"
@@ -248,6 +262,8 @@ class PypRest(Base):
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
+            print(self.res_obj.response_body)
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
             if(len(self.request_obj)>0):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
