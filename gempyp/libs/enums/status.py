@@ -5,7 +5,7 @@ import enum
 # because the final status in report is based on the priority of the status
 class status(enum.Enum):
     FAIL = ("FAIL",)
-    WARN = ("WARN",)
+    ERR = ("ERR",)
     PASS = ("PASS",)
     INFO = ("INFO",)
     EXE = "EXE"

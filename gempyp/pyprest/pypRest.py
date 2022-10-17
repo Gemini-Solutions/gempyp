@@ -58,7 +58,7 @@ class PypRest(Base):
                     traceback.print_exc()
                     self.logger.error(traceback.print_exc())
                     self.reporter._misc_data["REASON OF FAILURE"] += f"Something went wrong:- {str(e)}, "
-                    self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
+                    self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
             if self.reporter._misc_data["REASON OF FAILURE"] == "":
                 self.reporter._misc_data["REASON OF FAILURE"] = None
             ## variable replacement.val_not_found ---- replace variables with "NULL"
@@ -465,7 +465,7 @@ class PypRest(Base):
             
         except Exception as e:
             self.logger.info(traceback.print_exc())
-            self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.WARN)
+            self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
         VarReplacement(self).variableReplacement()
 
     def afterMethod(self):
@@ -518,7 +518,7 @@ class PypRest(Base):
             fin_obj = getattr(obj_, method_name)(after_obj)
             self.extractObj(fin_obj)
         except Exception as e:
-            self.reporter.addRow("Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.WARN)
+            self.reporter.addRow("Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.ERR)
 
         VarReplacement(self).variableReplacement()
         pass
