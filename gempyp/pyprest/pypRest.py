@@ -52,7 +52,7 @@ class PypRest(Base):
             except Exception as e:
                 if str(e) == "abort":
                     self.logger.info("aborting execution")
-                    self.reporter.addMisc("REASON OF FAILURE","ABORTING EXECUTION")
+                    # self.reporter.addMisc("REASON OF FAILURE","ABORTING EXECUTION")
                 else:
                     self.logger.error(str(e))
                     traceback.print_exc()
