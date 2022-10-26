@@ -29,7 +29,7 @@ class TestData:
             "ignore",
             "miscData",
             "userDefinedData",
-            "duration",
+            "duration"
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -94,6 +94,7 @@ class TestData:
         test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
+        # test_data["response_time"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         """ Adding misc data to userDefinedData column for each testcase
         Here misc data is only for one testcase.
         {"key1": "value1", "key2": "value2"...}"""
@@ -108,17 +109,21 @@ class TestData:
             {
                 "TESTCASE NAME": test_data["name"], 
                 "SERVICE PROJECT": "None", 
-                "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"}
+                "DATE OF EXECUTION": {"value": datetime.now(timezone.utc), "type": "date"},
+                # "RESPONSE TIME":"{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
             }, 
             {
                 "EXECUTION STARTED ON": {"value": test_data["start_time"], "type": "datetime"},
                 "EXECUTION ENDED ON": {"value": test_data["end_time"], "type": "datetime"}, 
                 "EXECUTION DURATION": findDuration(test_data["start_time"], test_data["end_time"])
             }, 
-            sorted_dict]
+            sorted_dict
+            # {"response_time":"{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)}
+            ]
 
         test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
+        test_data["userDefinedData"]["response_time"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):

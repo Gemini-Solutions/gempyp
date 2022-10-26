@@ -21,7 +21,7 @@ class Api:
         result = Response()
         # if not request.file:
         header_dict = {key.upper(): value.upper() for key, value in request.headers.items()}
-        if header_dict.get("CONTENT-TYPE", "") == "APPLICATION/JSON":
+        if "CONTENT-TYPE" not in header_dict.keys() or header_dict.get("CONTENT-TYPE", "") == "APPLICATION/JSON":
                 try:
                     if not isinstance(request.body, str):
                         request.body = json.dumps(request.body)
@@ -61,8 +61,6 @@ class Api:
                             timeout=request.timeout // 1000
                         )
                     else:
-                        print(request.file)
-                        print("##############################")
                         resp = requests.post(
                             request.api,
                             headers=request.headers,

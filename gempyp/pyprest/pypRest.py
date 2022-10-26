@@ -262,8 +262,6 @@ class PypRest(Base):
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
-            print(self.res_obj.response_body)
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
             if(len(self.request_obj)>0):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
