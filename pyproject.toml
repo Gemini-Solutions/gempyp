@@ -8,6 +8,7 @@ readme = "README.md"
 documentation = "https://gempyp.readthedocs.io/en/latest/"
 homepage = "https://github.com/Gemini-Solutions/gempyp"
 repository = "https://github.com/Gemini-Solutions/gempyp"
+keywords=['python','testing-framework','reporting-framework']
 
 include = ["suite.html", "testcase.html", "final_report.html"]
 

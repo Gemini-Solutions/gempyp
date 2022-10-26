@@ -140,3 +140,4 @@ dmypy.json
 **.Rhistory
 gempyp_reports/
 slogs/
+.vscode/
