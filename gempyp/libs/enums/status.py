@@ -6,6 +6,7 @@ import enum
 class status(enum.Enum):
     FAIL = ("FAIL",)
     ERR = ("ERR",)
+    WARN = ("WARN",)
     PASS = ("PASS",)
     INFO = ("INFO",)
     EXE = "EXE"

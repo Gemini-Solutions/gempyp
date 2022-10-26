@@ -59,12 +59,12 @@ def sendTestcaseData(payload, bridge_token, user_name):
                 not_uploaded.remove(payload)
 
     ### code for rerun of unuploaded testcases
-        if response.status_code != 201:
+        else:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)
-            if response.status_code == 400:
-                global flag
-                flag = True
+                if x != None:
+                    global flag
+                    flag = True
 
     except Exception as e:
         logging.error(traceback.format_exc())
