@@ -414,7 +414,6 @@ class Engine:
             unsorted_dict = output[0]['json_data']['metaData'][2]
             sorted_dict = self.totalOrder(unsorted_dict)
             output[0]['json_data']['metaData'][2] = sorted_dict
-
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
