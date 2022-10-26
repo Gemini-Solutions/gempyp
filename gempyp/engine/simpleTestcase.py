@@ -40,14 +40,21 @@ class AbstractSimpleTestcase(ABC):
                 logger.error(traceback.format_exc())
                 etype, value, tb = sys.exc_info()
                 info, error = traceback.format_exception(etype, value, tb)[-2:]
+                # code for finding exception and writing reason of failure 
+                exceptiondata = traceback.format_exc().splitlines()
+                exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+                reporter.addMisc("Reason of Failure",exceptionarray[0])
                 #reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
-                reporter.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
+                reporter.addRow("Exception Occured", str(error) + 'at' + str(info), status.ERR)
             finally:
                 return reporter
                 
         except Exception as e:
             if e:            
                 logger.error(traceback.format_exc())
+                exceptiondata = traceback.format_exc().splitlines()
+                exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+                reporter.addMisc("Reason of Failure",exceptionarray[0])
             
         
 
@@ -75,7 +82,8 @@ class AbstractSimpleTestcase(ABC):
             self.logger.error(traceback.format_exc())
             info, error = traceback.format_exception(etype, value, tb)[-2:]
             reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
-            reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
+            reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.ERR)
+
 
         if isinstance(reports, TestcaseReporter):
             reports = [reports]

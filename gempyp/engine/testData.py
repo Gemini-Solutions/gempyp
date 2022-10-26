@@ -78,7 +78,7 @@ class TestData:
         for step in test_data["steps"]:
             key = step.get("status")
             if test_status.get(key, None) is not None:
-                test_status.get(key) + 1
+                test_status[key] = test_status.get(key) + 1
             else:
                 test_status[key] = 1
         test_status["TOTAL"] = sum(test_status.values())

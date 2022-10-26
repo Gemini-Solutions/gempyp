@@ -28,7 +28,7 @@ class TemplateData:
         self.REPORTDATA["metaData"] = metadata
 
     def newRow(self, title: str, description: str, status: status, **kwargs):
-        step = {"title": title, "description": description, "status": status}
+        step = {"Step Name": title, "Step Description": description, "status": status}
         if not kwargs.get("attachment"):
             kwargs.pop("attachment")
         if kwargs:

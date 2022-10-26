@@ -39,7 +39,6 @@ class PypRest(Base):
 
         # setting reporter object
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
-        self.reporter._misc_data["REASON OF FAILURE"] = ""
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
 
@@ -53,12 +52,16 @@ class PypRest(Base):
             except Exception as e:
                 if str(e) == "abort":
                     self.logger.info("aborting execution")
+                    self.reporter.addMisc("REASON OF FAILURE","ABORTING EXECUTION")
                 else:
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.logger.error(traceback.print_exc())
-                    self.reporter._misc_data["REASON OF FAILURE"] += f"Something went wrong:- {str(e)}, "
-                    self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.WARN)
+                    self.reporter.addMisc("REASON OF FAILURE", f"Something went wrong:- {str(e)}")
+                    self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
+                    exceptiondata = traceback.format_exc().splitlines()
+                    exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+                    self.reporter.addMisc("Reason of Failure",exceptionarray[0])
             if self.reporter._misc_data["REASON OF FAILURE"] == "":
                 self.reporter._misc_data["REASON OF FAILURE"] = None
             ## variable replacement.val_not_found ---- replace variables with "NULL"
@@ -74,7 +77,7 @@ class PypRest(Base):
     
     def run(self):
         self.getVals()
-        # execute and format result 
+        # execute and format result
         self.execRequest()
         self.postProcess()
         MiscVariables(self).miscVariables()
@@ -120,8 +123,7 @@ class PypRest(Base):
                 
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update REASON OF FAILURE in misc
-            if "Mandatory keys are missing, " not in self.reporter._misc_data["REASON OF FAILURE"]:
-                self.reporter._misc_data["REASON OF FAILURE"] += "Mandatory keys are missing, "
+            self.reporter.addMisc("REASON OF FAILURE", "Mandatory keys are missing")
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
             
@@ -279,13 +281,11 @@ class PypRest(Base):
                 if self.isLegacyPresent:
                     traceback.print_exc()
         except Exception as e:
-            print(e)
-            print("$$$$$$$$$$$$$$$$$$$$$$$$$")
             if str(e) == "abort":
                 raise Exception("abort")
             self.logger.info(traceback.print_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
-            self.reporter._misc_data["REASON OF FAILURE"] += f"Some error occurred while sending request- {str(e)}, "
+            self.reporter.addMisc("REASON OF FAILURE", f"Some error occurred while sending request- {str(e)}")
             raise Exception(f"Error occured while sending request - {str(e)}")
 
     def setVars(self):
@@ -372,8 +372,7 @@ class PypRest(Base):
                                  LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
                                  )
-                if "Response code is not as expected, " not in self.reporter._misc_data["REASON OF FAILURE"]:
-                    self.reporter._misc_data["REASON OF FAILURE"] += "Response code is not as expected, "
+                self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
                 raise Exception("abort")
                 # raise Exception("abort")       
@@ -397,8 +396,7 @@ class PypRest(Base):
                                  f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
                                  + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
                                  status.FAIL)
-                if "Response code is not as expected, " not in self.reporter._misc_data["REASON OF FAILURE"]:
-                    self.reporter._misc_data["REASON OF FAILURE"] += "Response code is not as expected, "
+                self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes did not match, aborting testcase.....")
                 raise Exception("abort")
 
@@ -465,7 +463,7 @@ class PypRest(Base):
             
         except Exception as e:
             self.logger.info(traceback.print_exc())
-            self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.WARN)
+            self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
         VarReplacement(self).variableReplacement()
 
     def afterMethod(self):
@@ -518,7 +516,7 @@ class PypRest(Base):
             fin_obj = getattr(obj_, method_name)(after_obj)
             self.extractObj(fin_obj)
         except Exception as e:
-            self.reporter.addRow("Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.WARN)
+            self.reporter.addRow("Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.ERR)
 
         VarReplacement(self).variableReplacement()
         pass
