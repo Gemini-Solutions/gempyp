@@ -13,22 +13,11 @@ def old_meth():
     obj2.reporter.addRow("test", "test_2", status.PASS)
     obj2.reporter.addRow("test", "test_2", status.PASS)
 
-def test_old_meth():
-    obj3 = Executor()
-    obj3.reporter.addRow("test_3", "test_3", status.PASS)
-    obj3.reporter.addRow("test", "test_2", status.PASS)
-
-def test_new_meth():
-    obj4 = Executor()
-    obj4.reporter.addRow("test_4", "test_4", status.PASS)
-    obj4.reporter.addRow("test", "test_2", status.PASS)
 
 if __name__ == "__main__":
     try:
         new_meth()
         old_meth()
-        test_new_meth()
-        test_old_meth()
 
     except Exception as e:
         traceback.print_exc()
