@@ -77,7 +77,6 @@ class PypRest(Base):
     
     def run(self):
         self.getVals()
-        raise Exception("maually raised")
         # execute and format result
         self.execRequest()
         self.postProcess()
