@@ -50,6 +50,7 @@ def sendTestcaseData(payload, bridge_token, user_name):
     for checking the sendTestCaseData api response
     """
     try:
+        # if payload["tc_run_id"]=="1234":
         response = _sendData(payload, DefaultSettings.urls["testcases"], bridge_token, user_name, method="POST")
         ### Applying regex to the response
         x = re.search("already present",response.text,re.IGNORECASE)
