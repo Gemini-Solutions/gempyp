@@ -40,14 +40,19 @@ class TestcaseReporter:
         add the misc data to the report by calling it as reporter.addMisc()
         takes two arguments one is column name and other one is value
         """
-        self._misc_data[key] = value
+        if key in self._misc_data:
+            if value in self._misc_data[key]:
+                pass
+            else:
+                self._misc_data[key] = self._misc_data[key]+ "," +'<br>' + value
+        else:
+            self._misc_data[key] = value
 
     def getMisc(self, key: str):
         """
         returns the misc data for the sprcified key
         returns none if no data is found
         """
-
         return self._misc_data.get(key, None)
 
     def addRow(

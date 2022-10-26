@@ -50,6 +50,7 @@ def sendTestcaseData(payload, bridge_token, user_name):
     for checking the sendTestCaseData api response
     """
     try:
+        # if payload["tc_run_id"]=="1234":
         response = _sendData(payload, DefaultSettings.urls["testcases"], bridge_token, user_name, method="POST")
         ### Applying regex to the response
         x = re.search("already present",response.text,re.IGNORECASE)
@@ -59,12 +60,12 @@ def sendTestcaseData(payload, bridge_token, user_name):
                 not_uploaded.remove(payload)
 
     ### code for rerun of unuploaded testcases
-        if response.status_code != 201:
+        else:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)
-            if response.status_code == 400:
-                global flag
-                flag = True
+                if x != None:
+                    global flag
+                    flag = True
 
     except Exception as e:
         logging.error(traceback.format_exc())

@@ -25,10 +25,16 @@ class Executor(TestcaseReporter):
     def __init__(self, **kwargs):
         self.method = kwargs.get("tc_name", self.getMethodName())
         self.log_file = tempfile.gettempdir() + "\logs.log"
+        # os.makedirs("testcase_log_folder")
         sys.stdout = sys.stderr =  open(self.log_file, 'w')
+        logging.basicConfig(filename="logs.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
+        # custom_logger = my_custom_logger("logs.log")
         logging.info("inside constructor here--------------------")
+        logging.info(f"-------Executing testcase - {self.getMethodName()}---------")
         self.data = self.getTestcaseData()
         self.reporter = TestcaseReporter(self.data["PROJECT"], self.data["NAME"])
+       
+        
 
         path = __file__
         path = path.rsplit(os.sep, 1)[0]
@@ -40,9 +46,9 @@ class Executor(TestcaseReporter):
             os.environ["PID"] = str(os.getpid())
             subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
             try:
+                logging.info(f"---------------S_RUN_ID-------------{self.s_run_id}")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"]) # check with deamon, should insert only once
-                
-                logging.info("Suite data inserted")  # logging not working
+                  # logging not working
             except Exception as e:
                 print(f"Exception occured - {e}")
                 pass
@@ -54,6 +60,7 @@ class Executor(TestcaseReporter):
         output = []
         
         # destructor of reporter object called
+        
         self.reporter.finalizeReport()
         
         # create testcase reporter json
@@ -102,10 +109,14 @@ class Executor(TestcaseReporter):
                     data["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.seek(0)
                     f.write(json.dumps(data))
-
+            logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
             dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
+            
             sys.stdout.close()
-            os.rename(self.log_file, tmp_dir.rsplit(".", 1)[0] + ".log")
+        
+            # os.rename(self.log_file, tmp_dir.rsplit(".", 1)[0] + ".log")
+
+            
 
     def getTestcaseData(self):
         config_file = configparser.ConfigParser()

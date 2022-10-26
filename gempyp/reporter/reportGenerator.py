@@ -28,7 +28,7 @@ class TemplateData:
         self.REPORTDATA["metaData"] = metadata
 
     def newRow(self, title: str, description: str, status: status, **kwargs):
-        step = {"title": title, "description": description, "status": status}
+        step = {"Step Name": title, "Step Description": description, "status": status}
         if not kwargs.get("attachment"):
             kwargs.pop("attachment")
         if kwargs:
@@ -139,12 +139,10 @@ class TemplateData:
             logging.info("============== Run Summary =============")
             count_info = {key.lower(): val for key, val in repJson['Suits_Details']['Testcase_Info'].items()}
             log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
-            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe"}
+            status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe", "err":"ERR"}
             for key, val in count_info.items():
                 if key in status_dict.keys():
                     log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
-            
-
             logging.info(log_str.strip(" | "))
 
             if failed_testcases != 0:

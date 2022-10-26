@@ -158,7 +158,6 @@ class Engine:
             unuploaded_path = os.path.join(self.ouput_folder, "Unuploaded_suiteData.json")
             with open(unuploaded_path,'w') as w:
                 w.write(listToStr)
-
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
         TemplateData().repSummary(self.repJson, output_file_path, self.jewel, failed_Utestcases, unuploaded_path)
 
@@ -415,7 +414,6 @@ class Engine:
             unsorted_dict = output[0]['json_data']['metaData'][2]
             sorted_dict = self.totalOrder(unsorted_dict)
             output[0]['json_data']['metaData'][2] = sorted_dict
-
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -473,6 +471,7 @@ class Engine:
         testcase_dict["result_file"] = None
         testcase_dict["user"] = self.user
         testcase_dict["machine"] = self.machine
+        # testcase_dict["response_time"]="{0:.{1}f} sec(s)".format((testcase_dict["end_time"]-testcase_dict["start_time"]).total_seconds(),2)
         if product_type:
             testcase_dict["product_type"] = product_type
 

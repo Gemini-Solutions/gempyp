@@ -9,6 +9,7 @@ from cryptography.fernet import Fernet
 import requests
 import requests.auth
 from requests_ntlm import HttpNtlmAuth
+import os
 
 
 class Api:
@@ -18,9 +19,9 @@ class Api:
     def execute(self, request):
         encrypt_key = "Y4irRsiBmyGMBie5gAZ8va3IOHVOYZFxC5L1-jNydZk="
         result = Response()
-        if not request.file:
-            header_dict = {key.upper(): value.upper() for key, value in request.headers.items()}
-            if "CONTENT-TYPE" not in header_dict.keys() or header_dict.get("CONTENT-TYPE", "") == "APPLICATION/JSON":
+        # if not request.file:
+        header_dict = {key.upper(): value.upper() for key, value in request.headers.items()}
+        if "CONTENT-TYPE" not in header_dict.keys() or header_dict.get("CONTENT-TYPE", "") == "APPLICATION/JSON":
                 try:
                     if not isinstance(request.body, str):
                         request.body = json.dumps(request.body)
@@ -29,15 +30,15 @@ class Api:
                     print(str(e))
             # write code for authentication 
             # decrypt password
-            auth = None
-            try:
+        auth = None
+        try:
                 if request.auth.upper() == "PASSWORD":
                     password = self.decrypt_(request.credentials.get("password", ""), encrypt_key)
                     auth = HttpNtlmAuth(request.credentials.get("username", " "), password)
-            except Exception as e:
+        except Exception as e:
                 logging.info("Error occured while creating the auth object- " + str(e))
                 auth = None
-            try:
+        try:
                 start_time = end_time = datetime.now()
                 obj = Response()
                 if (
@@ -170,19 +171,23 @@ class Api:
                 logging.info(f"Time elapsed: {obj.response_time} secs")
                 
                 result = obj
-            except Exception as e:
+        except Exception as e:
                 print(traceback.format_exc())
                 print(str(e))
                 result = obj
             
             # add retries if required
-            if request.retries > 0:
+        if request.retries > 0:
                 if result.status_code not in request.expected_code_list:
                     request.retries -= 1
                     logging.info("retrying...........")
                     time.sleep(1)
                     return self.execute_api(request)
-            return result
+        return result
+
+                
+
+
 
     def encrypt_(self, password, key):
         try:

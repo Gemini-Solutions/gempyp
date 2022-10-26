@@ -6,6 +6,7 @@ import psutil
 import sys
 from gempyp.engine import dataUpload
 from gempyp.reporter.reportGenerator import TemplateData
+import logging
 
 
 def pid_running(pid):
@@ -46,6 +47,7 @@ if __name__ == "__main__":
         if not pid_running(os.environ["PID"]):
             s_run_id = os.getenv("S_RUN_ID")
             if s_run_id:
+                logging.basicConfig(level=logging.DEBUG)
                 file_path = os.path.join(tempfile.gettempdir(), s_run_id + ".txt")
                 if os.path.exists(file_path):
                     with open(file_path, "r+") as f:
@@ -53,7 +55,8 @@ if __name__ == "__main__":
                         output_file_path = create_report(data, s_run_id)
                         # where to get this json data from
                         current_pid = os.getpid()
-                        print(f"Find Gempyp logs at - {file_path.rsplit('.', 1)[0] + '.log'}")
-                        print(f"Find Gempyp Report at - {output_file_path}")
+                        logging.info(f"Find Gempyp logs at - {s_run_id + '.log'}")
+                        logging.info(f"Find Gempyp Report at - {output_file_path}")
+                        os.rename("logs.log",f"{s_run_id}.log")
                         os.kill(current_pid, 19)
                         sys.exit()
