@@ -36,7 +36,7 @@ class DvmRunner(Base):
         # # set vars
         self.setVars()
         
-        # # setting reporter object
+        # # setting self.reporter object
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
         
@@ -51,6 +51,7 @@ class DvmRunner(Base):
                 configur.read(config)
             except Exception as e:
                 self.reporter.addRow("Config File","Path is not Correct",status.FAIL)
+                traceback.print_exc()
                 output = writeToReport(self)
                 return output, None
             try:
@@ -60,8 +61,10 @@ class DvmRunner(Base):
                 self.reporter.addRow("Parsing DB Conf","Parsing of DB config is Successfull",status.PASS)
             except Exception as e:
                 self.logger.error(str(e))
+                traceback.print_exc()
                 self.reporter.addRow("Parsing DB Conf","Exception Occurred",status.FAIL)
                 output = writeToReport(self)
+                self.addReasonOfFailure(traceback)
                 return output, None
             self.keys = self.configData["KEYS"].split(',')
             self.reporter.addMisc("KEYS",", ".join(self.keys))
@@ -85,7 +88,8 @@ class DvmRunner(Base):
             except Exception as e:
                 self.logger.error(str(e))
                 self.reporter.addRow("Connection to SourceDB: "+ str(userCred["host"]),"Exception Occurred",status.FAIL)
-
+                self.addReasonOfFailure(traceback)
+                
             try:
                 self.logger.info("----Executing the SourceSQL----")
                 myCursor.execute(self.configData['SOURCE_SQL'])
@@ -95,6 +99,7 @@ class DvmRunner(Base):
                 self.logger.error(str(e))
                 self.reporter.addRow("Executing Source SQL","Exception Occurred",status.FAIL)
                 output = writeToReport(self)
+                self.addReasonOfFailure(traceback)
                 return output, None
             sorKeys =[]
             try:
@@ -111,6 +116,7 @@ class DvmRunner(Base):
                 keyString1 = ", ".join(sorKeys)
                 self.reporter.addRow("Matching Given Keys in Source SQL","Keys: " + keyString1 +" are not Present in SourceDB",status.FAIL)
                 self.logger.info("------Given Keys are not present in DB------")
+                self.addReasonOfFailure(traceback)
             results = myCursor.fetchall()
             db_1 = pd.DataFrame(results, 
                                 columns=sourceColumns)
@@ -128,6 +134,7 @@ class DvmRunner(Base):
             except Exception as e:
                 self.logger.error(str(e))
                 self.reporter.addRow("Connection to TargetDB: "+ str(targetCred["host"]),"Exception Occurred",status.FAIL)
+                self.addReasonOfFailure(traceback)
             try:
                 self.logger.info("----Executing the TargetSQL----")
                 myCur.execute(self.configData['TARGET_SQL'])
@@ -137,6 +144,7 @@ class DvmRunner(Base):
                 self.logger.error(str(e))
                 self.reporter.addRow("Executing Target SQL","Exception Occurred",status.FAIL)
                 output = writeToReport(self)
+                self.addReasonOfFailure(traceback)
                 return output, None
             tarKeys =[]
             try:
@@ -153,6 +161,7 @@ class DvmRunner(Base):
             except Exception:
                     keyString2 = ", ".join(tarKeys)
                     self.reporter.addRow("Matching Given Keys in Target SQL","Keys: " + keyString2 +" are not Present in TargetDB",status.FAIL)
+                    self.addReasonOfFailure(traceback)
             try:
                 if sourceColumns==targetColumns:
                     pass
@@ -162,6 +171,7 @@ class DvmRunner(Base):
                 self.reporter.addRow("Column in Table","Not Found",status.FAIL)
                 self.logger.info("--------Same Column not Present in Both Table--------")
                 output = writeToReport(self)
+                self.addReasonOfFailure(traceback)
                 return output, None
             result1 = myCur.fetchall()
             db_2 = pd.DataFrame(result1, 
@@ -175,6 +185,7 @@ class DvmRunner(Base):
         except Exception as e:
             self.logger.error(str(e))
             traceback.print_exc()
+            self.addReasonOfFailure(traceback)
 
 
     def setVars(self):
@@ -212,6 +223,7 @@ class DvmRunner(Base):
     
         except Exception:
             traceback.print_exc()
+            self.addReasonOfFailure(traceback)
     def truncate(self,f, n):
         return math.floor(f * 10 ** n) / 10 ** n
     def addExcel(self):
@@ -315,3 +327,9 @@ class DvmRunner(Base):
         except Exception as e :
             self.logger.error(str(e))
             self.reporter.addRow("Data Validation Report","Exception Occurred", status.FAIL)
+            self.addReasonOfFailure(traceback)
+
+    def addReasonOfFailure(self,rof):
+        exceptiondata = rof.format_exc().splitlines()
+        exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+        self.reporter.addMisc("reason of failure",exceptionarray[0])
