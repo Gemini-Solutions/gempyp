@@ -29,7 +29,6 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
         response = _sendData(payload, DefaultSettings.urls["suiteExec"], bridge_token, user_name, mode)
         ### Applying regex to the response
         x = re.search("already present",response.text,re.IGNORECASE)
-
         if response and response.status_code == 201:
             logging.info("data uploaded successfully")
             global suite_not_uploaded

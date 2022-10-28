@@ -73,7 +73,9 @@ class Executor(TestcaseReporter):
 
         # creating output json
         output.append(getOutput(report_dict))
+
         for i in output:
+            logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
             dict_ = {}
             dict_["testcases"] = {}
@@ -109,10 +111,10 @@ class Executor(TestcaseReporter):
                     data["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.seek(0)
                     f.write(json.dumps(data))
-            logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
+            
             dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
             
-            sys.stdout.close()
+            # sys.stdout.close()
         
             # os.rename(self.log_file, tmp_dir.rsplit(".", 1)[0] + ".log")
 
@@ -135,7 +137,8 @@ class Executor(TestcaseReporter):
         data["OUTPUT_FOLDER"] = config_file['ReportSetting'].get("outputfolder", None)
         data["MACHINE"] = platform.node()
         data["MAIL"] = config_file['ReportSetting'].get("mail", None)
-        self.report_type = data["REPORT_TYPE"] = config_file['ReportSetting'].get("reportname", "SMOKE_TEST")
+        self.report_name = data["REPORT_NAME"] = config_file['ReportSetting'].get("reportname", "SMOKE_TEST")
+        self.report_info=data["REPORT_INFO"]=config_file['ReportSetting'].get("reportinfo", "SMOKE_TEST_INFO")
         if not os.getenv("S_RUN_ID"):
             s_run_id = data["PROJECT"] + "_" + data["ENV"] + "_" + str(uuid.uuid4())
             os.environ["S_RUN_ID"] = s_run_id.upper()
@@ -188,8 +191,11 @@ class Executor(TestcaseReporter):
             "status": status.EXE.name,
             "project_name": self.data["PROJECT"],
             "run_type": "ON DEMAND",
-            "report_type": self.data["REPORT_TYPE"],
+            "s_report_type": self.data["REPORT_NAME"],
+            # "report_type": self.data["REPORT_TYPE"],
             "user": self.data["USER_NAME"],
+            "report_name": self.data["REPORT_INFO"],
+            "framework_name": "GEMPYP",
             "env": self.data["ENV"],
             "machine": self.data["MACHINE"],
             "initiated_by": self.data["USER_NAME"],
@@ -227,8 +233,8 @@ class Executor(TestcaseReporter):
 
         logging.info("---------- Making output folders -------------")
         report_folder_name = f"{self.projectName}_{self.env}"
-        if self.report_type:
-            report_folder_name = report_folder_name + f"_{self.report_type}"
+        if self.report_name:
+            report_folder_name = report_folder_name + f"_{self.report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if self.data.get("OUTPUT_FOLDER"):
