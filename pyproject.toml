@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gempyp"
-version = "1.0.2"
+version = "1.0.21-beta.0"
 description = "An ecosystem of libraries useful for software development"
 authors = ["Gemini Solutions-QA"]
 license = "MIT"
