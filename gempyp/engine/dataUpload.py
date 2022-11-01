@@ -18,6 +18,14 @@ def _getHeaders(bridge_token, user_name):
     """
     return {"Content-Type": "application/json", "bridgeToken": bridge_token, "username": user_name}
 
+def checkingData(run_id, bridge_token, user_name):
+    url = DefaultSettings.urls["suiteExec"] + "?s_run_id=" + run_id
+    print(url)
+    response = _sendData("", url , bridge_token, user_name, "GET")
+    if response.status_code == 200:
+        return response._content
+    else:
+        return "failed"
 
 def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """

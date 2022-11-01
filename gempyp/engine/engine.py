@@ -112,7 +112,14 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
-        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+        if "RUN_ID" in self.PARAMS:
+            print("************in checkdata*****************")
+            response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            print("----response----",response,type(response))
+            if response == "failed":
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+
+        if ("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         ### first try to rerun the data
             if dataUpload.suite_not_uploaded == False and dataUpload.s_flag == False:
