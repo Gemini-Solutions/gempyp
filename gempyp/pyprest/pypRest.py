@@ -1,9 +1,7 @@
 from asyncio.log import logger
 import os
 import traceback
-import time
 import logging
-import importlib
 import json
 from typing import Dict, List, Tuple, Type
 from gempyp.config.baseConfig import AbstarctBaseConfig
@@ -21,7 +19,6 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import moduleImports
-
 
 
 class PypRest(Base):
@@ -62,7 +59,7 @@ class PypRest(Base):
                     exceptiondata = traceback.format_exc().splitlines()
                     exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
                     self.reporter.addMisc("Reason of Failure",exceptionarray[0])
-            if self.reporter._misc_data["REASON OF FAILURE"] == "":
+            if self.reporter._misc_data.get("REASON OF FAILURE", "") == "":
                 self.reporter._misc_data["REASON OF FAILURE"] = None
             ## variable replacement.val_not_found ---- replace variables with "NULL"
             VarReplacement(self).valueNotFound()
@@ -85,7 +82,8 @@ class PypRest(Base):
         self.reporter.finalizeReport()
 
     def validateConf(self):
-        mandate = ["API", "METHOD", "HEADERS", "BODY"]
+        # mandate = ["API", "METHOD", "HEADERS", "BODY"]
+        mandate = ["API", "METHOD"]
         # ---------------------------------------adding misc data -----------------------------------------------------
         # self.reporter.addMisc(Misc="Test data")
         # self.reporter._misc_data["REASON OF FAILURE"] = "Mandatory keys are missing"

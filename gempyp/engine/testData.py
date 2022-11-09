@@ -91,10 +91,10 @@ class TestData:
             elif key == "PASS" or key == 'FAIL':
                 sorted_dict[key] = 0
         sorted_dict.update(test_status)
-        test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
+        # test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
-        # test_data["response_time"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
+        # test_data["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         """ Adding misc data to userDefinedData column for each testcase
         Here misc data is only for one testcase.
         {"key1": "value1", "key2": "value2"...}"""
@@ -123,7 +123,7 @@ class TestData:
 
         test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
-        test_data["userDefinedData"]["response_time"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
+        test_data["userDefinedData"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):
