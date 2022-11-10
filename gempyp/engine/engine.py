@@ -113,7 +113,7 @@ class Engine:
         unuploaded_path = ""
         failed_Utestcases = 0
         #trying first rerun of base url api in case of api failure
-        if self.PARAMS["BASE_URL"] and DefaultSettings.apiSuccess == False:
+        if "BASE_URL" in self.PARAMS and DefaultSettings.apiSuccess == False:
             logging.info("Retrying to call Api for getting urls")
             DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
 
@@ -135,9 +135,9 @@ class Engine:
         self.makeOutputFolder()
         self.start()
         #trying second rerun of base url api in case of api failure
-        if self.PARAMS["BASE_URL"] and DefaultSettings.apiSuccess == False:
-            logging.info("Second Time Retrying to call Api for getting urls")
-            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
+        if "BASE_URL" in self.PARAMS and DefaultSettings.apiSuccess == False:
+                logging.info("Second Time Retrying to call Api for getting urls")
+                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         ### Trying to reupload suite data
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()) :
             if dataUpload.suite_uploaded == False:
