@@ -11,7 +11,7 @@ _VERSION = "1.0.0"
 
 urls = {}
 # for getting urls using url tag from config file
-def getParams(params):
+def getEnterPoint(params):
     
     PARAMS = params
     global urls
@@ -26,7 +26,8 @@ def getParams(params):
     try:
         #checking if url is present in file and calling get api
         if "BASE_URL" in PARAMS:
-            url = PARAMS["BASE_URL"]
+            url = checkUrl(PARAMS["BASE_URL"])
+            # url = PARAMS["BASE_URL"]
             response = dataUpload._sendData(" ", url, PARAMS["BRIDGE_TOKEN"],PARAMS["USERNAME"] ,"GET")
             if response.status_code == 200:
                 urls = response.json()
@@ -39,4 +40,10 @@ def getParams(params):
 def getUrls(apiName):
         return urls["data"][apiName]
 
+def checkUrl(url):
+    if url[len(url)-3:len(url):] == "com":
+        url = url + "/enter-point"
+        return url
+    else:
+        return url
 count = 0

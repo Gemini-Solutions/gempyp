@@ -202,7 +202,7 @@ class Engine:
         assigning values to some attributes which will be used in method makeSuiteDetails
         """
         self.PARAMS = config.getSuiteConfig()
-        DefaultSettings.getParams(self.PARAMS)
+        DefaultSettings.getEnterPoint(self.PARAMS)
         self.CONFIG = config
         self.testcase_data = {}
         self.total_runable_testcase = config.total_yflag_testcase
