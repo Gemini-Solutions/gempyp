@@ -112,24 +112,33 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
-        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+        # code for checking s_run_id present in db 
+        if "RUN_ID" in self.PARAMS:
+            print("************Trying to check If s_run_id is present in DB*****************")
+            response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            if response == "failed":
+                print("************s_run_id not present in DB Trying to call Post*****************")
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+
+        elif ("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        ### first try to rerun the data
-            if dataUpload.suite_not_uploaded == False and dataUpload.s_flag == False:
+            ### first try to rerun the data
+            if dataUpload.suite_not_uploaded == False:
                 print("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         
         self.makeOutputFolder()
         self.start()
         ### Trying to reupload suite data
-        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-            if dataUpload.suite_not_uploaded == False and dataUpload.s_flag == False:
+        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()) :
+            if dataUpload.suite_not_uploaded == False:
                 print("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
         if dataUpload.suite_not_uploaded == True:
-            self.jewel = f'https://jewel.gemecosystem.com/#/autolytics/extent-report?s_run_id={self.s_run_id}'
+            jewelLink = DefaultSettings.getUrls('jewel-url')
+            self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
             if len(dataUpload.not_uploaded) != 0:
                 print("------Trying again to Upload Testcase------")
                 for testcase in dataUpload.not_uploaded:
@@ -144,14 +153,12 @@ class Engine:
                 with open(unuploaded_path,'w') as w:
                     w.write(listToStr)
         self.updateSuiteData()
-        ### checking if suite post request is successful to call put request otherwise writing suite data in a file
+        ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_not_uploaded == True:
             if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
                 dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
-            if dataUpload.s_flag == True:
-                logging.warning("S_RUN_ID is already present in Database")
-            else:
+            if "BASE_URL" not in self.PARAMS:
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
             dataUpload.suite_data.append(self.DATA.toSuiteJson())
             listToStr = ',\n'.join(map(str, dataUpload.suite_data))
@@ -195,6 +202,7 @@ class Engine:
         assigning values to some attributes which will be used in method makeSuiteDetails
         """
         self.PARAMS = config.getSuiteConfig()
+        DefaultSettings.getParams(self.PARAMS)
         self.CONFIG = config
         self.testcase_data = {}
         self.total_runable_testcase = config.total_yflag_testcase
