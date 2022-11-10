@@ -219,7 +219,7 @@ class Engine:
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
-        self.report_info = self.PARAMS.get("REPORT_INFO")
+        # self.report_info = self.PARAMS.get("REPORT_INFO")
 
         #add suite_vars here 
 
@@ -253,7 +253,7 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "s_report_type": self.report_name,
+            "report_name": self.report_name,  # earlier it was report info
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
@@ -262,8 +262,6 @@ class Engine:
             "miscData":[{"expected_testcases": self.total_runable_testcase}],
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
-            "report_name": self.report_info,
-            "duration": None
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True

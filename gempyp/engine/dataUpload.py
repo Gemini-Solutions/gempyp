@@ -39,6 +39,7 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
+
     ### for removing none value in payload
     try:
         if len(respon) != 0:

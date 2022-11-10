@@ -59,8 +59,8 @@ class PypRest(Base):
                     exceptiondata = traceback.format_exc().splitlines()
                     exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
                     self.reporter.addMisc("Reason of Failure",exceptionarray[0])
-            if self.reporter._misc_data.get("REASON OF FAILURE", "") == "":
-                self.reporter._misc_data["REASON OF FAILURE"] = None
+            #if self.reporter._misc_data.get("REASON OF FAILURE", "") == "":
+            #    self.reporter._misc_data["REASON OF FAILURE"] = None
             ## variable replacement.val_not_found ---- replace variables with "NULL"
             VarReplacement(self).valueNotFound()
             output = writeToReport(self)
