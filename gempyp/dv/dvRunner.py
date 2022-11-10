@@ -10,7 +10,7 @@ import mysql.connector
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
-from gempyp.dvm.dvmReporting import writeToReport
+from gempyp.dv.dvReporting import writeToReport
 from telnetlib import STATUS
 import traceback
 from numpy import sort
@@ -21,7 +21,7 @@ import math
 import numpy
 import pg8000
 
-class DvmRunner(Base):
+class DvRunner(Base):
 
     def __init__(self, data):
         
@@ -40,7 +40,7 @@ class DvmRunner(Base):
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
         
-    def dvmEngine(self):
+    def dvEngine(self):
         
         try:
             column =[]

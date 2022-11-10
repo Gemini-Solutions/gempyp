@@ -22,7 +22,7 @@ from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
-from gempyp.dvm.dvmRunner import DvmRunner
+from gempyp.dv.dvRunner import DvRunner
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -49,7 +49,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
     engine_control = {
         "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
-        "dvm":{"class": DvmRunner, "classParam": data, "function": "dvmEngine"},
+        "dv":{"class": DvRunner, "classParam": data, "function": "dvEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
     _type = data.get("config_data")["TYPE"]
