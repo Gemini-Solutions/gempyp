@@ -112,6 +112,11 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
+        #trying first rerun of base url api in case of api failure
+        if self.PARAMS["BASE_URL"] and DefaultSettings.apiSuccess == False:
+            logging.info("Retrying to call Api for getting urls")
+            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
+
         # code for checking s_run_id present in db 
         if "RUN_ID" in self.PARAMS:
             print("************Trying to check If s_run_id is present in DB*****************")
@@ -123,20 +128,24 @@ class Engine:
         elif ("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             ### first try to rerun the data
-            if dataUpload.suite_not_uploaded == False:
+            if dataUpload.suite_uploaded == False:
                 print("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         
         self.makeOutputFolder()
         self.start()
+        #trying second rerun of base url api in case of api failure
+        if self.PARAMS["BASE_URL"] and DefaultSettings.apiSuccess == False:
+            logging.info("Second Time Retrying to call Api for getting urls")
+            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         ### Trying to reupload suite data
         if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()) :
-            if dataUpload.suite_not_uploaded == False:
+            if dataUpload.suite_uploaded == False:
                 print("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
-        if dataUpload.suite_not_uploaded == True:
+        if dataUpload.suite_uploaded == True:
             jewelLink = DefaultSettings.getUrls('jewel-url')
             self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
             if len(dataUpload.not_uploaded) != 0:
@@ -154,7 +163,7 @@ class Engine:
                     w.write(listToStr)
         self.updateSuiteData()
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
-        if dataUpload.suite_not_uploaded == True:
+        if dataUpload.suite_uploaded == True:
             if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
                 dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
@@ -202,7 +211,9 @@ class Engine:
         assigning values to some attributes which will be used in method makeSuiteDetails
         """
         self.PARAMS = config.getSuiteConfig()
-        DefaultSettings.getEnterPoint(self.PARAMS)
+        #checking if url is present in file and calling get api
+        if "BASE_URL" in self.PARAMS:
+            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         self.CONFIG = config
         self.testcase_data = {}
         self.total_runable_testcase = config.total_yflag_testcase
@@ -259,7 +270,8 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
-            "miscData":[{"expected_testcases": self.total_runable_testcase}],
+            "miscData":[],
+            "expected_testcases": self.total_runable_testcase,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
             "report_name": self.report_info,

@@ -10,7 +10,7 @@ import json
 not_uploaded = []
 suite_data = []
 flag = False
-suite_not_uploaded = False
+suite_uploaded = False
 list_of_testcase = []
 respon = {}
 
@@ -27,8 +27,8 @@ def checkingData(run_id, bridge_token, user_name):
     if response.status_code == 200:
         logging.info("Retrying to update and add testcases data present in DB")
         logging.info("Get Request successfull")
-        global respon, suite_not_uploaded, list_of_testcase
-        suite_not_uploaded = True
+        global respon, suite_uploaded, list_of_testcase
+        suite_uploaded = True
         respon = response.json()
         list_of_testcase = [s[:-37] for s in respon['data']['testcaseDetails']]
         return response._content
@@ -47,12 +47,15 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
         response = _sendData(payload, DefaultSettings.getUrls("suite-exe-api"), bridge_token, user_name, mode)
 
         if response and response.status_code == 201:
-            logging.info("data uploaded successfully")
-            global suite_not_uploaded
-            suite_not_uploaded = True
+            global suite_uploaded
+            logging.info("Suite data uploaded successfully")
+            suite_uploaded = True
             if payload in suite_data:
                 suite_data.remove(payload)
+        elif response and response.status_code == 200:
+            logging.info("Suite Data updated Successfully")
         else:
+            logging.info("Suite data is not uploaded")
             if payload not in suite_data:
                 suite_data.append(payload)
                 
@@ -82,10 +85,11 @@ def sendTestcaseData(payload, bridge_token, user_name):
             logging.info("data updated successfully")
             if payload in not_uploaded:
                 not_uploaded.remove(payload)
-    ### code for rerun of unuploaded testcases
+    ### code for adding unuploaded testcases
         else:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)
+                logging.info("Testcase data is not uploaded")
                 if x != None:
                     global flag
                     flag = True
@@ -110,9 +114,9 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
         data=payload,
         headers=_getHeaders(bridge_token, user_name),
     )
-    if response.status_code != 200 and response.status_code != 201:
+    # if response.status_code != 200 and response.status_code != 201:
         # DefaultSettings.count += 1
-        logging.info("Data not uploaded...........")
+        # logging.info("Data not uploaded...........")
     logging.info(f"status: {response.status_code}")
     return response
 
