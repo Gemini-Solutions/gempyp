@@ -28,8 +28,7 @@ class TestData:
             "product_type",
             "ignore",
             "miscData",
-            "userDefinedData",
-            "duration"
+            "userDefinedData"
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
