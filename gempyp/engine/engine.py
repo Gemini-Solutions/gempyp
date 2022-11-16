@@ -22,7 +22,7 @@ from gempyp.libs.logConfig import my_custom_logger
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
-from gempyp.dvm.dvmRunner import DvmRunner
+from gempyp.dv.dvRunner import DvRunner
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -49,7 +49,7 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
     engine_control = {
         "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
-        "dvm":{"class": DvmRunner, "classParam": data, "function": "dvmEngine"},
+        "dv":{"class": DvRunner, "classParam": data, "function": "dvEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
     _type = data.get("config_data")["TYPE"]
@@ -112,24 +112,42 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
-        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+        #trying first rerun of base url api in case of api failure
+        if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+            logging.info("Retrying to call Api for getting urls")
+            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
+
+        # code for checking s_run_id present in db 
+        if "RUN_ID" in self.PARAMS:
+            print("************Trying to check If s_run_id is present in DB*****************")
+            response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            if response == "failed":
+                print("************s_run_id not present in DB Trying to call Post*****************")
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+
+        elif ("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        ### first try to rerun the data
-            if dataUpload.suite_not_uploaded == False and dataUpload.s_flag == False:
+            ### first try to rerun the data
+            if dataUpload.suite_uploaded == False:
                 print("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         
         self.makeOutputFolder()
         self.start()
+        #trying second rerun of base url api in case of api failure
+        if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+                logging.info("Second Time Retrying to call Api for getting urls")
+                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         ### Trying to reupload suite data
-        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-            if dataUpload.suite_not_uploaded == False and dataUpload.s_flag == False:
+        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()) :
+            if dataUpload.suite_uploaded == False:
                 print("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
-        if dataUpload.suite_not_uploaded == True:
-            self.jewel = f'https://jewel.gemecosystem.com/#/autolytics/extent-report?s_run_id={self.s_run_id}'
+        if dataUpload.suite_uploaded == True:
+            jewelLink = DefaultSettings.getUrls('jewel-url')
+            self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
             if len(dataUpload.not_uploaded) != 0:
                 print("------Trying again to Upload Testcase------")
                 for testcase in dataUpload.not_uploaded:
@@ -144,14 +162,12 @@ class Engine:
                 with open(unuploaded_path,'w') as w:
                     w.write(listToStr)
         self.updateSuiteData()
-        ### checking if suite post request is successful to call put request otherwise writing suite data in a file
-        if dataUpload.suite_not_uploaded == True:
+        ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
+        if dataUpload.suite_uploaded == True:
             if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
                 dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
-            if dataUpload.s_flag == True:
-                logging.warning("S_RUN_ID is already present in Database")
-            else:
+            if not self.PARAMS.get("BASE_URL", None):
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
             dataUpload.suite_data.append(self.DATA.toSuiteJson())
             listToStr = ',\n'.join(map(str, dataUpload.suite_data))
@@ -195,6 +211,9 @@ class Engine:
         assigning values to some attributes which will be used in method makeSuiteDetails
         """
         self.PARAMS = config.getSuiteConfig()
+        #checking if url is present in file and calling get api
+        if self.PARAMS.get("BASE_URL", None):
+            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         self.CONFIG = config
         self.testcase_data = {}
         self.total_runable_testcase = config.total_yflag_testcase
@@ -251,7 +270,8 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
-            "miscData":[{"expected_testcases": self.total_runable_testcase}],
+            "miscData":[],
+            "expected_testcases": self.total_runable_testcase,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
             "report_name": self.report_info,
@@ -308,7 +328,7 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
-        self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  
+        # self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  
 
     def startSequence(self):
         """

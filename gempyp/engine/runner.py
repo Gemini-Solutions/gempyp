@@ -78,7 +78,7 @@ def getOutput(data):
     tempdict["start_time"] = data["START_TIME"]
     tempdict["end_time"] = data["END_TIME"]
     tempdict["ignore"] = True if data["TESTCASEMETADATA"].get("IGNORE") else False
-    tempdict["response_time"]="{0:.{1}f} sec(s)".format((data["END_TIME"]-data["START_TIME"]).total_seconds(),2)
+    # tempdict["response_time"]="{0:.{1}f} sec(s)".format((data["END_TIME"]-data["START_TIME"]).total_seconds(),2)
 
     all_status = data["json_data"]["metaData"][2]
     total = 0
