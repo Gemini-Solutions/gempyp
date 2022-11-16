@@ -30,6 +30,7 @@ class AbstarctBaseConfig(ABC):
         return self._CONFIG["TESTCASE_DATA"]
     
     def getSubtestcasesConfig(self) -> Dict:
+       
 
         return self._CONFIG["SUBTESTCASES_DATA"]
 
@@ -58,6 +59,7 @@ class AbstarctBaseConfig(ABC):
         """
         testcase_data = self.getTestcaseConfig()
         filtered_dict = {}
+        filtered_dict_subtestcases = {}
 
         ###code for passing testcases through cli jira-113
         if "TESTCASES" in self._CONFIG['SUITE_DATA']:
@@ -100,13 +102,14 @@ class AbstarctBaseConfig(ABC):
 
 
             filtered_dict[key] = value
-            filtered_dict_subtestcases = {}
+            
             if(len(testcases)>0):
                 for i in range(len(testcases)):
                     if(testcases[i] in testcase_data.keys()):
                         filtered_dict_subtestcases[testcases[i]]=testcase_data.get(testcases[i])
         self._CONFIG["SUBTESTCASES_DATA"] = filtered_dict_subtestcases
-
+       
+    
         self._CONFIG["TESTCASE_DATA"] = filtered_dict
 
     # TODO

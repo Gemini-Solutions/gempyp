@@ -12,13 +12,15 @@ def compareTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
     """
     actual_value = key_val_dict.get(key, key)
     if isinstance(actual_value, (int, float)):
-        actual_value = actual_value
-        exp_value = float(value.strip('"').strip("'").lower()) 
+        actual_value = str(actual_value)
+        exp_value = str(value.strip('"').strip("'"))
     else:
         actual_value = str(actual_value).lower()
         exp_value = value.strip('"').strip("'").lower()
         
     if actual_value == exp_value:
+        print("YES")
+        print(actual_value)
         if isLegacyPresent:
             if isLegacyResponse:
                 obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.PASS, CURRENT_API = "-",LEGACY_API = f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied" )
@@ -27,6 +29,8 @@ def compareTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
         else:
             obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
+        print("NOOOOOOOOOOOOOOOOOOOOOOOOO")
+        print(actual_value)
         if isLegacyPresent:
             if isLegacyResponse:
                 obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.FAIL, CURRENT_API="-",LEGACY_API = f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied" )

@@ -27,6 +27,7 @@ class XmlConfig(AbstarctBaseConfig):
         newfilePath = os.sep.join(path_list)
         sys.path.append({"XMLConfigDir":newfilePath})
         logging.info("-------- Started the Xml parsing in XmlConfig ---------")
+        self.handleSpecialSymbols(filePath)
         data = et.parse(filePath)
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data)        
 
@@ -72,3 +73,11 @@ class XmlConfig(AbstarctBaseConfig):
         # do your validation here
 
         return testcase_dict
+    
+    def handleSpecialSymbols(self,filePath):
+        f=open(filePath,"r")
+        content=f.read()
+        if(content.__contains__("&") and not(content.__contains__("&amp;"))):
+            content=content.replace("&","&amp;")
+        f1=open(filePath,"w")
+        f1.write(content)

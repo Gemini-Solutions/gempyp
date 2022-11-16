@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import getpass
 import json
 from pathlib import Path
@@ -27,7 +28,7 @@ class Executor(TestcaseReporter):
         self.log_file = tempfile.gettempdir() + "\logs.log"
         # os.makedirs("testcase_log_folder")
         sys.stdout = sys.stderr =  open(self.log_file, 'w')
-        logging.basicConfig(filename="logs.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
+        logging.basicConfig(filename="logs.log", filemode='w', format='%(name)s - %(asctime)s-%(levelname)s - %(message)s',level=logging.DEBUG)
         # custom_logger = my_custom_logger("logs.log")
         logging.info("inside constructor here--------------------")
         logging.info(f"-------Executing testcase - {self.getMethodName()}---------")
@@ -195,7 +196,7 @@ class Executor(TestcaseReporter):
             # "report_type": self.data["REPORT_TYPE"],
             "user": self.data["USER_NAME"],
             "report_name": self.data["REPORT_INFO"],
-            "framework_name": "GEMPYP",
+            "framework_name": "GEMPYP-SDK",
             "env": self.data["ENV"],
             "machine": self.data["MACHINE"],
             "initiated_by": self.data["USER_NAME"],

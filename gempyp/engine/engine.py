@@ -251,7 +251,8 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
-            "miscData":[{"expected_testcases": self.total_runable_testcase}],
+            "miscData":[],
+            "expected_testcases": self.total_runable_testcase,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
             "report_name": self.report_info,
