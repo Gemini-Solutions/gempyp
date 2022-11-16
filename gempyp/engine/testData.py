@@ -28,8 +28,7 @@ class TestData:
             "product_type",
             "ignore",
             "miscData",
-            "userDefinedData",
-            "duration"
+            "userDefinedData"
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -91,7 +90,7 @@ class TestData:
             elif key == "PASS" or key == 'FAIL':
                 sorted_dict[key] = 0
         sorted_dict.update(test_status)
-        test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
+        # test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
         # test_data["response_time"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
@@ -123,7 +122,7 @@ class TestData:
 
         test_data["miscData"] = meta_data
         test_data["s_run_id"] = s_run_id
-        test_data["userDefinedData"]["response_time"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
+        test_data["userDefinedData"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):
