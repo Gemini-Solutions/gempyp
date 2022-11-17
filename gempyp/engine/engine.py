@@ -42,7 +42,8 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     data['config_data']['LOGGER'] = custom_logger
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
-
+    
+    
     
     # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
     # "dvm": {"function": DvmRunner(data).dvmEngine(), "log": custom_logger.info("Starting the DVM testcase")}, 
@@ -53,6 +54,9 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
     _type = data.get("config_data")["TYPE"]
+    dv = ["data validator","dv","datavalidator","dvalidator"]
+    if _type in dv:
+        _type = "dv"
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
 
