@@ -117,7 +117,7 @@ class Engine:
         unuploaded_path = ""
         failed_Utestcases = 0
         #trying first rerun of base url api in case of api failure
-        if "BASE_URL" in self.PARAMS and DefaultSettings.apiSuccess == False:
+        if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
             logging.info("Retrying to call Api for getting urls")
             DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
 
@@ -139,7 +139,7 @@ class Engine:
         self.makeOutputFolder()
         self.start()
         #trying second rerun of base url api in case of api failure
-        if "BASE_URL" in self.PARAMS and DefaultSettings.apiSuccess == False:
+        if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
                 logging.info("Second Time Retrying to call Api for getting urls")
                 DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         ### Trying to reupload suite data
@@ -171,7 +171,7 @@ class Engine:
             if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
                 dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
-            if "BASE_URL" not in self.PARAMS:
+            if not self.PARAMS.get("BASE_URL", None):
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
             dataUpload.suite_data.append(self.DATA.toSuiteJson())
             listToStr = ',\n'.join(map(str, dataUpload.suite_data))
@@ -216,7 +216,7 @@ class Engine:
         """
         self.PARAMS = config.getSuiteConfig()
         #checking if url is present in file and calling get api
-        if "BASE_URL" in self.PARAMS:
+        if self.PARAMS.get("BASE_URL", None):
             DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         self.CONFIG = config
         self.testcase_data = {}
