@@ -40,20 +40,29 @@ class AbstractSimpleTestcase(ABC):
                 logger.error(traceback.format_exc())
                 etype, value, tb = sys.exc_info()
                 info, error = traceback.format_exception(etype, value, tb)[-2:]
+                # code for finding exception and writing reason of failure 
+                exceptiondata = traceback.format_exc().splitlines()
+                exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+                reporter.addMisc("Reason of Failure",exceptionarray[0])
                 #reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
-                reporter.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
+                reporter.addRow("Exception Occured", str(error) + 'at' + str(info), status.ERR)
             finally:
                 return reporter
                 
         except Exception as e:
             if e:            
                 logger.error(traceback.format_exc())
+                exceptiondata = traceback.format_exc().splitlines()
+                exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+                reporter.addMisc("Reason of Failure",exceptionarray[0])
             
         
 
     def RUN(self, cls, testcase_settings: Dict, **kwargs) -> List:
         """
         the main function which will be called by the executor
+        take argument as testcaseDict and call the gempypMethodExecutor() method
+        and later on call basetemplate finalizereport method and reurn data to testcaseRunner method 
         """
         # set the values from the report if not s et automatically
         self.logger = testcase_settings.get('LOGGER')
@@ -73,7 +82,8 @@ class AbstractSimpleTestcase(ABC):
             self.logger.error(traceback.format_exc())
             info, error = traceback.format_exception(etype, value, tb)[-2:]
             reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
-            reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.FAIL)
+            reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.ERR)
+
 
         if isinstance(reports, TestcaseReporter):
             reports = [reports]
@@ -90,10 +100,7 @@ class AbstractSimpleTestcase(ABC):
             report.finalizeReport()
             # if user has not provided its own resultfile
             if not report.result_file_name:
-                report.json_data = report.template_data.makeReport(
-                    kwargs.get(
-                        "OUTPUT_FOLDER", DefaultSettings.DEFAULT_GEMPYP_FOLDER
-                    ), testcase_settings["NAME"])
+                report.json_data = report.template_data.makeTestcaseReport()
             result = report.serialize()
             Data.append(result)
 

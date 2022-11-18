@@ -10,8 +10,8 @@ class MiscVariables:
   
     def miscVariables(self):
         try:
-            if self.pyprest_obj.reporter.__dict__['_miscData'] is None:
-                self.pyprest_obj.reporter.__dict__['_miscData'] = {}
+            if self.pyprest_obj.reporter.__dict__['_misc_data'] is None:
+                self.pyprest_obj.reporter.__dict__['_misc_data'] = {}
         except Exception as e:
             print(e)
             logger.error(e)
@@ -34,7 +34,6 @@ class MiscVariables:
 
         except Exception as e:
             logger.error(e)
-        self.pyprest_obj.reporter.addMisc("k1","v1")
         logger.info(f"Report_misc_variables:  { self.pyprest_obj.reporter._misc_data } ")
 
         

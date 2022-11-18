@@ -1,6 +1,7 @@
 from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
+from gempyp.config.GitLinkXML import fetchBridgeToken
 
 class Gempyp:
     def __init__(self):
@@ -17,8 +18,13 @@ class Gempyp:
         self.THREADS = None
         self.BRIDGE_TOKEN = None 
         self.OUTPUT_FOLDER = None
-        self.CATEGORY = None
-        self.SET = None
+        self.CATEGORY=None
+        self.SET=None
+        self.USERNAME=None
+        self.RUN_ID = None
+        self.TESTCASES = None
+
+
     
     def argParser(self):
         """Argument parser to help running through CLI"""
@@ -36,6 +42,9 @@ class Gempyp:
         parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
         parser.add_argument('-set','-set',dest='SET',type=str, required=False)
+        parser.add_argument('-run_id','-run_id',dest='RUN_ID',type=str, required=False)
+        parser.add_argument('-tc','-testcases',dest='TESTCASES',type=str, required=False)
+        
 
         args = parser.parse_args()
         return args
@@ -44,7 +53,12 @@ class Gempyp:
         """
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
-        config = XmlConfig(self.config)
+        s_run_id = vars(self)["RUN_ID"]
+        if("GIT" in self.config):
+            list_url=self.config.split(":")
+            config=XmlConfig(fetchBridgeToken(list_url[2],list_url[3],list_url[4],list_url[5]),s_run_id)
+        else:
+            config = XmlConfig(self.config, s_run_id)
         if not self.args:
             del self.__dict__["args"]
             config.cli_config = vars(self)
