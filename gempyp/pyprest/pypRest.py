@@ -569,7 +569,7 @@ class PypRest(Base):
     def getExpectedStatusCode(self,exp_status_code_param):
         code_list = []
         # self.data["config_data"].get("EXPECTED_STATUS_CODE", 200)
-        exp_status_code_string = self.data["config_data"].get(f"{exp_status_code_param}")
+        exp_status_code_string = self.data["config_data"].get(f"{exp_status_code_param}",str(200))
         if "," in exp_status_code_string:
             code_list = exp_status_code_string.strip('"').strip("'").split(",")
         elif "or" in exp_status_code_string.lower():
