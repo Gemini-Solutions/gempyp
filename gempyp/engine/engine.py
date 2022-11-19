@@ -298,6 +298,8 @@ class Engine:
 
         except Exception:
             logging.error(traceback.format_exc())
+            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            
             pass
 
     def updateSuiteData(self):

@@ -8,19 +8,8 @@ DEFAULT_GEMPYP_FOLDER = os.getcwd()
 DEBUG = True
 THREADS = 8
 _VERSION = "1.0.0"
-<<<<<<< HEAD
-
-urls = {}
-# for getting urls using url tag from config file
-def getEnterPoint(params):
-    
-    PARAMS = params
-    global urls
-    urls = {"data":{
-=======
 apiSuccess = False
 urls = {"data":{
->>>>>>> c6ddef0807aacffca29b8b5d3d8144eca7d8416a
                 "jewel-url": "https://jewel.gemecosystem.com",
                 "suiteInfo": "https://apis.gemecosystem.com/suiteinfo/",
                 "suite-exe-api": "https://apis.gemecosystem.com/suiteexe",

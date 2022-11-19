@@ -8,7 +8,7 @@ obj = Gempyp()
 
 
 
-obj.config = "C:\\Users\\an.pandey\\downgrading\\gempyp\\tests\\configTest\\feature_suite.xml"
+obj.config = "C:\\Users\\an.pandey\\downgrading\\gempyp\\tests\\configTest\\regression_suite.xml"
 obj.MAIL = "tanya.agarwal@geminisolutions.com"
 
 # main condition is necessary
