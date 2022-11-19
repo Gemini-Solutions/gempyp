@@ -29,8 +29,6 @@ def compareTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
         else:
             obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
     else:
-        print("NOOOOOOOOOOOOOOOOOOOOOOOOO")
-        print(actual_value)
         if isLegacyPresent:
             if isLegacyResponse:
                 obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.FAIL, CURRENT_API="-",LEGACY_API = f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied" )

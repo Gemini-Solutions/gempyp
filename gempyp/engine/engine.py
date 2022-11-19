@@ -270,7 +270,7 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
-            "miscData":[],
+            "miscData": {},
             "expected_testcases": self.total_runable_testcase,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
@@ -296,11 +296,13 @@ class Engine:
             else:
                 raise TypeError("mode can only be sequence or optimize")
 
-        except Exception:
+        except Exception as e:
             logging.error(traceback.format_exc())
+            self.DATA.misc_details["REASON OF FAILURE"] = str(e)
+            print(self.DATA)
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-            
-            pass
+            # need to add reason of failure of the suite in misc
+
 
     def updateSuiteData(self):
         """
@@ -335,6 +337,7 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -349,6 +352,7 @@ class Engine:
                     )
                     custom_logger.error(f"message: {error['message']}")
                 self.update_df(output, error)
+
 
 
     def startParallel(self):

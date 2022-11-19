@@ -54,8 +54,10 @@ class TestData:
         ]
 
         misc_data = misc_data.to_dict(orient="records")
-        data["misc_data"] = misc_data
+
+        data["miscData"] = misc_data
         data["s_id"] = "test_id"
+        print(data)
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):
