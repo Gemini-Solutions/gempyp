@@ -163,7 +163,7 @@ def dataAlter(payload):
     payload['testcase_analytics'] = sorted_dict
     payload['status'] = status
     # updating the expected testcase
-    payload['miscData'][0]['expected_testcases'] += respon['data']['miscData'][0]['expected_testcases']
+    payload['expected_testcases'] += respon['data']['expected_testcases']
     # updating the suite status of according to new run
     if payload['status'] != "PASS":
         pass

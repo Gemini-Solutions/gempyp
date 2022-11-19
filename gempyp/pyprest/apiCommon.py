@@ -21,7 +21,7 @@ class Api:
         result = Response()
         # if not request.file:
         header_dict = {key.upper(): value.upper() for key, value in request.headers.items()}
-        if "CONTENT-TYPE" not in header_dict.keys() or header_dict.get("CONTENT-TYPE", "") == "APPLICATION/JSON":
+        if header_dict.get("CONTENT-TYPE", "") == "APPLICATION/JSON":
                 try:
                     if not isinstance(request.body, str):
                         request.body = json.dumps(request.body)
@@ -61,6 +61,7 @@ class Api:
                             timeout=request.timeout // 1000
                         )
                     else:
+                        
                         resp = requests.post(
                             request.api,
                             headers=request.headers,
@@ -164,6 +165,8 @@ class Api:
                 obj.response_headers = resp.headers
                 obj.response_time = resp.elapsed.total_seconds()
 
+                
+
                 if obj.response_time == 0:
                     elapsed_time = end_time - start_time
                     obj.response_time = elapsed_time.total_seconds()
@@ -171,6 +174,7 @@ class Api:
                 logging.info(f"Time elapsed: {obj.response_time} secs")
                 
                 result = obj
+                
         except Exception as e:
                 print(traceback.format_exc())
                 print(str(e))
@@ -183,6 +187,7 @@ class Api:
                     logging.info("retrying...........")
                     time.sleep(1)
                     return self.execute_api(request)
+        
         return result
 
                 
