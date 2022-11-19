@@ -8,6 +8,7 @@ DEFAULT_GEMPYP_FOLDER = os.getcwd()
 DEBUG = True
 THREADS = 8
 _VERSION = "1.0.0"
+<<<<<<< HEAD
 
 urls = {}
 # for getting urls using url tag from config file
@@ -16,34 +17,44 @@ def getEnterPoint(params):
     PARAMS = params
     global urls
     urls = {"data":{
+=======
+apiSuccess = False
+urls = {"data":{
+>>>>>>> c6ddef0807aacffca29b8b5d3d8144eca7d8416a
                 "jewel-url": "https://jewel.gemecosystem.com",
                 "suiteInfo": "https://apis.gemecosystem.com/suiteinfo/",
                 "suite-exe-api": "https://apis.gemecosystem.com/suiteexe",
                 "test-exe-api": "https://apis.gemecosystem.com/testcase",
             }
         }
+# for getting urls using url tag from config file
+def getEnterPoint(url, bridge_token, user_name):
+
+    global urls
    
     try:
-        #checking if url is present in file and calling get api
-        if "BASE_URL" in PARAMS:
-            url = checkUrl(PARAMS["BASE_URL"])
-            # url = PARAMS["BASE_URL"]
-            response = dataUpload._sendData(" ", url, PARAMS["BRIDGE_TOKEN"],PARAMS["USERNAME"] ,"GET")
+            url = checkUrl(url)
+            response = dataUpload._sendData(" ", url, bridge_token, user_name,"GET")
             if response.status_code == 200:
                 urls = response.json()
+                global apiSuccess
+                apiSuccess = True
             else:
                 logging.warning("Error Occurs While Getting the BASE_URLs")
     except Exception as e:
             traceback.print_exc()
-            logging.warning("Error Occurs While Getting the URLs")
+            logging.warning("Error Occurs While Getting the BASE_URLs")
 # for sending urls to dataupload file
 def getUrls(apiName):
         return urls["data"][apiName]
 
 def checkUrl(url):
-    if url[len(url)-3:len(url):] == "com":
-        url = url + "/enter-point"
+    try:
+        l = url.index('.com')
+        url = url[:l+4:] + "/enter-point"
         return url
-    else:
-        return url
+    except Exception:
+        traceback.print_exc()
+        logging.warning("Error Occurs While handling the BASE_URLs")
+
 count = 0
