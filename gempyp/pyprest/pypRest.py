@@ -175,8 +175,8 @@ class PypRest(Base):
         if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
             self.legacy_api = self.data["config_data"]["LEGACY_API"].strip(" ")
             self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
-            self.legacy_headers = json.loads(self.data["config_data"].get("LEGACY_HEADERS", {}))
-            self.legacy_body = json.loads(self.data["config_data"].get("LEGACY_BODY", {}))  
+            self.legacy_headers = json.loads(str(self.data["config_data"].get("LEGACY_HEADERS", {})))
+            self.legacy_body = json.loads(str(self.data["config_data"].get("LEGACY_BODY", {})))
             self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
             self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
         #setting variables and variable replacement
@@ -551,11 +551,11 @@ class PypRest(Base):
         return code_list
     
     def isLegacyPresent(self):
-        if self.data["config_data"].get("LEGACY_API") is not None:
-            if self.data["config_data"].get("LEGACY_METHOD") is not None:
-                if json.loads(self.data["config_data"].get("LEGACY_HEADERS")) is not None:
-                        if json.loads(self.data["config_data"].get("LEGACY_BODY")) is not None:
-                            if self.data["config_data"].get("LEGACY_EXPECTED_STATUS_CODE") is not None:
+        if self.data["config_data"].get("LEGACY_API", None) is not None:
+            if self.data["config_data"].get("LEGACY_METHOD", None) is not None:
+                if json.loads(str(self.data["config_data"].get("LEGACY_HEADERS", {}))) is not None:
+                        if json.loads(str(self.data["config_data"].get("LEGACY_BODY", {}))) is not None:
+                            if self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE") is not None:
                                 if self.data["config_data"].get("LEGACY_AUTHENTICATION", "") is not None:
                                     return True
                                 else:
