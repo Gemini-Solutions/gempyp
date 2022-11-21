@@ -10,13 +10,13 @@ THREADS = 8
 _VERSION = "1.0.0"
 apiSuccess = False
 urls = {"data":{
-                "jewel-url": "https://jewel-beta.gemecosystem.com",
-                "suiteInfo": "https://apis-beta.gemecosystem.com/suiteinfo/",
-                "suite-exe-api": "https://apis-beta.gemecosystem.com/suiteexe",
-                "test-exe-api": "https://apis-beta.gemecosystem.com/testcase",
-                "last-five": "https://apis-beta.gemecosystem.com/suiteexe/lastFive",
-                "comment-api": "https://apis-beta.gemecosystem.com/jira/comment",
-                "jira-api": "https://apis-beta.gemecosystem.com/jira/create",
+                "jewel-url": "https://jewel.gemecosystem.com",
+                "suiteInfo": "https://apis.gemecosystem.com/suiteinfo/",
+                "suite-exe-api": "https://apis.gemecosystem.com/suiteexe",
+                "test-exe-api": "https://apis.gemecosystem.com/testcase",
+                "last-five": "https://apis.gemecosystem.com/suiteexe/lastFive",
+                "comment-api": "https://apis.gemecosystem.com/jira/comment",
+                "jira-api": "https://apis.gemecosystem.com/jira/create",
             }
         }
 # for getting urls using url tag from config file
