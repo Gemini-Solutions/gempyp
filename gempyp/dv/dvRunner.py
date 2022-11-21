@@ -5,7 +5,7 @@ from posixpath import split
 from sqlite3 import connect
 from typing import Dict
 import pandas as pd
-from pyparsing import originalTextFor
+# from pyparsing import originalTextFor
 import mysql.connector
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status

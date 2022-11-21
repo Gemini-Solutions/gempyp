@@ -54,15 +54,17 @@ def jiraIntegration(s_run_id, suite_status, testcase_analytics, jewel_link, emai
         api = DefaultSettings.urls["data"]["last-five"]
         params = {"s_run_id": s_run_id}
         response = requests.get(api, params=params, headers={"Content-Type": "application/json"})
-        print(response.status_code)
+        prev_run_details = []
         if response.status_code == 200:
             prev_run_details = json.loads(response.text)
-        if prev_run_details[0].get("Jira_id", None) is None:
-            jira_id = createJira(s_run_id, testcase_analytics, jewel_link, email, access_token, title, project_id)
-        elif prev_run_details[0]["Status"].upper() == "FAIL" or prev_run_details[0]["Status"].upper() == "ERR":
-            logging.info("---------- Adding comment to the Jira Id {} -----------".format(prev_run_details[0]["Jira_id"]))
-            jira_id = prev_run_details[0]["Jira_id"]
-        elif prev_run_details[0]["Status"].upper() == "PASS" or prev_run_details[0]["Status"].upper() == "INFO":
-            jira_id = createJira(s_run_id, testcase_analytics, jewel_link, email, access_token, title, project_id)
-        jira_id = addComment(testcase_analytics, s_run_id, jira_id, email, access_token, jewel_link)
-        return jira_id
+            if prev_run_details[0].get("Jira_id", None) is None:
+                jira_id = createJira(s_run_id, testcase_analytics, jewel_link, email, access_token, title, project_id)
+            elif prev_run_details[0]["Status"].upper() == "FAIL" or prev_run_details[0]["Status"].upper() == "ERR":
+                logging.info("---------- Adding comment to the Jira Id {} -----------".format(prev_run_details[0]["Jira_id"]))
+                jira_id = prev_run_details[0]["Jira_id"]
+            elif prev_run_details[0]["Status"].upper() == "PASS" or prev_run_details[0]["Status"].upper() == "INFO":
+                jira_id = createJira(s_run_id, testcase_analytics, jewel_link, email, access_token, title, project_id)
+            jira_id = addComment(testcase_analytics, s_run_id, jira_id, email, access_token, jewel_link)
+            return jira_id
+        else:
+            return None

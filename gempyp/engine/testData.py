@@ -1,5 +1,3 @@
-from cmath import nan
-import logging
 import pandas as pd
 import traceback
 import json
@@ -52,11 +50,11 @@ class TestData:
         misc_data = self.misc_details[
             self.misc_details["table_type"].str.upper() == "SUITE"
         ]
-
-        misc_data = misc_data.to_dict(orient="records")
-
+        # the above misc data is not being used
+        misc_data = data["miscData"]
         data["miscData"] = misc_data
         data["s_id"] = "test_id"
+
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):

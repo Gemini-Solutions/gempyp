@@ -1,5 +1,3 @@
-
-from ntpath import join
 import tempfile
 from typing import Dict
 import lxml.etree as et

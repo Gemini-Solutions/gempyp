@@ -3,7 +3,6 @@ import requests
 import logging
 from gempyp.config import DefaultSettings
 import logging
-import sys
 import re
 import json
 
