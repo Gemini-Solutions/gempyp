@@ -270,7 +270,7 @@ class Engine:
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
-            "miscData": {},
+            "miscData": [],
             "expected_testcases": self.total_runable_testcase,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
@@ -284,7 +284,7 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-
+        print("here")
         try:
             if self.CONFIG.getTestcaseLength() <= 0:
                 raise Exception("no testcase found to run")
@@ -298,8 +298,13 @@ class Engine:
 
         except Exception as e:
             logging.error(traceback.format_exc())
-            self.DATA.misc_details["REASON OF FAILURE"] = str(e)
-            print(self.DATA)
+            try:
+                self.DATA.suite_detail.at[0, "miscData"].append({"REASON OF FAILURE": str(e)})
+                self.updateSuiteData()
+                print(self.DATA.suite_detail)
+            except Exception as err:
+                logging.error(traceback.format_exc())
+                print(err)
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             # need to add reason of failure of the suite in misc
 

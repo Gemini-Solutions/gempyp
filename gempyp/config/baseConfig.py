@@ -62,9 +62,9 @@ class AbstarctBaseConfig(ABC):
         filtered_dict_subtestcases = {}
 
         ###code for passing testcases through cli jira-113
-        if "TESTCASES" in self._CONFIG['SUITE_DATA']:
+        if "TESTCASE_LIST" in self._CONFIG['SUITE_DATA']:
             test = {}
-            testcase = self._CONFIG['SUITE_DATA']["TESTCASES"]
+            testcase = self._CONFIG['SUITE_DATA']["TESTCASE_LIST"]
             if testcase[0] == '[':
                 testcase = testcase[1:-1]
                 testcase = testcase.split(",")

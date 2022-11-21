@@ -30,7 +30,6 @@ class PypRest(Base):
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
         self.isLegacyPresent = self.isLegacyPresent()
 
-
         # set vars
         self.setVars()
 
@@ -38,7 +37,6 @@ class PypRest(Base):
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
-
 
     def restEngine(self):
         output = []
@@ -59,9 +57,7 @@ class PypRest(Base):
                     exceptiondata = traceback.format_exc().splitlines()
                     exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
                     self.reporter.addMisc("Reason of Failure",exceptionarray[0])
-            #if self.reporter._misc_data.get("REASON OF FAILURE", "") == "":
-            #    self.reporter._misc_data["REASON OF FAILURE"] = None
-            ## variable replacement.val_not_found ---- replace variables with "NULL"
+
             VarReplacement(self).valueNotFound()
             output = writeToReport(self)
             return output, None
@@ -82,14 +78,7 @@ class PypRest(Base):
         self.reporter.finalizeReport()
 
     def validateConf(self):
-        # mandate = ["API", "METHOD", "HEADERS", "BODY"]
         mandate = ["API", "METHOD"]
-        # ---------------------------------------adding misc data -----------------------------------------------------
-        # self.reporter.addMisc(Misc="Test data")
-        # self.reporter._misc_data["REASON OF FAILURE"] = "Mandatory keys are missing"
-
-        # ------------------------------sample adding columns to testcase file-----------------------------------------------
-        # self.reporter.addRow("User Profile Data cannot be fetched", "Token expired or incorrect", status.FAIL, test="test")
         self.list_subtestcases=[]
         self.request_obj=[]
         self.response_obj=[]
@@ -132,20 +121,12 @@ class PypRest(Base):
             del self.parent_data["SUBTESTCASES_DATA"]
             self.data["config_data"]=self.parent_data
             self.request_obj=[]
-            
-        
-          
-     
-          
-                
-        
+
             
     # read config and get data
     def getVals(self):
         """This is a function to get the values from configData, store it in self object."""
         # capitalize the keys
-
-
 
         for k, v in self.data["config_data"].items():
             self.data.update({k.upper(): v})
@@ -155,8 +136,6 @@ class PypRest(Base):
             self.api = self.data["config_data"]["API"].strip(" ")
         else: 
             self.api = self.data.get(self.env, "PROD").strip(" ") + self.data["config_data"]["API"].strip(" ")
-        
-
         
         # get the method
         self.method = self.data["config_data"].get("METHOD", "GET")
@@ -171,7 +150,6 @@ class PypRest(Base):
         
         # get body
         self.body = self.data["config_data"].get("BODY", {})
-
 
         # get file
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
@@ -202,14 +180,12 @@ class PypRest(Base):
             self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
             self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
         #setting variables and variable replacement
-
-        
-        
         
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
         self.body=json.loads(self.body)
         self.headers=json.loads(self.headers)
+
     def file_upload(self,json_form_data): 
         files_data=[]
         json_form_data_1={}  
@@ -219,9 +195,6 @@ class PypRest(Base):
                 files_data_tuple+=(key,json_form_data[key])
             files_data.append(files_data_tuple)
         return files_data
-
-
-
 
     def execRequest(self):
         """This function
