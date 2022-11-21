@@ -403,10 +403,7 @@ class Engine:
         
         pool = None
         try:
-            processes = []
-
-        # create a list to keep connections
-            parent_connections = []
+            
             # threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
             # try:
             #     threads = int(threads)
@@ -416,6 +413,10 @@ class Engine:
            
            
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
+                processes = []
+
+        # create a list to keep connections
+                parent_connections = []
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
                 pool_list = []
@@ -439,7 +440,8 @@ class Engine:
        
                 if len(pool_list) == 0:
                     continue
-
+                print("*****************")
+                print(pool_list)
                 for testcase in pool_list:
                     parent_conn, child_conn = Pipe()
                     parent_connections.append(parent_conn)
@@ -448,16 +450,19 @@ class Engine:
                     process = Process(target=executorFactory, args=(testcase, child_conn,))
                     processes.append(process) 
                 # runs the testcase in parallel here
-
+                # splitedSize = 4
+                # a_splited = [processes[x:x+splitedSize] for x in range(0, len(processes), splitedSize)]
+                instances_total = []
+            
+                # print(a_splited)
+                # for i in a_splited:
                 for process in processes:
                     process.start()
-
-                instances_total = []
                 for parent_connection in parent_connections:
                     instances_total.append(parent_connection.recv()[0])
                 for process in processes:
                     process.join()
-                
+                    
                 for row in instances_total:
                     if not row or len(row) < 2:
                         raise Exception(
@@ -472,12 +477,14 @@ class Engine:
                         )
                         logging.error(f"message: {error['message']}")
                     self.update_df(output, error)
+                if process:
+                    process.join()
         except Exception:
             logging.error(traceback.format_exc())
-
         finally:
             if process:
                 process.join()
+
 
     def update_df(self, output: List, error: Dict):
 
