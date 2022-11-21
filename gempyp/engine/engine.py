@@ -52,7 +52,8 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         "dv":{"class": DvRunner, "classParam": data, "function": "dvEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
-    _type = data.get("config_data")["TYPE"]
+
+    _type = data.get("config_data").get("TYPE","GEMPYP")
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
 
