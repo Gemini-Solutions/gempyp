@@ -45,10 +45,13 @@ class DvRunner(Base):
         try:
             column =[]
             try:
-                configPath= self.configData["DB_CONFIG_PATH"]
-                configur = ConfigParser()
-                config = readPath(configPath)
-                configur.read(config)
+                if self.configData["DATABASE"].lower() == 'custom': 
+                    pass
+                else:
+                    configPath= self.configData["DB_CONFIG_PATH"]
+                    configur = ConfigParser()
+                    config = readPath(configPath)
+                    configur.read(config)
             except Exception as e:
                 self.reporter.addRow("Config File","Path is not Correct",status.FAIL)
                 traceback.print_exc()
