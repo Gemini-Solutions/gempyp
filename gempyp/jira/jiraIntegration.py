@@ -12,7 +12,7 @@ def closeJira(workflow):
 
 def addComment(testcase_analytics, s_run_id, jira_id, email, access_token, jewel_link):
     comment_api = DefaultSettings.urls["data"]["comment-api"]
-    comment_text = "Time: {} \nS_RUN_ID: {} \nJewel Link: {} \n".format(datetime.now().strftime("%Y:%b:%d"), s_run_id, jewel_link)
+    comment_text = "Time: {} \nS_RUN_ID: {} \nJewel Link: {} \n".format(datetime.now().strftime("%Y-%b-%d"), s_run_id, jewel_link)
     for statuses in testcase_analytics.keys():
         comment_text += statuses + ":" +  str(testcase_analytics.get(statuses)) + "\n"
     body = {"email": email, "accessToken": access_token, "jiraId": jira_id, "comment": comment_text}
