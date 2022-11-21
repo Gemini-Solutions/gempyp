@@ -18,15 +18,17 @@ from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
 import logging
-from gempyp.libs.logConfig import my_custom_logger
+from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration, addComment
+from multiprocessing import Process, Pipe
 
 
-def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
+
+def executorFactory(data: Dict,conn= None, custom_logger=None) -> Tuple[List, Dict]:
     
     """
     calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
@@ -40,9 +42,11 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.log')
         custom_logger = my_custom_logger(log_path)
+        LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
+    
 
     
     # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
@@ -55,13 +59,27 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
     }
 
     _type = data.get("config_data").get("TYPE","GEMPYP")
+    dv = ["data validator","dv","datavalidator","dvalidator"]
+    if _type in dv:
+        _type = "dv"
+
+    _type = data.get("config_data")["TYPE"]
+    dv = ["data validator","dv","datavalidator","dvvalidator"]
+    if _type in dv:
+        _type = "dv"
+
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
 
     if _type_dict.get("class", None):
-        return getattr(_type_dict["class"](_type_dict['classParam']), _type_dict['function'])()  # need to make it generic for functionParam too
+        data =  getattr(_type_dict["class"](_type_dict['classParam']), _type_dict['function'])()  # need to make it generic for functionParam too
     else:
-        return _type_dict["function"](_type_dict["functionParam"])  # we need to dissolve this else condition too somehow
+        data =  _type_dict["function"](_type_dict["functionParam"])  # we need to dissolve this else condition too somehow
+    if conn == None:
+        return data
+    else:
+        conn.send([data])
+        conn.close()
 
     """if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
@@ -366,7 +384,8 @@ class Engine:
                 data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
-                output, error = executorFactory(data, custom_logger)
+                conn = None
+                output, error = executorFactory(data,conn, custom_logger)
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -384,12 +403,17 @@ class Engine:
         
         pool = None
         try:
-            threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
-            try:
-                threads = int(threads)
-            except:
-                threads = DefaultSettings.THREADS
-            pool = Pool(threads)
+            processes = []
+
+        # create a list to keep connections
+            parent_connections = []
+            # threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
+            # try:
+            #     threads = int(threads)
+            # except:
+            #     threads = DefaultSettings.THREADS
+            # pool = Pool(threads)
+           
            
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
                 if len(testcases) == 0:
@@ -415,10 +439,26 @@ class Engine:
        
                 if len(pool_list) == 0:
                     continue
+
+                for testcase in pool_list:
+                    parent_conn, child_conn = Pipe()
+                    parent_connections.append(parent_conn)
+
+            # create the process, pass instance and connection
+                    process = Process(target=executorFactory, args=(testcase, child_conn,))
+                    processes.append(process) 
                 # runs the testcase in parallel here
 
-                results = pool.map(executorFactory, pool_list)
-                for row in results:
+                for process in processes:
+                    process.start()
+
+                instances_total = []
+                for parent_connection in parent_connections:
+                    instances_total.append(parent_connection.recv()[0])
+                for process in processes:
+                    process.join()
+                
+                for row in instances_total:
                     if not row or len(row) < 2:
                         raise Exception(
                             "Some error occured while running the testcases"
@@ -436,8 +476,8 @@ class Engine:
             logging.error(traceback.format_exc())
 
         finally:
-            if pool:
-                pool.close()
+            if process:
+                process.join()
 
     def update_df(self, output: List, error: Dict):
 

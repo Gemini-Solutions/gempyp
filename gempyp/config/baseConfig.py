@@ -64,7 +64,7 @@ class AbstarctBaseConfig(ABC):
         ###code for passing testcases through cli jira-113
         if "TESTCASE_LIST" in self._CONFIG['SUITE_DATA']:
             test = {}
-            testcase = self._CONFIG['SUITE_DATA']["TESTCASE_LIST"]
+            testcase = self._CONFIG['SUITE_DATA']["TESTCASE_LIA"]
             if testcase[0] == '[':
                 testcase = testcase[1:-1]
                 testcase = testcase.split(",")
@@ -86,6 +86,7 @@ class AbstarctBaseConfig(ABC):
                 self.total_yflag_testcase += 1
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
                 continue
+
 
             filtered_dict[key] = value
             
