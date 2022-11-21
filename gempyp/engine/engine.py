@@ -23,7 +23,7 @@ from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
 from gempyp.dv.dvRunner import DvRunner
-from gempyp.jira.jiraIntegration import jiraIntegration
+from gempyp.jira.jiraIntegration import jiraIntegration, addComment
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -177,7 +177,7 @@ class Engine:
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_uploaded == True:
             if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-                jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, jira_email, jira_access_token, jira_title, jira_project_id, jira_workflow)
+                jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, self.jewel, jira_email, jira_access_token, jira_title, jira_project_id, jira_workflow)
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "miscData"].append({"Jira_id": jira_id})
                     print(self.DATA.suite_detail["miscData"][0])
