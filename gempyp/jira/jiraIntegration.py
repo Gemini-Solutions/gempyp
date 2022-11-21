@@ -39,12 +39,11 @@ def jiraIntegration(s_run_id, suite_status, testcase_analytics, email, access_to
         print(response.status_code)
         if response.status_code == 200:
             prev_run_details = json.loads(response.text)
-            print("-----prev", prev_run_details)
-        # prev_run_details[0]["Status"] = "pass"
         if (prev_run_details[0].get("Jira_id", None) is not None and prev_run_details[0]["Status"].upper() == "FAIL" or prev_run_details[0]["Status"].upper() == "ERR"):
             logging.info("---------- Adding comment to the Jira Id {} -----------".format(prev_run_details[0]["Jira_id"]))
             jira_id = prev_run_details[0]["Jira_id"]
             jira_id = addComment(testcase_analytics, s_run_id, jira_id, email, access_token)
+            return jira_id
         elif prev_run_details[0]["Status"].upper() == "PASS" or prev_run_details[0]["Status"].upper() == "INFO" or prev_run_details[0].get("Jira_id", None) is None:
             logging.info("----------- Creating New Jira Ticket ------------")
             create_jira_api = DefaultSettings.urls["data"]["jira-api"]

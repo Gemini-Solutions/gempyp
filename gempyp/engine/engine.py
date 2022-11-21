@@ -179,8 +179,7 @@ class Engine:
             if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
                 jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, jira_email, jira_access_token, jira_title, jira_project_id, jira_workflow)
                 if jira_id is not None:
-                    print(type(self.DATA.suite_detail["miscData"][0]))
-                    self.DATA.suite_detail.at[0, "miscData"] = [{"Jira_id": jira_id}]
+                    self.DATA.suite_detail.at[0, "miscData"].append({"Jira_id": jira_id})
                     print(self.DATA.suite_detail["miscData"][0])
                 dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
