@@ -46,7 +46,7 @@ class TestData:
         """
         if self.suite_detail.empty:
             return {}
-
+        
         self.suite_detail = self.suite_detail.replace(np.nan, '-', regex=True)
         data = self.suite_detail.to_dict(orient="records")[0]
         misc_data = self.misc_details[
@@ -57,7 +57,6 @@ class TestData:
 
         data["miscData"] = misc_data
         data["s_id"] = "test_id"
-        print(data)
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):
