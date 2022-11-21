@@ -51,10 +51,11 @@ class TestData:
             self.misc_details["table_type"].str.upper() == "SUITE"
         ]
         # the above misc data is not being used
+
         misc_data = data["miscData"]
         data["miscData"] = misc_data
         data["s_id"] = "test_id"
-
+        print(data, ")))))))))))))))))))))))))))")
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):

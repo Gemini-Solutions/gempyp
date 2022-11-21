@@ -183,8 +183,8 @@ class PypRest(Base):
         
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
-        self.body=json.loads(self.body)
-        self.headers=json.loads(self.headers)
+        self.body=json.loads(self.body) if type(self.body) == str else self.body 
+        self.headers=json.loads(self.headers) if type(self.headers) == str else self.headers 
 
     def file_upload(self,json_form_data): 
         files_data=[]
