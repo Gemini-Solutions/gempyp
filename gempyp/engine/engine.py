@@ -23,6 +23,7 @@ from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
 from gempyp.dv.dvRunner import DvRunner
+from gempyp.jira.jiraIntegration import jiraIntegration
 
 
 def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
@@ -163,9 +164,25 @@ class Engine:
                 with open(unuploaded_path,'w') as w:
                     w.write(listToStr)
         self.updateSuiteData()
+        suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
+        testcase_analytics = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_analytics"]
+        try:
+            jira_email = self.PARAMS["JIRA_EMAIL"]
+            jira_access_token = self.PARAMS["JIRA_ACCESS_TOKEN"]
+            jira_title = self.PARAMS.get("JIRA_TITLE", None)
+            jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
+            jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
+        except Exception as e:
+            pass
+
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_uploaded == True:
             if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+                jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, jira_email, jira_access_token, jira_title, jira_project_id, jira_workflow)
+                if jira_id is not None:
+                    print(type(self.DATA.suite_detail["miscData"][0]))
+                    self.DATA.suite_detail.at[0, "miscData"] = [{"Jira_id": jira_id}]
+                    print(self.DATA.suite_detail["miscData"][0])
                 dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
             if not self.PARAMS.get("BASE_URL", None):
