@@ -184,18 +184,21 @@ class Engine:
         self.updateSuiteData()
         suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
         testcase_analytics = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_analytics"]
+        skip_jira = 0
         try:
-            jira_email = self.PARAMS["JIRA_EMAIL"]
-            jira_access_token = self.PARAMS["JIRA_ACCESS_TOKEN"]
+            jira_email = self.PARAMS.get("JIRA_EMAIL", None)
+            jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
             jira_title = self.PARAMS.get("JIRA_TITLE", None)
             jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
             jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
+            if jira_access_token is None and jira_email is None:
+                skip_jira = 1
         except Exception as e:
             pass
 
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_uploaded == True:
-            if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+            if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()) and skip_jira == 0:
                 jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, self.jewel, jira_email, jira_access_token, jira_title, jira_project_id, jira_workflow)
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "miscData"].append({"Jira_id": jira_id})
