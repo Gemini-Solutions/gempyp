@@ -68,6 +68,8 @@ class AbstarctBaseConfig(ABC):
             if testcase[0] == '[':
                 testcase = testcase[1:-1]
                 testcase = testcase.split(",")
+                testcase = [i.strip(" ").upper() for i in testcase]
+                print(testcase)
             else:
                 testcase = testcase.split(",")
             for key, value in testcase_data.items():

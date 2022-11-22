@@ -198,11 +198,11 @@ class Engine:
 
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_uploaded == True:
-            if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()) and skip_jira == 0:
+            if skip_jira == 0:
                 jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, self.jewel, jira_email, jira_access_token, jira_title, jira_project_id, jira_workflow)
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "miscData"].append({"Jira_id": jira_id})
-                dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
             if not self.PARAMS.get("BASE_URL", None):
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
