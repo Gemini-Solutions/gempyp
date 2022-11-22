@@ -63,7 +63,7 @@ def writeToReport(pyprest_obj):
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = result.get("MISC")
     singleTestcase["json_data"] = pyprest_obj.json_data
-    singleTestcase["suite_variables"] = pyprest_obj.variables["suite"]
+    singleTestcase["suite_variables"] = pyprest_obj.variables.get("suite", {})
     output.append(singleTestcase)
     return output
 
