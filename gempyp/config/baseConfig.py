@@ -30,15 +30,13 @@ class AbstarctBaseConfig(ABC):
         return self._CONFIG["TESTCASE_DATA"]
     
     def getSubtestcasesConfig(self) -> Dict:
-       
-
         return self._CONFIG["SUBTESTCASES_DATA"]
 
     def getTestcaseData(self, testcaseName: str) -> Dict:
-        return self._CONFIG["TESTCASE_DATA"].get(testcaseName, None)
+        return self._CONFIG["TESTCASE_DATA"].get(testcaseName.upper(), None)  ## uppercase
     
     def getSubTestcaseData(self, testcaseName: str) -> Dict:
-        return self._CONFIG["SUBTESTCASES_DATA"].get(testcaseName, None)
+        return self._CONFIG["SUBTESTCASES_DATA"].get(testcaseName.upper(), None)  ## uppercase
 
     def getTestcaseLength(self) -> int:
         """
@@ -67,11 +65,9 @@ class AbstarctBaseConfig(ABC):
             testcase = self._CONFIG['SUITE_DATA']["TESTCASE_LIST"]
             if testcase[0] == '[':
                 testcase = testcase[1:-1]
-                testcase = testcase.split(",")
-                testcase = [i.strip(" ").upper() for i in testcase]
-                print(testcase)
+                testcase = [i.strip(" ").upper() for i in testcase.split(",")]  ## uppercase
             else:
-                testcase = testcase.split(",")
+                testcase = [i.strip(" ").upper() for i in testcase.split(",")]  ## uppercase
             for key, value in testcase_data.items():
                 if key in testcase:
                     test[key] = value
@@ -80,7 +76,7 @@ class AbstarctBaseConfig(ABC):
         for key, value in testcase_data.items():
             testcases = ""
             if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
-                testcases=value.get("SUBTESTCASES").split(",")
+                testcases=value.get("SUBTESTCASES").upper().split(",")  ## uppercase
                 testcases.append(key)
             if value.get("RUN_FLAG", "N").upper() != "Y":
                 continue

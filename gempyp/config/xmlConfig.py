@@ -48,6 +48,7 @@ class XmlConfig(AbstarctBaseConfig):
 
 
         self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)
+
         self._CONFIG["SUITE_DATA"]['LOG_DIR'] = self.log_dir
         self._CONFIG["SUITE_DATA"]['UNIQUE_ID'] = self.unique_id
 
@@ -67,7 +68,11 @@ class XmlConfig(AbstarctBaseConfig):
         testcase_data = data.find("testcases")
 
         testcase_list = xmlToList(testcase_data)
-        testcase_dict = {k['NAME']: k for k in testcase_list}
+
+        for i in testcase_list:
+            i["NAME"] = i["NAME"].upper()  ## uppercase
+        testcase_dict = {k['NAME']: k for k in testcase_list}  #####################
+
         # do your validation here
 
         return testcase_dict

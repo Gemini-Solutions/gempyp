@@ -603,6 +603,7 @@ class Engine:
         taking argument as the testcase name and  return dictionary containing information about testCase
         """
         data = {}
+        print("++++++++++++++++", testcase, "++++++++++++++++++++++++")
         list_subtestcases=[]
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
         if("SUBTESTCASES" in data["config_data"].keys()):
