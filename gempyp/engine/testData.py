@@ -1,5 +1,3 @@
-from cmath import nan
-import logging
 import pandas as pd
 import traceback
 import json
@@ -46,15 +44,16 @@ class TestData:
         """
         if self.suite_detail.empty:
             return {}
-
+        
         self.suite_detail = self.suite_detail.replace(np.nan, '-', regex=True)
         data = self.suite_detail.to_dict(orient="records")[0]
         misc_data = self.misc_details[
             self.misc_details["table_type"].str.upper() == "SUITE"
         ]
+        # the above misc data is not being used
 
-        misc_data = misc_data.to_dict(orient="records")
-        data["misc_data"] = misc_data
+        misc_data = data["miscData"]
+        data["miscData"] = misc_data
         data["s_id"] = "test_id"
         return json.dumps(data, cls=dateTimeEncoder)
 
@@ -93,7 +92,7 @@ class TestData:
         # test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
         test_data["userDefinedData"] = dict()
-        # test_data["response_time"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
+        # test_data["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         """ Adding misc data to userDefinedData column for each testcase
         Here misc data is only for one testcase.
         {"key1": "value1", "key2": "value2"...}"""

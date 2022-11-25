@@ -65,7 +65,7 @@ class VariableReplacement:
     def getVariableValues(self, var_name):
         varName = var_name.strip("$[#]")
         try:
-            if "SUITE." in varName.upper():
+            if "SUITE.".casefold() in varName.casefold():
                 varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
             else:
                 varValue = self.local_pre_variables[varName]
@@ -110,7 +110,7 @@ class VariableReplacement:
                             newValStr = data[k].replace(var_name, str(var_val))
                         del data[k]
                         data[k] = newValStr
-                    
+
         return data
 
     def variableReplacement(self):

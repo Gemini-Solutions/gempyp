@@ -14,28 +14,31 @@ urls = {"data":{
                 "suiteInfo": "https://apis.gemecosystem.com/suiteinfo/",
                 "suite-exe-api": "https://apis.gemecosystem.com/suiteexe",
                 "test-exe-api": "https://apis.gemecosystem.com/testcase",
+                "last-five": "https://apis.gemecosystem.com/suiteexe/lastFive",
+                "comment-api": "https://apis.gemecosystem.com/jira/comment",
+                "jira-api": "https://apis.gemecosystem.com/jira/create",
             }
         }
 # for getting urls using url tag from config file
 def getEnterPoint(url, bridge_token, user_name):
-
     global urls
-   
     try:
-            url = checkUrl(url)
-            response = dataUpload._sendData(" ", url, bridge_token, user_name,"GET")
-            if response.status_code == 200:
-                urls = response.json()
-                global apiSuccess
-                apiSuccess = True
-            else:
-                logging.warning("Error Occurs While Getting the BASE_URLs")
+        url = checkUrl(url)
+        response = dataUpload._sendData(" ", url, bridge_token, user_name,"GET")
+        if response.status_code == 200:
+            url_enter_point = response.json()
+            urls["data"].update(url_enter_point["data"])
+            global apiSuccess
+            apiSuccess = True
+        else:
+            logging.warning("Error Occurs While Getting the BASE_URLs")
     except Exception as e:
             traceback.print_exc()
             logging.warning("Error Occurs While Getting the BASE_URLs")
+
 # for sending urls to dataupload file
 def getUrls(apiName):
-        return urls["data"][apiName]
+        return urls["data"].get(apiName, None)
 
 def checkUrl(url):
     try:

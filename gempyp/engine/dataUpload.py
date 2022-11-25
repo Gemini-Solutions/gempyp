@@ -3,7 +3,6 @@ import requests
 import logging
 from gempyp.config import DefaultSettings
 import logging
-import sys
 import re
 import json
 
@@ -39,7 +38,7 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
-    ### for removing none value in payload
+
     try:
         if len(respon) != 0:
             payload = dataAlter(payload)
@@ -103,7 +102,6 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     calling the api to upload the data into database
     takes data we need to send(payload),bridgeToken,userName and method as argument
     """
-    
     # Not needed anymore as we will be reuploading the data to db.
     # if DefaultSettings.count > 3:         
     #     logging.warning("Incorrect bridgetoken/username or APIs are down. Skipping Data upload.")
@@ -162,7 +160,7 @@ def dataAlter(payload):
     payload['testcase_analytics'] = sorted_dict
     payload['status'] = status
     # updating the expected testcase
-    payload['miscData'][0]['expected_testcases'] += respon['data']['miscData'][0]['expected_testcases']
+    payload['expected_testcases'] += respon['data']['expected_testcases']
     # updating the suite status of according to new run
     if payload['status'] != "PASS":
         pass

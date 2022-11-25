@@ -18,14 +18,17 @@ from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
 from gempyp.config import DefaultSettings
 import logging
-from gempyp.libs.logConfig import my_custom_logger
+from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
 from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
 from gempyp.dv.dvRunner import DvRunner
+from gempyp.jira.jiraIntegration import jiraIntegration, addComment
+from multiprocessing import Process, Pipe
 
 
-def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
+
+def executorFactory(data: Dict,conn= None, custom_logger=None) -> Tuple[List, Dict]:
     
     """
     calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
@@ -39,9 +42,11 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.log')
         custom_logger = my_custom_logger(log_path)
+        LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
     if 'log_path' not in data['config_data']:
         data['config_data']['LOG_PATH'] = log_path
+    
 
     
     # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
@@ -52,14 +57,29 @@ def executorFactory(data: Dict, custom_logger=None) -> Tuple[List, Dict]:
         "dv":{"class": DvRunner, "classParam": data, "function": "dvEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
+
+    _type = data.get("config_data").get("TYPE","GEMPYP")
+    dv = ["data validator","dv","datavalidator","dvalidator"]
+    if _type in dv:
+        _type = "dv"
+
     _type = data.get("config_data")["TYPE"]
+    dv = ["data validator","dv","datavalidator","dvvalidator"]
+    if _type in dv:
+        _type = "dv"
+
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
 
     if _type_dict.get("class", None):
-        return getattr(_type_dict["class"](_type_dict['classParam']), _type_dict['function'])()  # need to make it generic for functionParam too
+        data =  getattr(_type_dict["class"](_type_dict['classParam']), _type_dict['function'])()  # need to make it generic for functionParam too
     else:
-        return _type_dict["function"](_type_dict["functionParam"])  # we need to dissolve this else condition too somehow
+        data =  _type_dict["function"](_type_dict["functionParam"])  # we need to dissolve this else condition too somehow
+    if conn == None:
+        return data
+    else:
+        conn.send([data])
+        conn.close()
 
     """if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
@@ -162,10 +182,27 @@ class Engine:
                 with open(unuploaded_path,'w') as w:
                     w.write(listToStr)
         self.updateSuiteData()
+        suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
+        testcase_analytics = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_analytics"]
+        skip_jira = 0
+        try:
+            jira_email = self.PARAMS.get("JIRA_EMAIL", None)
+            jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
+            jira_title = self.PARAMS.get("JIRA_TITLE", None)
+            jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
+            jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
+            if jira_access_token is None and jira_email is None:
+                skip_jira = 1
+        except Exception as e:
+            pass
+
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_uploaded == True:
-            if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-                dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+            if skip_jira == 0:
+                jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, self.jewel, jira_email, jira_access_token, self.project_name, jira_project_id, jira_title, jira_workflow)
+                if jira_id is not None:
+                    self.DATA.suite_detail.at[0, "miscData"].append({"Jira_id": jira_id})
+            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
             if not self.PARAMS.get("BASE_URL", None):
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
@@ -230,7 +267,7 @@ class Engine:
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
-        self.report_info = self.PARAMS.get("REPORT_INFO")
+        # self.report_info = self.PARAMS.get("REPORT_INFO")
 
         #add suite_vars here 
 
@@ -264,18 +301,16 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.project_name,
             "run_type": "ON DEMAND",
-            "s_report_type": self.report_name,
+            "report_name": self.report_name,  # earlier it was report info
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
             "initiated_by": self.user,
             "run_mode": run_mode,
-            "miscData":[],
+            "miscData": [],
             "expected_testcases": self.total_runable_testcase,
             "testcase_analytics": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
-            "report_name": self.report_info,
-            "duration": None
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -286,7 +321,7 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-
+        print("here")
         try:
             if self.CONFIG.getTestcaseLength() <= 0:
                 raise Exception("no testcase found to run")
@@ -298,9 +333,18 @@ class Engine:
             else:
                 raise TypeError("mode can only be sequence or optimize")
 
-        except Exception:
+        except Exception as e:
             logging.error(traceback.format_exc())
-            pass
+            try:
+                self.DATA.suite_detail.at[0, "miscData"].append({"REASON OF FAILURE": str(e)})
+                self.updateSuiteData()
+                print(self.DATA.suite_detail)
+            except Exception as err:
+                logging.error(traceback.format_exc())
+                print(err)
+            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            # need to add reason of failure of the suite in misc
+
 
     def updateSuiteData(self):
         """
@@ -335,6 +379,7 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -342,13 +387,15 @@ class Engine:
                 data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
-                output, error = executorFactory(data, custom_logger)
+                conn = None
+                output, error = executorFactory(data,conn, custom_logger)
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
                     )
                     custom_logger.error(f"message: {error['message']}")
                 self.update_df(output, error)
+
 
 
     def startParallel(self):
@@ -359,14 +406,20 @@ class Engine:
         
         pool = None
         try:
-            threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
-            try:
-                threads = int(threads)
-            except:
-                threads = DefaultSettings.THREADS
-            pool = Pool(threads)
+            
+            # threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
+            # try:
+            #     threads = int(threads)
+            # except:
+            #     threads = DefaultSettings.THREADS
+            # pool = Pool(threads)
+           
            
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
+                processes = []
+
+        # create a list to keep connections
+                parent_connections = []
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
                 pool_list = []
@@ -390,10 +443,30 @@ class Engine:
        
                 if len(pool_list) == 0:
                     continue
-                # runs the testcase in parallel here
+                print("*****************")
+                print(pool_list)
+                for testcase in pool_list:
+                    parent_conn, child_conn = Pipe()
+                    parent_connections.append(parent_conn)
 
-                results = pool.map(executorFactory, pool_list)
-                for row in results:
+            # create the process, pass instance and connection
+                    process = Process(target=executorFactory, args=(testcase, child_conn,))
+                    processes.append(process) 
+                # runs the testcase in parallel here
+                # splitedSize = 4
+                # a_splited = [processes[x:x+splitedSize] for x in range(0, len(processes), splitedSize)]
+                instances_total = []
+            
+                # print(a_splited)
+                # for i in a_splited:
+                for process in processes:
+                    process.start()
+                for parent_connection in parent_connections:
+                    instances_total.append(parent_connection.recv()[0])
+                for process in processes:
+                    process.join()
+                    
+                for row in instances_total:
                     if not row or len(row) < 2:
                         raise Exception(
                             "Some error occured while running the testcases"
@@ -407,12 +480,14 @@ class Engine:
                         )
                         logging.error(f"message: {error['message']}")
                     self.update_df(output, error)
+                if process:
+                    process.join()
         except Exception:
             logging.error(traceback.format_exc())
-
         finally:
-            if pool:
-                pool.close()
+            if process:
+                process.join()
+
 
     def update_df(self, output: List, error: Dict):
 
@@ -528,6 +603,7 @@ class Engine:
         taking argument as the testcase name and  return dictionary containing information about testCase
         """
         data = {}
+        print("++++++++++++++++", testcase, "++++++++++++++++++++++++")
         list_subtestcases=[]
         data["config_data"] = self.CONFIG.getTestcaseData(testcase)
         if("SUBTESTCASES" in data["config_data"].keys()):

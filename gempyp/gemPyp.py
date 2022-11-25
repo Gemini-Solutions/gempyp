@@ -19,11 +19,10 @@ class Gempyp:
         self.BRIDGE_TOKEN = None 
         self.OUTPUT_FOLDER = None
         self.CATEGORY=None
-        self.SET=None
         self.USERNAME=None
         self.RUN_ID = None
-        self.TESTCASES = None
-
+        self.TESTCASE_LIST = None
+        self.BASE_URL = None
 
     
     def argParser(self):
@@ -41,9 +40,9 @@ class Gempyp:
         parser.add_argument('-username','-username',dest='USERNAME',type=str, required=False)
         parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
-        parser.add_argument('-set','-set',dest='SET',type=str, required=False)
         parser.add_argument('-run_id','-run_id',dest='RUN_ID',type=str, required=False)
-        parser.add_argument('-tc','-testcases',dest='TESTCASES',type=str, required=False)
+        parser.add_argument('-tc','-testcase_list',dest='TESTCASE_LIST',type=str, required=False)
+        parser.add_argument('-base_url','-base_url',dest='BASE_URL',type=str, required=False)
         
 
         args = parser.parse_args()
