@@ -3,7 +3,6 @@ import sys
 import os
 import platform
 import getpass
-import json
 import traceback
 from multiprocessing import Pool
 from typing import Dict, List, Tuple, Type
@@ -80,25 +79,6 @@ def executorFactory(data: Dict,conn= None, custom_logger=None) -> Tuple[List, Di
     else:
         conn.send([data])
         conn.close()
-
-    """if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
-        custom_logger.info("starting the GemPyP testcase")
-        #custom_logger.setLevel(logging.INFO)
-        return testcaseRunner(data)
-
-    elif data["config_data"].get("TYPE").upper() == "DVM":
-        # TODO do the DVM stuff
-        logging.info("starting the DVM testcase")
-        return DvmRunner(data).dvmEngine()
-
-    elif data["config_data"].get("TYPE").upper() == "PYPREST":
-        # TODO do the resttest stuff here
-        custom_logger.info("starting the PYPREST testcase")
-        try:
-            return PypRest(data).restEngine()
-        except Exception as e:
-            traceback.print_exc()
-            return None, getError(e, data["config_data"])"""
 
 
 class Engine:
@@ -183,7 +163,7 @@ class Engine:
                     w.write(listToStr)
         self.updateSuiteData()
         suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
-        testcase_analytics = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_analytics"]
+        testcase_info = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_info"]
         skip_jira = 0
         try:
             jira_email = self.PARAMS.get("JIRA_EMAIL", None)
@@ -199,9 +179,9 @@ class Engine:
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_uploaded == True:
             if skip_jira == 0:
-                jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_analytics, self.jewel, jira_email, jira_access_token, self.project_name, jira_project_id, jira_title, jira_workflow)
+                jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_info, self.jewel, jira_email, jira_access_token, self.project_name, jira_project_id, jira_title, jira_workflow)
                 if jira_id is not None:
-                    self.DATA.suite_detail.at[0, "miscData"].append({"Jira_id": jira_id})
+                    self.DATA.suite_detail.at[0, "metaData"].append({"Jira_id": jira_id})
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
             if not self.PARAMS.get("BASE_URL", None):
@@ -291,25 +271,21 @@ class Engine:
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
-        run_mode = "LINUX_CLI"
-        if os.name == 'nt':
-            run_mode = "WINDOWS"
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
             "s_end_time": None,
             "status": status.EXE.name,
             "project_name": self.project_name,
-            "run_type": "ON DEMAND",
             "report_name": self.report_name,  # earlier it was report info
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
             "initiated_by": self.user,
-            "run_mode": run_mode,
-            "miscData": [],
+            "os": platform.system().upper(),
+            "metaData": [],
             "expected_testcases": self.total_runable_testcase,
-            "testcase_analytics": None,
+            "testcase_info": None,
             "framework_name": "GEMPYP",  # later this will be dynamic( GEMPYP-PR for pyprest)
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
@@ -336,7 +312,7 @@ class Engine:
         except Exception as e:
             logging.error(traceback.format_exc())
             try:
-                self.DATA.suite_detail.at[0, "miscData"].append({"REASON OF FAILURE": str(e)})
+                self.DATA.suite_detail.at[0, "metaData"].append({"REASON OF FAILURE": str(e)})
                 self.updateSuiteData()
                 print(self.DATA.suite_detail)
             except Exception as err:
@@ -371,7 +347,7 @@ class Engine:
         )
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
-        self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
+        self.DATA.suite_detail.at[0, "testcase_info"] = status_dict
         # self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  
 
     def startSequence(self):
@@ -569,13 +545,9 @@ class Engine:
         # testcase_dict["response_time"]="{0:.{1}f} sec(s)".format((testcase_dict["end_time"]-testcase_dict["start_time"]).total_seconds(),2)
         if product_type:
             testcase_dict["product_type"] = product_type
-
         result["testcase_dict"] = testcase_dict
-
         misc["REASON OF FAILURE"] = message
-
         result["misc"] = misc
-
         return result
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):

@@ -10,14 +10,14 @@ def closeJira(workflow):
     pass
 
 
-def addComment(testcase_analytics, s_run_id, jira_id, email, access_token, jewel_link):
+def addComment(testcase_info, s_run_id, jira_id, email, access_token, jewel_link):
     comment_api = DefaultSettings.urls["data"]["comment-api"]
     comment_text = ""
-    if testcase_analytics["PASS"] == testcase_analytics["TOTAL"]:
+    if testcase_info["PASS"] == testcase_info["TOTAL"]:
         comment_text = "SUITE PASSED \n"
     comment_text += "Date: {} \nS_RUN_ID: {} \nJewel Link: {} \n".format(datetime.now().strftime("%Y-%b-%d"), s_run_id, jewel_link)
-    for statuses in testcase_analytics.keys():
-        comment_text += statuses + ":" +  str(testcase_analytics.get(statuses)) + "\n"
+    for statuses in testcase_info.keys():
+        comment_text += statuses + ":" +  str(testcase_info.get(statuses)) + "\n"
     body = {"email": email, "accessToken": access_token, "jiraId": jira_id, "comment": comment_text}
     try:
         comment_res = requests.post(comment_api, data=json.dumps(body), headers={"Content-Type": "application/json"})
@@ -51,7 +51,7 @@ def createJira(email, access_token, title, project_id):
         return None
 
 
-def jiraIntegration(s_run_id, suite_status, testcase_analytics, jewel_link, email, access_token, project, project_id, title=None, workflow=None):
+def jiraIntegration(s_run_id, suite_status, testcase_info, jewel_link, email, access_token, project, project_id, title=None, workflow=None):
     logging.info("---------- In Jira Integration ---------")
     if title is None:
         title = project
@@ -72,7 +72,7 @@ def jiraIntegration(s_run_id, suite_status, testcase_analytics, jewel_link, emai
         return None
     elif suite_status.upper() == "PASS" and jira_id is not None and prev_run_details[0]["Status"].upper() not in ["PASS", "INFO"]:
         logging.info("----- Current suite_status is PASS ------")
-        addComment(testcase_analytics, s_run_id, jira_id, email, access_token, jewel_link)
+        addComment(testcase_info, s_run_id, jira_id, email, access_token, jewel_link)
     elif suite_status.upper() == "FAIL" or suite_status.upper() == "ERR":
         try:
             if prev_run_details[0].get("Jira_id", None) is None:
@@ -84,7 +84,7 @@ def jiraIntegration(s_run_id, suite_status, testcase_analytics, jewel_link, emai
             elif prev_run_details[0]["Status"].upper() == "PASS" or prev_run_details[0]["Status"].upper() == "INFO":
                 logging.info("----- Prev suite_status is PASS and current suite_status is FAIL or ERR -----")
                 jira_id = createJira(email, access_token, title, project_id)
-            jira_id = addComment(testcase_analytics, s_run_id, jira_id, email, access_token, jewel_link)
+            jira_id = addComment(testcase_info, s_run_id, jira_id, email, access_token, jewel_link)
             return jira_id
         except Exception as e:
             print(e)

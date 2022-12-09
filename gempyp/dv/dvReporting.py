@@ -4,6 +4,7 @@ import uuid
 import time
 import json
 import logging
+import getpass
 
 
 def writeToReport(dv_obj):
@@ -35,6 +36,8 @@ def writeToReport(dv_obj):
     tempdict["category"] = dv_obj.category
     tempdict["status"] = result["STATUS"]
     tempdict["user"] = dv_obj.data.get("USER")
+    tempdict["base_user"] = getpass.getuser()
+    tempdict["invoke_user"] = "-"
     tempdict["machine"] = dv_obj.data.get("MACHINE")
     tempdict["product_type"] = "GEMPYP-DV"
     tempdict["steps"] = result["json_data"]['steps']
@@ -42,6 +45,8 @@ def writeToReport(dv_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
+    tempdict["run_type"] = "-"
+    tempdict["run_mode"] = "-"
     all_status = result["json_data"]["metaData"][2]
     total = 0
     for key in all_status:

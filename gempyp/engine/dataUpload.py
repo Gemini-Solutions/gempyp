@@ -38,7 +38,6 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
-
     try:
         if len(respon) != 0:
             payload = dataAlter(payload)
@@ -65,6 +64,7 @@ def sendTestcaseData(payload, bridge_token, user_name):
     """
     for checking the sendTestCaseData api response
     """
+
     try:
         method = "POST"
         payload = json.loads(payload)
@@ -133,31 +133,31 @@ def dataAlter(payload):
     # changing start time
     payload['s_start_time'] = respon['data']['s_start_time']
     # adding the testcase analytics of both run
-    payload['testcase_analytics'] = {i: payload['testcase_analytics'].get(i, 0) + respon['data']['testcase_analytics'].get(i, 0)
-    for i in set(payload['testcase_analytics']).union(respon['data']['testcase_analytics'])}
+    payload['testcase_info'] = {i: payload['testcase_info'].get(i, 0) + respon['data']['testcase_info'].get(i, 0)
+    for i in set(payload['testcase_info']).union(respon['data']['testcase_info'])}
     # updating the testcase analytics according to new run
     for key, value in stat.items():
-        if key in payload['testcase_analytics']:
-            payload['testcase_analytics'][key] += value
+        if key in payload['testcase_info']:
+            payload['testcase_info'][key] += value
     # making testcase analytics in order
     prio_list = ['TOTAL', 'PASS', 'FAIL'] 
     sorted_dict = {}
     for key in prio_list:
-        if key in payload['testcase_analytics'] :
-            sorted_dict[key] = payload['testcase_analytics'][key]
+        if key in payload['testcase_info'] :
+            sorted_dict[key] = payload['testcase_info'][key]
             if key == "PASS" or key == "FAIL":
                 pass
             else:
                 if sorted_dict[key] == 0:
                     sorted_dict.pop(key)
-            payload['testcase_analytics'].pop(key)
+            payload['testcase_info'].pop(key)
         elif key == "PASS" or key == 'FAIL':
                 sorted_dict[key] = 0
-    sorted_dict.update(payload['testcase_analytics']) 
+    sorted_dict.update(payload['testcase_info']) 
     status = "PASS"
     if sorted_dict["PASS"] != sorted_dict["TOTAL"]:
         status = "FAIL"
-    payload['testcase_analytics'] = sorted_dict
+    payload['testcase_info'] = sorted_dict
     payload['status'] = status
     # updating the expected testcase
     payload['expected_testcases'] += respon['data']['expected_testcases']

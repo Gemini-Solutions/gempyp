@@ -6,6 +6,7 @@ import uuid
 from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 from gempyp.libs.common import moduleImports
+import getpass
 
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
@@ -72,12 +73,16 @@ def getOutput(data):
     tempdict["category"] = data["config_data"].get("CATEGORY", None)
     tempdict["status"] = data["STATUS"]
     tempdict["user"] = data["TESTCASEMETADATA"]["USER"]
+    tempdict["base_user"] = getpass.getuser()
+    tempdict["invoke_user"] = "-"
     tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]
     tempdict["product_type"] = "GEMPYP"
     tempdict["result_file"] = data["RESULT_FILE"]
     tempdict["start_time"] = data["START_TIME"]
     tempdict["end_time"] = data["END_TIME"]
     tempdict["ignore"] = True if data["TESTCASEMETADATA"].get("IGNORE") else False
+    tempdict["run_type"] = "-"
+    tempdict["run_mode"] = "-"
     # tempdict["response_time"]="{0:.{1}f} sec(s)".format((data["END_TIME"]-data["START_TIME"]).total_seconds(),2)
 
     all_status = data["json_data"]["metaData"][2]

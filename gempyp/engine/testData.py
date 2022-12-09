@@ -25,8 +25,12 @@ class TestData:
             "result_file",
             "product_type",
             "ignore",
-            "miscData",
-            "userDefinedData"
+            "metaData",
+            "userDefinedData",
+            "base_user",
+            "invoke_user",
+            "run_type",
+            "run_mode"
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -52,8 +56,8 @@ class TestData:
         ]
         # the above misc data is not being used
 
-        misc_data = data["miscData"]
-        data["miscData"] = misc_data
+
+        data["metaData"] = data["metaData"]
         data["s_id"] = "test_id"
         return json.dumps(data, cls=dateTimeEncoder)
 
@@ -119,7 +123,7 @@ class TestData:
             # {"response_time":"{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)}
             ]
 
-        test_data["miscData"] = meta_data
+        test_data["metaData"] = meta_data
         test_data["s_run_id"] = s_run_id
         test_data["userDefinedData"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         return json.dumps(test_data, cls=dateTimeEncoder)
@@ -147,7 +151,7 @@ class TestData:
             key = key[0]
             test_data = test_dict[key]
             test_data.pop("userDefinedData")
-            test_data.pop("miscData")
+            # test_data.pop("miscData")
             test_dict[key] = test_data
             for each_misc in misc_dict:
                 test_dict[each_misc['run_id']][each_misc["key"]] = each_misc["value"]
@@ -157,8 +161,6 @@ class TestData:
         except Exception as e:
             traceback.print_exc()
 
-        # testcase_dict.remove("userDefinedData")
-        # testcase_dict.remove("miscData")
         for i in range(len(testcase_dict)):
             if("miscData" in testcase_dict[i].keys()):
                 testcase_dict[i].pop("miscData")

@@ -5,6 +5,7 @@ import uuid
 import time
 import json
 import logging
+import getpass
 
 
 def writeToReport(pyprest_obj):
@@ -34,21 +35,26 @@ def writeToReport(pyprest_obj):
 
         except Exception as e:
             pyprest_obj.logger.info(traceback.print_exc())
+
+    print(result, "======================================")
     output = []
     tempdict = {} 
     tc_run_id = f"{pyprest_obj.tcname}_{uuid.uuid4()}"
     tempdict["tc_run_id"] = tc_run_id
-    print("tc_run_id=",tc_run_id)
     tempdict["name"] = result["NAME"]
     tempdict["category"] = pyprest_obj.category
     tempdict["status"] = result["STATUS"]
     tempdict["user"] = pyprest_obj.data.get("USER")
+    tempdict["base_user"] = getpass.getuser()
+    tempdict["invoke_user"] = "-"
     tempdict["machine"] = pyprest_obj.data.get("MACHINE")
     tempdict["product_type"] = "GEMPYP-PR"
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
+    tempdict["run_type"] = "-"
+    tempdict["run_mode"] = "-"
     all_status = result["json_data"]["metaData"][2]
     total = 0
     for key in all_status:
