@@ -19,7 +19,7 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import moduleImports
-# import boto3 
+import boto3 
 
 
 
@@ -445,7 +445,7 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            """if(file_name.__contains__('s3')):
+            if(file_name.__contains__('s3')):
                 before_file=file_name.split("/")
                 s3 = boto3.resource('s3')
                 my_bucket = s3.Bucket(before_file[2].split(".")[0])
@@ -457,7 +457,7 @@ class PypRest(Base):
                 with open(file_name, "w+") as fp:
                     fp.seek(0)
                     fp.write('\n'.join(fileContent))
-                    fp.truncate()"""
+                    fp.truncate()
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -513,7 +513,7 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            """if(file_name.__contains__('s3')):
+            if(file_name.__contains__('s3')):
                 before_file=file_name.split("/")
                 s3 = boto3.resource('s3')
                 my_bucket = s3.Bucket(before_file[2].split(".")[0])
@@ -525,7 +525,7 @@ class PypRest(Base):
                 with open(file_name, "w+") as fp:
                     fp.seek(0)
                     fp.write('\n'.join(fileContent))
-                    fp.truncate()"""
+                    fp.truncate()
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
