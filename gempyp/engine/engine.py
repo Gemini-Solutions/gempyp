@@ -25,6 +25,7 @@ import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration, addComment
 from multiprocessing import Process, Pipe
+from gempyp.libs.s3_common import upload_to_s3
 
 
 
@@ -267,8 +268,12 @@ class Engine:
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
-        # self.report_info = self.PARAMS.get("REPORT_INFO")
-
+        self.jewel_run = False
+        if self.PARAMS.get("S_ID", None) is not None:
+            self.jewel_run = True
+        elif self.PARAMS["BRIDGE_TOKEN"] and self.PARAMS["USERNAME"]:
+            self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
+            print("--------- url", self.s3_url)
         #add suite_vars here 
 
     def parseMails(self):
@@ -372,6 +377,10 @@ class Engine:
         self.DATA.suite_detail.at[0, "status"] = Suite_status
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_analytics"] = status_dict
+        if self.jewel_run is True:
+            self.DATA.suite_detail.at[0, "miscData"].append({"CONFIG_S3_URL": self.PARAMS["S_ID"]})
+        else:
+            self.DATA.suite_detail.at[0, "miscData"].append({"CONFIG_S3_URL": self.s3_url})
         # self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  
 
     def startSequence(self):
