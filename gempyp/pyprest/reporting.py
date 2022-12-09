@@ -36,7 +36,6 @@ def writeToReport(pyprest_obj):
         except Exception as e:
             pyprest_obj.logger.info(traceback.print_exc())
 
-    print(result, "======================================")
     output = []
     tempdict = {} 
     tc_run_id = f"{pyprest_obj.tcname}_{uuid.uuid4()}"
