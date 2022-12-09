@@ -28,7 +28,7 @@ from multiprocessing import Process, Pipe
 
 
 
-def executorFactory(data: Dict,conn= None, custom_logger=None) -> Tuple[List, Dict]:
+def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, Dict]:
     
     """
     calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
@@ -36,9 +36,7 @@ def executorFactory(data: Dict,conn= None, custom_logger=None) -> Tuple[List, Di
     """
 
     print("--------- In Executor Factory ----------\n")
-
-
-    if not custom_logger:
+    if custom_logger == None:
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.log')
         custom_logger = my_custom_logger(log_path)
@@ -80,6 +78,7 @@ def executorFactory(data: Dict,conn= None, custom_logger=None) -> Tuple[List, Di
     else:
         conn.send([data])
         conn.close()
+
 
     """if "TYPE" not in data["config_data"] or data["config_data"].get("TYPE").upper() == "GEMPYP":
         custom_logger.info("starting the GemPyP testcase")
@@ -416,10 +415,8 @@ class Engine:
            
            
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
-                processes = []
 
         # create a list to keep connections
-                parent_connections = []
                 if len(testcases) == 0:
                     raise Exception("No testcase to run")
                 pool_list = []
@@ -443,50 +440,49 @@ class Engine:
        
                 if len(pool_list) == 0:
                     continue
-                print("*****************")
-                print(pool_list)
-                for testcase in pool_list:
-                    parent_conn, child_conn = Pipe()
-                    parent_connections.append(parent_conn)
+                
+                # obj = Semaphore(8)
+                splitedSize = 8
+                a_splited = [pool_list[x:x+splitedSize] for x in range(0, len(pool_list), splitedSize)]
+                for chunk_list in a_splited:
+                    processes = []
+                    parent_connections = []
+                    for testcase in chunk_list:
+                        parent_conn, child_conn = Pipe()
+                        parent_connections.append(parent_conn)
 
-            # create the process, pass instance and connection
-                    process = Process(target=executorFactory, args=(testcase, child_conn,))
-                    processes.append(process) 
+                # create the process, pass instance and connection
+                        custom = None
+                        process = Process(target=executorFactory, args=(testcase, child_conn, custom))
+                        processes.append(process) 
                 # runs the testcase in parallel here
-                # splitedSize = 4
-                # a_splited = [processes[x:x+splitedSize] for x in range(0, len(processes), splitedSize)]
-                instances_total = []
-            
-                # print(a_splited)
-                # for i in a_splited:
-                for process in processes:
-                    process.start()
-                for parent_connection in parent_connections:
-                    instances_total.append(parent_connection.recv()[0])
-                for process in processes:
-                    process.join()
-                    
-                for row in instances_total:
-                    if not row or len(row) < 2:
-                        raise Exception(
-                            "Some error occured while running the testcases"
-                        )
-                    output = row[0]
-                    
-                    error = row[1]
-                    if error:
-                        logging.error(
-                            f"Error occured while executing the testcase: {error['testcase']}"
-                        )
-                        logging.error(f"message: {error['message']}")
-                    self.update_df(output, error)
-                if process:
-                    process.join()
+                    instances_total = []
+                
+                    # print(a_splited)
+                    # for i in a_splited:
+                    for process in processes:
+                        process.start()
+                    for parent_connection in parent_connections:
+                        instances_total.append(parent_connection.recv()[0])
+                        
+                    for row in instances_total:
+                        if not row or len(row) < 2:
+                            raise Exception(
+                                "Some error occured while running the testcases"
+                            )
+                        output = row[0]
+                        
+                        error = row[1]
+                        if error:
+                            logging.error(
+                                f"Error occured while executing the testcase: {error['testcase']}"
+                            )
+                            logging.error(f"message: {error['message']}")
+                        self.update_df(output, error)
+                    for process in processes:
+                        process.join()
         except Exception:
             logging.error(traceback.format_exc())
-        finally:
-            if process:
-                process.join()
 
 
     def update_df(self, output: List, error: Dict):
