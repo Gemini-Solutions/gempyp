@@ -3,8 +3,7 @@ import os
 import traceback
 import logging
 import json
-from typing import Dict, List, Tuple, Type
-from gempyp.config.baseConfig import AbstarctBaseConfig
+from typing import Dict, List, Tuple
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api

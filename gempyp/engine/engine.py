@@ -239,7 +239,7 @@ class Engine:
         if("USERNAME" in self.PARAMS):
             self.user = self.PARAMS["USERNAME"]
         else:
-            self.user=getpass.getuser()
+            self.user = getpass.getuser()
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
@@ -286,7 +286,6 @@ class Engine:
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
-            "initiated_by": self.user,
             "os": platform.system().upper(),
             "metaData": [],
             "expected_testcases": self.total_runable_testcase,
@@ -354,7 +353,7 @@ class Engine:
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_info"] = status_dict
         if self.jewel_run is True:
-            self.DATA.suite_detail.at[0, "metaData"].append({"CONFIG_S3_URL": self.PARAMS["S_ID"]})
+            self.DATA.suite_detail.at[0, "metaData"].append({"S_ID": self.PARAMS["S_ID"]})
         else:
             self.DATA.suite_detail.at[0, "metaData"].append({"CONFIG_S3_URL": self.s3_url})
         # self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  

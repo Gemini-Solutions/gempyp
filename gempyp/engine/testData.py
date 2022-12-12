@@ -58,7 +58,7 @@ class TestData:
 
 
         data["metaData"] = data["metaData"]
-        data["s_id"] = "test_id"
+        data["s_id"] = data.get("S_ID", "test_id")
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):

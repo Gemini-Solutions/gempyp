@@ -1,21 +1,15 @@
 import mysql.connector
 import os
 from configparser import ConfigParser
-from posixpath import split
-from sqlite3 import connect
 from typing import Dict
 import pandas as pd
-# from pyparsing import originalTextFor
-import mysql.connector
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
 from gempyp.dv.dvReporting import writeToReport
 from telnetlib import STATUS
 import traceback
-from numpy import sort
 import pandas as pd
-import xlsxwriter
 import logging
 import math
 import numpy
