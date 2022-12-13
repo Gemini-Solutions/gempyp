@@ -18,7 +18,7 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import moduleImports
-from gempyp.libs import custom_s3
+# from gempyp.libs import custom_s3
 
 
 class PypRest(Base):
@@ -449,7 +449,7 @@ class PypRest(Base):
                 folder = before_file[3:]
                 my_bucket = before_file[2].split(".")[0]
                 file = before_file[-1]
-                file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+                file_name = "" #custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -510,7 +510,7 @@ class PypRest(Base):
                 folder = after_file[3:]
                 my_bucket = after_file[2].split(".")[0]
                 file = after_file[-1]
-                file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+                file_name = "" #custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj

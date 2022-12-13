@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
 from gempyp.engine.testData import TestData
 from gempyp.libs.enums.status import status
+from gempyp.libs.enums.run_modes import RunModes
 from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner, getError
@@ -493,26 +494,28 @@ class Engine:
             unsorted_dict = output[0]['json_data']['metaData'][2]
             sorted_dict = self.totalOrder(unsorted_dict)
             output[0]['json_data']['metaData'][2] = sorted_dict
+
             ### for adding run_type and run_mode
             testcase_data = self.CONFIG.getTestcaseData(output[0]['testcase_dict']['name'])
-            run_mode_list = ['ON DEMAND','SCHEDULED','CI-CD-CT']
-            if 'RUN_MODE' in testcase_data:
-                try:
-                    if testcase_data['RUN_MODE'].upper() in run_mode_list:
-                        output[0]['testcase_dict']['run_mode'] = testcase_data['RUN_MODE'].upper()
-                    else:
-                        raise Exception
-                except Exception:
-                    logging.info("Run Mode is not present") 
-            else:
-                output[0]['testcase_dict']['run_mode'] = 'ON DEMAND'
-            if 'RUN_TYPE' in testcase_data:
-                output[0]['testcase_dict']['run_type'] = testcase_data['RUN_TYPE'].upper()
-            else:
-                operating_system = platform.uname().system
-                operating_system = "cli-" + operating_system     
-                output[0]['testcase_dict']['run_type'] = operating_system.upper()       
-            
+            # run_mode_list = ['ON DEMAND','SCHEDULED','CI-CD-CT']
+            # if 'RUN_MODE' in testcase_data:
+            #     try:
+            #         if testcase_data['RUN_MODE'].upper() in run_mode_list:
+            #             output[0]['testcase_dict']['run_mode'] = testcase_data['RUN_MODE'].upper()
+            #         else:
+            #             raise Exception
+            #     except Exception:
+            #         logging.info("Run Mode is not present") 
+            # else:
+            #     output[0]['testcase_dict']['run_mode'] = 'ON DEMAND'
+            # if 'RUN_TYPE' in testcase_data:
+            #     output[0]['testcase_dict']['run_type'] = testcase_data['RUN_TYPE'].upper()
+            # else:
+            #     operating_system = platform.uname().system
+            #     operating_system = "cli-" + operating_system     
+            #     output[0]['testcase_dict']['run_type'] = operating_system.upper()    
+
+            output[0]['testcase_dict']['run_mode'], output[0]['testcase_dict']['run_type'] = self.set_run_mode_type(testcase_data)
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -537,6 +540,14 @@ class Engine:
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         except Exception as e:
             logging.error("in update_df: {e}".format(e=e))
+
+    def set_run_mode_type(self, testcase_data):
+        mode, type = None, None
+        if testcase_data.get('RUN_MODE', RunModes.ON_DEMAND) not in [i.value for i in RunModes]:
+            mode = testcase_data.get('RUN_MODE', RunModes.ON_DEMAND)
+        operating_system = "cli-" + platform.uname().system
+        type = testcase_data.get('RUN_TYPE', operating_system.upper())
+        return mode, type 
 
     def getErrorTestcase(
         self,

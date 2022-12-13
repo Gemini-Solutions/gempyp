@@ -74,7 +74,7 @@ class Executor(TestcaseReporter):
 
         # creating output json
         output.append(getOutput(report_dict))
-
+        output[0]["product_type"] = "GEMPYP-SDK"
         for i in output:
             logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -181,26 +181,19 @@ class Executor(TestcaseReporter):
         """
         making suite Details 
         """
-        
-        run_mode = "LINUX_CLI"
-        if os.name == 'nt':
-            run_mode = "WINDOWS"
+
         Suite_details = {
             "s_run_id": self.data["S_RUN_ID"],
             "s_start_time": datetime.now(timezone.utc),
             "s_end_time": None,
             "status": status.EXE.name,
             "project_name": self.data["PROJECT"],
-            "run_type": "ON DEMAND",
-            "s_report_type": self.data["REPORT_NAME"],
-            # "report_type": self.data["REPORT_TYPE"],
             "user": self.data["USER_NAME"],
             "report_name": self.data["REPORT_INFO"],
-            "framework_name": "GEMPYP-SDK",
+            "framework_name": "GEMPYP",
             "env": self.data["ENV"],
             "machine": self.data["MACHINE"],
-            "initiated_by": self.data["USER_NAME"],
-            "run_mode": run_mode,
+            "os": platform.system().upper(),
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             Suite_details, ignore_index=True

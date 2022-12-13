@@ -52,8 +52,6 @@ def writeToReport(pyprest_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
-    tempdict["run_type"] = "-"
-    tempdict["run_mode"] = "-"
     all_status = result["json_data"]["metaData"][2]
     total = 0
     for key in all_status:
