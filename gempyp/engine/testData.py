@@ -14,6 +14,8 @@ class TestData:
         self.testcaseDetailColumn = [
             "tc_run_id",
             "start_time",
+            "run_mode",
+            "run_type",
             "end_time",
             "name",
             "category",

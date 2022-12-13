@@ -493,6 +493,26 @@ class Engine:
             unsorted_dict = output[0]['json_data']['metaData'][2]
             sorted_dict = self.totalOrder(unsorted_dict)
             output[0]['json_data']['metaData'][2] = sorted_dict
+            ### for adding run_type and run_mode
+            testcase_data = self.CONFIG.getTestcaseData(output[0]['testcase_dict']['name'])
+            run_mode_list = ['ON DEMAND','SCHEDULED','CI-CD-CT']
+            if 'RUN_MODE' in testcase_data:
+                try:
+                    if testcase_data['RUN_MODE'].upper() in run_mode_list:
+                        output[0]['testcase_dict']['run_mode'] = testcase_data['RUN_MODE'].upper()
+                    else:
+                        raise Exception
+                except Exception:
+                    logging.info("Run Mode is not present") 
+            else:
+                output[0]['testcase_dict']['run_mode'] = 'ON DEMAND'
+            if 'RUN_TYPE' in testcase_data:
+                output[0]['testcase_dict']['run_type'] = testcase_data['RUN_TYPE'].upper()
+            else:
+                operating_system = platform.uname().system
+                operating_system = "cli-" + operating_system     
+                output[0]['testcase_dict']['run_type'] = operating_system.upper()       
+            
             for i in output:
 
                 i["testcase_dict"]["steps"] = i["json_data"]["steps"]
