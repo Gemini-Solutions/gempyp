@@ -253,8 +253,12 @@ class Engine:
         if self.PARAMS.get("S_ID", None) is not None:
             self.jewel_run = True
         elif self.PARAMS["BRIDGE_TOKEN"] and self.PARAMS["USERNAME"]:
-            self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
-            print("--------- url", self.s3_url)
+            try:
+                self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
+            except Exception as e:
+                print(e)
+                self.s3_url = ""
+                print("--------- url", self.s3_url)
         #add suite_vars here 
 
     def parseMails(self):
@@ -357,7 +361,6 @@ class Engine:
             self.DATA.suite_detail.at[0, "metaData"].append({"S_ID": self.PARAMS["S_ID"]})
         else:
             self.DATA.suite_detail.at[0, "metaData"].append({"CONFIG_S3_URL": self.s3_url})
-        # self.DATA.suite_detail.at[0, "duration"] = common.findDuration(self.start_time, stop_time)  
 
     def startSequence(self):
         """
@@ -529,7 +532,6 @@ class Engine:
                     self.testcase_data[testcase_dict.get("tc_run_id")] = i["json_data"]
                 except Exception as e:
                     logging.error(e)
-
                 self.DATA.testcase_details = self.DATA.testcase_details.append(
                     testcase_dict, ignore_index=True
                 )
@@ -539,14 +541,18 @@ class Engine:
                 if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         except Exception as e:
+            traceback.print_exc()
             logging.error("in update_df: {e}".format(e=e))
 
     def set_run_mode_type(self, testcase_data):
         mode, type = None, None
-        if testcase_data.get('RUN_MODE', RunModes.ON_DEMAND) not in [i.value for i in RunModes]:
-            mode = testcase_data.get('RUN_MODE', RunModes.ON_DEMAND)
-        operating_system = "cli-" + platform.uname().system
-        type = testcase_data.get('RUN_TYPE', operating_system.upper())
+        try:
+            if testcase_data.get('RUN_MODE', RunModes.ON_DEMAND) not in [i.value for i in RunModes]:
+                mode = testcase_data.get('RUN_MODE', RunModes.ON_DEMAND.value)
+            operating_system = "cli-" + platform.uname().system
+            type = testcase_data.get('RUN_TYPE', operating_system.upper())
+        except Exception as e:
+            traceback.print_exc()
         return mode, type 
 
     def getErrorTestcase(

@@ -14,8 +14,6 @@ class TestData:
         self.testcaseDetailColumn = [
             "tc_run_id",
             "start_time",
-            "run_mode",
-            "run_type",
             "end_time",
             "name",
             "category",
@@ -144,7 +142,7 @@ class TestData:
         self.suite_detail = self.suite_detail.replace(np.nan, "-", regex=True)
         suite_dict = self.suite_detail.to_dict(orient="records")[0]
         testcase_dict = self.testcase_details.to_dict(orient="records")
-        misc_dict=self.misc_details.to_dict(orient="records")
+        misc_dict = self.misc_details.to_dict(orient="records")
         try:
 
             # converting testcase_dict to dict for easy parsing
@@ -152,8 +150,10 @@ class TestData:
             key = list(test_dict.keys())
             key = key[0]
             test_data = test_dict[key]
-            test_data.pop("userDefinedData")
-            # test_data.pop("miscData")
+            # test_data.pop("userDefinedData")
+            # test_data.pop("metaData")
+            # test_data.pop("base_user")
+            # test_data.pop("invoke_user")
             test_dict[key] = test_data
             for each_misc in misc_dict:
                 test_dict[each_misc['run_id']][each_misc["key"]] = each_misc["value"]
@@ -162,15 +162,14 @@ class TestData:
             testcase_dict = [test_dict[tc_run_id] for tc_run_id in test_dict.keys()]
         except Exception as e:
             traceback.print_exc()
-
         for i in range(len(testcase_dict)):
-            if("miscData" in testcase_dict[i].keys()):
-                testcase_dict[i].pop("miscData")
-            if("userDefinedData" in testcase_dict[i].keys()):
-                testcase_dict[i].pop("userDefinedData")
+            for key in ["metaData", "base_user", "invoke_user", "userDefinedData"]:
+                if(key in testcase_dict[i].keys()):
+                    testcase_dict[i].pop(key)
         suite_dict["TestCase_Details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
-        prio_list = ['total', 'PASS', 'FAIL']
+
+        prio_list = ['total', 'PASS', 'FAIL']  # to be optimized
         sorted_dict = {}
         for key in prio_list:
             if key in testcase_counts :
