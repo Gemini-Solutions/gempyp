@@ -406,11 +406,11 @@ class Engine:
         pool = None
         try:
             
-            # threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
-            # try:
-            #     threads = int(threads)
-            # except:
-            #     threads = DefaultSettings.THREADS
+            threads = self.PARAMS.get("THREADS", DefaultSettings.THREADS)
+            try:
+                threads = int(threads)
+            except:
+                threads = DefaultSettings.THREADS
             # pool = Pool(threads)
            
            
@@ -442,7 +442,7 @@ class Engine:
                     continue
                 
                 # obj = Semaphore(8)
-                splitedSize = 8
+                splitedSize = threads
                 a_splited = [pool_list[x:x+splitedSize] for x in range(0, len(pool_list), splitedSize)]
                 for chunk_list in a_splited:
                     processes = []
