@@ -48,7 +48,7 @@ class Executor(TestcaseReporter):
             subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
             try:
                 logging.info(f"---------------S_RUN_ID-------------{self.s_run_id}")
-                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"]) # check with deamon, should insert only once
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGE_TOKEN"], self.data["USERNAME"]) # check with deamon, should insert only once
                   # logging not working
             except Exception as e:
                 print(f"Exception occured - {e}")
@@ -113,7 +113,7 @@ class Executor(TestcaseReporter):
                     f.seek(0)
                     f.write(json.dumps(data))
             
-            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
+            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USERNAME"])  # instead of output, I need to pass s_run id and  tc_run_id
             
             # sys.stdout.close()
         
@@ -133,7 +133,7 @@ class Executor(TestcaseReporter):
         self.projectName = data["PROJECT"] = config_file['ReportSetting']["project"]
         self.testcaseName = data["NAME"] = self.method
         self.env = data["ENV"] = config_file['ReportSetting'].get("env", "PROD")
-        data["USER_NAME"] = config_file['ReportSetting'].get("USER_NAME", getpass.getuser())
+        data["USERNAME"] = config_file['ReportSetting'].get("USERNAME", getpass.getuser())
         data["BRIDGE_TOKEN"] = config_file['ReportSetting'].get("BRIDGE_TOKEN", None)
         data["OUTPUT_FOLDER"] = config_file['ReportSetting'].get("outputfolder", None)
         data["MACHINE"] = platform.node()
@@ -151,7 +151,7 @@ class Executor(TestcaseReporter):
             'PROJECTNAME': self.data["PROJECT"], 
             'ENV': self.data["ENV"], 
             'S_RUN_ID': self.data["S_RUN_ID"], 
-            'USER': self.data["USER_NAME"], 
+            'USER': self.data["USERNAME"], 
             'MACHINE': self.data["MACHINE"], 
             'OUTPUT_FOLDER': self.data["OUTPUT_FOLDER"]}
         return data
@@ -188,7 +188,7 @@ class Executor(TestcaseReporter):
             "s_end_time": None,
             "status": status.EXE.name,
             "project_name": self.data["PROJECT"],
-            "user": self.data["USER_NAME"],
+            "user": self.data["USERNAME"],
             "report_name": self.data["REPORT_INFO"],
             "framework_name": "GEMPYP",
             "env": self.data["ENV"],

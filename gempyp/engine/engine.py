@@ -237,10 +237,7 @@ class Engine:
         self.testcase_data = {}
         self.total_runable_testcase = config.total_yflag_testcase
         self.machine = platform.node()
-        if("USERNAME" in self.PARAMS):
-            self.user = self.PARAMS["USERNAME"]
-        else:
-            self.user = getpass.getuser()
+        self.user = self.PARAMS.get("USERNAME", getpass.getuser())
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
@@ -491,7 +488,8 @@ class Engine:
                     error["testcase"],
                     error.get("category"),
                     error.get("product_type"),
-                    error.get('log_path', None)
+                    error.get('log_path', None),
+                    error.get('invoke_user', None),
                 )
                 output = [output]
             unsorted_dict = output[0]['json_data']['metaData'][2]
@@ -561,7 +559,8 @@ class Engine:
         testcase_name: str,
         category: str = None,
         product_type: str = None,
-        log_path: str = None
+        log_path: str = None,
+        invoke_user: str = None
     ) -> Dict:
         """
         store the data of failed testcase and return it as a dict to update_df
@@ -585,12 +584,9 @@ class Engine:
             testcase_dict["category"] = category
         testcase_dict["log_file"] = log_path
         testcase_dict["result_file"] = None
-        testcase_dict["user"] = self.user
         testcase_dict["base_user"] = getpass.getuser()
-        testcase_dict["invoke_user"] = "-"
+        testcase_dict["invoke_user"] = getpass.getuser() if not invoke_user else invoke_user
         testcase_dict["machine"] = self.machine
-        testcase_dict["run_type"] = "-"
-        testcase_dict["run_mode"] = "-"
         # testcase_dict["response_time"]="{0:.{1}f} sec(s)".format((testcase_dict["end_time"]-testcase_dict["start_time"]).total_seconds(),2)
         if product_type:
             testcase_dict["product_type"] = product_type
@@ -636,7 +632,7 @@ class Engine:
         if(self.project_env.upper() in self.PARAMS.keys()):
             data[self.project_env.upper()]=self.PARAMS[self.project_env.upper()]
         data["S_RUN_ID"] = self.s_run_id
-        data["USER"] = self.user
+        # data["USER"] = self.user
         data["MACHINE"] = self.machine
         data["OUTPUT_FOLDER"] = self.testcase_folder
         data["SUITE_VARS"] = self.user_suite_variables

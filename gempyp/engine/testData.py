@@ -20,7 +20,6 @@ class TestData:
             "log_file",
             "status",
             "steps",
-            "user",
             "machine",
             "result_file",
             "product_type",
