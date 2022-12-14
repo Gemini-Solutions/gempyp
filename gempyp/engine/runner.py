@@ -72,7 +72,6 @@ def getOutput(data):
     tempdict["name"] = data["NAME"]
     tempdict["category"] = data["config_data"].get("CATEGORY", None)
     tempdict["status"] = data["STATUS"]
-    tempdict["user"] = data["TESTCASEMETADATA"]["USER"]
     tempdict["base_user"] = getpass.getuser()
     tempdict["invoke_user"] = data["config_data"].get("INVOKE_USER", getpass.getuser())
     tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]

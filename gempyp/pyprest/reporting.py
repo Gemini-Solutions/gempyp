@@ -43,7 +43,6 @@ def writeToReport(pyprest_obj):
     tempdict["name"] = result["NAME"]
     tempdict["category"] = pyprest_obj.category
     tempdict["status"] = result["STATUS"]
-    tempdict["user"] = pyprest_obj.data.get("USER")
     tempdict["base_user"] = getpass.getuser()
     tempdict["invoke_user"] = pyprest_obj.data.get("INVOKE_USER", getpass.getuser())
     tempdict["machine"] = pyprest_obj.data.get("MACHINE")
