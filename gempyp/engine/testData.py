@@ -178,7 +178,7 @@ class TestData:
                 sorted_dict[key] = 0
         sorted_dict.update(testcase_counts)
         testcase_counts = sorted_dict
-        suite_dict["Testcase_Info"] = testcase_counts
+        suite_dict["testcase_info"] = testcase_counts
         suite_report["Suits_Details"] = suite_dict
         suite_report["reportProduct"] = "GEMPYP"       
         return json.dumps(suite_report, cls=dateTimeEncoder)

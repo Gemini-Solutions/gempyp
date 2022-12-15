@@ -1,4 +1,4 @@
-<!--version1.0.7-->
+<!--version1.0.8-->
 <html>
 
 <head>
@@ -690,6 +690,7 @@ height: 100%;
     "STEPS",
     "EXECUTION_METADATA",
     "RESULT_FILE",
+    "RESULT FILE",
     "IGNORE",
   ];
   var sortType = "";
@@ -697,7 +698,7 @@ height: 100%;
   var exeHeaders = {
     STATUS: "status",
     "PROJECT NAME": "project_name",
-    "REPORT TYPE": "s_report_type",
+    "REPORT NAME": "report_name",
     ENV: "env",
     "START TIME": "s_start_time",
     "END TIME": "s_end_time",
@@ -726,7 +727,7 @@ height: 100%;
       var newobj = {}
       while (i < n) {
         key = keys[i];
-        if (key.includes('_time')) {
+        if (!(key.includes('_run_id') || key.includes('_RUN_ID')) && key.includes('_')) {
           newobj[key.replace('_', " ").toUpperCase()] = value[j][key];
         }
         else 
@@ -741,10 +742,19 @@ height: 100%;
     for (var i = 0; i < value.length; i++) {
       var keys = Object.keys(value[i]);
       for (var j = 0; j < keys.length; j++) {
-        if (typeof value[i][keys[j]] != "object") {
-          value[i][keys[j]] = {
+        if (typeof value[i][keys[j]] != "object") 
+        {
+            value[i][keys[j]] = {
             value: value[i][keys[j]],
             sortValue: value[i][keys[j]],
+          };
+        }
+        else if(value[i][keys[j]] === null || value[i][keys[j]] === "None")
+        {
+          // console.log(value[i][keys[j]] , "..." , keys[j]);
+          value[i][keys[j]] = {
+            value: "None",
+            sortValue: "",
           };
         }
       }
@@ -755,8 +765,8 @@ height: 100%;
 
     var infraTable = getInfraDetailsTable(obj.Suits_Details);
     $("#pills-overview").append(infraTable);
-    var cardDetailsOverview = getCardDetails(obj.Suits_Details.Testcase_Info, 'overview');
-    var cardDetailsTestcase = getCardDetails(obj.Suits_Details.Testcase_Info, 'testcase');
+    var cardDetailsOverview = getCardDetails(obj.Suits_Details.testcase_info, 'overview');
+    var cardDetailsTestcase = getCardDetails(obj.Suits_Details.testcase_info, 'testcase');
 
     $("#pills-overview").append(cardDetailsOverview);
     $("#pills-testcase").append(cardDetailsTestcase);
@@ -828,11 +838,11 @@ height: 100%;
       theader.style.backgroundColor =
         theme[2].substring(0, theme[2].length - 1) + ", 0.1)";
       theader.innerHTML = cols[i];
-      if((cols[i].includes('START TIME')) || (cols[i].includes('END TIME')))
+      if((cols[i].includes('START TIME')) || (cols[i].includes('END TIME')) || (cols[i].includes('LOG')))
       {
         theader.style.minWidth = "120px";
       }
-      if(cols[i].includes('TIME'))
+      if(cols[i].includes('TIME') || (cols[i].includes('LOG')) || (cols[i].includes('PRODUCT')))
       {
         const col_id = cols[i].split(' ')
         theader.id = col_id[0] + '_' + col_id[1] + "_tc";
@@ -904,7 +914,7 @@ height: 100%;
               i
             )["value"];
           }
-          else if (cols[j].includes("LOG_FILE")) {
+          else if (cols[j].includes("LOG FILE")) {
             if (!list[i][cols[j]]) {
               cell.innerHTML = "None";
             }
@@ -1049,10 +1059,10 @@ height: 100%;
             icon.setAttribute("title", "View Substeps");
             icon.setAttribute("class", "fa fa-eye substepIcon");
             var index = i;
-            console.log(list[index]);
-            console.log(cols[j]);
+            // console.log(list[index]);
+            // console.log(cols[j]);
             divIcon.addEventListener("click", (event) => {
-              console.log(list);
+              // console.log(list);
               createSubsteps(list, event);
 
               trimModal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
@@ -1151,7 +1161,8 @@ height: 100%;
         "table table-borderless table-responsive w-100 d-block d-md-table"
       )
       .css("box-shadow", " 0px 3px 6px rgba(0, 71, 136, 0.05)")
-      .css("border-radius", "4px");
+      .css("border-radius", "4px")
+      .css("border","1px solid white");
     var cols = Headers(exeHeaders);
     var headers = $("<tr>");
     var content = $("<tr/>");
@@ -1167,7 +1178,6 @@ height: 100%;
     }
     for (var colIndex = 0; colIndex < cols.length; colIndex++) {
       var val = data[exeHeaders[cols[colIndex]]];
-
       if (cols[colIndex].toUpperCase().includes("STATUS")) {
         val = document.createElement("div");
         val.innerText = data[exeHeaders[cols[colIndex]]];
@@ -1224,7 +1234,7 @@ height: 100%;
           $(this).css("border", col).css("cursor", "pointer");
         },
         function () {
-          $(this).css("border", "none");
+          $(this).css("border", "1px solid white");
         }
       );
     var table = $("<table/>").addClass(
@@ -1271,13 +1281,14 @@ height: 100%;
       .css("box-shadow", "0px 3px 6px rgba(0, 0, 0, 0.05)")
       .css("border-radius", "6px")
       .css("display", "block")
+      .css("border","1px solid white")
       .hover(
         function () {
           var col = "1px solid " + theme[0];
           $(this).css("border", col).css("cursor", "pointer");
         },
         function () {
-          $(this).css("border", "none");
+          $(this).css("border", "1px solid white");
         }
       );
 
@@ -1305,7 +1316,6 @@ height: 100%;
       if (val === undefined) {
         val = "None";
       }
-
       content.append($("<td/>").html(val));
 
       $(table).append(content);
@@ -1601,7 +1611,10 @@ height: 100%;
     return Array.from(options);
   }
 
+ 
+
   function getsort(val) {
+    // console.log(val);
     if (
       val.target.className === "fa fa-angle-up ml-1" ||
       val.target.className === "fa fa-angle-down ml-1"
@@ -1624,6 +1637,20 @@ height: 100%;
       if (sortType === "asc") {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+              }
             if (
               tab[i][val.target.id]["sortValue"] >
               tab[j][val.target.id]["sortValue"]
@@ -1637,6 +1664,20 @@ height: 100%;
       } else {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+              }
             if (
               tab[i][val.target.id]["sortValue"] <
               tab[j][val.target.id]["sortValue"]
@@ -1661,7 +1702,7 @@ height: 100%;
         icon.addClass("fa-angle-down ml-1").css("vertical-align", "middle");
       }
       icon.attr("id", lastsortHeader);
-      if(lastsortHeader.includes('TIME'))
+      if(lastsortHeader.includes('TIME') || lastsortHeader.includes('LOG') || lastsortHeader.includes('PRODUCT'))
       {
         const arrid = lastsortHeader.split(' ');
         var targetId = "#" + arrid[0] + "_" + arrid[1] + "_tc";
@@ -1699,8 +1740,23 @@ height: 100%;
       var tab = [...obj.Suits_Details.TestCase_Details];  
       tab = changeFormat(tab);
       if (sortType === "asc") {
+        // console.log(tab);
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+              }
             if (
               tab[i][val.target.innerText]["sortValue"] >
               tab[j][val.target.innerText]["sortValue"]
@@ -1714,6 +1770,20 @@ height: 100%;
       } else {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+              }
             if (
               tab[i][val.target.innerText]["sortValue"] <
               tab[j][val.target.innerText]["sortValue"]
@@ -1740,7 +1810,7 @@ height: 100%;
       }
 
       icon.attr("id", lastsortHeader);
-      if(lastsortHeader.includes('TIME'))
+      if(lastsortHeader.includes('TIME') || lastsortHeader.includes('LOG') || lastsortHeader.includes('PRODUCT'))
       {
         const arrid = lastsortHeader.split(' ');
         var targetId = "#" + arrid[0] + "_" + arrid[1] + "_tc";
@@ -1937,7 +2007,7 @@ height: 100%;
     }
 
     trimModalcontent.append(table);
-    console.log(cols);
+    // console.log(cols);
   }
 
 
@@ -1953,7 +2023,7 @@ height: 100%;
           return (
             $(this).filter(function () {
               var tdText = $(this).find(".status").text().toLowerCase();
-              console.log(tdText);
+              // console.log(tdText);
 
 
               if (val === "TOTAL") {

@@ -129,7 +129,8 @@ def noneRemover(payload):
 # code for changing suite data
 def dataAlter(payload):
     payload = json.loads(payload)
-    global respon,stat
+    global respon, stat
+    print(respon)
     # changing start time
     payload['s_start_time'] = respon['data']['s_start_time']
     # adding the testcase analytics of both run

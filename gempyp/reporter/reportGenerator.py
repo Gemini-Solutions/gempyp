@@ -137,7 +137,7 @@ class TemplateData:
         try:
             logging.info("---------- Finalised the report --------------")
             logging.info("============== Run Summary =============")
-            count_info = {key.lower(): val for key, val in repJson['Suits_Details']['Testcase_Info'].items()}
+            count_info = {key.lower(): val for key, val in repJson['Suits_Details']['testcase_info'].items()}
             log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
             status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe", "err":"ERR"}
             for key, val in count_info.items():
