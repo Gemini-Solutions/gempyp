@@ -30,7 +30,7 @@ def checkingData(run_id, bridge_token, user_name):
             global respon, suite_uploaded, list_of_testcase
             suite_uploaded = True
             respon = response.json()
-            list_of_testcase = [s[:-37] for s in respon['data']['testcaseDetails']]
+            list_of_testcase = [s[:-37] for s in respon['data']['testcase_details']]
             return response._content
         else:
             return "failed"
@@ -108,6 +108,7 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     calling the api to upload the data into database
     takes data we need to send(payload),bridgeToken,userName and method as argument
     """
+
     # Not needed anymore as we will be reuploading the data to db.
     # if DefaultSettings.count > 3:         
     #     logging.warning("Incorrect bridgetoken/username or APIs are down. Skipping Data upload.")
@@ -118,9 +119,6 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
         data=payload,
         headers=_getHeaders(bridge_token, user_name),
     )
-    # if response.status_code != 200 and response.status_code != 201:
-        # DefaultSettings.count += 1
-        # logging.info("Data not uploaded...........")
     logging.info(f"status: {response.status_code}")
     return response
 
@@ -177,7 +175,7 @@ def dataAlter(payload):
 # code for checking and updating testcase details
 def getTestcase(payload, method, bridge_token, user_name):
     global flag
-    for i in respon['data']['testcaseDetails']:
+    for i in respon['data']['testcase_details']:
         if payload['tc_run_id'][:-37] in i:
             url = DefaultSettings.getUrls("test-exe-api") + "?tc_run_id=" + i
             response = _sendData(" ",url, bridge_token, user_name, "GET")

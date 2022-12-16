@@ -548,6 +548,10 @@ class Engine:
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
         tc_run_id = f"{testcase_name}_{self.unique_id}"  # testcase should not be testcase + s_run_id
+        # try:
+        #     unique_id = unique_id.split(self.env.upper()).strip("_")
+        # except Exception as e:
+        #     print(e)
         # tc_run_id = f"{testcase_name}_{self.project_env}_{uuid.uuid4()}"
         tc_run_id = tc_run_id.upper()
         testcase_dict["tc_run_id"] = tc_run_id

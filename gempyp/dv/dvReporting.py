@@ -34,6 +34,7 @@ def writeToReport(dv_obj):
     try:
         if os.environ.get('unique_id'):
             unique_id = os.environ.get('unique_id')
+            # unique_id = unique_id.split(dv_obj.data.get("ENV").upper()).strip("_")
     except Exception:
         traceback.print_exc()
     tc_run_id = f"{dv_obj.tcname}_{unique_id}"

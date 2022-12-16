@@ -1,4 +1,4 @@
-<!--version1.0.8-->
+<!--version1.0.9-->
 <html>
 
 <head>
@@ -674,6 +674,7 @@ height: 100%;
     2: "rgba(143, 210, 190)",
   };
   var obj = DATA_1
+
   // console.log(stepobj);
   console.log(obj);
   if (obj.report_product === "GEMPYP") {
@@ -707,8 +708,8 @@ height: 100%;
   var infraHeaders = {
     "EXECUTED BY": "user",
     "EXECUTED ON": "machine",
-    RUN_TYPE: "run_type",
-    RUN_MODE: "run_mode",
+    "RUN TYPE": "run_type",
+    "RUN MODE": "run_mode",
   };
   var options = getOptions(obj.suits_details.testcase_details);
   for (var i = 0; i < options.length; i++) {
@@ -763,7 +764,7 @@ height: 100%;
   }
   function constructPage() {
 
-    var infraTable = getInfraDetailsTable(obj.suits_details);
+    var infraTable = getInfraDetailsTable(obj.suits_details,obj.suits_details.testcase_details);
     $("#pills-overview").append(infraTable);
     var cardDetailsOverview = getCardDetails(obj.suits_details.testcase_info, 'overview');
     var cardDetailsTestcase = getCardDetails(obj.suits_details.testcase_info, 'testcase');
@@ -842,7 +843,7 @@ height: 100%;
       {
         theader.style.minWidth = "120px";
       }
-      if(cols[i].includes('TIME') || (cols[i].includes('LOG')) || (cols[i].includes('PRODUCT')))
+      if(cols[i].includes(' '))
       {
         const col_id = cols[i].split(' ')
         theader.id = col_id[0] + '_' + col_id[1] + "_tc";
@@ -1275,7 +1276,15 @@ height: 100%;
     return div;
   }
 
-  function getInfraDetailsTable(data) {
+  function getInfraDetailsTable(data,tcData) {
+    var run_mode = new Set();
+    var run_type = new Set();
+    for(var i=0 ; i<tcData.length; i++)
+    {
+      run_mode.add(tcData[i]["RUN MODE"]["value"])
+      run_type.add(tcData[i]["RUN TYPE"]["value"])
+    }
+
     var div = $("<div/>")
       .addClass("mt-4 mx-5 card p-3")
       .css("box-shadow", "0px 3px 6px rgba(0, 0, 0, 0.05)")
@@ -1314,7 +1323,18 @@ height: 100%;
     for (var colIndex = 0; colIndex < cols.length; colIndex++) {
       var val = data[infraHeaders[cols[colIndex]]];
       if (val === undefined) {
+        if(infraHeaders[cols[colIndex]] === 'run_type')
+        {
+          val = Array.from(run_type).toString();
+        }
+        else if(infraHeaders[cols[colIndex]] === 'run_mode')
+        {
+          val = Array.from(run_mode).toString();
+        }
+        else
+        {
         val = "None";
+        }
       }
       content.append($("<td/>").html(val));
 
@@ -1702,7 +1722,7 @@ height: 100%;
         icon.addClass("fa-angle-down ml-1").css("vertical-align", "middle");
       }
       icon.attr("id", lastsortHeader);
-      if(lastsortHeader.includes('TIME') || lastsortHeader.includes('LOG') || lastsortHeader.includes('PRODUCT'))
+      if(lastsortHeader.includes(' '))
       {
         const arrid = lastsortHeader.split(' ');
         var targetId = "#" + arrid[0] + "_" + arrid[1] + "_tc";
@@ -1810,7 +1830,7 @@ height: 100%;
       }
 
       icon.attr("id", lastsortHeader);
-      if(lastsortHeader.includes('TIME') || lastsortHeader.includes('LOG') || lastsortHeader.includes('PRODUCT'))
+      if(lastsortHeader.includes(' '))
       {
         const arrid = lastsortHeader.split(' ');
         var targetId = "#" + arrid[0] + "_" + arrid[1] + "_tc";
