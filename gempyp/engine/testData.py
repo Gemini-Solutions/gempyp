@@ -124,25 +124,25 @@ class TestData:
 
         test_data["meta_data"] = meta_data
         test_data["s_run_id"] = s_run_id
-        test_data["userDefinedData"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
+        test_data["user_defined_data"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         for i in range(len(test_data["steps"])):
             step_name=test_data["steps"][i].get("Step Name","")
             legacy_api=test_data["steps"][i].get("LEGACY_API","")
             if(step_name.lower()=="executing the rest endpoint"):
                 if(legacy_api!=""):
-                    test_data["userDefinedData"]["Current Request URL"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[0]
-                    test_data["userDefinedData"]["Legacy Request URL"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[0]
-                    test_data["userDefinedData"]["Current Request METHOD"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[1]
-                    test_data["userDefinedData"]["Legacy Request METHOD"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[1]
-                    test_data["userDefinedData"]["Current Request Headers"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[2]
-                    test_data["userDefinedData"]["Current Request BODY"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[-1]
-                    test_data["userDefinedData"]["Legacy Request Headers"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[2]
-                    test_data["userDefinedData"]["Legacy Request BODY"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[-1]
+                    test_data["user_defined_data"]["Current Request URL"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[0]
+                    test_data["user_defined_data"]["Legacy Request URL"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[0]
+                    test_data["user_defined_data"]["Current Request METHOD"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[1]
+                    test_data["user_defined_data"]["Legacy Request METHOD"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[1]
+                    test_data["user_defined_data"]["Current Request Headers"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[2]
+                    test_data["user_defined_data"]["Current Request BODY"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[-1]
+                    test_data["user_defined_data"]["Legacy Request Headers"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[2]
+                    test_data["user_defined_data"]["Legacy Request BODY"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[-1]
                 else:
-                    test_data["userDefinedData"]["Request URL"]=test_data["steps"][i].get("Step Description").split("</br>")[0]
-                    test_data["userDefinedData"]["Request METHOD"]=test_data["steps"][i].get("Step Description").split("</br>")[1]
-                    test_data["userDefinedData"]["Request HEADERS"]=test_data["steps"][i].get("Step Description").split("</br>")[2]
-                    test_data["userDefinedData"]["Request BODY"]=test_data["steps"][i].get("Step Description").split("</br>")[-1]
+                    test_data["user_defined_data"]["Request URL"]=test_data["steps"][i].get("Step Description").split("</br>")[0]
+                    test_data["user_defined_data"]["Request METHOD"]=test_data["steps"][i].get("Step Description").split("</br>")[1]
+                    test_data["user_defined_data"]["Request HEADERS"]=test_data["steps"][i].get("Step Description").split("</br>")[2]
+                    test_data["user_defined_data"]["Request BODY"]=test_data["steps"][i].get("Step Description").split("</br>")[-1]
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):
