@@ -47,7 +47,7 @@ class Gempyp:
         parser.add_argument('-base_url','-base_url',dest='BASE_URL',type=str, required=False)
         parser.add_argument('-s_id','-s_id',dest='S_ID',type=str, required=False)
         parser.add_argument('-run_type','-run_type',dest='RUN_TYPE',type=str, required=False)
-        parser.add_argument('-run_mode','-run_type',dest='RUN_MODE',type=str, required=False)
+        parser.add_argument('-run_mode','-run_mode',dest='RUN_MODE',type=str, required=False)
 
         args = parser.parse_args()
         return args
