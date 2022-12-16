@@ -519,8 +519,9 @@ class Engine:
     def set_run_type_mode(self):
         type, mode = None, None
         try:
-            if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND) in [i.value for i in RunTypes]:
+            if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value) in [i.value for i in RunTypes]:
                 type = self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value)
+
             operating_system = "cli-" + platform.uname().system
             mode = self.PARAMS.get('RUN_MODE', operating_system.upper())
         except Exception as e:
