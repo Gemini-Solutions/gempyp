@@ -82,11 +82,11 @@ def getOutput(data):
     tempdict["ignore"] = True if data["TESTCASEMETADATA"].get("IGNORE") else False
     # tempdict["response_time"]="{0:.{1}f} sec(s)".format((data["END_TIME"]-data["START_TIME"]).total_seconds(),2)
 
-    all_status = data["json_data"]["metaData"][2]
+    all_status = data["json_data"]["meta_data"][2]
     total = 0
     for key in all_status:
         total = total + all_status[key]
-    data["json_data"]["metaData"][2]["TOTAL"] = total
+    data["json_data"]["meta_data"][2]["TOTAL"] = total
     try:
         log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log')
     except Exception:

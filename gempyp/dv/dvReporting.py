@@ -30,7 +30,13 @@ def writeToReport(dv_obj):
     result = dv_obj.reporter.serialize()
     output = []
     tempdict = {} 
-    tc_run_id = f"{dv_obj.tcname}_{uuid.uuid4()}"
+    unique_id = uuid.uuid4()
+    try:
+        if os.environ.get('unique_id'):
+            unique_id = os.environ.get('unique_id')
+    except Exception:
+        traceback.print_exc()
+    tc_run_id = f"{dv_obj.tcname}_{unique_id}"
     tempdict["tc_run_id"] = tc_run_id
     tempdict["name"] = result["NAME"]
     tempdict["category"] = dv_obj.category
@@ -44,11 +50,11 @@ def writeToReport(dv_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
-    all_status = result["json_data"]["metaData"][2]
+    all_status = result["json_data"]["meta_data"][2]
     total = 0
     for key in all_status:
         total += all_status[key]
-    result["json_data"]["metaData"][2]["TOTAL"] = total
+    result["json_data"]["meta_data"][2]["TOTAL"] = total
 
     # getting the log file ( the custom gempyp logger)
     

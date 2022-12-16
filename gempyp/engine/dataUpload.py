@@ -21,23 +21,28 @@ def _getHeaders(bridge_token, user_name):
     return {"Content-Type": "application/json", "bridgeToken": bridge_token, "username": user_name}
 
 def checkingData(run_id, bridge_token, user_name):
-    url = DefaultSettings.getUrls("suite-exe-api") + "?s_run_id=" + run_id
-    response = _sendData("", url , bridge_token, user_name, "GET")
-    if response.status_code == 200:
-        logging.info("Retrying to update and add testcases data present in DB")
-        logging.info("Get Request successfull")
-        global respon, suite_uploaded, list_of_testcase
-        suite_uploaded = True
-        respon = response.json()
-        list_of_testcase = [s[:-37] for s in respon['data']['testcaseDetails']]
-        return response._content
-    else:
+    try:
+        url = DefaultSettings.getUrls("suite-exe-api") + "?s_run_id=" + run_id
+        response = _sendData("", url , bridge_token, user_name, "GET")
+        if response.status_code == 200:
+            logging.info("Retrying to update and add testcases data present in DB")
+            logging.info("Get Request successfull")
+            global respon, suite_uploaded, list_of_testcase
+            suite_uploaded = True
+            respon = response.json()
+            list_of_testcase = [s[:-37] for s in respon['data']['testcaseDetails']]
+            return response._content
+        else:
+            return "failed"
+    except Exception as e:
+        traceback.print_exc()
         return "failed"
 
 def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
+
     try:
         if len(respon) != 0:
             payload = dataAlter(payload)
@@ -75,6 +80,7 @@ def sendTestcaseData(payload, bridge_token, user_name):
         payload = json.dumps(payload)
         response = _sendData(payload, DefaultSettings.getUrls("test-exe-api"), bridge_token, user_name, method)
         ### Applying regex to the response
+
         x = re.search("already present",response.text,re.IGNORECASE)
         if response.status_code == 201:
             logging.info("data uploaded successfully")
@@ -130,7 +136,6 @@ def noneRemover(payload):
 def dataAlter(payload):
     payload = json.loads(payload)
     global respon, stat
-    print(respon)
     # changing start time
     payload['s_start_time'] = respon['data']['s_start_time']
     # adding the testcase analytics of both run
@@ -140,7 +145,7 @@ def dataAlter(payload):
     for key, value in stat.items():
         if key in payload['testcase_info']:
             payload['testcase_info'][key] += value
-    # making testcase analytics in order
+    # making testcase info in order
     prio_list = ['TOTAL', 'PASS', 'FAIL'] 
     sorted_dict = {}
     for key in prio_list:

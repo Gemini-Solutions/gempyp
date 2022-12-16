@@ -24,8 +24,8 @@ class TestData:
             "result_file",
             "product_type",
             "ignore",
-            "metaData",
-            "userDefinedData",
+            "meta_data",
+            "user_defined_data",
             "base_user",
             "invoke_user",
             "run_type",
@@ -56,7 +56,7 @@ class TestData:
         # the above misc data is not being used
 
 
-        data["metaData"] = data["metaData"]
+        data["meta_data"] = data["meta_data"]
         data["s_id"] = data.get("S_ID", "test_id")
         return json.dumps(data, cls=dateTimeEncoder)
 
@@ -94,9 +94,9 @@ class TestData:
         sorted_dict.update(test_status)
         # test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
-        test_data["userDefinedData"] = dict()
+        test_data["user_defined_data"] = dict()
         # test_data["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
-        """ Adding misc data to userDefinedData column for each testcase
+        """ Adding misc data to user_defined_data column for each testcase
         Here misc data is only for one testcase.
         {"key1": "value1", "key2": "value2"...}"""
         if len(misc_data) > 0:
@@ -104,7 +104,7 @@ class TestData:
                 print("--- misc key", miscs.get("key", None))
                 key = str(miscs["key"])
                 val = str(miscs["value"])
-                test_data["userDefinedData"][key] = val
+                test_data["user_defined_data"][key] = val
 
         meta_data = [
             {
@@ -122,9 +122,9 @@ class TestData:
             # {"response_time":"{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)}
             ]
 
-        test_data["metaData"] = meta_data
+        test_data["meta_data"] = meta_data
         test_data["s_run_id"] = s_run_id
-        test_data["userDefinedData"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
+        test_data["user_defined_data"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):
@@ -149,10 +149,6 @@ class TestData:
             key = list(test_dict.keys())
             key = key[0]
             test_data = test_dict[key]
-            # test_data.pop("userDefinedData")
-            # test_data.pop("metaData")
-            # test_data.pop("base_user")
-            # test_data.pop("invoke_user")
             test_dict[key] = test_data
             for each_misc in misc_dict:
                 test_dict[each_misc['run_id']][each_misc["key"]] = each_misc["value"]
@@ -162,10 +158,10 @@ class TestData:
         except Exception as e:
             traceback.print_exc()
         for i in range(len(testcase_dict)):
-            for key in ["metaData", "base_user", "invoke_user", "userDefinedData"]:
+            for key in ["meta_data", "base_user", "invoke_user", "user_defined_data"]:
                 if(key in testcase_dict[i].keys()):
                     testcase_dict[i].pop(key)
-        suite_dict["TestCase_Details"] = testcase_dict
+        suite_dict["testcase_details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
 
         prio_list = ['total', 'PASS', 'FAIL']  # to be optimized
@@ -179,8 +175,8 @@ class TestData:
         sorted_dict.update(testcase_counts)
         testcase_counts = sorted_dict
         suite_dict["testcase_info"] = testcase_counts
-        suite_report["Suits_Details"] = suite_dict
-        suite_report["reportProduct"] = "GEMPYP"       
+        suite_report["suits_details"] = suite_dict
+        suite_report["report_product"] = "GEMPYP"       
         return json.dumps(suite_report, cls=dateTimeEncoder)
 
     def getTestcaseCounts(self):

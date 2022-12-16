@@ -15,7 +15,7 @@ from gempyp.libs.enums.status import status
 from gempyp.libs.enums.run_types import RunTypes
 from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
-from gempyp.engine.runner import testcaseRunner, getError
+from gempyp.engine.runner import testcaseRunner
 from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
@@ -181,7 +181,7 @@ class Engine:
             if skip_jira == 0:
                 jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_info, self.jewel, jira_email, jira_access_token, self.project_name, jira_project_id, jira_title, jira_workflow)
                 if jira_id is not None:
-                    self.DATA.suite_detail.at[0, "metaData"].append({"Jira_id": jira_id})
+                    self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
             if not self.PARAMS.get("BASE_URL", None):
@@ -287,7 +287,7 @@ class Engine:
             "env": self.project_env,
             "machine": self.machine,
             "os": platform.system().upper(),
-            "metaData": [],
+            "meta_data": [],
             "expected_testcases": self.total_runable_testcase,
             "testcase_info": None,
             "framework_name": "GEMPYP",
@@ -316,9 +316,8 @@ class Engine:
         except Exception as e:
             logging.error(traceback.format_exc())
             try:
-                self.DATA.suite_detail.at[0, "metaData"].append({"REASON OF FAILURE": str(e)})
+                self.DATA.suite_detail.at[0, "meta_data"].append({"REASON OF FAILURE": str(e)})
                 self.updateSuiteData()
-                print(self.DATA.suite_detail)
             except Exception as err:
                 logging.error(traceback.format_exc())
                 print(err)
@@ -353,9 +352,9 @@ class Engine:
         self.DATA.suite_detail.at[0, "s_end_time"] = stop_time
         self.DATA.suite_detail.at[0, "testcase_info"] = status_dict
         if self.jewel_run is True:
-            self.DATA.suite_detail.at[0, "metaData"].append({"S_ID": self.PARAMS["S_ID"]})
+            self.DATA.suite_detail.at[0, "meta_data"].append({"S_ID": self.PARAMS["S_ID"]})
         else:
-            self.DATA.suite_detail.at[0, "metaData"].append({"CONFIG_S3_URL": self.s3_url})
+            self.DATA.suite_detail.at[0, "meta_data"].append({"CONFIG_S3_URL": self.s3_url})
 
     def startSequence(self):
         """
@@ -487,29 +486,9 @@ class Engine:
                     error.get('invoke_user', None),
                 )
                 output = [output]
-            unsorted_dict = output[0]['json_data']['metaData'][2]
+            unsorted_dict = output[0]['json_data']['meta_data'][2]
             sorted_dict = self.totalOrder(unsorted_dict)
-            output[0]['json_data']['metaData'][2] = sorted_dict
-
-            ### for adding run_type and run_mode
-            # testcase_data = self.CONFIG.getTestcaseData(output[0]['testcase_dict']['name'])
-            # run_mode_list = ['ON DEMAND','SCHEDULED','CI-CD-CT']
-            # if 'RUN_MODE' in testcase_data:
-            #     try:
-            #         if testcase_data['RUN_MODE'].upper() in run_mode_list:
-            #             output[0]['testcase_dict']['run_mode'] = testcase_data['RUN_MODE'].upper()
-            #         else:
-            #             raise Exception
-            #     except Exception:
-            #         logging.info("Run Mode is not present") 
-            # else:
-            #     output[0]['testcase_dict']['run_mode'] = 'ON DEMAND'
-            # if 'RUN_TYPE' in testcase_data:
-            #     output[0]['testcase_dict']['run_type'] = testcase_data['RUN_TYPE'].upper()
-            # else:
-            #     operating_system = platform.uname().system
-            #     operating_system = "cli-" + operating_system     
-            #     output[0]['testcase_dict']['run_type'] = operating_system.upper()    
+            output[0]['json_data']['meta_data'][2] = sorted_dict
 
             output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'] = self.set_run_type_mode()
             for i in output:
@@ -540,7 +519,7 @@ class Engine:
     def set_run_type_mode(self):
         type, mode = None, None
         try:
-            if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND) not in [i.value for i in RunTypes]:
+            if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND) in [i.value for i in RunTypes]:
                 type = self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value)
             operating_system = "cli-" + platform.uname().system
             mode = self.PARAMS.get('RUN_MODE', operating_system.upper())
@@ -567,7 +546,8 @@ class Engine:
         misc = {}
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
-        tc_run_id = f"{testcase_name}_{self.project_env}_{self.unique_id}"
+        tc_run_id = f"{testcase_name}_{self.unique_id}"  # testcase should not be testcase + s_run_id
+        # tc_run_id = f"{testcase_name}_{self.project_env}_{uuid.uuid4()}"
         tc_run_id = tc_run_id.upper()
         testcase_dict["tc_run_id"] = tc_run_id
         testcase_dict["status"] = status.FAIL.name

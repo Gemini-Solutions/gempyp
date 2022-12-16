@@ -248,13 +248,13 @@ class Executor(TestcaseReporter):
         """
         updates the suiteData after all the runs have been executed
         """
-        start_time = current_data["Suits_Details"]["s_start_time"]
-        end_time = current_data["Suits_Details"]["TestCase_Details"][0]["end_time"]
-        testcaseData = current_data["Suits_Details"]["TestCase_Details"]
+        start_time = current_data["suits_details"]["s_start_time"]
+        end_time = current_data["suits_details"]["testcase_details"][0]["end_time"]
+        testcaseData = current_data["suits_details"]["testcase_details"]
         if old_data:
-            testcaseData = (old_data["Suits_Details"]["TestCase_Details"]
-             + current_data["Suits_Details"]["TestCase_Details"])
-            start_time = old_data["Suits_Details"]["s_start_time"]
+            testcaseData = (old_data["suits_details"]["testcase_details"]
+             + current_data["suits_details"]["testcase_details"])
+            start_time = old_data["suits_details"]["s_start_time"]
         statusDict = {k.name: 0 for k in status}
         for i in testcaseData:
             statusDict[i["status"]] += 1
@@ -266,10 +266,10 @@ class Executor(TestcaseReporter):
             if statusDict.get(s.name, 0) > 0:
                 SuiteStatus = s.name
 
-        current_data["Suits_Details"]["status"] = SuiteStatus
-        current_data["Suits_Details"]["TestCase_Details"] = testcaseData
-        current_data["Suits_Details"]["s_start_time"] = start_time
-        current_data["Suits_Details"]["s_end_time"] = end_time
+        current_data["suits_details"]["status"] = SuiteStatus
+        current_data["suits_details"]["testcase_details"] = testcaseData
+        current_data["suits_details"]["s_start_time"] = start_time
+        current_data["suits_details"]["s_end_time"] = end_time
         count = 0
         for key in list(statusDict.keys()):
             if statusDict[key] == 0:
@@ -277,6 +277,6 @@ class Executor(TestcaseReporter):
             else:
                 count += statusDict[key]
         statusDict["Total"] = count
-        current_data["Suits_Details"]["Testcase_Info"] = statusDict
+        current_data["suits_details"]["Testcase_Info"] = statusDict
 
         return current_data
