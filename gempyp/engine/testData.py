@@ -131,18 +131,15 @@ class TestData:
                     test_data["userDefinedData"]["Legacy Request URL"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[0]
                     test_data["userDefinedData"]["Current Request METHOD"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[1]
                     test_data["userDefinedData"]["Legacy Request METHOD"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[1]
-                    if(test_data["userDefinedData"]["Current Request METHOD"]!="GET"):
-                        test_data["userDefinedData"]["Current Request Headers"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[2]
-                        test_data["userDefinedData"]["Current Request BODY"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[-1]
-                    if(test_data["userDefinedData"]["Legacy Request METHOD"]!="GET"):
-                        test_data["userDefinedData"]["Legacy Request Headers"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[2]
-                        test_data["userDefinedData"]["Legacy Request BODY"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[-1]
+                    test_data["userDefinedData"]["Current Request Headers"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[2]
+                    test_data["userDefinedData"]["Current Request BODY"]=test_data["steps"][i].get("CURRENT_API").split("</br>")[-1]
+                    test_data["userDefinedData"]["Legacy Request Headers"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[2]
+                    test_data["userDefinedData"]["Legacy Request BODY"]=test_data["steps"][i].get("LEGACY_API").split("</br>")[-1]
                 else:
                     test_data["userDefinedData"]["Request URL"]=test_data["steps"][i].get("Step Description").split("</br>")[0]
                     test_data["userDefinedData"]["Request METHOD"]=test_data["steps"][i].get("Step Description").split("</br>")[1]
-                    if(test_data["userDefinedData"]["Request METHOD"]!="<b>METHOD</b>: GET"):
-                        test_data["userDefinedData"]["Request HEADERS"]=test_data["steps"][i].get("Step Description").split("</br>")[2]
-                        test_data["userDefinedData"]["Request BODY"]=test_data["steps"][i].get("Step Description").split("</br>")[-1]
+                    test_data["userDefinedData"]["Request HEADERS"]=test_data["steps"][i].get("Step Description").split("</br>")[2]
+                    test_data["userDefinedData"]["Request BODY"]=test_data["steps"][i].get("Step Description").split("</br>")[-1]
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):
