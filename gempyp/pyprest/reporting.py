@@ -56,6 +56,25 @@ def writeToReport(pyprest_obj):
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
+    for i in range(len(result["json_data"].get("steps"))):
+            step_name=result["json_data"].get("steps")[i].get("Step Name","")
+            legacy_api=result["json_data"].get("steps")[i].get("LEGACY_API","")
+            if(step_name.lower()=="executing the rest endpoint"):
+                if(legacy_api!=""):
+                    result["Current Request URL"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[0]
+                    result["Legacy Request URL"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[0]
+                    result["Current Request METHOD"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[1]
+                    result["Legacy Request METHOD"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[1]
+                    result["Current Request Headers"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[2]
+                    result["Current Request BODY"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[-1]
+                    result["Legacy Request Headers"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[2]
+                    result["Legacy Request BODY"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[-1]
+                else:
+                    result["Request URL"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[0]
+                    result["Request METHOD"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[1]
+                    result["Request HEADERS"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[2]
+                    result["Request BODY"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[-1]
+
     tempdict["ignore"] = False
     all_status = result["json_data"]["meta_data"][2]
     total = 0
