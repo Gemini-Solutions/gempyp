@@ -6,6 +6,7 @@ import uuid
 from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 from gempyp.libs.common import moduleImports
+import getpass
 
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
@@ -35,6 +36,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
 
                     print("------- In subclass check --------")
                     result_data = cls().RUN(cls, config_data, **testcase_meta)
+
 
                     break
             # testcase has successfully ran
@@ -71,7 +73,8 @@ def getOutput(data):
     tempdict["name"] = data["NAME"]
     tempdict["category"] = data["config_data"].get("CATEGORY", None)
     tempdict["status"] = data["STATUS"]
-    tempdict["user"] = data["TESTCASEMETADATA"]["USER"]
+    tempdict["base_user"] = getpass.getuser()
+    tempdict["invoke_user"] = data["config_data"].get("INVOKE_USER", getpass.getuser())
     tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]
     tempdict["product_type"] = "GEMPYP"
     tempdict["result_file"] = data["RESULT_FILE"]
@@ -80,11 +83,11 @@ def getOutput(data):
     tempdict["ignore"] = True if data["TESTCASEMETADATA"].get("IGNORE") else False
     # tempdict["response_time"]="{0:.{1}f} sec(s)".format((data["END_TIME"]-data["START_TIME"]).total_seconds(),2)
 
-    all_status = data["json_data"]["metaData"][2]
+    all_status = data["json_data"]["meta_data"][2]
     total = 0
     for key in all_status:
         total = total + all_status[key]
-    data["json_data"]["metaData"][2]["TOTAL"] = total
+    data["json_data"]["meta_data"][2]["TOTAL"] = total
     try:
         log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log')
     except Exception:

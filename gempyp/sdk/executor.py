@@ -48,7 +48,7 @@ class Executor(TestcaseReporter):
             subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
             try:
                 logging.info(f"---------------S_RUN_ID-------------{self.s_run_id}")
-                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"]) # check with deamon, should insert only once
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGE_TOKEN"], self.data["USERNAME"]) # check with deamon, should insert only once
                   # logging not working
             except Exception as e:
                 print(f"Exception occured - {e}")
@@ -74,7 +74,7 @@ class Executor(TestcaseReporter):
 
         # creating output json
         output.append(getOutput(report_dict))
-
+        output[0]["product_type"] = "GEMPYP-SDK"
         for i in output:
             logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -113,7 +113,7 @@ class Executor(TestcaseReporter):
                     f.seek(0)
                     f.write(json.dumps(data))
             
-            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USER_NAME"])  # instead of output, I need to pass s_run id and  tc_run_id
+            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USERNAME"])  # instead of output, I need to pass s_run id and  tc_run_id
             
             # sys.stdout.close()
         
@@ -133,7 +133,7 @@ class Executor(TestcaseReporter):
         self.projectName = data["PROJECT"] = config_file['ReportSetting']["project"]
         self.testcaseName = data["NAME"] = self.method
         self.env = data["ENV"] = config_file['ReportSetting'].get("env", "PROD")
-        data["USER_NAME"] = config_file['ReportSetting'].get("USER_NAME", getpass.getuser())
+        data["USERNAME"] = config_file['ReportSetting'].get("USERNAME", getpass.getuser())
         data["BRIDGE_TOKEN"] = config_file['ReportSetting'].get("BRIDGE_TOKEN", None)
         data["OUTPUT_FOLDER"] = config_file['ReportSetting'].get("outputfolder", None)
         data["MACHINE"] = platform.node()
@@ -151,7 +151,7 @@ class Executor(TestcaseReporter):
             'PROJECTNAME': self.data["PROJECT"], 
             'ENV': self.data["ENV"], 
             'S_RUN_ID': self.data["S_RUN_ID"], 
-            'USER': self.data["USER_NAME"], 
+            'USER': self.data["USERNAME"], 
             'MACHINE': self.data["MACHINE"], 
             'OUTPUT_FOLDER': self.data["OUTPUT_FOLDER"]}
         return data
@@ -181,26 +181,19 @@ class Executor(TestcaseReporter):
         """
         making suite Details 
         """
-        
-        run_mode = "LINUX_CLI"
-        if os.name == 'nt':
-            run_mode = "WINDOWS"
+
         Suite_details = {
             "s_run_id": self.data["S_RUN_ID"],
             "s_start_time": datetime.now(timezone.utc),
             "s_end_time": None,
             "status": status.EXE.name,
             "project_name": self.data["PROJECT"],
-            "run_type": "ON DEMAND",
-            "s_report_type": self.data["REPORT_NAME"],
-            # "report_type": self.data["REPORT_TYPE"],
-            "user": self.data["USER_NAME"],
+            "user": self.data["USERNAME"],
             "report_name": self.data["REPORT_INFO"],
-            "framework_name": "GEMPYP-SDK",
+            "framework_name": "GEMPYP",
             "env": self.data["ENV"],
             "machine": self.data["MACHINE"],
-            "initiated_by": self.data["USER_NAME"],
-            "run_mode": run_mode,
+            "os": platform.system().upper(),
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             Suite_details, ignore_index=True
@@ -255,13 +248,13 @@ class Executor(TestcaseReporter):
         """
         updates the suiteData after all the runs have been executed
         """
-        start_time = current_data["Suits_Details"]["s_start_time"]
-        end_time = current_data["Suits_Details"]["TestCase_Details"][0]["end_time"]
-        testcaseData = current_data["Suits_Details"]["TestCase_Details"]
+        start_time = current_data["suits_details"]["s_start_time"]
+        end_time = current_data["suits_details"]["testcase_details"][0]["end_time"]
+        testcaseData = current_data["suits_details"]["testcase_details"]
         if old_data:
-            testcaseData = (old_data["Suits_Details"]["TestCase_Details"]
-             + current_data["Suits_Details"]["TestCase_Details"])
-            start_time = old_data["Suits_Details"]["s_start_time"]
+            testcaseData = (old_data["suits_details"]["testcase_details"]
+             + current_data["suits_details"]["testcase_details"])
+            start_time = old_data["suits_details"]["s_start_time"]
         statusDict = {k.name: 0 for k in status}
         for i in testcaseData:
             statusDict[i["status"]] += 1
@@ -273,10 +266,10 @@ class Executor(TestcaseReporter):
             if statusDict.get(s.name, 0) > 0:
                 SuiteStatus = s.name
 
-        current_data["Suits_Details"]["status"] = SuiteStatus
-        current_data["Suits_Details"]["TestCase_Details"] = testcaseData
-        current_data["Suits_Details"]["s_start_time"] = start_time
-        current_data["Suits_Details"]["s_end_time"] = end_time
+        current_data["suits_details"]["status"] = SuiteStatus
+        current_data["suits_details"]["testcase_details"] = testcaseData
+        current_data["suits_details"]["s_start_time"] = start_time
+        current_data["suits_details"]["s_end_time"] = end_time
         count = 0
         for key in list(statusDict.keys()):
             if statusDict[key] == 0:
@@ -284,6 +277,6 @@ class Executor(TestcaseReporter):
             else:
                 count += statusDict[key]
         statusDict["Total"] = count
-        current_data["Suits_Details"]["Testcase_Info"] = statusDict
+        current_data["suits_details"]["Testcase_Info"] = statusDict
 
         return current_data

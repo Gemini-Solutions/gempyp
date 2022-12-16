@@ -20,13 +20,16 @@ class TestData:
             "log_file",
             "status",
             "steps",
-            "user",
             "machine",
             "result_file",
             "product_type",
             "ignore",
-            "miscData",
-            "userDefinedData"
+            "meta_data",
+            "user_defined_data",
+            "base_user",
+            "invoke_user",
+            "run_type",
+            "run_mode"
         ]
         self.misc_detail_column = ["run_id", "key", "value", "table_type"]
 
@@ -52,9 +55,9 @@ class TestData:
         ]
         # the above misc data is not being used
 
-        misc_data = data["miscData"]
-        data["miscData"] = misc_data
-        data["s_id"] = "test_id"
+
+        data["meta_data"] = data["meta_data"]
+        data["s_id"] = data.get("S_ID", "test_id")
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):
@@ -91,9 +94,9 @@ class TestData:
         sorted_dict.update(test_status)
         # test_data["duration"] = findDuration(test_data["start_time"], test_data["end_time"])
 
-        test_data["userDefinedData"] = dict()
+        test_data["user_defined_data"] = dict()
         # test_data["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
-        """ Adding misc data to userDefinedData column for each testcase
+        """ Adding misc data to user_defined_data column for each testcase
         Here misc data is only for one testcase.
         {"key1": "value1", "key2": "value2"...}"""
         if len(misc_data) > 0:
@@ -101,7 +104,7 @@ class TestData:
                 print("--- misc key", miscs.get("key", None))
                 key = str(miscs["key"])
                 val = str(miscs["value"])
-                test_data["userDefinedData"][key] = val
+                test_data["user_defined_data"][key] = val
 
         meta_data = [
             {
@@ -119,7 +122,7 @@ class TestData:
             # {"response_time":"{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)}
             ]
 
-        test_data["miscData"] = meta_data
+        test_data["meta_data"] = meta_data
         test_data["s_run_id"] = s_run_id
         test_data["userDefinedData"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
         for i in range(len(test_data["steps"])):
@@ -156,7 +159,7 @@ class TestData:
         self.suite_detail = self.suite_detail.replace(np.nan, "-", regex=True)
         suite_dict = self.suite_detail.to_dict(orient="records")[0]
         testcase_dict = self.testcase_details.to_dict(orient="records")
-        misc_dict=self.misc_details.to_dict(orient="records")
+        misc_dict = self.misc_details.to_dict(orient="records")
         try:
 
             # converting testcase_dict to dict for easy parsing
@@ -164,8 +167,6 @@ class TestData:
             key = list(test_dict.keys())
             key = key[0]
             test_data = test_dict[key]
-            test_data.pop("userDefinedData")
-            test_data.pop("miscData")
             test_dict[key] = test_data
             for each_misc in misc_dict:
                 test_dict[each_misc['run_id']][each_misc["key"]] = each_misc["value"]
@@ -174,17 +175,14 @@ class TestData:
             testcase_dict = [test_dict[tc_run_id] for tc_run_id in test_dict.keys()]
         except Exception as e:
             traceback.print_exc()
-
-        # testcase_dict.remove("userDefinedData")
-        # testcase_dict.remove("miscData")
         for i in range(len(testcase_dict)):
-            if("miscData" in testcase_dict[i].keys()):
-                testcase_dict[i].pop("miscData")
-            if("userDefinedData" in testcase_dict[i].keys()):
-                testcase_dict[i].pop("userDefinedData")
-        suite_dict["TestCase_Details"] = testcase_dict
+            for key in ["meta_data", "base_user", "invoke_user", "user_defined_data"]:
+                if(key in testcase_dict[i].keys()):
+                    testcase_dict[i].pop(key)
+        suite_dict["testcase_details"] = testcase_dict
         testcase_counts = self.getTestcaseCounts()
-        prio_list = ['total', 'PASS', 'FAIL']
+
+        prio_list = ['total', 'PASS', 'FAIL']  # to be optimized
         sorted_dict = {}
         for key in prio_list:
             if key in testcase_counts :
@@ -194,9 +192,9 @@ class TestData:
                 sorted_dict[key] = 0
         sorted_dict.update(testcase_counts)
         testcase_counts = sorted_dict
-        suite_dict["Testcase_Info"] = testcase_counts
-        suite_report["Suits_Details"] = suite_dict
-        suite_report["reportProduct"] = "GEMPYP"       
+        suite_dict["testcase_info"] = testcase_counts
+        suite_report["suits_details"] = suite_dict
+        suite_report["report_product"] = "GEMPYP"       
         return json.dumps(suite_report, cls=dateTimeEncoder)
 
     def getTestcaseCounts(self):

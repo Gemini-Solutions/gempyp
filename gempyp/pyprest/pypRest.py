@@ -3,8 +3,7 @@ import os
 import traceback
 import logging
 import json
-from typing import Dict, List, Tuple, Type
-from gempyp.config.baseConfig import AbstarctBaseConfig
+from typing import Dict, List, Tuple
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
@@ -19,7 +18,7 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import moduleImports
-import boto3
+# from gempyp.libs import custom_s3
 
 
 class PypRest(Base):
@@ -444,19 +443,13 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            if(file_name.__contains__('s3')):
-                before_file=file_name.split("/")
-                s3 = boto3.resource('s3')
-                my_bucket = s3.Bucket(before_file[2].split(".")[0])
-                for object_summary in my_bucket.objects.filter(Prefix="/".join(before_file[3:])):
-                    body = object_summary.get()['Body'].read()
-    
-                fileContent = body.decode().split("\\n")
-                file_name = os.path.join(before_file[-1])
-                with open(file_name, "w+") as fp:
-                    fp.seek(0)
-                    fp.write('\n'.join(fileContent))
-                    fp.truncate()
+            # trying to download from s3 path
+            # if(file_name.__contains__('s3')):
+            #     before_file=file_name.split("/")
+            #     folder = before_file[3:]
+            #     my_bucket = before_file[2].split(".")[0]
+            #     file = before_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -512,19 +505,12 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            if(file_name.__contains__('s3')):
-                before_file=file_name.split("/")
-                s3 = boto3.resource('s3')
-                my_bucket = s3.Bucket(before_file[2].split(".")[0])
-                for object_summary in my_bucket.objects.filter(Prefix="/".join(before_file[3:])):
-                    body = object_summary.get()['Body'].read()
-    
-                fileContent = body.decode().split("\\n")
-                file_name =os.path.join(before_file[-1])
-                with open(file_name, "w+") as fp:
-                    fp.seek(0)
-                    fp.write('\n'.join(fileContent))
-                    fp.truncate()
+            # if(file_name.__contains__('s3')):
+            #     after_file=file_name.split("/")
+            #     folder = after_file[3:]
+            #     my_bucket = after_file[2].split(".")[0]
+            #     file = after_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj

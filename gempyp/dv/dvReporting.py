@@ -4,6 +4,7 @@ import uuid
 import time
 import json
 import logging
+import getpass
 
 
 def writeToReport(dv_obj):
@@ -29,12 +30,20 @@ def writeToReport(dv_obj):
     result = dv_obj.reporter.serialize()
     output = []
     tempdict = {} 
-    tc_run_id = f"{dv_obj.tcname}_{uuid.uuid4()}"
+    unique_id = uuid.uuid4()
+    try:
+        if os.environ.get('unique_id'):
+            unique_id = os.environ.get('unique_id')
+            # unique_id = unique_id.split(dv_obj.data.get("ENV").upper()).strip("_")
+    except Exception:
+        traceback.print_exc()
+    tc_run_id = f"{dv_obj.tcname}_{unique_id}"
     tempdict["tc_run_id"] = tc_run_id
     tempdict["name"] = result["NAME"]
     tempdict["category"] = dv_obj.category
     tempdict["status"] = result["STATUS"]
-    tempdict["user"] = dv_obj.data.get("USER")
+    tempdict["base_user"] = getpass.getuser()
+    tempdict["invoke_user"] = dv_obj.data.get("INVOKE_USER", getpass.getuser())
     tempdict["machine"] = dv_obj.data.get("MACHINE")
     tempdict["product_type"] = "GEMPYP-DV"
     tempdict["steps"] = result["json_data"]['steps']
@@ -42,11 +51,11 @@ def writeToReport(dv_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
-    all_status = result["json_data"]["metaData"][2]
+    all_status = result["json_data"]["meta_data"][2]
     total = 0
     for key in all_status:
         total += all_status[key]
-    result["json_data"]["metaData"][2]["TOTAL"] = total
+    result["json_data"]["meta_data"][2]["TOTAL"] = total
 
     # getting the log file ( the custom gempyp logger)
     
