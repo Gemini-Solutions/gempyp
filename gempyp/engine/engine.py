@@ -168,7 +168,6 @@ class Engine:
         try:
             jira_email = self.PARAMS.get("JIRA_EMAIL", None)
             jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
-            # jira_title = self.PARAMS.get("JIRA_TITLE", None)
             jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
             jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
             if jira_access_token is None and jira_email is None:
@@ -181,7 +180,6 @@ class Engine:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
 
             if skip_jira == 0:
-                #jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_info, self.jewel, jira_email, jira_access_token, self.project_name, jira_project_id, jira_title, jira_workflow)
                 jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.ENV, jira_workflow, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
