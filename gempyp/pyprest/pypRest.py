@@ -237,38 +237,50 @@ class PypRest(Base):
         
         VarReplacement(self).variableReplacement()
        
-    
-
-
         try:
             # raise Exception(f"Error occured while sending request- test")
             self.logger.info("--------------------Executing Request ------------------------")
             self.logger.info(f"url: {self.req_obj.api}")
             self.logger.info(f"method: {self.req_obj.method}")
             self.logger.info(f"request_body: {self.req_obj.body}")
-            self.logger.info(f"headers: {self.req_obj.headers}")
+            self.logger.info(f"headers: {self.req_obj.headers}") 
+
+            # addig request misc
+            self.reporter.addMisc("REQUEST URL", str(self.req_obj.api)) 
+            self.reporter.addMisc("REQUEST METHOD", str(self.req_obj.method))
+            self.reporter.addMisc("REQUEST BODY", str(self.req_obj.body))  # s3
+            self.reporter.addMisc("REQUEST HEADERS", str(self.req_obj.headers))
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
             if(len(self.request_obj)>0):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
-            
 
-            # self.res_obj.response_body
-            # self.res_obj.status_code
-            # self.res_obj.response_time
-            # self.res_obj.response_headers
+            # self.reporter.addMisc("RESPONSE BODY", str(self.res_obj.response_body))  # s3
+            # self.reporter.addMisc("RESPONSE HEADERS", str(self.res_obj.response_headers))
 
             # logging legacy api
             try:
                 # if self.legacy_req is not None:
                 self.logger.info("--------------------Executing legacy Request ------------------------")
+
                 self.logger.info(f"legacy url: {self.legacy_req.api}")
                 self.logger.info(f"legacy method: {self.legacy_req.method}")
                 self.logger.info(f"legacy request_body: {self.legacy_req.body}")
                 self.logger.info(f"legacy headers: {self.legacy_req.headers}")
+
+                # addig request misc
+                self.reporter.addMisc("LEGACY REQUEST URL", str(self.legacy_req.api))
+                self.reporter.addMisc("LEGACY REQUEST METHOD", str(self.legacy_req.method))
+                self.reporter.addMisc("LEGACY REQUEST BODY", str(self.legacy_req.body))  # s3
+                self.reporter.addMisc("LEGACY REQUEST HEADERS", str(self.legacy_req.headers))
+
                 self.legacy_res = api.Api().execute(self.legacy_req)
+
+                # self.reporter.addMisc("LEGACY RESPONSE BODY", str(self.legacy_res.response_body))  # s3
+                # self.reporter.addMisc("LEGACY RESPONSE HEADERS", str(self.legacy_res.response_headers))
+
                 self.reporter.addMisc("Current Response Time", "{0:.{1}f} sec(s)".format(self.res_obj.response_time,2))
                 self.reporter.addMisc("Legacy Response Time", "{0:.{1}f} sec(s)".format(self.legacy_res.response_time,2) )
                 self.logResponse()

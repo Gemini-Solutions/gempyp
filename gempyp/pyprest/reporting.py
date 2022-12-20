@@ -58,24 +58,24 @@ def writeToReport(pyprest_obj):
     tempdict["end_time"] = result["END_TIME"]
    
     # to be optimized and improved
-    for i in range(len(result["json_data"].get("steps"))):
-        step_name = result["json_data"].get("steps")[i].get("Step Name","")
-        legacy_api = result["json_data"].get("steps")[i].get("LEGACY_API","")
-        if(step_name.lower()=="executing the rest endpoint"):
-            if(legacy_api!=""):
-                result["MISC"]["Current Request URL"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[0]
-                result["MISC"]["Legacy Request URL"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[0]
-                result["MISC"]["Current Request METHOD"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[1]
-                result["MISC"]["Legacy Request METHOD"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[1]
-                result["MISC"]["Current Request Headers"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[2]
-                result["MISC"]["Current Request BODY"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[-1]
-                result["MISC"]["Legacy Request Headers"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[2]
-                result["MISC"]["Legacy Request BODY"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[-1]
-            else:
-                result["MISC"]["Request URL"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[0]
-                result["MISC"]["Request METHOD"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[1]
-                result["MISC"]["Request HEADERS"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[2]
-                result["MISC"]["Request BODY"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[-1]
+    # for i in range(len(result["json_data"].get("steps"))):
+    #     step_name = result["json_data"].get("steps")[i].get("Step Name","")
+    #     legacy_api = result["json_data"].get("steps")[i].get("LEGACY_API","")
+    #     if(step_name.lower()=="executing the rest endpoint"):
+    #         if(legacy_api!=""):
+    #             result["MISC"]["Current Request URL"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[0]
+    #             result["MISC"]["Legacy Request URL"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[0]
+    #             result["MISC"]["Current Request METHOD"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[1]
+    #             result["MISC"]["Legacy Request METHOD"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[1]
+    #             result["MISC"]["Current Request Headers"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[2]
+    #             result["MISC"]["Current Request BODY"]=result["json_data"].get("steps")[i].get("CURRENT_API").split("</br>")[-1]
+    #             result["MISC"]["Legacy Request Headers"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[2]
+    #             result["MISC"]["Legacy Request BODY"]=result["json_data"].get("steps")[i].get("LEGACY_API").split("</br>")[-1]
+    #         else:
+    #             result["MISC"]["Request URL"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[0]
+    #             result["MISC"]["Request METHOD"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[1]
+    #             result["MISC"]["Request HEADERS"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[2]
+    #             result["MISC"]["Request BODY"]=result["json_data"].get("steps")[i].get("Step Description").split("</br>")[-1]
 
     tempdict["ignore"] = False
     all_status = result["json_data"]["meta_data"][2]
