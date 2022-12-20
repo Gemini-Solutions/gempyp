@@ -29,22 +29,21 @@ def jiraIntegration(s_run_id, email, access_token, project_id, env, workflow, br
     logging.info("---------- In Jira Integration ---------")
     
     jira_id = None
-    try:
-        flow = workflow.strip("'").strip('"').split(",")
-        flow = [str(i.strip(" ")) for i in flow]
-    except Exception as e:
-        print("ERROR: JIra workflow is can not be converted to proper format")
+    if workflow:
+        workflow = workflow.strip("'").strip('"').split(",")
+        workflow = [str(i.strip(" ")) for i in workflow]
    
     jira_body = {
         "email": email, 
         "accessToken": access_token,
         "projectId": project_id, 
         "s_run_id": s_run_id,
-        "flow": flow,
+        "flow": workflow,
         "env": env,
-        "accessToken": access_token,
         "suiteName": suiteName
     }
+    if not workflow:
+        del jira_body["flow"]
     jira_body = json.loads(json.dumps(str(jira_body).replace("'", '"')))
     try:
         logging.info("----------- Requesting JIRA API ------------")
