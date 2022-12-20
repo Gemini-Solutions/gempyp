@@ -14,11 +14,10 @@ def createJira(jira_body, bridge_token, user_name):
         jira_res = dataUpload._sendData(jira_body, url=create_jira_api, bridge_token=bridge_token, user_name=user_name)
         if jira_res.status_code == 201 or jira_res.status_code == 200:
             jira_json = json.loads(jira_res.text)
-            jira_id = jira_json["data"]["key"]
-            print("jira created ------------------", jira_id)
+            jira_id = jira_json["data"].get("key", None)
             return jira_id
         else:
-            logging.error("Unable to create the Jira")
+            logging.info("Jira API Response - ", str(jira_res.text))
     except Exception as e:
         traceback.format_exc()
         print(e)
