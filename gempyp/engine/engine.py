@@ -314,6 +314,7 @@ class Engine:
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
             "s_end_time": None,
+            "s_id": self.PARAMS.get("S_ID", "test_id"),
             "status": status.EXE.name,
             "project_name": self.project_name,
             "report_name": self.report_name,  # earlier it was report info

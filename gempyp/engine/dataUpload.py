@@ -42,7 +42,6 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
-
     try:
         if len(respon) != 0:
             payload = dataAlter(payload)

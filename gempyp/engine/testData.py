@@ -55,9 +55,7 @@ class TestData:
         ]
         # the above misc data is not being used
 
-
         data["meta_data"] = data["meta_data"]
-        data["s_id"] = data.get("S_ID", "test_id")
         return json.dumps(data, cls=dateTimeEncoder)
 
     def totestcaseJson(self, tc_run_id, s_run_id):
