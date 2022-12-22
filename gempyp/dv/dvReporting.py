@@ -1,9 +1,6 @@
 import traceback
 import os
 import uuid
-import time
-import json
-import logging
 import getpass
 
 
@@ -43,7 +40,7 @@ def writeToReport(dv_obj):
     tempdict["category"] = dv_obj.category
     tempdict["status"] = result["STATUS"]
     tempdict["base_user"] = getpass.getuser()
-    tempdict["invoke_user"] = dv_obj.data.get("INVOKE_USER", getpass.getuser())
+    tempdict["invoke_user"] = dv_obj.data.get("INVOKE_USER")
     tempdict["machine"] = dv_obj.data.get("MACHINE")
     tempdict["product_type"] = "GEMPYP-DV"
     tempdict["steps"] = result["json_data"]['steps']

@@ -237,6 +237,7 @@ class Engine:
         self.total_runable_testcase = config.total_yflag_testcase
         self.machine = platform.node()
         self.user = self.PARAMS.get("USERNAME", getpass.getuser())
+        self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
         self.platform = platform.system()
         self.start_time = datetime.now(timezone.utc)
@@ -567,7 +568,7 @@ class Engine:
         testcase_dict["log_file"] = log_path
         testcase_dict["result_file"] = None
         testcase_dict["base_user"] = getpass.getuser()
-        testcase_dict["invoke_user"] = getpass.getuser() if not invoke_user else invoke_user
+        testcase_dict["invoke_user"] = self.invoke_user
         testcase_dict["machine"] = self.machine
         # testcase_dict["response_time"]="{0:.{1}f} sec(s)".format((testcase_dict["end_time"]-testcase_dict["start_time"]).total_seconds(),2)
         if product_type:
@@ -617,6 +618,8 @@ class Engine:
         data["MACHINE"] = self.machine
         data["OUTPUT_FOLDER"] = self.testcase_folder
         data["SUITE_VARS"] = self.user_suite_variables
+        data["INVOKE_USER"] = self.invoke_user
+        data["USER"] = self.user
         return data
 
     

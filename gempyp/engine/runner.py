@@ -10,6 +10,7 @@ import getpass
 
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
+
     """
     actually imports the testcase files and call the run method 
     set the json data that is required to update in db
@@ -42,9 +43,12 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
             # testcase has successfully ran
             # make the output Dict
             output = []
+
             for data in result_data:
                 data["TESTCASEMETADATA"] = testcase_meta
                 data["config_data"] = config_data
+
+                print(data)
                 singleTestcase = getOutput(data)
 
                 output.append(singleTestcase)
@@ -74,7 +78,7 @@ def getOutput(data):
     tempdict["category"] = data["config_data"].get("CATEGORY", None)
     tempdict["status"] = data["STATUS"]
     tempdict["base_user"] = getpass.getuser()
-    tempdict["invoke_user"] = data["config_data"].get("INVOKE_USER", getpass.getuser())
+    tempdict["invoke_user"] = data["TESTCASEMETADATA"]["INVOKE_USER"]
     tempdict["machine"] = data["TESTCASEMETADATA"]["MACHINE"]
     tempdict["product_type"] = "GEMPYP"
     tempdict["result_file"] = data["RESULT_FILE"]
