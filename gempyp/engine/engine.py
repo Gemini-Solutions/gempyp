@@ -23,7 +23,7 @@ from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
 from gempyp.dv.dvRunner import DvRunner
-from gempyp.jira.jiraIntegration import jiraIntegration, addComment
+from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3
 
@@ -168,7 +168,6 @@ class Engine:
         try:
             jira_email = self.PARAMS.get("JIRA_EMAIL", None)
             jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
-            jira_title = self.PARAMS.get("JIRA_TITLE", None)
             jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
             jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
             if jira_access_token is None and jira_email is None:
@@ -178,11 +177,13 @@ class Engine:
 
         ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         if dataUpload.suite_uploaded == True:
+            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+
             if skip_jira == 0:
-                jira_id = jiraIntegration(self.s_run_id, suite_status, testcase_info, self.jewel, jira_email, jira_access_token, self.project_name, jira_project_id, jira_title, jira_workflow)
+                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.ENV, jira_workflow, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
-            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+            # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
             if not self.PARAMS.get("BASE_URL", None):
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
@@ -660,7 +661,7 @@ class Engine:
         """
         adj_list={}
         for key,value in testcases.items():
-                adj_list[key]=list(set(list(value.get("DEPENDENCY","").split(",")))  - set([""]))       
+                adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
             new_list = []
@@ -706,7 +707,7 @@ class Engine:
 
         # split on ','
         listOfTestcases=[]
-        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").split(","))) - set([""]))
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))
         for dep in listOfTestcases:
 
                     dep_split = list(dep.split(":"))
