@@ -1,4 +1,4 @@
-<!--version1.0.9-->
+<!--version2.0.0-->
 <html>
 
 <head>
@@ -271,7 +271,6 @@
   }
 
   /* Modal Content (image) */
-  
 
   /* Caption of Modal Image */
   #caption {
@@ -668,7 +667,6 @@
     2: "rgba(143, 210, 190)",
   };
   var obj = DATA_1
-
   // console.log(stepobj);
   console.log(obj);
   if (obj.report_product === "GEMPYP") {
@@ -815,9 +813,11 @@
     if (!cols.includes("DURATION")) {
       cols.push("DURATION");
     }
-    if (!cols.includes("S.No.")) {
+
+    if (!cols.includes('S.No.') || !cols.includes("S.NO."))  {
       cols.unshift("S.NO.");
     }
+
     // Create a table element
     var table = document.createElement("table");
     table.id = "tab";
@@ -998,7 +998,7 @@
         }
       }
     }
-    if (!cols.includes("S.No.")) {
+    if (!cols.includes("S.No.") || !cols.includes("S.NO.")) {
       cols.unshift("S.NO.");
     }
 
@@ -1628,7 +1628,6 @@
  
 
   function getsort(val) {
-    // console.log(val);
     if (
       val.target.className === "fa fa-angle-up ml-1" ||
       val.target.className === "fa fa-angle-down ml-1"
@@ -1651,6 +1650,8 @@
       if (sortType === "asc") {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
             if(tab[i][val.target.innerText] === undefined)
               {
                 tab[i][val.target.innerText] = {
@@ -1665,6 +1666,7 @@
                   sortValue: "",
                 };
               }
+            }
             if (
               tab[i][val.target.id]["sortValue"] >
               tab[j][val.target.id]["sortValue"]
@@ -1678,6 +1680,9 @@
       } else {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
+
             if(tab[i][val.target.innerText] === undefined)
               {
                 tab[i][val.target.innerText] = {
@@ -1692,6 +1697,7 @@
                   sortValue: "",
                 };
               }
+            }
             if (
               tab[i][val.target.id]["sortValue"] <
               tab[j][val.target.id]["sortValue"]
@@ -1757,6 +1763,8 @@
         // console.log(tab);
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
             if(tab[i][val.target.innerText] === undefined)
               {
                 tab[i][val.target.innerText] = {
@@ -1770,7 +1778,8 @@
                   value: "None",
                   sortValue: "",
                 };
-              }
+            } 
+          }
             if (
               tab[i][val.target.innerText]["sortValue"] >
               tab[j][val.target.innerText]["sortValue"]
@@ -1784,6 +1793,8 @@
       } else {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
             if(tab[i][val.target.innerText] === undefined)
               {
                 tab[i][val.target.innerText] = {
@@ -1797,7 +1808,8 @@
                   value: "None",
                   sortValue: "",
                 };
-              }
+            } 
+          }
             if (
               tab[i][val.target.innerText]["sortValue"] <
               tab[j][val.target.innerText]["sortValue"]
