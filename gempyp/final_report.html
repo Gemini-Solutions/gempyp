@@ -1,4 +1,4 @@
-<!--version1.0.7-->
+<!--version2.0.0-->
 <html>
 
 <head>
@@ -271,13 +271,6 @@
   }
 
   /* Modal Content (image) */
-  .modal-img-content {
-    /* max-height: 700px;
-height: 100%;
-  display: block;
-  width: 100vw; */
-
-  }
 
   /* Caption of Modal Image */
   #caption {
@@ -676,20 +669,21 @@ height: 100%;
   var obj = DATA_1
   // console.log(stepobj);
   console.log(obj);
-  if (obj.reportProduct === "GEMPYP") {
+  if (obj.report_product === "GEMPYP") {
     theme = gempypThemes;
-  } else if (obj.reportProduct === "GEMJAR") {
+  } else if (obj.report_product === "GEMJAR") {
     theme = gemjarThemes;
   } else {
   }
-  obj.Suits_Details.TestCase_Details = changeFormat(
-    obj.Suits_Details.TestCase_Details
+  obj.suits_details.testcase_details = changeFormat(
+    obj.suits_details.testcase_details
   );
   var excludeHeader = [
     "TC_RUN_ID",
     "STEPS",
     "EXECUTION_METADATA",
     "RESULT_FILE",
+    "RESULT FILE",
     "IGNORE",
   ];
   var sortType = "";
@@ -697,7 +691,7 @@ height: 100%;
   var exeHeaders = {
     STATUS: "status",
     "PROJECT NAME": "project_name",
-    "REPORT TYPE": "s_report_type",
+    "REPORT NAME": "report_name",
     ENV: "env",
     "START TIME": "s_start_time",
     "END TIME": "s_end_time",
@@ -706,10 +700,10 @@ height: 100%;
   var infraHeaders = {
     "EXECUTED BY": "user",
     "EXECUTED ON": "machine",
-    RUN_TYPE: "run_type",
-    RUN_MODE: "run_mode",
+    "RUN TYPE": "run_type",
+    "RUN MODE": "run_mode",
   };
-  var options = getOptions(obj.Suits_Details.TestCase_Details);
+  var options = getOptions(obj.suits_details.testcase_details);
   for (var i = 0; i < options.length; i++) {
     var opt = options[i];
     var el = document.createElement("option");
@@ -726,7 +720,7 @@ height: 100%;
       var newobj = {}
       while (i < n) {
         key = keys[i];
-        if (key.includes('_time')) {
+        if (!(key.includes('_run_id') || key.includes('_RUN_ID')) && key.includes('_')) {
           newobj[key.replace('_', " ").toUpperCase()] = value[j][key];
         }
         else 
@@ -741,10 +735,19 @@ height: 100%;
     for (var i = 0; i < value.length; i++) {
       var keys = Object.keys(value[i]);
       for (var j = 0; j < keys.length; j++) {
-        if (typeof value[i][keys[j]] != "object") {
-          value[i][keys[j]] = {
+        if (typeof value[i][keys[j]] != "object") 
+        {
+            value[i][keys[j]] = {
             value: value[i][keys[j]],
             sortValue: value[i][keys[j]],
+          };
+        }
+        else if(value[i][keys[j]] === null || value[i][keys[j]] === "None")
+        {
+          // console.log(value[i][keys[j]] , "..." , keys[j]);
+          value[i][keys[j]] = {
+            value: "None",
+            sortValue: "",
           };
         }
       }
@@ -753,17 +756,17 @@ height: 100%;
   }
   function constructPage() {
 
-    var infraTable = getInfraDetailsTable(obj.Suits_Details);
+    var infraTable = getInfraDetailsTable(obj.suits_details,obj.suits_details.testcase_details);
     $("#pills-overview").append(infraTable);
-    var cardDetailsOverview = getCardDetails(obj.Suits_Details.Testcase_Info, 'overview');
-    var cardDetailsTestcase = getCardDetails(obj.Suits_Details.Testcase_Info, 'testcase');
+    var cardDetailsOverview = getCardDetails(obj.suits_details.testcase_info, 'overview');
+    var cardDetailsTestcase = getCardDetails(obj.suits_details.testcase_info, 'testcase');
 
     $("#pills-overview").append(cardDetailsOverview);
     $("#pills-testcase").append(cardDetailsTestcase);
-    var exeTable = getExecutionDetailsTable(obj.Suits_Details);
+    var exeTable = getExecutionDetailsTable(obj.suits_details);
     $("#pills-overview").append(exeTable);
 
-    document.getElementById("productType").innerText = obj.reportProduct;
+    document.getElementById("productType").innerText = obj.report_product;
     $("#heading").css("color", theme[0]);
     $("#filterHeading").css("color", theme[0]);
     $("#filtercard").hover(
@@ -776,15 +779,15 @@ height: 100%;
       }
     );
     $("#clear").css("background-color", theme[2]);
-    if (obj.reportProduct === "GEMPYP") {
+    if (obj.report_product === "GEMPYP") {
       $(".nav-pills").addClass("gempyp");
-    } else if (obj.reportProduct === "GEMJAR") {
+    } else if (obj.report_product === "GEMJAR") {
       $(".nav-pills").addClass("gemjar");
     } else {
     }
 
     var testcaseDetailsTable = getTestcaseDetailsTable(
-      obj.Suits_Details.TestCase_Details
+      obj.suits_details.testcase_details
     );
     $("#pills-testcase").append(testcaseDetailsTable);
 
@@ -810,9 +813,11 @@ height: 100%;
     if (!cols.includes("DURATION")) {
       cols.push("DURATION");
     }
-    if (!cols.includes("S.No.")) {
+
+    if (!cols.includes('S.No.') || !cols.includes("S.NO."))  {
       cols.unshift("S.NO.");
     }
+
     // Create a table element
     var table = document.createElement("table");
     table.id = "tab";
@@ -828,11 +833,11 @@ height: 100%;
       theader.style.backgroundColor =
         theme[2].substring(0, theme[2].length - 1) + ", 0.1)";
       theader.innerHTML = cols[i];
-      if((cols[i].includes('START TIME')) || (cols[i].includes('END TIME')))
+      if((cols[i].includes('START TIME')) || (cols[i].includes('END TIME')) || (cols[i].includes('LOG')))
       {
         theader.style.minWidth = "120px";
       }
-      if(cols[i].includes('TIME'))
+      if(cols[i].includes(' '))
       {
         const col_id = cols[i].split(' ')
         theader.id = col_id[0] + '_' + col_id[1] + "_tc";
@@ -904,7 +909,7 @@ height: 100%;
               i
             )["value"];
           }
-          else if (cols[j].includes("LOG_FILE")) {
+          else if (cols[j].includes("LOG FILE")) {
             if (!list[i][cols[j]]) {
               cell.innerHTML = "None";
             }
@@ -958,17 +963,17 @@ height: 100%;
         .css("color", theme[0]);
       accordDiv.append(accordHeading[0]);
       var stepCard = createAccordionCards(
-        obj.TestStep_Details[list[i]["TC_RUN_ID"]["value"]].metaData[2],
+        obj.teststep_details[list[i]["TC_RUN_ID"]["value"]].meta_data[2],
         i
       );
       stepCard.addClass("mt-4");
       accordDiv.append(stepCard[0]);
       var stepDetails = createAccordionMetaDetails(
-        obj.TestStep_Details[list[i]["TC_RUN_ID"]["value"]].metaData
+        obj.teststep_details[list[i]["TC_RUN_ID"]["value"]].meta_data
       );
       accordDiv.append(stepDetails[0]);
       var tableAccord = createAccordionTable(
-        obj.TestStep_Details[list[i]["TC_RUN_ID"]["value"]].steps,
+        obj.teststep_details[list[i]["TC_RUN_ID"]["value"]].steps,
         i
       );
       accordDiv.append(tableAccord[0]);
@@ -993,7 +998,7 @@ height: 100%;
         }
       }
     }
-    if (!cols.includes("S.No.")) {
+    if (!cols.includes("S.No.") || !cols.includes("S.NO.")) {
       cols.unshift("S.NO.");
     }
 
@@ -1049,10 +1054,10 @@ height: 100%;
             icon.setAttribute("title", "View Substeps");
             icon.setAttribute("class", "fa fa-eye substepIcon");
             var index = i;
-            console.log(list[index]);
-            console.log(cols[j]);
+            // console.log(list[index]);
+            // console.log(cols[j]);
             divIcon.addEventListener("click", (event) => {
-              console.log(list);
+              // console.log(list);
               createSubsteps(list, event);
 
               trimModal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
@@ -1151,7 +1156,8 @@ height: 100%;
         "table table-borderless table-responsive w-100 d-block d-md-table"
       )
       .css("box-shadow", " 0px 3px 6px rgba(0, 71, 136, 0.05)")
-      .css("border-radius", "4px");
+      .css("border-radius", "4px")
+      .css("border","1px solid white");
     var cols = Headers(exeHeaders);
     var headers = $("<tr>");
     var content = $("<tr/>");
@@ -1167,7 +1173,6 @@ height: 100%;
     }
     for (var colIndex = 0; colIndex < cols.length; colIndex++) {
       var val = data[exeHeaders[cols[colIndex]]];
-
       if (cols[colIndex].toUpperCase().includes("STATUS")) {
         val = document.createElement("div");
         val.innerText = data[exeHeaders[cols[colIndex]]];
@@ -1224,7 +1229,7 @@ height: 100%;
           $(this).css("border", col).css("cursor", "pointer");
         },
         function () {
-          $(this).css("border", "none");
+          $(this).css("border", "1px solid white");
         }
       );
     var table = $("<table/>").addClass(
@@ -1265,19 +1270,28 @@ height: 100%;
     return div;
   }
 
-  function getInfraDetailsTable(data) {
+  function getInfraDetailsTable(data,tcData) {
+    var run_mode = new Set();
+    var run_type = new Set();
+    for(var i=0 ; i<tcData.length; i++)
+    {
+      run_mode.add(tcData[i]["RUN MODE"]["value"])
+      run_type.add(tcData[i]["RUN TYPE"]["value"])
+    }
+
     var div = $("<div/>")
       .addClass("mt-4 mx-5 card p-3")
       .css("box-shadow", "0px 3px 6px rgba(0, 0, 0, 0.05)")
       .css("border-radius", "6px")
       .css("display", "block")
+      .css("border","1px solid white")
       .hover(
         function () {
           var col = "1px solid " + theme[0];
           $(this).css("border", col).css("cursor", "pointer");
         },
         function () {
-          $(this).css("border", "none");
+          $(this).css("border", "1px solid white");
         }
       );
 
@@ -1303,9 +1317,19 @@ height: 100%;
     for (var colIndex = 0; colIndex < cols.length; colIndex++) {
       var val = data[infraHeaders[cols[colIndex]]];
       if (val === undefined) {
+        if(infraHeaders[cols[colIndex]] === 'run_type')
+        {
+          val = Array.from(run_type).toString();
+        }
+        else if(infraHeaders[cols[colIndex]] === 'run_mode')
+        {
+          val = Array.from(run_mode).toString();
+        }
+        else
+        {
         val = "None";
+        }
       }
-
       content.append($("<td/>").html(val));
 
       $(table).append(content);
@@ -1587,7 +1611,7 @@ height: 100%;
       objans.value = ans;
     }
     if (!isNaN(index)) {
-      obj.Suits_Details.TestCase_Details[index]["DURATION"] = objans;
+      obj.suits_details.testcase_details[index]["DURATION"] = objans;
     }
     return objans;
   }
@@ -1600,6 +1624,8 @@ height: 100%;
     }
     return Array.from(options);
   }
+
+ 
 
   function getsort(val) {
     if (
@@ -1620,10 +1646,27 @@ height: 100%;
         sortType = "asc";
         lastsortHeader = val.target.id;
       }
-      var tab = [...obj.Suits_Details.TestCase_Details];
+      var tab = [...obj.suits_details.testcase_details];
       if (sortType === "asc") {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+              }
+            }
             if (
               tab[i][val.target.id]["sortValue"] >
               tab[j][val.target.id]["sortValue"]
@@ -1637,6 +1680,24 @@ height: 100%;
       } else {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
+
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+              }
+            }
             if (
               tab[i][val.target.id]["sortValue"] <
               tab[j][val.target.id]["sortValue"]
@@ -1648,7 +1709,7 @@ height: 100%;
           }
         }
       }
-      obj.Suits_Details.TestCase_Details = tab;
+      obj.suits_details.testcase_details = tab;
       $("#pills-testcase").children("div")[2].remove();
       var testcaseDetailsTable = getTestcaseDetailsTable(tab);
       $("#pills-testcase").append(testcaseDetailsTable);
@@ -1661,7 +1722,7 @@ height: 100%;
         icon.addClass("fa-angle-down ml-1").css("vertical-align", "middle");
       }
       icon.attr("id", lastsortHeader);
-      if(lastsortHeader.includes('TIME'))
+      if(lastsortHeader.includes(' '))
       {
         const arrid = lastsortHeader.split(' ');
         var targetId = "#" + arrid[0] + "_" + arrid[1] + "_tc";
@@ -1696,11 +1757,29 @@ height: 100%;
         sortType = "asc";
         lastsortHeader = val.target.innerText;
       }
-      var tab = [...obj.Suits_Details.TestCase_Details];  
+      var tab = [...obj.suits_details.testcase_details];  
       tab = changeFormat(tab);
       if (sortType === "asc") {
+        // console.log(tab);
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+            } 
+          }
             if (
               tab[i][val.target.innerText]["sortValue"] >
               tab[j][val.target.innerText]["sortValue"]
@@ -1714,6 +1793,23 @@ height: 100%;
       } else {
         for (var i = 0; i < tab.length; i++) {
           for (var j = i + 1; j < tab.length; j++) {
+            if(val.target.innerText !== 'S.NO.')
+            {
+            if(tab[i][val.target.innerText] === undefined)
+              {
+                tab[i][val.target.innerText] = {
+                  value: "None",
+                sortValue: "",
+                };
+              }
+              if(tab[j][val.target.innerText] === undefined)
+              {
+                tab[j][val.target.innerText] = {
+                  value: "None",
+                  sortValue: "",
+                };
+            } 
+          }
             if (
               tab[i][val.target.innerText]["sortValue"] <
               tab[j][val.target.innerText]["sortValue"]
@@ -1725,7 +1821,7 @@ height: 100%;
           }
         }
       }
-      obj.Suits_Details.TestCase_Details = tab;
+      obj.suits_details.testcase_details = tab;
       $("#pills-testcase").children("div")[2].remove();
       var testcaseDetailsTable = getTestcaseDetailsTable(tab);
       $("#pills-testcase").append(testcaseDetailsTable);
@@ -1740,7 +1836,7 @@ height: 100%;
       }
 
       icon.attr("id", lastsortHeader);
-      if(lastsortHeader.includes('TIME'))
+      if(lastsortHeader.includes(' '))
       {
         const arrid = lastsortHeader.split(' ');
         var targetId = "#" + arrid[0] + "_" + arrid[1] + "_tc";
@@ -1937,7 +2033,7 @@ height: 100%;
     }
 
     trimModalcontent.append(table);
-    console.log(cols);
+    // console.log(cols);
   }
 
 
@@ -1953,7 +2049,7 @@ height: 100%;
           return (
             $(this).filter(function () {
               var tdText = $(this).find(".status").text().toLowerCase();
-              console.log(tdText);
+              // console.log(tdText);
 
 
               if (val === "TOTAL") {

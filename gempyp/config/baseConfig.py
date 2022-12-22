@@ -30,14 +30,13 @@ class AbstarctBaseConfig(ABC):
         return self._CONFIG["TESTCASE_DATA"]
     
     def getSubtestcasesConfig(self) -> Dict:
-
         return self._CONFIG["SUBTESTCASES_DATA"]
 
     def getTestcaseData(self, testcaseName: str) -> Dict:
-        return self._CONFIG["TESTCASE_DATA"].get(testcaseName, None)
+        return self._CONFIG["TESTCASE_DATA"].get(testcaseName.upper(), None)  ## uppercase
     
     def getSubTestcaseData(self, testcaseName: str) -> Dict:
-        return self._CONFIG["SUBTESTCASES_DATA"].get(testcaseName, None)
+        return self._CONFIG["SUBTESTCASES_DATA"].get(testcaseName.upper(), None)  ## uppercase
 
     def getTestcaseLength(self) -> int:
         """
@@ -58,16 +57,17 @@ class AbstarctBaseConfig(ABC):
         """
         testcase_data = self.getTestcaseConfig()
         filtered_dict = {}
+        filtered_dict_subtestcases = {}
 
         ###code for passing testcases through cli jira-113
-        if "TESTCASES" in self._CONFIG['SUITE_DATA']:
+        if "TESTCASE_LIST" in self._CONFIG['SUITE_DATA']:
             test = {}
-            testcase = self._CONFIG['SUITE_DATA']["TESTCASES"]
+            testcase = self._CONFIG['SUITE_DATA']["TESTCASE_LIST"]
             if testcase[0] == '[':
                 testcase = testcase[1:-1]
-                testcase = testcase.split(",")
+                testcase = [i.strip(" ").upper() for i in testcase.split(",")]  ## uppercase
             else:
-                testcase = testcase.split(",")
+                testcase = [i.strip(" ").upper() for i in testcase.split(",")]  ## uppercase
             for key, value in testcase_data.items():
                 if key in testcase:
                     test[key] = value
@@ -76,7 +76,7 @@ class AbstarctBaseConfig(ABC):
         for key, value in testcase_data.items():
             testcases = ""
             if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
-                testcases=value.get("SUBTESTCASES").split(",")
+                testcases=value.get("SUBTESTCASES").upper().split(",")  ## uppercase
                 testcases.append(key)
             if value.get("RUN_FLAG", "N").upper() != "Y":
                 continue
@@ -84,29 +84,17 @@ class AbstarctBaseConfig(ABC):
                 self.total_yflag_testcase += 1
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
                 continue
-            if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
-                print(value.get("SET"))
-                continue
-            
-
-            # TODO add more filters
-            
-            if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
-                print(value.get("CATEGORY"))
-                continue
-            if self.cli_config["SET"]!=None and value.get("SET") not in self.cli_config["SET"].split(","):
-                print(value.get("SET"))
-                continue
 
 
             filtered_dict[key] = value
-            filtered_dict_subtestcases = {}
+            
             if(len(testcases)>0):
                 for i in range(len(testcases)):
                     if(testcases[i] in testcase_data.keys()):
                         filtered_dict_subtestcases[testcases[i]]=testcase_data.get(testcases[i])
         self._CONFIG["SUBTESTCASES_DATA"] = filtered_dict_subtestcases
-
+       
+    
         self._CONFIG["TESTCASE_DATA"] = filtered_dict
 
     # TODO

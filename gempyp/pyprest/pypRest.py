@@ -1,12 +1,9 @@
 from asyncio.log import logger
 import os
 import traceback
-import time
 import logging
-import importlib
 import json
-from typing import Dict, List, Tuple, Type
-from gempyp.config.baseConfig import AbstarctBaseConfig
+from typing import Dict, List, Tuple
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
@@ -21,7 +18,7 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import moduleImports
-
+# from gempyp.libs import custom_s3
 
 
 class PypRest(Base):
@@ -33,7 +30,6 @@ class PypRest(Base):
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
         self.isLegacyPresent = self.isLegacyPresent()
 
-
         # set vars
         self.setVars()
 
@@ -41,7 +37,6 @@ class PypRest(Base):
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter.addRow("Starting Test", f'Testcase Name: {self.tcname}', status.INFO) 
-
 
     def restEngine(self):
         output = []
@@ -62,9 +57,7 @@ class PypRest(Base):
                     exceptiondata = traceback.format_exc().splitlines()
                     exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
                     self.reporter.addMisc("Reason of Failure",exceptionarray[0])
-            if self.reporter._misc_data["REASON OF FAILURE"] == "":
-                self.reporter._misc_data["REASON OF FAILURE"] = None
-            ## variable replacement.val_not_found ---- replace variables with "NULL"
+
             VarReplacement(self).valueNotFound()
             output = writeToReport(self)
             return output, None
@@ -85,16 +78,17 @@ class PypRest(Base):
         self.reporter.finalizeReport()
 
     def validateConf(self):
-        mandate = ["API", "METHOD", "HEADERS", "BODY"]
-        # ---------------------------------------adding misc data -----------------------------------------------------
-        # self.reporter.addMisc(Misc="Test data")
-        # self.reporter._misc_data["REASON OF FAILURE"] = "Mandatory keys are missing"
-
-        # ------------------------------sample adding columns to testcase file-----------------------------------------------
-        # self.reporter.addRow("User Profile Data cannot be fetched", "Token expired or incorrect", status.FAIL, test="test")
+        mandate = ["API", "METHOD"]
         self.list_subtestcases=[]
         self.request_obj=[]
         self.response_obj=[]
+        if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
+            # update REASON OF FAILURE in misc
+            self.reporter.addMisc("REASON OF FAILURE", "Mandatory keys are missing")
+            # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
+            raise Exception("mandatory keys missing")
+     
+        
         if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()):
             # self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
             self.list_subtestcases=self.data["config_data"]["SUBTESTCASES_DATA"]
@@ -102,6 +96,7 @@ class PypRest(Base):
             
             self.variables["local"] = {}
             self.variables["suite"] = self.data["SUITE_VARS"]
+            self.parent_data=self.data["config_data"]
             for i in range(len(self.list_subtestcases)):
                 self.reporter.addRow("<b>Subtestcase</b>",f'<b>Subtestcase Name: {self.list_subtestcases[i]["NAME"]}</b>',status.INFO)
                 self.data["config_data"]=self.list_subtestcases[i]
@@ -117,22 +112,21 @@ class PypRest(Base):
                     requestObj.credentials = {"username": self.username, "password": self.password}
                     requestObj.auth = "PASSWORD"
                 self.request_obj.append(requestObj)
+              
                 self.execRequest()
-                self.postProcess()
-                MiscVariables(self).miscVariables()
                 
-        if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
-            # update REASON OF FAILURE in misc
-            self.reporter.addMisc("REASON OF FAILURE", "Mandatory keys are missing")
-            # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
-            raise Exception("mandatory keys missing")
+                self.postProcess()
+                
+                MiscVariables(self).miscVariables()
+            del self.parent_data["SUBTESTCASES_DATA"]
+            self.data["config_data"]=self.parent_data
+            self.request_obj=[]
+
             
     # read config and get data
     def getVals(self):
         """This is a function to get the values from configData, store it in self object."""
         # capitalize the keys
-
-
 
         for k, v in self.data["config_data"].items():
             self.data.update({k.upper(): v})
@@ -142,8 +136,6 @@ class PypRest(Base):
             self.api = self.data["config_data"]["API"].strip(" ")
         else: 
             self.api = self.data.get(self.env, "PROD").strip(" ") + self.data["config_data"]["API"].strip(" ")
-        
-
         
         # get the method
         self.method = self.data["config_data"].get("METHOD", "GET")
@@ -158,7 +150,6 @@ class PypRest(Base):
         
         # get body
         self.body = self.data["config_data"].get("BODY", {})
-
 
         # get file
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
@@ -184,21 +175,17 @@ class PypRest(Base):
         if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
             self.legacy_api = self.data["config_data"]["LEGACY_API"].strip(" ")
             self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
-            self.legacy_headers = json.loads(self.data["config_data"].get("LEGACY_HEADERS", {}))
-            self.legacy_body = json.loads(self.data["config_data"].get("LEGACY_BODY", {}))  
+            self.legacy_headers = json.loads(str(self.data["config_data"].get("LEGACY_HEADERS", {})))
+            self.legacy_body = json.loads(str(self.data["config_data"].get("LEGACY_BODY", {})))
             self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
             self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
         #setting variables and variable replacement
-
         
-        
-
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
-        self.body=json.loads(self.body)
-        self.headers=json.loads(self.headers)
-    
-    
+        self.body=json.loads(self.body) if type(self.body) == str else self.body 
+        self.headers=json.loads(self.headers) if type(self.headers) == str else self.headers 
+
     def file_upload(self,json_form_data): 
         files_data=[]
         json_form_data_1={}  
@@ -208,9 +195,6 @@ class PypRest(Base):
                 files_data_tuple+=(key,json_form_data[key])
             files_data.append(files_data_tuple)
         return files_data
-
-
-
 
     def execRequest(self):
         """This function
@@ -250,39 +234,56 @@ class PypRest(Base):
         self.beforeMethod()
         self.logRequest()
         # calling variable replacement after before method
+        
         VarReplacement(self).variableReplacement()
-    
-
-
+       
         try:
             # raise Exception(f"Error occured while sending request- test")
             self.logger.info("--------------------Executing Request ------------------------")
             self.logger.info(f"url: {self.req_obj.api}")
             self.logger.info(f"method: {self.req_obj.method}")
             self.logger.info(f"request_body: {self.req_obj.body}")
-            self.logger.info(f"headers: {self.req_obj.headers}")
+            self.logger.info(f"headers: {self.req_obj.headers}") 
+
+            # addig request misc
+            self.reporter.addMisc("REQUEST URL", str(self.req_obj.api)) 
+            self.reporter.addMisc("REQUEST METHOD", str(self.req_obj.method))
+            self.reporter.addMisc("REQUEST BODY", str(self.req_obj.body))  # s3
+            self.reporter.addMisc("REQUEST HEADERS", str(self.req_obj.headers))
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
             if(len(self.request_obj)>0):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
-            
 
-            # self.res_obj.response_body
-            # self.res_obj.status_code
-            # self.res_obj.response_time
-            # self.res_obj.response_headers
+            # self.reporter.addMisc("RESPONSE BODY", str(self.res_obj.response_body))  # s3
+            # self.reporter.addMisc("RESPONSE HEADERS", str(self.res_obj.response_headers))
+            self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.res_obj.status_code}/{str(self.exp_status_code).strip('[]')}")
 
             # logging legacy api
             try:
                 # if self.legacy_req is not None:
                 self.logger.info("--------------------Executing legacy Request ------------------------")
+
                 self.logger.info(f"legacy url: {self.legacy_req.api}")
                 self.logger.info(f"legacy method: {self.legacy_req.method}")
                 self.logger.info(f"legacy request_body: {self.legacy_req.body}")
                 self.logger.info(f"legacy headers: {self.legacy_req.headers}")
+
+                # addig request misc
+                self.reporter.addMisc("LEGACY REQUEST URL", str(self.legacy_req.api))
+                self.reporter.addMisc("LEGACY REQUEST METHOD", str(self.legacy_req.method))
+                self.reporter.addMisc("LEGACY REQUEST BODY", str(self.legacy_req.body))  # s3
+                self.reporter.addMisc("LEGACY REQUEST HEADERS", str(self.legacy_req.headers))
+
                 self.legacy_res = api.Api().execute(self.legacy_req)
+
+                # self.reporter.addMisc("LEGACY RESPONSE BODY", str(self.legacy_res.response_body))  # s3
+                # self.reporter.addMisc("LEGACY RESPONSE HEADERS", str(self.legacy_res.response_headers))
+                self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.legacy_res.status_code}/{str(self.legacy_exp_status_code).strip('[]')}")
+
+
                 self.reporter.addMisc("Current Response Time", "{0:.{1}f} sec(s)".format(self.res_obj.response_time,2))
                 self.reporter.addMisc("Legacy Response Time", "{0:.{1}f} sec(s)".format(self.legacy_res.response_time,2) )
                 self.logResponse()
@@ -395,11 +396,13 @@ class PypRest(Base):
             if isinstance(body, str):
                 if "<!DOCTYPE html>" in body and "</html>" in body:
                     body = f"<a href={self.req_obj.api} target = '_blank'>Click here</a>"
+        
             self.reporter.addRow("Details of Request Execution", 
                                  f"<b>RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
                                  + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
                                  + f"<b>RESPONSE BODY</b>: {str(body)}", 
                                  status.INFO)
+            logging.info(f"<b>RESPONSE BODY</b>: {str(body)}")
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
                                  f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
@@ -455,6 +458,13 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
+            # trying to download from s3 path
+            # if(file_name.__contains__('s3')):
+            #     before_file=file_name.split("/")
+            #     folder = before_file[3:]
+            #     my_bucket = before_file[2].split(".")[0]
+            #     file = before_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -510,6 +520,12 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
+            # if(file_name.__contains__('s3')):
+            #     after_file=file_name.split("/")
+            #     folder = after_file[3:]
+            #     my_bucket = after_file[2].split(".")[0]
+            #     file = after_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -552,7 +568,7 @@ class PypRest(Base):
     def getExpectedStatusCode(self,exp_status_code_param):
         code_list = []
         # self.data["config_data"].get("EXPECTED_STATUS_CODE", 200)
-        exp_status_code_string = self.data["config_data"].get(f"{exp_status_code_param}")
+        exp_status_code_string = self.data["config_data"].get(f"{exp_status_code_param}",str(200))
         if "," in exp_status_code_string:
             code_list = exp_status_code_string.strip('"').strip("'").split(",")
         elif "or" in exp_status_code_string.lower():
@@ -563,11 +579,11 @@ class PypRest(Base):
         return code_list
     
     def isLegacyPresent(self):
-        if self.data["config_data"].get("LEGACY_API") is not None:
-            if self.data["config_data"].get("LEGACY_METHOD") is not None:
-                if json.loads(self.data["config_data"].get("LEGACY_HEADERS")) is not None:
-                        if json.loads(self.data["config_data"].get("LEGACY_BODY")) is not None:
-                            if self.data["config_data"].get("LEGACY_EXPECTED_STATUS_CODE") is not None:
+        if self.data["config_data"].get("LEGACY_API", None) is not None:
+            if self.data["config_data"].get("LEGACY_METHOD", None) is not None:
+                if json.loads(str(self.data["config_data"].get("LEGACY_HEADERS", {}))) is not None:
+                        if json.loads(str(self.data["config_data"].get("LEGACY_BODY", {}))) is not None:
+                            if self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE") is not None:
                                 if self.data["config_data"].get("LEGACY_AUTHENTICATION", "") is not None:
                                     return True
                                 else:

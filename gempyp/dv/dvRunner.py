@@ -1,27 +1,21 @@
 import mysql.connector
 import os
 from configparser import ConfigParser
-from posixpath import split
-from sqlite3 import connect
 from typing import Dict
 import pandas as pd
-from pyparsing import originalTextFor
-import mysql.connector
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
-from gempyp.dvm.dvmReporting import writeToReport
+from gempyp.dv.dvReporting import writeToReport
 from telnetlib import STATUS
 import traceback
-from numpy import sort
 import pandas as pd
-import xlsxwriter
 import logging
 import math
 import numpy
 import pg8000
 
-class DvmRunner(Base):
+class DvRunner(Base):
 
     def __init__(self, data):
         
@@ -40,25 +34,55 @@ class DvmRunner(Base):
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
         
-    def dvmEngine(self):
+    def dvEngine(self):
         
         try:
             column =[]
             try:
-                configPath= self.configData["DB_CONFIG_PATH"]
-                configur = ConfigParser()
-                config = readPath(configPath)
-                configur.read(config)
+                if self.configData["DATABASE"].lower() == 'custom': 
+                    pass
+                else:
+                    configPath= self.configData["DB_CONFIG_PATH"]
+                    configur = ConfigParser()
+                    config = readPath(configPath)
+                    configur.read(config)
             except Exception as e:
                 self.reporter.addRow("Config File","Path is not Correct",status.FAIL)
                 traceback.print_exc()
                 output = writeToReport(self)
                 return output, None
             try:
-                self.logger.info("----Parsing the Config File----")
-                userCred ={"host":configur.get(self.configData["SOURCE_DB"],'host'),"dbName":configur.get(self.configData["SOURCE_DB"],'databaseName'),"userName":configur.get(self.configData["SOURCE_DB"],'userName'),"password":configur.get(self.configData["SOURCE_DB"],'password'),"port":configur.get(self.configData["SOURCE_DB"],'port')}
-                targetCred ={"host":configur.get(self.configData["TARGET_DB"],'host'),"dbName":configur.get(self.configData["TARGET_DB"],'databaseName'),"userName":configur.get(self.configData["TARGET_DB"],'userName'),"password":configur.get(self.configData["TARGET_DB"],'password'),"port":configur.get(self.configData["TARGET_DB"],'port')} 
-                self.reporter.addRow("Parsing DB Conf","Parsing of DB config is Successfull",status.PASS)
+                if self.configData["DATABASE"].lower() == 'custom': 
+                    conn_string = self.configData['SOURCE_CONN']
+                    ind = conn_string.index('host')
+                    count = 0
+                    li = []
+                    for i in range(ind,len(conn_string)):
+                        if conn_string[i] == "'":
+                            count +=1
+                            li.append(i)
+                            if count == 2:
+                                break
+                    host = conn_string[li[0]+1:li[1]]
+                    userCred = {'host': host}
+                    conn_string2 = self.configData['TARGET_CONN']
+                    ind1 = conn_string2.index('host')
+                    count = 0
+                    li = []
+                    for i in range(ind1,len(conn_string2)):
+                        if conn_string2[i] == "'":
+                            count +=1
+                            li.append(i)
+                            if count == 2:
+                                break
+                    host = conn_string2[li[0]+1:li[1]]
+                    targetCred = {'host': host}
+                    
+                else:
+                    self.logger.info("----Parsing the Config File----")
+                    userCred ={"host":configur.get(self.configData["SOURCE_DB"],'host'),"dbName":configur.get(self.configData["SOURCE_DB"],'databaseName'),"userName":configur.get(self.configData["SOURCE_DB"],'userName'),"password":configur.get(self.configData["SOURCE_DB"],'password'),"port":configur.get(self.configData["SOURCE_DB"],'port')}
+                    targetCred ={"host":configur.get(self.configData["TARGET_DB"],'host'),"dbName":configur.get(self.configData["TARGET_DB"],'databaseName'),"userName":configur.get(self.configData["TARGET_DB"],'userName'),"password":configur.get(self.configData["TARGET_DB"],'password'),"port":configur.get(self.configData["TARGET_DB"],'port')} 
+                    self.reporter.addRow("Parsing DB Conf","Parsing of DB config is Successfull",status.PASS)
             except Exception as e:
                 self.logger.error(str(e))
                 traceback.print_exc()
@@ -79,8 +103,14 @@ class DvmRunner(Base):
             """connecting to sourceDB"""
             try:
                 self.logger.info("----Connecting to SourceDB----")
-                if self.configData["DATABASE"].lower() == 'mysql':
-                    myDB = mysql.connector.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'])
+                if self.configData["DATABASE"].lower() == 'custom':
+                    db = self.configData['SOURCE_CONN']
+                    ind = db.index("(")
+                    module = db[0:ind-8:1]
+                    __import__(module)
+                    myDB = eval(db)
+                elif self.configData["DATABASE"].lower() == 'mysql':
+                    myDB = mysql.connector.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'], port = userCred['port'])
                 elif self.configData["DATABASE"].lower() == 'postgresql':
                     myDB = pg8000.connect(host= userCred['host'],user = userCred["userName"], password = userCred['password'],database= userCred['dbName'], port = userCred['port'])
                 self.reporter.addRow("Connection to SourceDB: "+ str(userCred["host"]),"Connection to SourceDB is Successfull",status.PASS)
@@ -125,8 +155,15 @@ class DvmRunner(Base):
             """Connecting to TargetDB"""
             try:
                 self.logger.info("----Connecting to TargetDB----")
-                if self.configData["DATABASE"].lower() == 'mysql':
-                    myDB1 = mysql.connector.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'])
+
+                if self.configData["DATABASE"].lower() == 'custom':
+                    db = self.configData['TARGET_CONN']
+                    ind = db.index("(")
+                    module = db[0:ind-8:1]
+                    __import__(module)
+                    myDB1 = eval(db)
+                elif self.configData["DATABASE"].lower() == 'mysql':
+                    myDB1 = mysql.connector.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'], port= targetCred['port'])
                 elif self.configData["DATABASE"].lower() == 'postgresql':
                     myDB1 = pg8000.connect(host= targetCred['host'],user = targetCred["userName"], password = targetCred['password'],database= targetCred['dbName'],port= targetCred['port'])
                 self.reporter.addRow("Connection to TargetDB: "+ str(targetCred['host']),"Connection to TargetDB is Successfull",status.PASS)
