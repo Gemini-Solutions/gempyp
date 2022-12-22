@@ -112,34 +112,36 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
-        #trying first rerun of base url api in case of api failure
-        if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
-            logging.info("Retrying to call Api for getting urls")
-            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
+        if self.jewel_user:
+            #trying first rerun of base url api in case of api failure
+            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+                logging.info("Retrying to call Api for getting urls")
+                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
-        # code for checking s_run_id present in db 
-        if "RUN_ID" in self.PARAMS:
-            print("************Trying to check If s_run_id is present in DB*****************")
-            response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-            if response == "failed":
-                print("************s_run_id not present in DB Trying to call Post*****************")
-                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            # code for checking s_run_id present in db 
+            if "RUN_ID" in self.PARAMS:
+                print("************Trying to check If s_run_id is present in DB*****************")
+                response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+                if response == "failed":
+                    print("************s_run_id not present in DB Trying to call Post*****************")
+                    dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
-        elif ("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
-            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-            ### first try to rerun the data
-            if dataUpload.suite_uploaded == False:
-                print("------Retrying to Upload Suite Data------")
+            else:
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        
+                ### first try to rerun the data
+                if dataUpload.suite_uploaded == False:
+                    print("------Retrying to Upload Suite Data------")
+                    dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            
         self.makeOutputFolder()
         self.start()
-        #trying second rerun of base url api in case of api failure
-        if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+
+        if(self.jewel_user):
+            #trying second rerun of base url api in case of api failure
+            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
                 logging.info("Second Time Retrying to call Api for getting urls")
                 DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
-        ### Trying to reupload suite data
-        if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()) :
+            ### Trying to reupload suite data
             if dataUpload.suite_uploaded == False:
                 print("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
@@ -162,8 +164,8 @@ class Engine:
                 with open(unuploaded_path,'w') as w:
                     w.write(listToStr)
         self.updateSuiteData()
-        suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
-        testcase_info = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_info"]
+        # suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
+        # testcase_info = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_info"]
         skip_jira = 0
         try:
             jira_email = self.PARAMS.get("JIRA_EMAIL", None)
@@ -230,8 +232,8 @@ class Engine:
         """
         self.PARAMS = config.getSuiteConfig()
         #checking if url is present in file and calling get api
-        if self.PARAMS.get("BASE_URL", None):
-            DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
+        # if self.PARAMS.get("BASE_URL", None):
+        #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         self.CONFIG = config
         self.testcase_data = {}
         self.total_runable_testcase = config.total_yflag_testcase
@@ -247,15 +249,21 @@ class Engine:
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS["SUITE_VARS"]
         self.jewel_run = False
-        if self.PARAMS.get("S_ID", None) is not None:
-            self.jewel_run = True
-        elif self.PARAMS["BRIDGE_TOKEN"] and self.PARAMS["USERNAME"]:
-            try:
-                self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
-            except Exception as e:
-                print(e)
-                self.s3_url = ""
-                print("--------- url", self.s3_url)
+        self.jewel_user = False
+        self.s3_url = ""
+        if self.PARAMS.get("BRIDGE_TOKEN", None) and self.PARAMS.get("USERNAME", None):
+            self.jewel_user = True
+        if self.jewel_user:
+            if self.PARAMS.get("BASE_URL", None):
+                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            if self.PARAMS.get("S_ID", None):
+                self.jewel_run = True
+            else:
+                try:
+                    self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
+                    print("--------- url", self.s3_url)
+                except Exception as e:
+                    print(e)
         #add suite_vars here 
 
     def parseMails(self):
@@ -513,7 +521,7 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
-                if("USERNAME" in self.PARAMS.keys() and "BRIDGE_TOKEN" in self.PARAMS.keys()):
+                if(self.jewel_user):
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         except Exception as e:
             traceback.print_exc()

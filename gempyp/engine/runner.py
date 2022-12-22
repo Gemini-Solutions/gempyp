@@ -48,7 +48,6 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
                 data["TESTCASEMETADATA"] = testcase_meta
                 data["config_data"] = config_data
 
-                print(data)
                 singleTestcase = getOutput(data)
 
                 output.append(singleTestcase)
