@@ -18,13 +18,14 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import moduleImports
+from gempyp.libs.gem_s3_common import download_from_s3
 # from gempyp.libs import custom_s3
 
 
 class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
         # self.logger.root.setLevel(self.logger.DEBUG)
-        self.data = data
+        self.data = data    
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
@@ -444,12 +445,20 @@ class PypRest(Base):
         self.logger.info("Before file mthod:- " + method_name)
         try:
             # trying to download from s3 path
-            # if(file_name.__contains__('s3')):
+           
+            if(file_name.__contains__('gem-np')):
+                fileContent=download_from_s3(api=f"https://apis-beta.gemecosystem.com/v1/download/file?id={file_name}",username=self.data["SUITE_VARS"].get("username",None),bridge_token=self.data["SUITE_VARS"].get("bridge_token",None))
+                file_name = os.path.join(file_name.split(":")[-1])
+                with open(file_name, "w+") as fp:
+                    fp.seek(0)
+                    fp.write(fileContent)
+                    fp.truncate()
             #     before_file=file_name.split("/")
             #     folder = before_file[3:]
             #     my_bucket = before_file[2].split(".")[0]
             #     file = before_file[-1]
             #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+    
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -505,6 +514,13 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
+            if(file_name.__contains__('gem-np')):
+                fileContent=download_from_s3(api=f"https://apis-beta.gemecosystem.com/v1/download/file?id={file_name}",username=self.data["SUITE_VARS"].get("username",None),bridge_token=self.data["SUITE_VARS"].get("bridge_token",None))
+                file_name = os.path.join(file_name.split(":")[-1])
+                with open(file_name, "w+") as fp:
+                    fp.seek(0)
+                    fp.write(fileContent)
+                    fp.truncate()
             # if(file_name.__contains__('s3')):
             #     after_file=file_name.split("/")
             #     folder = after_file[3:]

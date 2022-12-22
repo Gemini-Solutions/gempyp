@@ -224,36 +224,69 @@ class Engine:
         os.makedirs(self.testcase_log_folder)
 
     def setUP(self, config: Type[AbstarctBaseConfig]):
+
         """
+
         assigning values to some attributes which will be used in method makeSuiteDetails
+
         """
+
         self.PARAMS = config.getSuiteConfig()
+
         #checking if url is present in file and calling get api
+
         if self.PARAMS.get("BASE_URL", None):
+
             DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
+
         self.CONFIG = config
+
         self.testcase_data = {}
+
         self.total_runable_testcase = config.total_yflag_testcase
+
         self.machine = platform.node()
+
         self.user = self.PARAMS.get("USERNAME", getpass.getuser())
+
         self.current_dir = os.getcwd()
+
         self.platform = platform.system()
+
         self.start_time = datetime.now(timezone.utc)
+
         self.project_name = self.PARAMS["PROJECT"]
+
         self.report_name = self.PARAMS.get("REPORT_NAME")
+
         self.project_env = self.PARAMS["ENV"]
+
         self.unique_id = self.PARAMS["UNIQUE_ID"]
-        self.user_suite_variables = self.PARAMS["SUITE_VARS"]
+
+        self.user_suite_variables = {}
+
         self.jewel_run = False
+
         if self.PARAMS.get("S_ID", None) is not None:
+
             self.jewel_run = True
+
         elif self.PARAMS["BRIDGE_TOKEN"] and self.PARAMS["USERNAME"]:
+
+            self.user_suite_variables = {"bridge_token":self.PARAMS["BRIDGE_TOKEN"],"username":self.PARAMS["USERNAME"]}
+
             try:
+
                 self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
+
             except Exception as e:
+
                 print(e)
+
                 self.s3_url = ""
+
                 print("--------- url", self.s3_url)
+
         #add suite_vars here 
 
     def parseMails(self):
