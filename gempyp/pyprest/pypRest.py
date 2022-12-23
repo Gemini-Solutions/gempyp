@@ -260,6 +260,7 @@ class PypRest(Base):
 
             # self.reporter.addMisc("RESPONSE BODY", str(self.res_obj.response_body))  # s3
             # self.reporter.addMisc("RESPONSE HEADERS", str(self.res_obj.response_headers))
+            self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.res_obj.status_code}/{str(self.exp_status_code).strip('[]')}")
 
             # logging legacy api
             try:
@@ -281,6 +282,8 @@ class PypRest(Base):
 
                 # self.reporter.addMisc("LEGACY RESPONSE BODY", str(self.legacy_res.response_body))  # s3
                 # self.reporter.addMisc("LEGACY RESPONSE HEADERS", str(self.legacy_res.response_headers))
+                self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.legacy_res.status_code}/{str(self.legacy_exp_status_code).strip('[]')}")
+
 
                 self.reporter.addMisc("Current Response Time", "{0:.{1}f} sec(s)".format(self.res_obj.response_time,2))
                 self.reporter.addMisc("Legacy Response Time", "{0:.{1}f} sec(s)".format(self.legacy_res.response_time,2) )
