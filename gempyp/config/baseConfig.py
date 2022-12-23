@@ -84,6 +84,8 @@ class AbstarctBaseConfig(ABC):
                 self.total_yflag_testcase += 1
             if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
                 continue
+            if self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None)!=None and value.get("CATEGORY") not in self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None).split(","):
+                continue
 
 
             filtered_dict[key] = value
