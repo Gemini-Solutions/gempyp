@@ -269,6 +269,7 @@ class Engine:
         self.jewel_user = False
         self.s3_url = ""
         if self.PARAMS.get("BRIDGE_TOKEN", None) and self.PARAMS.get("USERNAME", None):
+            self.user_suite_variables = {"bridge_token":self.PARAMS["BRIDGE_TOKEN"],"username":self.PARAMS["USERNAME"]}
             self.jewel_user = True
         if self.jewel_user:
             if self.PARAMS.get("BASE_URL", None):
