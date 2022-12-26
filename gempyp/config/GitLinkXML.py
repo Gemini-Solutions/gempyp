@@ -14,6 +14,7 @@ def fetchFileFromGit(link,branch,username,token):
             json_response=json.loads(response.text)
             content_api=json_response["download_url"]
             response_content=requests.get(content_api)
+            
             if(link.split(".")[-1]=="xml"):
                 log_dir = str(os.path.join(tempfile.gettempdir(), 'XML'))
                 if not os.path.exists(log_dir):

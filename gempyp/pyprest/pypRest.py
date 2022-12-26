@@ -17,7 +17,6 @@ from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
-from gempyp.libs.common import moduleImports
 from gempyp.libs.common import download_beforeAfter_file
 
 # from gempyp.libs import custom_s3
@@ -462,19 +461,14 @@ class PypRest(Base):
         try:
             # trying to download from s3 path
            
-            if(file_name.__contains__('gem-np')):
-                fileContent=download_from_s3(api=f"https://apis-beta.gemecosystem.com/v1/download/file?id={file_name}",username=self.data.get("SUITE_VARS",None).get("username",None),bridge_token=self.data.get("SUITE_VARS",None).get("bridge_token",None))
-                file_name = os.path.join(file_name.split(":")[-1])
-                with open(file_name, "w+") as fp:
-                    fp.seek(0)
-                    fp.write(fileContent)
-                    fp.truncate()
             #     before_file=file_name.split("/")
             #     folder = before_file[3:]
             #     my_bucket = before_file[2].split(".")[0]
             #     file = before_file[-1]
             #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
         
+
+
     
             file_obj=download_beforeAfter_file(file_name,self.data)
             self.logger.info("Running before method")
@@ -491,9 +485,7 @@ class PypRest(Base):
                 request_file=self.file,
                 env=self.env,
             )
-            print(file_obj)
-            print(class_name)
-            print("######################")
+    
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
             fin_obj = getattr(obj_, method_name)(before_obj)
@@ -541,19 +533,15 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            if(file_name.__contains__('gem-np')):
-                fileContent=download_from_s3(api=f"https://apis-beta.gemecosystem.com/v1/download/file?id={file_name}",username=self.data["SUITE_VARS"].get("username",None),bridge_token=self.data["SUITE_VARS"].get("bridge_token",None))
-                file_name = os.path.join(file_name.split(":")[-1])
-                with open(file_name, "w+") as fp:
-                    fp.seek(0)
-                    fp.write(fileContent)
-                    fp.truncate()
+
             # if(file_name.__contains__('s3')):
             #     after_file=file_name.split("/")
             #     folder = after_file[3:]
             #     my_bucket = after_file[2].split(".")[0]
             #     file = after_file[-1]
             #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+
+            
             file_obj=download_beforeAfter_file(file_name,self.data)
             self.logger.info("Running after method")
             obj_ = file_obj

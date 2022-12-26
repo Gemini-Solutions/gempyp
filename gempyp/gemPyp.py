@@ -59,6 +59,7 @@ class Gempyp:
         s_run_id = vars(self)["RUN_ID"]
         if("GIT" in self.config):
             list_url=self.config.split(":")
+            
             config=XmlConfig(fetchFileFromGit(list_url[2],list_url[3],list_url[4],list_url[5]),s_run_id)
         else:
             config = XmlConfig(self.config, s_run_id)
