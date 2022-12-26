@@ -8,6 +8,8 @@ import typing
 from gempyp.config import DefaultSettings
 import importlib
 import sys
+from gempyp.libs.gem_s3_common import download_from_s3
+from gempyp.config.GitLinkXML import fetchFileFromGit
 
 
 def read_json(file_path):
@@ -128,4 +130,26 @@ def moduleImports(file_name):
             logging.error("----- Error occured file could not be imported using any of the methods.-----")
             traceback.print_exc()
             return e
+
+
+def download_beforeAfter_file(file_name,data):
+    if(file_name.__contains__('S3')):
+        logging.info("File is from S3")
+        fileContent=download_from_s3(api=file_name.replace("S3:",""),username=data["SUITE_VARS"].get("username",None),bridge_token=data["SUITE_VARS"].get("bridge_token",None))
+        file_name = os.path.join(file_name.split(":")[-1])
+        with open(file_name, "w+") as fp:
+            fp.seek(0)
+            fp.write(fileContent)
+            fp.truncate()
+    elif(file_name.__contains__('GIT')):
+        logging.info("File is from GIT")
+        list_url=file_name.split(":")
+        file_name=fetchFileFromGit(list_url[2],list_url[3],list_url[4],list_url[5])
+    file_name= moduleImports(file_name)
+
+
+
+    return file_name
+            
+
 
