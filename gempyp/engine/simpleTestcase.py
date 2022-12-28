@@ -22,11 +22,6 @@ class AbstractSimpleTestcase(ABC):
         """
         logger = testcase_settings.get("LOGGER")
         kwargs["TESTCASENAME"] = testcase_settings["NAME"]
-        file_name = testcase_settings.get("PATH")
-        try:
-            testcase = moduleImports(file_name)
-        except:
-            logger.ERROR("Testcase not imported")
         try:
             method_name = testcase_settings.get("METHOD", "main")
             logger.info(f"-------- method ---------{method_name}")
