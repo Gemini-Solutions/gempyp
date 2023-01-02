@@ -1,3 +1,6 @@
+import uuid
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.config import DefaultSettings
 import mysql.connector
 import os
 from configparser import ConfigParser
@@ -271,7 +274,8 @@ class DvRunner(Base):
             dict2 = { 'Column_Name':[],'Source_Value':[],'Target_Value':[],'REASON OF FAILURE':[]}
             dict4 ={}
             outputFolder = self.data['OUTPUT_FOLDER'] + "\\"
-            excelPath = outputFolder + self.configData['NAME'] + '.xlsx'
+            unique_id = uuid.uuid4()
+            excelPath = f"{outputFolder}{self.configData['NAME']}_{unique_id}.xlsx"
             excel = ".\\testcases\\" + self.configData['NAME'] + '.xlsx'
             keysCheck =0
 
@@ -356,7 +360,16 @@ class DvRunner(Base):
                         pass
                     else:
                         df2_res.to_excel(writer1, sheet_name = 'value_difference', index = False)
-                self.reporter.addRow("Data Validation Report","DVM Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
+                s3_url = None
+                try:
+                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token = self.data["SUITE_VARS"]["bridge_token"], username=self.data["SUITE_VARS"]["username"], file=excelPath, folder="dv")[0]["Url"])
+
+                except Exception as e:
+                    print(e)
+                if s3_url == None:
+                    self.reporter.addRow("Data Validation Report","DVM Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
+                else:
+                    self.reporter.addRow("Data Validation Report","DVM Result File: "+'<a href='+s3_url+'>Result File</a>', status= status.FAIL )
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
             self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))

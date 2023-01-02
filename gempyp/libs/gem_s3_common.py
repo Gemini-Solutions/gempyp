@@ -3,6 +3,8 @@ import requests
 import logging
 import os
 import sys
+# import urllib
+from gempyp.config import DefaultSettings
 
 
 upload_file_api = "https://apis-beta.gemecosystem.com/v1/upload/file"
@@ -79,6 +81,18 @@ def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, i
     response = requests.get(api, params=params, headers=headers)  
     return response.text
 
+
+def create_s3_link(**kwargs):
+    """ creating s3 link to be viewed on file viewer on jewel UI"""
+    
+    s3_viewer = DefaultSettings.getUrls('file-viewer')
+    if kwargs.get("url", None):
+        params = "url=" + kwargs.get("url")
+        kwargs.pop("url")
+        for key, value in kwargs.items():
+            params = f"{params}&{key}={value}"
+        return f"{s3_viewer}?{params}"
+    return None
 
 if __name__ == "__main__":
     print(download_from_s3(api="https://apis-beta.gemecosystem.com/v1/download/file?id=gem-np:PYPRESTBEFOREFILE:BeforeAfterFile1.py",username="tanya.agarwal",bridge_token="374efe42-323e-4445-b89b-1ff750f000c61664541163883"))
