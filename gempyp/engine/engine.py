@@ -112,6 +112,9 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
+        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data
+            logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
+            sys.exit()
         if self.jewel_user:
             #trying first rerun of base url api in case of api failure
             if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
@@ -312,11 +315,8 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-        print("here")
-        try:
-            if self.CONFIG.getTestcaseLength() <= 0:
-                raise Exception("no testcase found to run")
 
+        try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
             elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
