@@ -85,6 +85,8 @@ class AbstarctBaseConfig(ABC):
             
             if self.filter_category(value):
                 continue
+            if self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None)!=None and value.get("CATEGORY") not in self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None).split(","):
+                continue
 
 
             filtered_dict[key] = value

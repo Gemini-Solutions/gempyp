@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 from gempyp.libs.common import moduleImports
 import getpass
+from gempyp.libs.common import download_beforeAfter_file
 
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
@@ -21,7 +22,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     testcase_meta.pop("config_data")
     try:
         file_name = config_data.get("PATH")
-        dynamic_testcase = moduleImports(file_name)
+        dynamic_testcase =download_beforeAfter_file(file_name,testcase_meta.get("SUITE_VARS",None))
         try:
             # TODO update the config_data to contain some default values
             # GEMPYPFOLDER

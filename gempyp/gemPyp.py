@@ -1,7 +1,7 @@
 from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
-from gempyp.config.GitLinkXML import fetchBridgeToken
+from gempyp.config.GitLinkXML import fetchFileFromGit
 
 class Gempyp:
     def __init__(self):
@@ -58,8 +58,11 @@ class Gempyp:
         """
         s_run_id = vars(self)["RUN_ID"]
         if("GIT" in self.config):
-            list_url=self.config.split(":")
-            config=XmlConfig(fetchBridgeToken(list_url[2],list_url[3],list_url[4],list_url[5]),s_run_id)
+            list_url=file_name.split(":")
+            if(len(list_url)>=5):
+                file_name=fetchFileFromGit(list_url[2],list_url[3],username=list_url[-2],bearer_token=list_url[-1])
+            else:
+                file_name=fetchFileFromGit(list_url[2],list_url[3])
         else:
             config = XmlConfig(self.config, s_run_id)
         if not self.args:

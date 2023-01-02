@@ -81,4 +81,4 @@ def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, i
 
 
 if __name__ == "__main__":
-    print(download_from_s3(bridge_token="9998284c-b61e-45d1-accd-2ce7d6f8f0a81670592834097"))
+    print(download_from_s3(api="https://apis-beta.gemecosystem.com/v1/download/file?id=gem-np:PYPRESTBEFOREFILE:BeforeAfterFile1.py",username="tanya.agarwal",bridge_token="374efe42-323e-4445-b89b-1ff750f000c61664541163883"))
