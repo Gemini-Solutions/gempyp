@@ -97,9 +97,11 @@ def getOutput(data):
     data["json_data"]["meta_data"][2]["TOTAL"] = total
     try:
         log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log') 
-        data['S3_log_path']= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("username",None), file= data.get("config_data",None).get("LOG_PATH", "N.A"),tag="public")[0]["Url"]  
     except Exception:
         log_file = None
+    try:
+        data['S3_log_path']= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("username",None), file= data.get("config_data",None).get("LOG_PATH".casefold(),"N.A"),tag="public")[0]["Url"]  
+    except Exception:
         data['S3_log_path']=None
     tempdict["log_file"] = log_file 
 
