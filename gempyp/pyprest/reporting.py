@@ -6,6 +6,8 @@ import time
 import json
 import logging
 import getpass
+from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.config import DefaultSettings
 
 
 def writeToReport(pyprest_obj):
@@ -64,7 +66,10 @@ def writeToReport(pyprest_obj):
     result["json_data"]["meta_data"][2]["TOTAL"] = total
 
     # getting the log file ( the custom gempyp logger)
-    
+    try:
+        pyprest_obj.data['S3_log_path']= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=pyprest_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", None).get("username",None), file= pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public")[0]["Url"]
+    except Exception:
+        pyprest_obj.data['S3_log_path']=None
     tempdict["log_file"] = pyprest_obj.data.get("LOG_PATH", "N.A")
 
     singleTestcase = {}
@@ -72,7 +77,9 @@ def writeToReport(pyprest_obj):
     singleTestcase["misc"] = result.get("MISC")
     singleTestcase["json_data"] = pyprest_obj.json_data
     singleTestcase["suite_variables"] = pyprest_obj.variables.get("suite", {})
+    singleTestcase["misc"]["log_file"]=pyprest_obj.data['S3_log_path']
     output.append(singleTestcase)
+ 
 
     return output
 
