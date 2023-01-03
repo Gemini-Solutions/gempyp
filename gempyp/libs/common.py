@@ -157,10 +157,6 @@ def download_beforeAfter_file(file_name,headers):
     except Exception as e:
         traceback.print_exc()
         return e
-
-
-
-    
             
 
 
