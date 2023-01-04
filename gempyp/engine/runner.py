@@ -112,7 +112,7 @@ def getOutput(data):
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = data.get("MISC")
     singleTestcase["json_data"] = data.get("json_data")
-    singleTestcase["misc"]["log_file"]=data['S3_log_path']
+    singleTestcase["misc"]["S3_log_file"]=data['S3_log_path']
     return singleTestcase
 
 def getError(error, config_data: Dict) -> Dict:
