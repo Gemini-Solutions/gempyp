@@ -15,8 +15,8 @@ urls = {"data":{
                 "suite-exe-api": "https://apis.gemecosystem.com/suiteexe",
                 "test-exe-api": "https://apis.gemecosystem.com/testcase",
                 "last-five": "https://apis.gemecosystem.com/suiteexe/lastFive",
-                "comment-api": "https://apis.gemecosystem.com/jira/comment",
-                "jira-api": "https://apis.gemecosystem.com/jira/create",
+                "jira-api": "https://apis.gemecosystem.com/jira",
+                "bucket-file-upload-api": "https://apis-beta.gemecosystem.com/v1/upload/file"
             }
         }
 # for getting urls using url tag from config file

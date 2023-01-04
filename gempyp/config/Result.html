@@ -97,9 +97,9 @@
 </div>
     </body>
     <script>
-        var obj = '{"Suits_Details": {"s_run_id": "TEST_PROJECT_BETA_D6396137-EE91-4E64-9BD1-4C82D96DF455", "s_start_time": 1642423063768.786, "s_end_time": 1642423063794.419, "status": "FAIL", "project_name": "test_project", "run_type": "ON DEMAND", "s_report_type": null, "user": "sa.taneja", "env": "beta", "machine": "GSG1TG-GI0167", "initiated_by": "sa.taneja", "run_mode": "LINUX_CLI", "TestCase_Details": [{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase1", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja", "machine": "GSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase2", "category": "sample1", "log_file": null, "status": "PASS", "user": "sa.taneja1", "machine": "MSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase3", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja2", "machine": "KSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM2", "ignore": false}], "Testcase_Info": {"FAIL": 1, "TOTAL": 1}}}';
+        var obj = '{"suits_details": {"s_run_id": "TEST_PROJECT_BETA_D6396137-EE91-4E64-9BD1-4C82D96DF455", "s_start_time": 1642423063768.786, "s_end_time": 1642423063794.419, "status": "FAIL", "project_name": "test_project", "run_type": "ON DEMAND", "s_report_type": null, "user": "sa.taneja", "env": "beta", "machine": "GSG1TG-GI0167", "initiated_by": "sa.taneja", "run_mode": "LINUX_CLI", "testcase_details": [{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase1", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja", "machine": "GSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase2", "category": "sample1", "log_file": null, "status": "PASS", "user": "sa.taneja1", "machine": "MSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase3", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja2", "machine": "KSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM2", "ignore": false}], "Testcase_Info": {"FAIL": 1, "TOTAL": 1}}}';
         obj = JSON.parse(obj);
-        obj.Suits_Details.TestCase_Details=changeFormat(obj.Suits_Details.TestCase_Details);
+        obj.suits_details.testcase_details=changeFormat(obj.suits_details.testcase_details);
         console.log(obj)
         var excludeHeader=["tc_run_id","steps","execution_metadata","result_file","ignore"];
 var sortType="";
@@ -119,7 +119,7 @@ var lastsortHeader="";
             "RUN_TYPE":"run_type",
             "RUN_MODE":"run_mode"
         };
-        var options=getOptions(obj.Suits_Details.TestCase_Details);
+        var options=getOptions(obj.suits_details.testcase_details);
         for(var i = 0; i < options.length; i++) {
     var opt = options[i];
     var el = document.createElement("option");
@@ -145,17 +145,17 @@ return value;
 }
 function constructPage(){
 
- var exeTable=getExecutionDetailsTable(obj.Suits_Details);
+ var exeTable=getExecutionDetailsTable(obj.suits_details);
  var row=$('<div/>').addClass("row");
  $('#pills-overview').append(exeTable);
- var cardDetails=getCardDetails(obj.Suits_Details.Testcase_Info);
+ var cardDetails=getCardDetails(obj.suits_details.Testcase_Info);
 //  $('#pills-overview').append(cardDetails);
-var infraTable=getInfraDetailsTable(obj.Suits_Details);
+var infraTable=getInfraDetailsTable(obj.suits_details);
 row.append(cardDetails).append(infraTable);
 $('#pills-overview').append(row);
 
 
-var testcaseDetailsTable=getTestcaseDetailsTable(obj.Suits_Details.TestCase_Details);
+var testcaseDetailsTable=getTestcaseDetailsTable(obj.suits_details.testcase_details);
 $('#pills-testcase').append(testcaseDetailsTable);
 
 }
@@ -429,7 +429,7 @@ function getsort(val){
         lastsortHeader=val.target.innerText;
 
     }
-    var tab=[...obj.Suits_Details.TestCase_Details];
+    var tab=[...obj.suits_details.testcase_details];
     if(sortType==="asc"){
         for(var i =0;i<tab.length;i++){
         for(var j= i+1;j<tab.length;j++){
@@ -453,7 +453,7 @@ function getsort(val){
         }
     } 
 }
-obj.Suits_Details.TestCase_Details=tab;
+obj.suits_details.testcase_details=tab;
 console.log(obj);
 $('#pills-testcase').children("div")[1].remove();
 var testcaseDetailsTable=getTestcaseDetailsTable(tab);
@@ -493,7 +493,7 @@ function Headers(list) {
 		$inputs = $('.search-key');
 $inputs.live('input', function() {
     console.log('working',$filterableRows);
-getTestcaseDetailsTable(obj.Suits_Details.TestCase_Details);
+getTestcaseDetailsTable(obj.suits_details.testcase_details);
 	$filterableRows.hide().filter(function() {
   	return $(this).find('td').filter(function() {
       var tdText = $(this).text().toLowerCase(),

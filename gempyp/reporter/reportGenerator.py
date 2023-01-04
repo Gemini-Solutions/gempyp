@@ -25,7 +25,7 @@ class TemplateData:
         }
         metadata.append(column1)
 
-        self.REPORTDATA["metaData"] = metadata
+        self.REPORTDATA["meta_data"] = metadata
 
     def newRow(self, title: str, description: str, status: status, **kwargs):
         step = {"Step Name": title, "Step Description": description, "status": status}
@@ -50,8 +50,8 @@ class TemplateData:
 
         # column3
         column3 = {k.name: v for k, v in status_counts.items()}
-        self.REPORTDATA["metaData"].append(column2)
-        self.REPORTDATA["metaData"].append(column3)
+        self.REPORTDATA["meta_data"].append(column2)
+        self.REPORTDATA["meta_data"].append(column3)
         # filters
         # self.REPORTDATA["FilterNames"] = self._getFilters()
         # filter_values = {}
@@ -110,7 +110,7 @@ class TemplateData:
 
         reportJson = json_data
         reportJson = json.loads(reportJson)
-        reportJson["TestStep_Details"] = testcase_data
+        reportJson["teststep_details"] = testcase_data
         repJson = reportJson
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
@@ -137,7 +137,7 @@ class TemplateData:
         try:
             logging.info("---------- Finalised the report --------------")
             logging.info("============== Run Summary =============")
-            count_info = {key.lower(): val for key, val in repJson['Suits_Details']['Testcase_Info'].items()}
+            count_info = {key.lower(): val for key, val in repJson['suits_details']['testcase_info'].items()}
             log_str = f"Total Testcases: {str(count_info.get('total', 0))} | Passed Testcases: {str(count_info.get('pass', 0))} | Failed Testcases: {str(count_info.get('fail', 0))} | "
             status_dict = {"info": "Info", "warn": "WARN", "exe": "Exe", "err":"ERR"}
             for key, val in count_info.items():
@@ -155,4 +155,4 @@ class TemplateData:
 
 
         except Exception as e:
-            logging.error(traceback.print_exc(e))
+            logging.error(traceback.format_exc(e))

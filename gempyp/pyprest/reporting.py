@@ -5,6 +5,7 @@ import uuid
 import time
 import json
 import logging
+import getpass
 
 
 def writeToReport(pyprest_obj):
@@ -34,26 +35,33 @@ def writeToReport(pyprest_obj):
 
         except Exception as e:
             pyprest_obj.logger.info(traceback.print_exc())
+
     output = []
     tempdict = {} 
-    tc_run_id = f"{pyprest_obj.tcname}_{uuid.uuid4()}"
+    unique_id = uuid.uuid4()
+    try:
+        if os.environ.get('unique_id'):
+            unique_id = os.environ.get('unique_id')
+    except Exception:
+        traceback.print_exc()
+    tc_run_id = f"{pyprest_obj.tcname}_{unique_id}"
     tempdict["tc_run_id"] = tc_run_id
-    print("tc_run_id=",tc_run_id)
     tempdict["name"] = result["NAME"]
     tempdict["category"] = pyprest_obj.category
     tempdict["status"] = result["STATUS"]
-    tempdict["user"] = pyprest_obj.data.get("USER")
+    tempdict["base_user"] = getpass.getuser()
+    tempdict["invoke_user"] = pyprest_obj.data.get("INVOKE_USER")
     tempdict["machine"] = pyprest_obj.data.get("MACHINE")
     tempdict["product_type"] = "GEMPYP-PR"
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
-    tempdict["ignore"] = False
-    all_status = result["json_data"]["metaData"][2]
+    tempdict["ignore"] = False  # to be updated
+    all_status = result["json_data"]["meta_data"][2]
     total = 0
     for key in all_status:
         total += all_status[key]
-    result["json_data"]["metaData"][2]["TOTAL"] = total
+    result["json_data"]["meta_data"][2]["TOTAL"] = total
 
     # getting the log file ( the custom gempyp logger)
     
@@ -65,6 +73,7 @@ def writeToReport(pyprest_obj):
     singleTestcase["json_data"] = pyprest_obj.json_data
     singleTestcase["suite_variables"] = pyprest_obj.variables.get("suite", {})
     output.append(singleTestcase)
+
     return output
 
 

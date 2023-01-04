@@ -3,8 +3,7 @@ import os
 import traceback
 import logging
 import json
-from typing import Dict, List, Tuple, Type
-from gempyp.config.baseConfig import AbstarctBaseConfig
+from typing import Dict, List, Tuple
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.libs.enums.status import status
 from gempyp.pyprest import apiCommon as api
@@ -19,6 +18,7 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import moduleImports
+# from gempyp.libs import custom_s3
 
 
 class PypRest(Base):
@@ -237,38 +237,53 @@ class PypRest(Base):
         
         VarReplacement(self).variableReplacement()
        
-    
-
-
         try:
             # raise Exception(f"Error occured while sending request- test")
             self.logger.info("--------------------Executing Request ------------------------")
             self.logger.info(f"url: {self.req_obj.api}")
             self.logger.info(f"method: {self.req_obj.method}")
             self.logger.info(f"request_body: {self.req_obj.body}")
-            self.logger.info(f"headers: {self.req_obj.headers}")
+            self.logger.info(f"headers: {self.req_obj.headers}") 
+
+            # addig request misc
+            self.reporter.addMisc("REQUEST URL", str(self.req_obj.api)) 
+            self.reporter.addMisc("REQUEST METHOD", str(self.req_obj.method))
+            self.reporter.addMisc("REQUEST BODY", str(self.req_obj.body))  # s3
+            self.reporter.addMisc("REQUEST HEADERS", str(self.req_obj.headers))
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
             if(len(self.request_obj)>0):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
-            
 
-            # self.res_obj.response_body
-            # self.res_obj.status_code
-            # self.res_obj.response_time
-            # self.res_obj.response_headers
+            # self.reporter.addMisc("RESPONSE BODY", str(self.res_obj.response_body))  # s3
+            # self.reporter.addMisc("RESPONSE HEADERS", str(self.res_obj.response_headers))
+            self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.res_obj.status_code}/{str(self.exp_status_code).strip('[]')}")
 
             # logging legacy api
             try:
                 # if self.legacy_req is not None:
                 self.logger.info("--------------------Executing legacy Request ------------------------")
+
                 self.logger.info(f"legacy url: {self.legacy_req.api}")
                 self.logger.info(f"legacy method: {self.legacy_req.method}")
                 self.logger.info(f"legacy request_body: {self.legacy_req.body}")
                 self.logger.info(f"legacy headers: {self.legacy_req.headers}")
+
+                # addig request misc
+                self.reporter.addMisc("LEGACY REQUEST URL", str(self.legacy_req.api))
+                self.reporter.addMisc("LEGACY REQUEST METHOD", str(self.legacy_req.method))
+                self.reporter.addMisc("LEGACY REQUEST BODY", str(self.legacy_req.body))  # s3
+                self.reporter.addMisc("LEGACY REQUEST HEADERS", str(self.legacy_req.headers))
+
                 self.legacy_res = api.Api().execute(self.legacy_req)
+
+                # self.reporter.addMisc("LEGACY RESPONSE BODY", str(self.legacy_res.response_body))  # s3
+                # self.reporter.addMisc("LEGACY RESPONSE HEADERS", str(self.legacy_res.response_headers))
+                self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.legacy_res.status_code}/{str(self.legacy_exp_status_code).strip('[]')}")
+
+
                 self.reporter.addMisc("Current Response Time", "{0:.{1}f} sec(s)".format(self.res_obj.response_time,2))
                 self.reporter.addMisc("Legacy Response Time", "{0:.{1}f} sec(s)".format(self.legacy_res.response_time,2) )
                 self.logResponse()
@@ -443,6 +458,13 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
+            # trying to download from s3 path
+            # if(file_name.__contains__('s3')):
+            #     before_file=file_name.split("/")
+            #     folder = before_file[3:]
+            #     my_bucket = before_file[2].split(".")[0]
+            #     file = before_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -498,6 +520,12 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
+            # if(file_name.__contains__('s3')):
+            #     after_file=file_name.split("/")
+            #     folder = after_file[3:]
+            #     my_bucket = after_file[2].split(".")[0]
+            #     file = after_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
