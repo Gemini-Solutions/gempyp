@@ -362,7 +362,7 @@ class DvRunner(Base):
                         df2_res.to_excel(writer1, sheet_name = 'value_difference', index = False)
                 s3_url = None
                 try:
-                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token = self.data["SUITE_VARS"]["bridge_token"], username=self.data["SUITE_VARS"]["username"], file=excelPath, folder="dv")[0]["Url"])
+                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token = self.data["SUITE_VARS"]["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath, folder="dv")[0]["Url"])
 
                 except Exception as e:
                     print(e)

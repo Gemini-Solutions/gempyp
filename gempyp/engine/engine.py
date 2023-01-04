@@ -44,7 +44,8 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
     if 'log_path' not in data['config_data']:
-        data['config_data']['LOG_PATH'] = log_path
+        data['config_data']['LOG_PATH'] = log_path    
+
     
 
     
