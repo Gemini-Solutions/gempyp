@@ -264,13 +264,14 @@ class Engine:
 
         self.unique_id = self.PARAMS["UNIQUE_ID"]
 
-        self.user_suite_variables = {}
+        self.user_suite_variables = self.PARAMS["SUITE_VARS"]
 
         self.jewel_run = False
         self.jewel_user = False
         self.s3_url = ""
         if self.PARAMS.get("BRIDGE_TOKEN", None) and self.PARAMS.get("USERNAME", None):
-            self.user_suite_variables = {"bridge_token":self.PARAMS["BRIDGE_TOKEN"],"username":self.PARAMS["USERNAME"]}
+            self.user_suite_variables["bridge_token"]=self.PARAMS["BRIDGE_TOKEN"]
+            self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
             self.jewel_user = True
         if self.jewel_user:
             if self.PARAMS.get("BASE_URL", None):
@@ -401,6 +402,7 @@ class Engine:
                 data['config_data']['log_path'] = log_path
                 conn = None
                 output, error = executorFactory(data,conn, custom_logger)
+                
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -540,6 +542,7 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
+        
                 if(self.jewel_user):
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         except Exception as e:
