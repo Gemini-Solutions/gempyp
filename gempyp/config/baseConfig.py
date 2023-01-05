@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import traceback
 from typing import Dict
 import logging
+import os
 
 
 class AbstarctBaseConfig(ABC):
@@ -118,6 +119,26 @@ class AbstarctBaseConfig(ABC):
     # TODO
     def update(self):
         """to update the data that is passed by cli"""
+        try:
+            for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
+                os.environ[key] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
+        except Exception as error:
+            print("Error in updating environment variable",error)
+        try:
+            for key in self._CONFIG['SUITE_DATA'].keys():
+                value=self._CONFIG['SUITE_DATA'][key]
+                if("$[#ENV." in value):
+                        envValue=value
+                        value=value.strip("$[#ENV.").strip("]")
+                        self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
+                        self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
+                if("$[#" in value):
+                        value=value.strip("$[#").strip("]")
+                        self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
+          
+
+        except Exception as error:
+            print("error occurs in finding environment variable",error)
         try:
             for element in self.cli_config.keys():
                 if self.cli_config[element]:
