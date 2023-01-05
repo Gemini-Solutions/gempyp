@@ -2,6 +2,8 @@ import traceback
 import os
 import uuid
 import getpass
+from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.config import DefaultSettings
 
 
 def writeToReport(dv_obj):
