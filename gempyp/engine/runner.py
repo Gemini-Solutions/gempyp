@@ -100,7 +100,7 @@ def getOutput(data):
     except Exception:
         log_file = None
     try:
-        s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("username",None), file= data.get("config_data",None).get("LOG_PATH","N.A"),tag="public")[0]["Url"]  
+        s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("username",None), file= data.get("config_data",None).get("LOG_PATH".casefold(),"N.A"),tag="public")[0]["Url"]  
     except Exception:
          s3_log_file_url=None
     tempdict["log_file"] = log_file 
