@@ -58,7 +58,7 @@ def writeToReport(dv_obj):
 
     # getting the log file ( the custom gempyp logger)
     
-    tempdict["log_file"] = dv_obj.configData.get("log_path","N.A")
+    tempdict["log_file"] = dv_obj.configData.get("LOG_PATH", "N.A")
     try:
         s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=dv_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=dv_obj.data.get("SUITE_VARS", None).get("username",None), file= dv_obj.configData.get("LOG_PATH", "N.A"),tag="public")[0]["Url"]
     except Exception:
