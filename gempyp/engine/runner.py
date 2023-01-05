@@ -5,7 +5,6 @@ import traceback
 import uuid
 from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
-from gempyp.libs.common import moduleImports
 import getpass
 from gempyp.libs.common import download_common_file
 from gempyp.libs.gem_s3_common import upload_to_s3
