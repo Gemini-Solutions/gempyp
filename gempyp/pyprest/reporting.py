@@ -67,9 +67,9 @@ def writeToReport(pyprest_obj):
 
     # getting the log file ( the custom gempyp logger)
     try:
-        pyprest_obj.data['S3_log_path']= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=pyprest_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", None).get("username",None), file= pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public")[0]["Url"]
+         s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=pyprest_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", None).get("username",None), file= pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public")[0]["Url"]
     except Exception:
-        pyprest_obj.data['S3_log_path']=None
+         s3_log_file_url=None
     tempdict["log_file"] = pyprest_obj.data.get("LOG_PATH", "N.A")
 
     singleTestcase = {}
@@ -77,8 +77,7 @@ def writeToReport(pyprest_obj):
     singleTestcase["misc"] = result.get("MISC")
     singleTestcase["json_data"] = pyprest_obj.json_data
     singleTestcase["suite_variables"] = pyprest_obj.variables.get("suite", {})
-    
-    singleTestcase["misc"]["S3_log_file"]=pyprest_obj.data['S3_log_path']
+    singleTestcase["misc"]["log_file"]= s3_log_file_url
     output.append(singleTestcase)
  
 
