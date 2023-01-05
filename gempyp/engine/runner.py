@@ -97,10 +97,12 @@ def getOutput(data):
     data["json_data"]["meta_data"][2]["TOTAL"] = total
     try:
         log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log') 
-        data['S3_log_path']= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("username",None), file= data.get("config_data",None).get("LOG_PATH", "N.A"),tag="public")[0]["Url"]  
     except Exception:
         log_file = None
-        data['S3_log_path']=None
+    try:
+        s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("username",None), file= data.get("config_data",None).get("LOG_PATH".casefold(),"N.A"),tag="public")[0]["Url"]  
+    except Exception:
+         s3_log_file_url=None
     tempdict["log_file"] = log_file 
 
 
@@ -110,7 +112,7 @@ def getOutput(data):
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = data.get("MISC")
     singleTestcase["json_data"] = data.get("json_data")
-    singleTestcase["misc"]["log_file"]=data['S3_log_path']
+    singleTestcase["misc"]["log_file"]= s3_log_file_url
     return singleTestcase
 
 def getError(error, config_data: Dict) -> Dict:

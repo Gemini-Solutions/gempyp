@@ -2,6 +2,8 @@ import traceback
 import os
 import uuid
 import getpass
+from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.config import DefaultSettings
 
 
 def writeToReport(dv_obj):
@@ -57,11 +59,16 @@ def writeToReport(dv_obj):
     # getting the log file ( the custom gempyp logger)
     
     tempdict["log_file"] = dv_obj.configData.get("log_path","N.A")
+    try:
+        s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=dv_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=dv_obj.data.get("SUITE_VARS", None).get("username",None), file= dv_obj.configData.get("LOG_PATH", "N.A"),tag="public")[0]["Url"]
+    except Exception:
+        s3_log_file_url=None
 
     singleTestcase = {}
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = result.get("MISC")
     singleTestcase["json_data"] = dv_obj.json_data
+    singleTestcase["misc"]["log_file"]= s3_log_file_url
     output.append(singleTestcase)
     
     return output
