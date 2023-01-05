@@ -6,7 +6,7 @@ import time
 import json
 import logging
 import getpass
-from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
 
 
@@ -67,9 +67,10 @@ def writeToReport(pyprest_obj):
 
     # getting the log file ( the custom gempyp logger)
     try:
-         s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=pyprest_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", None).get("username",None), file= pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public")[0]["Url"]
+        s3_log_file_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=pyprest_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", None).get("username",None), file= pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public")[0]["Url"])
+        s3_log_file_url = f'<a target="_blank" href="{s3_log_file_url}">view</a>'
     except Exception:
-         s3_log_file_url=None
+        s3_log_file_url=None
     tempdict["log_file"] = pyprest_obj.data.get("LOG_PATH", "N.A")
 
     singleTestcase = {}

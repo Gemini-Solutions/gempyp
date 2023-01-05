@@ -17,6 +17,7 @@ urls = {"data":{
                 "last-five": "https://apis.gemecosystem.com/suiteexe/lastFive",
                 "jira-api": "https://apis.gemecosystem.com/jira",
                 "bucket-file-upload-api": "https://apis-beta.gemecosystem.com/v1/upload/file",
+                "bucket-data-upload-api": "https://apis-beta.gemecosystem.com/v1/upload/data",
                 "file-viewer": "https://jewel-beta.gemecosystem.com/#/file-viewer"
             }
         }

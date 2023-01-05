@@ -25,7 +25,7 @@ import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
-from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 
 
 
@@ -565,7 +565,6 @@ class Engine:
         category: str = None,
         product_type: str = None,
         log_path: str = None,
-        invoke_user: str = None
     ) -> Dict:
         """
         store the data of failed testcase and return it as a dict to update_df
@@ -592,7 +591,12 @@ class Engine:
         testcase_dict["ignore"] = False
         if category:
             testcase_dict["category"] = category
-        testcase_dict["log_file"] = log_path
+        if self.jewel_user:
+            s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=log_path,tag="public")[0]["Url"]) 
+            s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+        else: 
+            s3_log_file_url = log_path
+        testcase_dict["log_file"] = s3_log_file_url
         testcase_dict["result_file"] = None
         testcase_dict["base_user"] = getpass.getuser()
         testcase_dict["invoke_user"] = self.invoke_user

@@ -33,12 +33,15 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
             api = "https://apis-beta.gemecosystem.com/v1/upload/data"
         headers["Content-Type"] = "text/plain"
         params["file"] = file
+        try:
+            data= data.encode('utf-8')
+        except Exception as e:
+            pass
         response = requests.post(api, params=params, data=data, headers=headers)
         data = json.loads(response.text)    
         if response.status_code == 200:
             data = json.loads(response.text)    
             data_info = data["data"]
-            print(data_info)
             return data_info
     elif file is not None:
         file = file.split(",")
@@ -52,7 +55,7 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
                 continue
             files.append(("file", open(f, "rb")))
         response = requests.post(api, files=files, params=params, headers=headers)  
-        data = json.loads(response.text)    
+        data = json.loads(response.text)  
         if response.status_code == 200:
             data = json.loads(response.text)    
             file_info = data["data"]
@@ -84,7 +87,7 @@ def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, i
 
 def create_s3_link(**kwargs):
     """ creating s3 link to be viewed on file viewer on jewel UI"""
-    
+
     s3_viewer = DefaultSettings.getUrls('file-viewer')
     if kwargs.get("url", None):
         params = "url=" + kwargs.get("url")

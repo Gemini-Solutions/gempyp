@@ -17,7 +17,7 @@ from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
-from gempyp.libs.common import download_common_file
+from gempyp.libs.common import download_common_file, control_text_size
 
 # from gempyp.libs import custom_s3
 
@@ -245,12 +245,12 @@ class PypRest(Base):
             self.logger.info(f"method: {self.req_obj.method}")
             self.logger.info(f"request_body: {self.req_obj.body}")
             self.logger.info(f"headers: {self.req_obj.headers}") 
-
+            
             # addig request misc
-            self.reporter.addMisc("REQUEST URL", str(self.req_obj.api)) 
-            self.reporter.addMisc("REQUEST METHOD", str(self.req_obj.method))
-            self.reporter.addMisc("REQUEST BODY", str(self.req_obj.body))  # s3
-            self.reporter.addMisc("REQUEST HEADERS", str(self.req_obj.headers))
+            self.reporter.addMisc("REQUEST URL", self.get_text(str(self.req_obj.api)))
+            self.reporter.addMisc("REQUEST METHOD", self.get_text(str(self.req_obj.method)))
+            self.reporter.addMisc("REQUEST BODY", self.get_text(str(self.req_obj.body)) ) # s3
+            self.reporter.addMisc("REQUEST HEADERS", self.get_text(str(self.req_obj.headers)))
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
@@ -258,8 +258,8 @@ class PypRest(Base):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
 
-            # self.reporter.addMisc("RESPONSE BODY", str(self.res_obj.response_body))  # s3
-            # self.reporter.addMisc("RESPONSE HEADERS", str(self.res_obj.response_headers))
+            self.reporter.addMisc("RESPONSE BODY", self.get_text(str(self.res_obj.response_body)))  # s3
+            self.reporter.addMisc("RESPONSE HEADERS", self.get_text(str(self.res_obj.response_headers)))
             self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.res_obj.status_code}/{str(self.exp_status_code).strip('[]')}")
 
             # logging legacy api
@@ -592,6 +592,8 @@ class PypRest(Base):
             return False
     
 
+    def get_text(self, text):
+        return control_text_size(data=text, bridge_token=self.data.get("SUITE_VARS", None).get("bridge_token",None), username=self.data.get("SUITE_VARS", None).get("username",None))
 
    
 

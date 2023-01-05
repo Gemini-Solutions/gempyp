@@ -8,8 +8,9 @@ import typing
 from gempyp.config import DefaultSettings
 import importlib
 import sys
-from gempyp.libs.gem_s3_common import download_from_s3
+from gempyp.libs.gem_s3_common import download_from_s3, upload_to_s3, create_s3_link
 from gempyp.config.GitLinkXML import fetchFileFromGit
+from gempyp.config import DefaultSettings
 
 
 def read_json(file_path):
@@ -132,8 +133,6 @@ def moduleImports(file_name):
             return e
 
 
-
-
 def download_common_file(file_name,headers):
     try:
         if(file_name.__contains__('S3')):
@@ -158,4 +157,15 @@ def download_common_file(file_name,headers):
         return e
             
 
+def control_text_size(data, **kwargs):
 
+    fin_str = data
+    if len(str(data)) > 200:
+        url = None
+        try:
+            url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-data-upload-api"], data=data, bridge_token=kwargs.get("bridge_token", None), username=kwargs.get("username", None), tag="public")["Url"])
+            if url:
+                fin_str = f'<a href="{url}" target="_blank">Click here</a>'
+        except Exception as e:
+            print(e)
+    return fin_str
