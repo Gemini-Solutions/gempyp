@@ -104,6 +104,11 @@ class AbstarctBaseConfig(ABC):
     def update(self):
         """to update the data that is passed by cli"""
         try:
+            for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
+                os.environ[key] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
+        except Exception as error:
+            print("Error in updating environment variable",error)
+        try:
             for key in self._CONFIG['SUITE_DATA'].keys():
                 value=self._CONFIG['SUITE_DATA'][key]
                 if("$[#ENV." in value):
