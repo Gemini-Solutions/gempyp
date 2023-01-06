@@ -269,14 +269,14 @@ class DvRunner(Base):
             self.value_check = 0
             self.key_check = 0
             self.dict1 = { 'REASON OF FAILURE':[]}
-            self.valueDict = {}
-            keyDict = self.addCommonExcel(self.common_keys)
+            self.key_dict = {}
+            value_dict = self.addCommonExcel(self.common_keys)
             """calling src and tgt for getting different keys"""
             srcDict = self.addExcel(self.keys_only_in_src, "Source")
             tgtDict = self.addExcel(self.keys_only_in_tgt, "Target")
-            self.key_check = len(self.valueDict["REASON OF FAILURE"])
-            self.value_check = len(keyDict["REASON OF FAILURE"])
-            self.writeExcel(self.valueDict,keyDict)
+            self.key_check = len(self.key_dict["REASON OF FAILURE"])
+            self.value_check = len(value_dict["REASON OF FAILURE"])
+            self.writeExcel(value_dict,self.key_dict)
         except Exception:
             traceback.print_exc()
             self.addReasonOfFailure(traceback)
@@ -311,10 +311,10 @@ class DvRunner(Base):
                         key = self.keys[i]
                         self.li1[i].append(li[i])
                         value = self.li1[i]
-                        self.valueDict[key] = value
+                        self.key_dict[key] = value
                     self.dict1.get("REASON OF FAILURE").append(f"keys only in {db}")
-            self.valueDict.update(self.dict1)
-            return self.valueDict
+            self.key_dict.update(self.dict1)
+            return self.key_dict
 
 
     def addCommonExcel(self,commonList:list):  

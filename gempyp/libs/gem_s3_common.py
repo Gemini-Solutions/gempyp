@@ -56,7 +56,7 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
         api = DefaultSettings.getUrls('bucket-file-upload-api') if not api else api
         for f in file:
             if not os.path.isfile(f) or f == "N.A":
-                logging.error("Path of file invalid - ", f)
+                logging.error("Path of file invalid - " + f)
                 continue
             files.append(("file", open(f, "rb")))
         response = requests.post(api, files=files, params=params, headers=headers)  
