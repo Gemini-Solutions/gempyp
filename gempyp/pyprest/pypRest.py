@@ -17,14 +17,15 @@ from gempyp.pyprest.keyCheck import KeyCheck
 from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
-from gempyp.libs.common import moduleImports
+from gempyp.libs.common import download_common_file, control_text_size
+
 # from gempyp.libs import custom_s3
 
 
 class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
         # self.logger.root.setLevel(self.logger.DEBUG)
-        self.data = data
+        self.data = data    
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
@@ -244,12 +245,12 @@ class PypRest(Base):
             self.logger.info(f"method: {self.req_obj.method}")
             self.logger.info(f"request_body: {self.req_obj.body}")
             self.logger.info(f"headers: {self.req_obj.headers}") 
-
+            
             # addig request misc
-            self.reporter.addMisc("REQUEST URL", str(self.req_obj.api)) 
-            self.reporter.addMisc("REQUEST METHOD", str(self.req_obj.method))
-            self.reporter.addMisc("REQUEST BODY", str(self.req_obj.body))  # s3
-            self.reporter.addMisc("REQUEST HEADERS", str(self.req_obj.headers))
+            self.reporter.addMisc("REQUEST URL", self.get_text(str(self.req_obj.api)))
+            self.reporter.addMisc("REQUEST METHOD", self.get_text(str(self.req_obj.method)))
+            self.reporter.addMisc("REQUEST BODY", self.get_text(str(self.req_obj.body)) ) # s3
+            self.reporter.addMisc("REQUEST HEADERS", self.get_text(str(self.req_obj.headers)))
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
@@ -257,10 +258,9 @@ class PypRest(Base):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
 
-            # self.reporter.addMisc("RESPONSE BODY", str(self.res_obj.response_body))  # s3
-            # self.reporter.addMisc("RESPONSE HEADERS", str(self.res_obj.response_headers))
+            self.reporter.addMisc("RESPONSE BODY", self.get_text(str(self.res_obj.response_body)))  # s3
+            self.reporter.addMisc("RESPONSE HEADERS", self.get_text(str(self.res_obj.response_headers)))
             self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.res_obj.status_code}/{str(self.exp_status_code).strip('[]')}")
-
             # logging legacy api
             try:
                 # if self.legacy_req is not None:
@@ -272,15 +272,15 @@ class PypRest(Base):
                 self.logger.info(f"legacy headers: {self.legacy_req.headers}")
 
                 # addig request misc
-                self.reporter.addMisc("LEGACY REQUEST URL", str(self.legacy_req.api))
-                self.reporter.addMisc("LEGACY REQUEST METHOD", str(self.legacy_req.method))
-                self.reporter.addMisc("LEGACY REQUEST BODY", str(self.legacy_req.body))  # s3
-                self.reporter.addMisc("LEGACY REQUEST HEADERS", str(self.legacy_req.headers))
+                self.reporter.addMisc("LEGACY REQUEST URL", self.get_text(str(self.legacy_req.api)))
+                self.reporter.addMisc("LEGACY REQUEST METHOD", self.get_text(str(self.legacy_req.method)))
+                self.reporter.addMisc("LEGACY REQUEST BODY", self.get_text(str(self.legacy_req.body)))  # s3
+                self.reporter.addMisc("LEGACY REQUEST HEADERS", self.get_text(str(self.legacy_req.headers)))
 
                 self.legacy_res = api.Api().execute(self.legacy_req)
 
-                # self.reporter.addMisc("LEGACY RESPONSE BODY", str(self.legacy_res.response_body))  # s3
-                # self.reporter.addMisc("LEGACY RESPONSE HEADERS", str(self.legacy_res.response_headers))
+                self.reporter.addMisc("LEGACY RESPONSE BODY", self.get_text(str(self.legacy_res.response_body)))  # s3
+                self.reporter.addMisc("LEGACY RESPONSE HEADERS", self.get_text(str(self.legacy_res.response_headers)))
                 self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.legacy_res.status_code}/{str(self.legacy_exp_status_code).strip('[]')}")
 
 
@@ -402,7 +402,6 @@ class PypRest(Base):
                                  + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
                                  + f"<b>RESPONSE BODY</b>: {str(body)}", 
                                  status.INFO)
-            logging.info(f"<b>RESPONSE BODY</b>: {str(body)}")
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
                                  f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
@@ -458,14 +457,8 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            # trying to download from s3 path
-            # if(file_name.__contains__('s3')):
-            #     before_file=file_name.split("/")
-            #     folder = before_file[3:]
-            #     my_bucket = before_file[2].split(".")[0]
-            #     file = before_file[-1]
-            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
-            file_obj = moduleImports(file_name)
+    
+            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
@@ -480,6 +473,7 @@ class PypRest(Base):
                 request_file=self.file,
                 env=self.env,
             )
+    
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
             fin_obj = getattr(obj_, method_name)(before_obj)
@@ -489,6 +483,7 @@ class PypRest(Base):
             self.logger.info(traceback.print_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
         VarReplacement(self).variableReplacement()
+    
 
     def afterMethod(self):
         """This function
@@ -520,14 +515,9 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            # if(file_name.__contains__('s3')):
-            #     after_file=file_name.split("/")
-            #     folder = after_file[3:]
-            #     my_bucket = after_file[2].split(".")[0]
-            #     file = after_file[-1]
-            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
-            file_obj = moduleImports(file_name)
-            self.logger.info("Running before method")
+
+            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            self.logger.info("Running after method")
             obj_ = file_obj
             after_obj = RestObj(
                 pg=self.reporter,
@@ -600,6 +590,8 @@ class PypRest(Base):
             return False
     
 
+    def get_text(self, text):
+        return control_text_size(data=text, bridge_token=self.data.get("SUITE_VARS", None).get("bridge_token",None), username=self.data.get("SUITE_VARS", None).get("username",None))
 
    
 

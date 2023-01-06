@@ -156,8 +156,10 @@ class TestData:
             testcase_dict = [test_dict[tc_run_id] for tc_run_id in test_dict.keys()]
         except Exception as e:
             traceback.print_exc()
+
+        # print(testcase_dict, "++++++++++++++++++++++++++++++++++++++++")
         for i in range(len(testcase_dict)):
-            for key in ["meta_data", "base_user", "invoke_user", "user_defined_data"]:
+            for key in ["meta_data", "base_user", "invoke_user", "user_defined_data","LOG_FILE"]:
                 if(key in testcase_dict[i].keys()):
                     testcase_dict[i].pop(key)
         suite_dict["testcase_details"] = testcase_dict

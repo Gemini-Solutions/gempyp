@@ -135,13 +135,15 @@ def dataAlter(payload):
     global respon, stat
     # changing start time
     payload['s_start_time'] = respon['data']['s_start_time']
-    # adding the testcase analytics of both run
-    payload['testcase_info'] = {i: payload['testcase_info'].get(i, 0) + respon['data']['testcase_info'].get(i, 0)
-    for i in set(payload['testcase_info']).union(respon['data']['testcase_info'])}
-    # updating the testcase analytics according to new run
-    for key, value in stat.items():
-        if key in payload['testcase_info']:
-            payload['testcase_info'][key] += value
+    if respon['data']['testcase_info']:
+        # adding the testcase analytics of both run
+        payload['testcase_info'] = {i: payload['testcase_info'].get(i, 0) + respon['data']['testcase_info'].get(i, 0)
+        for i in set(payload['testcase_info']).union(respon['data']['testcase_info'])}
+        # updating the testcase analytics according to new run
+        for key, value in stat.items():
+            if key in payload['testcase_info']:
+                payload['testcase_info'][key] += value
+                
     # making testcase info in order
     prio_list = ['TOTAL', 'PASS', 'FAIL'] 
     sorted_dict = {}
