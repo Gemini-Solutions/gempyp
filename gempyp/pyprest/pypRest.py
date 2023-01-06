@@ -92,15 +92,19 @@ class PypRest(Base):
         
         if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()):
             # self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
-            self.list_subtestcases=self.data["config_data"]["SUBTESTCASES_DATA"]
-            
+
+            self.list_subtestcases = self.data["config_data"]["SUBTESTCASES_DATA"]
+            # print(self.list_subtestcases, "----------------------- subtestcases----------------")
             
             self.variables["local"] = {}
             self.variables["suite"] = self.data["SUITE_VARS"]
-            self.parent_data=self.data["config_data"]
+            self.parent_data = self.data["config_data"]
             for i in range(len(self.list_subtestcases)):
                 self.reporter.addRow("<b>Subtestcase</b>",f'<b>Subtestcase Name: {self.list_subtestcases[i]["NAME"]}</b>',status.INFO)
+                log_path = self.data["config_data"].get("log_path", None)
                 self.data["config_data"]=self.list_subtestcases[i]
+                self.data["config_data"]["log_path"] = log_path
+                
                 self.getVals()
 
                 requestObj=api.Request()
@@ -222,7 +226,6 @@ class PypRest(Base):
                 self.req_obj.auth = "PASSWORD"
 
 
-    
         """legacy api request"""
         # create legacy request
         if hasattr(self,'legacy_api'):
@@ -329,8 +332,8 @@ class PypRest(Base):
             self.logger.info(f"{self.req_obj.__dict__}")
             
 
-            legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.legacy_req.body}" if self.legacy_req.method.upper() != "GET" else ""
-            current_request_body = f"</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
+            legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.get_text(self.legacy_req.body)}" if self.legacy_req.method.upper() != "GET" else ""
+            current_request_body = f"</br><b>REQUEST BODY</b>: {self.get_text(self.req_obj.body)}" if self.req_obj.method.upper() != "GET" else ""
                 
             self.reporter.addRow("Executing the rest endpoint","Execution of base api and legacy api simultaneously",
                             status.INFO ,
@@ -365,11 +368,11 @@ class PypRest(Base):
             self.reporter.addRow("Details of the REST endpoint execution","Execution of Current and Legacy API simultaneously",
                             status.INFO ,
                             CURRENT_API= f"<b>CURRENT RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
-                             + f"<b>CURRENT RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
-                             + f"<b>CURRENT RESPONSE BODY</b>:{current_response_body}",
+                             + f"<b>CURRENT RESPONSE HEADERS</b>: {self.get_text(self.res_obj.response_headers)}</br>" 
+                             + f"<b>CURRENT RESPONSE BODY</b>:{self.get_text(current_response_body)}",
                             LEGACY_API=f"<b>LEGACY STATUS CODE</b>: {self.legacy_res.status_code}</br>" 
-                             + f"<b>LEGACY RESPONSE HEADERS</b>: {self.legacy_res.response_headers}</br>" 
-                             + f"<b>LEGACY RESPONSE BODY</b>: {legacy_response_body}"
+                             + f"<b>LEGACY RESPONSE HEADERS</b>: {self.get_text(self.legacy_res.response_headers)}</br>" 
+                             + f"<b>LEGACY RESPONSE BODY</b>: {self.get_text(legacy_response_body)}"
                              )
             if (self.legacy_res.status_code in self.legacy_exp_status_code) and (self.res_obj.status_code in self.exp_status_code) :
                 self.reporter.addRow("Validating Response Code with Expected Status Codes", "Both status codes are matching with expected status codes",
@@ -399,8 +402,8 @@ class PypRest(Base):
         
             self.reporter.addRow("Details of Request Execution", 
                                  f"<b>RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
-                                 + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
-                                 + f"<b>RESPONSE BODY</b>: {str(body)}", 
+                                 + f"<b>RESPONSE HEADERS</b>: {self.get_text(self.res_obj.response_headers)}</br>" 
+                                 + f"<b>RESPONSE BODY</b>: {self.get_text(str(body))}", 
                                  status.INFO)
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
@@ -591,7 +594,8 @@ class PypRest(Base):
     
 
     def get_text(self, text):
-        return control_text_size(data=text, bridge_token=self.data.get("SUITE_VARS", None).get("bridge_token",None), username=self.data.get("SUITE_VARS", None).get("username",None))
-
+        if self.data.get("SUITE_VARS", {}).get("bridge_token",None) and self.data.get("SUITE_VARS", None).get("username",None):
+            return control_text_size(data=text, bridge_token=self.data.get("SUITE_VARS", None).get("bridge_token",None), username=self.data.get("SUITE_VARS", None).get("username",None))
+        else:
+            return str(text)
    
-

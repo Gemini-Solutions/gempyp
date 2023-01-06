@@ -79,18 +79,15 @@ class AbstarctBaseConfig(ABC):
             if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
                 testcases=value.get("SUBTESTCASES").upper().split(",")  ## uppercase
                 testcases.append(key)
-            if value.get("RUN_FLAG", "N").upper() != "Y":
+            if value.get("RUN_FLAG", "N").upper() != "Y":  # to be removed
                 continue
             if value.get("RUN_FLAG", "Y").upper() == "Y":
                 self.total_yflag_testcase += 1
-            
             if self.filter_category(value):
-                print("here")
+
                 continue
             if self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None)!=None and value.get("CATEGORY") not in self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None).split(","):
                 continue
-
-
             filtered_dict[key] = value
             
             if(len(testcases)>0):
@@ -98,8 +95,6 @@ class AbstarctBaseConfig(ABC):
                     if(testcases[i] in testcase_data.keys()):
                         filtered_dict_subtestcases[testcases[i]]=testcase_data.get(testcases[i])
         self._CONFIG["SUBTESTCASES_DATA"] = filtered_dict_subtestcases
-       
-    
         self._CONFIG["TESTCASE_DATA"] = filtered_dict
 
     def filter_category(self, value):
@@ -120,7 +115,7 @@ class AbstarctBaseConfig(ABC):
     def update(self):
         """to update the data that is passed by cli"""
         try:
-            for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
+            for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS', None):
                 os.environ[key] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
         except Exception as error:
             print("Error in updating environment variable",error)

@@ -33,6 +33,6 @@ class MiscVariables:
 
         except Exception as e:
             logger.error(e)
-        logger.info(f"Report_misc_variables:  { self.pyprest_obj.reporter._misc_data } ")
+        # logger.info(f"Report_misc_variables:  { self.pyprest_obj.reporter._misc_data }")
 
         
