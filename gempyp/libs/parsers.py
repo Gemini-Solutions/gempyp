@@ -12,15 +12,15 @@ def xmlToDict(root) -> Dict:
             # if element has only 1 children
             # or if first 2 elements are not same we treat them as dict
             if len(element) == 1 or element[0].tag.upper() != element[1].tag.upper():
-                Result[element.tag.upper()] = xmlToDict(element)
+                Result[element.tag.upper().replace("-", "_")] = xmlToDict(element)
 
             # we treat them as list
             else:
-                Result[element.tag.upper()] = xmlToList(element)
+                Result[element.tag.upper().replace("-", "_")] = xmlToList(element)
 
         # if the element doesnot have any children
         else:
-            Result[element.tag.upper()] = element.text
+            Result[element.tag.upper().replace("-", "_")] = element.text
     return Result
 
 

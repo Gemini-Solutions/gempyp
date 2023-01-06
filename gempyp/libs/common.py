@@ -160,12 +160,12 @@ def download_common_file(file_name,headers):
 def control_text_size(data, **kwargs):
 
     fin_str = data
-    if len(str(data)) > 200:
+    if len(str(data)) > 150:
         url = None
         try:
             url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-data-upload-api"], data=data, bridge_token=kwargs.get("bridge_token", None), username=kwargs.get("username", None), tag="public")["Url"])
             if url:
-                fin_str = f'<a href="{url}" target="_blank">Click here</a>'
+                fin_str = f'<a target=_blank  href={url}>Click here</a>'
         except Exception as e:
             print(e)
     return fin_str

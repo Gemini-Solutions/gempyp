@@ -261,7 +261,6 @@ class PypRest(Base):
             self.reporter.addMisc("RESPONSE BODY", self.get_text(str(self.res_obj.response_body)))  # s3
             self.reporter.addMisc("RESPONSE HEADERS", self.get_text(str(self.res_obj.response_headers)))
             self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.res_obj.status_code}/{str(self.exp_status_code).strip('[]')}")
-
             # logging legacy api
             try:
                 # if self.legacy_req is not None:
@@ -273,15 +272,15 @@ class PypRest(Base):
                 self.logger.info(f"legacy headers: {self.legacy_req.headers}")
 
                 # addig request misc
-                self.reporter.addMisc("LEGACY REQUEST URL", str(self.legacy_req.api))
-                self.reporter.addMisc("LEGACY REQUEST METHOD", str(self.legacy_req.method))
-                self.reporter.addMisc("LEGACY REQUEST BODY", str(self.legacy_req.body))  # s3
-                self.reporter.addMisc("LEGACY REQUEST HEADERS", str(self.legacy_req.headers))
+                self.reporter.addMisc("LEGACY REQUEST URL", self.get_text(str(self.legacy_req.api)))
+                self.reporter.addMisc("LEGACY REQUEST METHOD", self.get_text(str(self.legacy_req.method)))
+                self.reporter.addMisc("LEGACY REQUEST BODY", self.get_text(str(self.legacy_req.body)))  # s3
+                self.reporter.addMisc("LEGACY REQUEST HEADERS", self.get_text(str(self.legacy_req.headers)))
 
                 self.legacy_res = api.Api().execute(self.legacy_req)
 
-                # self.reporter.addMisc("LEGACY RESPONSE BODY", str(self.legacy_res.response_body))  # s3
-                # self.reporter.addMisc("LEGACY RESPONSE HEADERS", str(self.legacy_res.response_headers))
+                self.reporter.addMisc("LEGACY RESPONSE BODY", self.get_text(str(self.legacy_res.response_body)))  # s3
+                self.reporter.addMisc("LEGACY RESPONSE HEADERS", self.get_text(str(self.legacy_res.response_headers)))
                 self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.legacy_res.status_code}/{str(self.legacy_exp_status_code).strip('[]')}")
 
 
@@ -403,7 +402,6 @@ class PypRest(Base):
                                  + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
                                  + f"<b>RESPONSE BODY</b>: {str(body)}", 
                                  status.INFO)
-            logging.info(f"<b>RESPONSE BODY</b>: {str(body)}")
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
                                  f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 

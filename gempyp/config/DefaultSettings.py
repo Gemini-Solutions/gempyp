@@ -18,6 +18,7 @@ urls = {"data":{
                 "jira-api": "https://apis.gemecosystem.com/jira",
                 "bucket-file-upload-api": "https://apis-beta.gemecosystem.com/v1/upload/file",
                 "bucket-data-upload-api": "https://apis-beta.gemecosystem.com/v1/upload/data",
+                "bucket-file-modify": "https://apis-beta.gemecosystem.com/v1/file/tag",
                 "file-viewer": "https://jewel-beta.gemecosystem.com/#/file-viewer"
             }
         }

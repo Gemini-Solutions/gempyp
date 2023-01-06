@@ -3,13 +3,14 @@ import requests
 import logging
 import os
 import sys
+import traceback
 # import urllib
 from gempyp.config import DefaultSettings
 
 
-upload_file_api = "https://apis-beta.gemecosystem.com/v1/upload/file"
-upload_data_api = "https://apis-beta.gemecosystem.com/v1/upload/data"
-delete_file = "https://apis-beta.gemecosystem.com/v1/file/tag"
+# upload_file_api = DefaultSettings.getUrls('bucket-file-upload-api')
+# upload_data_api = DefaultSettings.getUrls('bucket-data-upload-api')
+# delete_file = DefaultSettings.getUrls('bucket-file-modify')
 
 def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder=None, username=None, bearer_token=None, bridge_token=None):
     logging.info("In Upload section")
@@ -29,28 +30,32 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
         params["s_run_id"] = s_run_id
     if data is not None:
         logging.info("------ Uploading data to s3 -----")
-        if api is None:
-            api = "https://apis-beta.gemecosystem.com/v1/upload/data"
-        headers["Content-Type"] = "text/plain"
-        params["file"] = file
         try:
-            data= data.encode('utf-8')
+            api = DefaultSettings.getUrls('bucket-data-upload-api') if not api else api
+            headers["Content-Type"] = "text/plain"
+            params["file"] = file
+            try:
+                data = data.encode('utf-8')
+            except Exception as e:
+                print(e)
+                traceback.print_exc()
+            response = requests.post(api, params=params, data=data, headers=headers)
+            data = json.loads(response.text)  
+            print(response.text)  
+            if response.status_code == 200:
+                data = json.loads(response.text)    
+                data_info = data["data"]
+                return data_info
         except Exception as e:
-            pass
-        response = requests.post(api, params=params, data=data, headers=headers)
-        data = json.loads(response.text)    
-        if response.status_code == 200:
-            data = json.loads(response.text)    
-            data_info = data["data"]
-            return data_info
+            traceback.print_exc()
+            print(e)
     elif file is not None:
         file = file.split(",")
         files = list()
         logging.info("---- Uploading file to s3 ----")
-        if api is None:
-            api = "https://apis-beta.gemecosystem.com/v1/upload/file"
+        api = DefaultSettings.getUrls('bucket-file-upload-api') if not api else api
         for f in file:
-            if not os.path.isfile(f):
+            if not os.path.isfile(f) or f == "N.A":
                 logging.error("Path of file invalid - ", f)
                 continue
             files.append(("file", open(f, "rb")))
@@ -59,6 +64,7 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
         if response.status_code == 200:
             data = json.loads(response.text)    
             file_info = data["data"]
+
             return file_info
 
 def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, id=None):

@@ -55,8 +55,8 @@ if __name__ == "__main__":
                         output_file_path = create_report(data, s_run_id)
                         # where to get this json data from
                         current_pid = os.getpid()
-                        logging.info(f"Find Gempyp logs at - {s_run_id + '.log'}")
+                        logging.info(f"Find Gempyp logs at - {s_run_id + '.txt'}")  ## replacing log with txt for UI compatibility
                         logging.info(f"Find Gempyp Report at - {output_file_path}")
-                        os.rename("logs.log",f"{s_run_id}.log")
+                        os.rename("logs.txt",f"{s_run_id}.txt")
                         os.kill(current_pid, 19)
                         sys.exit()

@@ -67,11 +67,6 @@ class AbstractSimpleTestcase(ABC):
             self.logger.info('================= Running Testcase: {testcase} ============'.format(testcase=testcase_settings["NAME"]))
             reports = self.gempypMethodExecutor(cls, testcase_settings, **kwargs)
 
-            # will never enter this  block
-            # if reports is None:
-            #     reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
-            #     self.logger.error("Report object was not returned from the testcase file")
-            #     reports.addRow("Exception Occured", "Exception occured in testcase: Report was not generated.", status.FAIL)    
         except Exception:
             etype, value, tb = sys.exc_info()
             self.logger.error(traceback.format_exc())
