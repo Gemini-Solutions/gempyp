@@ -1,3 +1,6 @@
+import uuid
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.config import DefaultSettings
 import mysql.connector
 import os
 import uuid
@@ -389,12 +392,20 @@ class DvRunner(Base):
                     if self.key_check == 0:
                         pass
                     else:
-                        self.value_df.to_excel(writer1, sheet_name = 'key_difference', index = False)
-                    if self.value_check ==0:
+                        self.keys_df.to_excel(writer1, sheet_name = 'key_difference', index = False)
+                    if self.value_check == 0:
                         pass
                     else:
-                        self.keys_df.to_excel(writer1, sheet_name = 'value_difference', index = False)
-                self.reporter.addRow("Data Validation Report","DVM Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
+                        self.value_df.to_excel(writer1, sheet_name = 'value_difference', index = False)
+                s3_url = None
+                try:
+                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token = self.data["SUITE_VARS"]["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
+                except Exception as e:
+                    print(e)
+                if not s3_url:
+                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
+                else:
+                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+s3_url+'>Result File</a>', status= status.FAIL )
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
             self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))

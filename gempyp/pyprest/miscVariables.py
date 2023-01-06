@@ -18,7 +18,6 @@ class MiscVariables:
         try:
             if self.pyprest_obj.report_misc:
                 misc_variable_str = self.pyprest_obj.report_misc
-                print(misc_variable_str)
                 misc_variable_list = misc_variable_str.split(";")
                 for each in misc_variable_list:
                     each_item = each.split("=")

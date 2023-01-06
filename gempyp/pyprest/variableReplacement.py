@@ -12,6 +12,7 @@ class VariableReplacement:
                 self.local_pre_variables = self.pyprest_obj.variables.get("local")
             if self.pyprest_obj.variables.get("suite") is not None:
                 self.suite_pre_variables = self.pyprest_obj.variables.get("suite")
+ 
         functions_list = [x[0] for x in getmembers(prefunc, isfunction)]
         self.functions_dict = {each.lower():each for each in functions_list}
             
@@ -65,7 +66,7 @@ class VariableReplacement:
     def getVariableValues(self, var_name):
         varName = var_name.strip("$[#]")
         try:
-            if "SUITE.".casefold() in varName.casefold():
+            if "SUITE.".casefold() or "ENV.".casefold() in varName.casefold():
                 varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
             else:
                 varValue = self.local_pre_variables[varName]
