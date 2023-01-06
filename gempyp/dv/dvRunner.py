@@ -450,13 +450,7 @@ class DvRunner(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            # trying to download from s3 path
-            # if(file_name.__contains__('s3')):
-            #     before_file=file_name.split("/")
-            #     folder = before_file[3:]
-            #     my_bucket = before_file[2].split(".")[0]
-            #     file = before_file[-1]
-            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+
             file_obj = moduleImports(file_name)
             self.logger.info("Running before method")
             obj_ = file_obj
