@@ -8,6 +8,7 @@ from configparser import ConfigParser
 from typing import Dict
 import pandas as pd
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
+from gempyp.libs.common import moduleImports
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
 from gempyp.dv.dvReporting import writeToReport
@@ -18,6 +19,7 @@ import logging
 import math
 import numpy
 import pg8000
+from gempyp.dv.dvObj import DvObj
 
 class DvRunner(Base):
 
@@ -90,8 +92,7 @@ class DvRunner(Base):
                     self.logger.info("Getting Source_CSV File Path")
                     sourceCsvPath = self.configData['SOURCE_CSV']
                     sourceDelimiter = self.configData.get('SOURCE_DELIMITER',',')
-                    db_1, sourceColumns = self.csvFileReader(sourceCsvPath, sourceDelimiter, "source")
-                    # sourceColumns = db_1.columns.values.tolist()
+                    self.source_df, self.source_columns = self.csvFileReader(sourceCsvPath, sourceDelimiter, "source")
                 except Exception as e:
                     self.logger.error(str(e))
                     traceback.print_exc()
@@ -101,15 +102,15 @@ class DvRunner(Base):
                     return output, None
             else:
                 """Connecting to sourceDB"""
-                db_1, sourceColumns = self.connectDB(sourceCred, "SOURCE")
+                self.source_df, self.source_columns = self.connectDB(sourceCred, "SOURCE")
 
             if 'TARGET_CSV' in self.configData:
                 try:
                     self.logger.info("Getting Target_CSV File Path")
                     targetCsvPath = self.configData['TARGET_CSV']
                     targetDelimiter = self.configData.get('TARGET_DELIMITER',',')
-                    db_2, targetColumns = self.csvFileReader(targetCsvPath, targetDelimiter, "Target")
-                    # targetColumns = db_2.columns.values.tolist()
+                    self.target_df, self.target_columns = self.csvFileReader(targetCsvPath, targetDelimiter, "Target")
+                    # self.target_columns = self.target_df.columns.values.tolist()
                 except Exception as e:
                     self.logger.error(str(e))
                     traceback.print_exc()
@@ -119,10 +120,13 @@ class DvRunner(Base):
                     return output, None
             else:
                 """Connecting to TargetDB"""
-                db_2, targetColumns = self.connectDB(targetCred, "TARGET")
-    
+                self.target_df, self.target_columns = self.connectDB(targetCred, "TARGET")
+            if "BEFORE_FILE" in self.configData:
+                self.beforeMethod()
+                self.matchKeys(self.source_columns,"SOURCE")
+                self.matchKeys(self.target_columns,"TARGET")
             try:
-                if sourceColumns==targetColumns:
+                if self.source_columns==self.target_columns:
                     pass
                 else:
                     raise Exception
@@ -133,7 +137,7 @@ class DvRunner(Base):
                 self.addReasonOfFailure(traceback)
                 return output, None
             
-            self.df_compare(db_1, db_2, self.keys)
+            self.df_compare(self.source_df, self.target_df, self.keys)
             self.reporter.finalizeReport()
             output = writeToReport(self)
             return output, None
@@ -265,14 +269,14 @@ class DvRunner(Base):
             self.value_check = 0
             self.key_check = 0
             self.dict1 = { 'REASON OF FAILURE':[]}
-            self.valueDict = {}
-            keyDict = self.addCommonExcel(self.common_keys)
+            self.key_dict = {}
+            value_dict = self.addCommonExcel(self.common_keys)
             """calling src and tgt for getting different keys"""
             srcDict = self.addExcel(self.keys_only_in_src, "Source")
             tgtDict = self.addExcel(self.keys_only_in_tgt, "Target")
-            self.key_check = len(self.valueDict["REASON OF FAILURE"])
-            self.value_check = len(keyDict["REASON OF FAILURE"])
-            self.writeExcel(self.valueDict,keyDict)
+            self.key_check = len(self.key_dict["REASON OF FAILURE"])
+            self.value_check = len(value_dict["REASON OF FAILURE"])
+            self.writeExcel(value_dict,self.key_dict)
         except Exception:
             traceback.print_exc()
             self.addReasonOfFailure(traceback)
@@ -307,10 +311,10 @@ class DvRunner(Base):
                         key = self.keys[i]
                         self.li1[i].append(li[i])
                         value = self.li1[i]
-                        self.valueDict[key] = value
+                        self.key_dict[key] = value
                     self.dict1.get("REASON OF FAILURE").append(f"keys only in {db}")
-            self.valueDict.update(self.dict1)
-            return self.valueDict
+            self.key_dict.update(self.dict1)
+            return self.key_dict
 
 
     def addCommonExcel(self,commonList:list):  
@@ -320,12 +324,16 @@ class DvRunner(Base):
             comm_dict ={}
 
             if commonList:
-                count = 0
                 for key_val in commonList:
-                    count +=1
                     for field in self.headers:
                         src_val = self.df_1.loc[key_val,field]
                         tgt_val = self.df_2.loc[key_val,field]
+                        # if type(src_val) == pd.core.series.Series:
+                        #     val = src_val[len(src_val)-1]
+                        #     src_val = val
+                        # if type(tgt_val) == pd.core.series.Series:
+                        #     val = tgt_val[len(tgt_val)-1]
+                        #     tgt_val = val
                         if src_val == src_val or tgt_val == tgt_val:
                             if "THRESHOLD" in self.configData:
                                 self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
@@ -333,8 +341,9 @@ class DvRunner(Base):
                                     src_val = self.truncate(src_val,int(self.configData["THRESHOLD"]))
                                 if type(tgt_val)== numpy.float64 and math.isnan(tgt_val) == False:
                                     tgt_val = self.truncate(tgt_val,int(self.configData["THRESHOLD"]))
+                                
                             if src_val != tgt_val and type(src_val)==type(tgt_val):
-                            
+                                    
                                 li = key_val.split('--')
                                 for i in range(len(li)):
                                     key = self.keys[i]
@@ -345,9 +354,9 @@ class DvRunner(Base):
                                 dummy_dict.get('Source_Value').append(src_val)
                                 dummy_dict.get('Target_Value').append(tgt_val)
                                 dummy_dict.get('REASON OF FAILURE').append("Difference In Value")                       
-                            
+                                    
                             elif type(src_val)!= type(tgt_val):
-                                
+                                        
                                 li = key_val.split('--')
                                 for i in range(len(li)):
                                     key = self.keys[i]
@@ -358,20 +367,22 @@ class DvRunner(Base):
                                 dummy_dict.get('Source_Value').append(src_val)
                                 dummy_dict.get('Target_Value').append(tgt_val)
                                 dummy_dict.get('REASON OF FAILURE').append("Difference In Datatype")
-                         
+                                
                 comm_dict.update(dummy_dict)
                 return comm_dict
 
 
     def writeExcel(self,valDict,keyDict):
-        
+
             print("----------in add excel---------")
             self.logger.info("In Add Excel Function")
             outputFolder = self.data['OUTPUT_FOLDER'] + "\\"
             excelPath = outputFolder + self.configData['NAME'] + '.xlsx'
             excel = ".\\testcases\\" + self.configData['NAME'] + '.xlsx'
-            df1_res = pd.DataFrame(valDict)
-            df2_res = pd.DataFrame(keyDict)
+            self.value_df = pd.DataFrame(valDict)
+            self.keys_df = pd.DataFrame(keyDict)
+            if "AFTER_FILE" in self.configData:
+                self.afterMethod()
             if (self.key_check + self.value_check) == 0:
                 self.reporter.addRow("Data Validation Report","No MisMatch Value Found", status= status.PASS )
                 self.logger.info("----No MisMatch Value Found----")
@@ -381,20 +392,20 @@ class DvRunner(Base):
                     if self.key_check == 0:
                         pass
                     else:
-                        df1_res.to_excel(writer1, sheet_name = 'key_difference', index = False)
-                    if self.value_check ==0:
+                        self.keys_df.to_excel(writer1, sheet_name = 'key_difference', index = False)
+                    if self.value_check == 0:
                         pass
                     else:
-                        df2_res.to_excel(writer1, sheet_name = 'value_difference', index = False)
+                        self.value_df.to_excel(writer1, sheet_name = 'value_difference', index = False)
                 s3_url = None
                 try:
                     s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token = self.data["SUITE_VARS"]["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
                 except Exception as e:
                     print(e)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report","DVM Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
                 else:
-                    self.reporter.addRow("Data Validation Report","DVM Result File: "+'<a href='+s3_url+'>Result File</a>', status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+s3_url+'>Result File</a>', status= status.FAIL )
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
             self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))
@@ -405,4 +416,141 @@ class DvRunner(Base):
         exceptiondata = rof.format_exc().splitlines()
         exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
         self.reporter.addMisc("reason of failure",exceptionarray[0])
+
+    
+    def beforeMethod(self):
+        """This function
+        -checks for the before file tag
+        -stores package, module,class and method
+        -runs before method if found
+        -takes all the data from before method and updates the self object"""
+
+        # check for before_file
+        self.logger.info("CHECKING FOR BEFORE FILE___________________________")
+
+        file_str = self.data["config_data"].get("BEFORE_FILE", "")
+        if file_str == "" or file_str == " ":
+            self.logger.info("BEFORE FILE NOT FOUND___________________________")
+            self.reporter.addRow("Searching for Before_File steps", "No Before File steps found", status.INFO)
+
+            return
+        self.reporter.addRow("Searching for Before_File steps", "Searching for Before File", status.INFO)
+        
+        file_name = file_str.split("path=")[1].split(",")[0]
+        if "CLASS=" in file_str.upper():
+            class_name = file_str.split("class=")[1].split(",")[0]
+        else:
+            class_name = ""
+        if "METHOD=" in file_str.upper():
+            method_name = file_str.split("method=")[1].split(",")[0]
+        else:
+            method_name = "before"
+        
+        self.logger.info("Before file path:- " + file_name)
+        self.logger.info("Before file class:- " + class_name)
+        self.logger.info("Before file mthod:- " + method_name)
+        try:
+            # trying to download from s3 path
+            # if(file_name.__contains__('s3')):
+            #     before_file=file_name.split("/")
+            #     folder = before_file[3:]
+            #     my_bucket = before_file[2].split(".")[0]
+            #     file = before_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+            file_obj = moduleImports(file_name)
+            self.logger.info("Running before method")
+            obj_ = file_obj
+            before_obj = DvObj(
+                pg=self.reporter,
+                project=self.project,
+                source_df=self.source_df,
+                target_df=self.target_df,
+                source_columns=self.source_columns,
+                target_columns=self.target_columns,
+                keys=self.keys,
+                env=self.env,
+            )
+            if class_name != "":
+                obj_ = getattr(file_obj, class_name)()
+            fin_obj = getattr(obj_, method_name)(before_obj)
+            self.extractBeforeObj(fin_obj)
+            
+        except Exception as e:
+            self.logger.info(traceback.print_exc())
+            self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
+    
+    def afterMethod(self):
+        """This function
+        -checks for the after file tag
+        -stores package, module,class and method
+        -runs after method if found
+        -takes all the data from after method and updates the self object"""
+
+        self.logger.info("CHECKING FOR AFTER FILE___________________________")
+
+        file_str = self.data["config_data"].get("AFTER_FILE", "")
+        if file_str == "" or file_str == " ":
+            self.logger.info("AFTER FILE NOT FOUND___________________________")
+            self.reporter.addRow("Searching for After_File Steps", "No File Path Found", status.INFO)
+            return
+
+        self.reporter.addRow("Searching for After_File", "Searching for File", status.INFO)
+        
+        file_name = file_str.split("path=")[1].split(",")[0]
+        if "CLASS=" in file_str.upper():
+            class_name = file_str.split("class=")[1].split(",")[0]
+        else:
+            class_name = ""
+        if "METHOD=" in file_str.upper():
+            method_name = file_str.split("method=")[1].split(",")[0]
+        else:
+            method_name = "after"
+        self.logger.info("After file path:- " + file_name)
+        self.logger.info("After file class:- " + class_name)
+        self.logger.info("After file mthod:- " + method_name)
+        try:
+            # if(file_name.__contains__('s3')):
+            #     after_file=file_name.split("/")
+            #     folder = after_file[3:]
+            #     my_bucket = after_file[2].split(".")[0]
+            #     file = after_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+            file_obj = moduleImports(file_name)
+            self.logger.info("Running After method")
+            obj_ = file_obj
+            after_obj = DvObj(
+                pg=self.reporter,
+                project=self.project,
+                value_df = self.value_df,
+                keys_df = self.keys_df,
+                env=self.env,
+            )
+            if class_name != "":
+                obj_ = getattr(file_obj, class_name)()
+            fin_obj = getattr(obj_, method_name)(after_obj)
+            self.extractAfterObj(fin_obj)
+        except Exception as e:
+            self.reporter.addRow("Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.ERR)
+
+    
+    def extractBeforeObj(self, obj):
+        """To ofload the data from pyprest obj helper, assign the values back to self object"""
+
+        self.reporter = obj.pg
+        self.project = obj.project
+        self.source_columns = obj.source_columns
+        self.target_columns = obj.target_columns
+        self.source_df = obj.source_df
+        self.target_df = obj.target_df
+        self.keys = obj.keys
+        self.env = obj.env
+    
+    def extractAfterObj(self,obj):
+
+        self.reporter = obj.pg
+        self.project = obj.project
+        self.value_df = obj.value_df
+        self.keys_df = obj.keys_df
+        self.env = obj.env
+
 
