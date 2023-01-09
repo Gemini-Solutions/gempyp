@@ -121,7 +121,7 @@ class AbstarctBaseConfig(ABC):
         """to update the data that is passed by cli"""
         try:
             for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
-                os.environ[key] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
+                os.environ[key.lower()] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
         except Exception as error:
             print("Error in updating environment variable",error)
         try:
@@ -129,11 +129,11 @@ class AbstarctBaseConfig(ABC):
                 value=self._CONFIG['SUITE_DATA'][key]
                 if("$[#ENV." in value):
                         envValue=value
-                        value=value.strip("$[#ENV.").strip("]")
+                        value=value.replace("$[#ENV.","").strip("]").lower()
                         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
                         self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
                 if("$[#" in value):
-                        value=value.strip("$[#").strip("]")
+                        value=value.strip("$[#").strip("]").lower()
                         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
           
 
