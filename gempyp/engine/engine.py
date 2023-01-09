@@ -25,7 +25,7 @@ import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
-from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 
 
 
@@ -39,19 +39,13 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     print("--------- In Executor Factory ----------\n")
     if custom_logger == None:
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
-        + os.environ.get('unique_id') + '.log')
+        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility
         custom_logger = my_custom_logger(log_path)
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
     if 'log_path' not in data['config_data']:
-        data['config_data']['log_path'] = log_path    
+        data['config_data']['LOG_PATH'] = log_path    
 
-    
-
-    
-    # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
-    # "dvm": {"function": DvmRunner(data).dvmEngine(), "log": custom_logger.info("Starting the DVM testcase")}, 
-    # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
     engine_control = {
         "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
         "dv":{"class": DvRunner, "classParam": data, "function": "dvEngine"},
@@ -113,6 +107,9 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
+        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data
+            logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
+            sys.exit()
         if self.jewel_user:
             #trying first rerun of base url api in case of api failure
             if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
@@ -257,15 +254,10 @@ class Engine:
         self.start_time = datetime.now(timezone.utc)
 
         self.project_name = self.PARAMS["PROJECT"]
-
         self.report_name = self.PARAMS.get("REPORT_NAME")
-
         self.project_env = self.PARAMS["ENV"]
-
         self.unique_id = self.PARAMS["UNIQUE_ID"]
-
-        self.user_suite_variables = self.PARAMS["SUITE_VARS"]
-
+        self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.jewel_run = False
         self.jewel_user = False
         self.s3_url = ""
@@ -332,11 +324,8 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-        print("here")
-        try:
-            if self.CONFIG.getTestcaseLength() <= 0:
-                raise Exception("no testcase found to run")
 
+        try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
             elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
@@ -397,7 +386,7 @@ class Engine:
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
                 log_path = os.path.join(self.testcase_log_folder,
-                data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
+                data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 conn = None
@@ -479,21 +468,22 @@ class Engine:
                         process.start()
                     for parent_connection in parent_connections:
                         instances_total.append(parent_connection.recv()[0])
-                        
-                    for row in instances_total:
-                        if not row or len(row) < 2:
-                            raise Exception(
-                                "Some error occured while running the testcases"
-                            )
-                        output = row[0]
-                        
-                        error = row[1]
-                        if error:
-                            logging.error(
-                                f"Error occured while executing the testcase: {error['testcase']}"
-                            )
-                            logging.error(f"message: {error['message']}")
-                        self.update_df(output, error)
+                        if len(instances_total) > 0:
+                            row = instances_total[-1]
+                            if not row or len(row) < 2:
+                                raise Exception(
+                                    "Some error occured while running the testcases"
+                                )
+                            output = row[0]
+                            
+                            error = row[1]
+                            if error:
+                                logging.error(
+                                    f"Error occured while executing the testcase: {error['testcase']}"
+                                )
+                                logging.error(f"message: {error['message']}")
+                            self.update_df(output, error)
+
                     for process in processes:
                         process.join()
         except Exception:
@@ -515,7 +505,6 @@ class Engine:
                     error.get("category"),
                     error.get("product_type"),
                     error.get('log_path', None),
-                    error.get('invoke_user', None),
                 )
                 output = [output]
             unsorted_dict = output[0]['json_data']['meta_data'][2]
@@ -568,7 +557,6 @@ class Engine:
         category: str = None,
         product_type: str = None,
         log_path: str = None,
-        invoke_user: str = None
     ) -> Dict:
         """
         store the data of failed testcase and return it as a dict to update_df
@@ -595,7 +583,14 @@ class Engine:
         testcase_dict["ignore"] = False
         if category:
             testcase_dict["category"] = category
-        testcase_dict["log_file"] = log_path
+        s3_log_file_url = log_path
+        if self.jewel_user:
+            try:
+                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=log_path,tag="public")[0]["Url"]) 
+                s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+            except Exception as e:
+                print(e)
+        testcase_dict["log_file"] = s3_log_file_url
         testcase_dict["result_file"] = None
         testcase_dict["base_user"] = getpass.getuser()
         testcase_dict["invoke_user"] = self.invoke_user

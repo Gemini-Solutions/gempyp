@@ -8,8 +8,9 @@ import typing
 from gempyp.config import DefaultSettings
 import importlib
 import sys
-from gempyp.libs.gem_s3_common import download_from_s3
+from gempyp.libs.gem_s3_common import download_from_s3, upload_to_s3, create_s3_link
 from gempyp.config.GitLinkXML import fetchFileFromGit
+from gempyp.config import DefaultSettings
 
 
 def read_json(file_path):
@@ -134,7 +135,7 @@ def moduleImports(file_name):
 
 
 
-def download_beforeAfter_file(file_name,headers=None):
+def download_common_file(file_name,headers=None):
     try:
         if(file_name.__contains__('S3')):
             logging.info("File is from S3")
@@ -144,7 +145,6 @@ def download_beforeAfter_file(file_name,headers=None):
                 fp.seek(0)
                 fp.write(fileContent)
                 fp.truncate()
-                
         elif(file_name.__contains__('GIT')):
             logging.info("File is from GIT")
             list_url=file_name.split(":")
@@ -158,4 +158,15 @@ def download_beforeAfter_file(file_name,headers=None):
         return e
             
 
+def control_text_size(data, **kwargs):
 
+    fin_str = data
+    if len(str(data)) > 150:
+        url = None
+        try:
+            url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-data-upload-api"], data=data, bridge_token=kwargs.get("bridge_token", None), username=kwargs.get("username", None), tag="public")["Url"])
+            if url:
+                fin_str = f'<a target=_blank  href={url}>Click here</a>'
+        except Exception as e:
+            print(e)
+    return fin_str

@@ -83,7 +83,9 @@ class AbstarctBaseConfig(ABC):
                 continue
             if value.get("RUN_FLAG", "Y").upper() == "Y":
                 self.total_yflag_testcase += 1
-            if self.cli_config["CATEGORY"]!=None and value.get("CATEGORY") not in self.cli_config["CATEGORY"].split(","):
+            
+            if self.filter_category(value):
+                print("here")
                 continue
             if self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None)!=None and value.get("CATEGORY") not in self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None).split(","):
                 continue
@@ -99,6 +101,20 @@ class AbstarctBaseConfig(ABC):
        
     
         self._CONFIG["TESTCASE_DATA"] = filtered_dict
+
+    def filter_category(self, value):
+        """ filtering the categories that we want to run, if any. Returns 0 if we want to run the testcase"""
+        
+        exp_category = None
+        this_category = []
+        if self.cli_config.get("CATEGORY", None):
+            exp_category = self.cli_config["CATEGORY"] if isinstance(self.cli_config["CATEGORY"], list) else str(self.cli_config["CATEGORY"]).upper().split(",")
+        if value.get("CATEGORY", None):
+            this_category = value.get("CATEGORY") if isinstance(value.get("CATEGORY"), list) else str(value.get("CATEGORY")).upper().split(",")
+        if exp_category:
+            if not len(list(set(exp_category) & set(this_category))) < 1:
+                return 1
+        return 0
 
     # TODO
     def update(self):

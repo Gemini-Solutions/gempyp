@@ -5,7 +5,7 @@ import sys, os
 import coloredlogs, logging
 
 class LoggingConfig:
-    def __init__(self, file_name='tmp.log') -> None:
+    def __init__(self, file_name='tmp.txt') -> None:  # ## replacing log with txt for UI compatibility
         # logging.basicConfig(filename=file_name,
         #             format='%(asctime)s [%(levelname)s] - [%(filename)s > %(funcName)s() > %(lineno)s] - %(message)s',
         #             datefmt='%H:%M:%S',

@@ -5,12 +5,10 @@ import traceback
 import uuid
 from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
-from gempyp.libs.common import moduleImports
 import getpass
-from gempyp.libs.common import download_beforeAfter_file
-from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.libs.common import download_common_file
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
-
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
 
@@ -24,7 +22,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     testcase_meta.pop("config_data")
     try:
         file_name = config_data.get("PATH")
-        dynamic_testcase =download_beforeAfter_file(file_name,testcase_meta.get("SUITE_VARS",None))
+        dynamic_testcase = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
         try:
             # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
@@ -95,19 +93,18 @@ def getOutput(data):
     for key in all_status:
         total = total + all_status[key]
     data["json_data"]["meta_data"][2]["TOTAL"] = total
+
     try:
-        log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.log') 
+        log_file= os.path.join('logs',data['NAME']+'_'+unique_id+'.txt')  # ## replacing log with txt for UI compatibility
     except Exception:
         log_file = None
+    tempdict["log_file"] = log_file
+
     try:
-        s3_log_file_url= upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA",None).get("SUITE_VARS", None).get("username",None), file= data.get("config_data",None).get("LOG_PATH".casefold(),"N.A"),tag="public")[0]["Url"]  
+        s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", "N.A"),tag="public")[0]["Url"])
+        s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
     except Exception:
-         s3_log_file_url=None
-    tempdict["log_file"] = log_file 
-
-
-  
-
+         s3_log_file_url = None
     singleTestcase = {}
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = data.get("MISC")
