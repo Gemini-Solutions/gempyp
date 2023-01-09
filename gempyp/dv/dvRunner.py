@@ -128,6 +128,12 @@ class DvRunner(Base):
                 self.target_df, self.target_columns = self.connectDB(targetCred, "TARGET")
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
+                self.li1 = []
+                self.li2 = []
+                for i in self.keys:
+                    column.append(i)
+                    self.li1.append([])
+                    self.li2.append([])
                 self.matchKeys(self.source_columns,"SOURCE")
                 self.matchKeys(self.target_columns,"TARGET")
             try:
@@ -434,7 +440,7 @@ class DvRunner(Base):
         self.logger.info("CHECKING FOR BEFORE FILE___________________________")
 
         file_str = self.data["config_data"].get("BEFORE_FILE", "")
-        if file_str == "" or file_str == " ":
+        if not file_str or file_str == "" or file_str == " ":
             self.logger.info("BEFORE FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for Before_File steps", "No Before File steps found", status.INFO)
 
@@ -488,7 +494,7 @@ class DvRunner(Base):
         self.logger.info("CHECKING FOR AFTER FILE___________________________")
 
         file_str = self.data["config_data"].get("AFTER_FILE", "")
-        if file_str == "" or file_str == " ":
+        if not file_str or file_str == "" or file_str == " ":
             self.logger.info("AFTER FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for After_File Steps", "No File Path Found", status.INFO)
             return
