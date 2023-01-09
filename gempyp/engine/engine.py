@@ -98,7 +98,7 @@ class Engine:
 
         self.DATA = TestData()
         # get the env for the engine Runner
-        self.ENV = os.getenv("ENV_BASE", "BETA").upper()
+        self.ENV = os.getenv("appenv", "BETA").upper()
         # initial SETUP
         self.setUP(params_config)
         self.parseMails()

@@ -506,12 +506,6 @@ class DvRunner(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            # if(file_name.__contains__('s3')):
-            #     after_file=file_name.split("/")
-            #     folder = after_file[3:]
-            #     my_bucket = after_file[2].split(".")[0]
-            #     file = after_file[-1]
-            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
             file_obj = download_common_file(file_name,self.data.get("SUITE_VARS",None))
             file_obj= moduleImports(file_obj)
             self.logger.info("Running After method")
