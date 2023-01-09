@@ -469,8 +469,8 @@ class PypRest(Base):
 
 
             
-            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
-            file_name= moduleImports(file_obj)
+            file_path1=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_path1)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
@@ -536,8 +536,8 @@ class PypRest(Base):
             #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
 
 
-            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
-            file_name= moduleImports(file_obj)
+            file_path1=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_path1)
             self.logger.info("Running after method")
             obj_ = file_obj
             after_obj = RestObj(
