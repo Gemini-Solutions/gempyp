@@ -1,10 +1,19 @@
 class DvObj:
     def __init__(self, **kwargs):
+        """
+        source_df and target_df will contains the source and target dataframe
+        source_columns and target_columns will contain columns name 
+        if we do any change in df columns in before method than we need to do it in source_columns too
+
+        self.keys will always be given in list
+
+        value_df will contain mismatch for values and keys_df will contain the mismatch for keys 
+        """
         if "pg" in kwargs:
             self.pg = kwargs['pg']
         if "project" in kwargs:
             self.project = kwargs["project"]
-        if "source_df" in kwargs:
+        if "source_df" in kwargs:      
             self.source_df = kwargs["source_df"]
         if "target_df" in kwargs:
             self.target_df = kwargs["target_df"]
