@@ -20,6 +20,7 @@ import math
 import numpy
 import pg8000
 from gempyp.dv.dvObj import DvObj
+from gempyp.libs.common import download_common_file
 
 class DvRunner(Base):
 
@@ -91,8 +92,9 @@ class DvRunner(Base):
                 try:
                     self.logger.info("Getting Source_CSV File Path")
                     sourceCsvPath = self.configData['SOURCE_CSV']
+                    file_obj = download_common_file(sourceCsvPath,self.data.get("SUITE_VARS",None))
                     sourceDelimiter = self.configData.get('SOURCE_DELIMITER',',')
-                    self.source_df, self.source_columns = self.csvFileReader(sourceCsvPath, sourceDelimiter, "source")
+                    self.source_df, self.source_columns = self.csvFileReader(file_obj, sourceDelimiter, "source")
                 except Exception as e:
                     self.logger.error(str(e))
                     traceback.print_exc()
@@ -108,8 +110,9 @@ class DvRunner(Base):
                 try:
                     self.logger.info("Getting Target_CSV File Path")
                     targetCsvPath = self.configData['TARGET_CSV']
+                    file_obj = download_common_file(targetCsvPath,self.data.get("SUITE_VARS",None))
                     targetDelimiter = self.configData.get('TARGET_DELIMITER',',')
-                    self.target_df, self.target_columns = self.csvFileReader(targetCsvPath, targetDelimiter, "Target")
+                    self.target_df, self.target_columns = self.csvFileReader(file_obj, targetDelimiter, "Target")
                     # self.target_columns = self.target_df.columns.values.tolist()
                 except Exception as e:
                     self.logger.error(str(e))
@@ -450,14 +453,8 @@ class DvRunner(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            # trying to download from s3 path
-            # if(file_name.__contains__('s3')):
-            #     before_file=file_name.split("/")
-            #     folder = before_file[3:]
-            #     my_bucket = before_file[2].split(".")[0]
-            #     file = before_file[-1]
-            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
-            file_obj = moduleImports(file_name)
+            file_obj = download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_obj)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = DvObj(
@@ -515,7 +512,8 @@ class DvRunner(Base):
             #     my_bucket = after_file[2].split(".")[0]
             #     file = after_file[-1]
             #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
-            file_obj = moduleImports(file_name)
+            file_obj = download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_obj)
             self.logger.info("Running After method")
             obj_ = file_obj
             after_obj = DvObj(
