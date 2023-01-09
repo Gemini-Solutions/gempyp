@@ -91,7 +91,8 @@ class DvRunner(Base):
             if 'SOURCE_CSV' in self.configData:
                 try:
                     self.logger.info("Getting Source_CSV File Path")
-                    sourceCsvPath = self.configData['SOURCE_CSV']
+                    path = self.configData['SOURCE_CSV']
+                    sourceCsvPath = readPath(path)
                     file_obj = download_common_file(sourceCsvPath,self.data.get("SUITE_VARS",None))
                     sourceDelimiter = self.configData.get('SOURCE_DELIMITER',',')
                     self.source_df, self.source_columns = self.csvFileReader(file_obj, sourceDelimiter, "source")
@@ -109,7 +110,8 @@ class DvRunner(Base):
             if 'TARGET_CSV' in self.configData:
                 try:
                     self.logger.info("Getting Target_CSV File Path")
-                    targetCsvPath = self.configData['TARGET_CSV']
+                    path = self.configData['TARGET_CSV']
+                    targetCsvPath = readPath(path)
                     file_obj = download_common_file(targetCsvPath,self.data.get("SUITE_VARS",None))
                     targetDelimiter = self.configData.get('TARGET_DELIMITER',',')
                     self.target_df, self.target_columns = self.csvFileReader(file_obj, targetDelimiter, "Target")
