@@ -6,7 +6,7 @@ import uuid
 from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 import getpass
-from gempyp.libs.common import download_common_file
+from gempyp.libs.common import download_common_file, moduleImports
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
 
@@ -23,7 +23,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     try:
         file_name = config_data.get("PATH")
         file_path = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
-        dynamic_testcase=moduleImports(file_path)
+        dynamic_testcase = moduleImports(file_path)
         try:
             # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
