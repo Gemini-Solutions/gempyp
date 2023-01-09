@@ -36,7 +36,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
                     and name != "AbstractSimpleTestcase"
                 ):
 
-                    print("------- In subclass check --------")
+                    logging.info("------- In subclass check --------")
                     result_data = cls().RUN(cls, config_data, **testcase_meta)
 
 

@@ -118,7 +118,7 @@ class AbstarctBaseConfig(ABC):
             for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
                 os.environ[key.lower()] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
         except Exception as error:
-            print("Error in updating environment variable",error)
+            logging.error("Error in updating environment variable",error)
         try:
             for key in self._CONFIG['SUITE_DATA'].keys():
                 value=self._CONFIG['SUITE_DATA'][key]
@@ -133,7 +133,7 @@ class AbstarctBaseConfig(ABC):
           
 
         except Exception as error:
-            print("error occurs in finding environment variable",error)
+            logging.error("error occurs in finding environment variable",error)
         try:
             for element in self.cli_config.keys():
                 if self.cli_config[element]:
@@ -146,6 +146,6 @@ class AbstarctBaseConfig(ABC):
                     else:
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:
-            print("error occurs in update",error)
+            logging.error("error occurs in update",error)
         
         

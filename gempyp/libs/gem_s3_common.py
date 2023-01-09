@@ -37,7 +37,7 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
             try:
                 data = str(data).encode('utf-8')
             except Exception as e:
-                print(e)
+                logging.warn(e)
                 traceback.print_exc()
             response = requests.post(api, params=params, data=data, headers=headers)
             data = json.loads(response.text)  
@@ -47,7 +47,7 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
                 return data_info
         except Exception as e:
             traceback.print_exc()
-            print(e)
+            logging.warn(e)
     elif file is not None:
         file = file.split(",")
         files = list()

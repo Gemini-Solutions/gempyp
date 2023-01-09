@@ -36,7 +36,7 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     Takes single testcase data as input
     """
 
-    print("--------- In Executor Factory ----------\n")
+    logging.info("--------- In Executor Factory ----------\n")
     if custom_logger == None:
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
         + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility
@@ -118,17 +118,17 @@ class Engine:
 
             # code for checking s_run_id present in db 
             if "RUN_ID" in self.PARAMS:
-                print("************Trying to check If s_run_id is present in DB*****************")
+                logging.info("************Trying to check If s_run_id is present in DB*****************")
                 response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
                 if response == "failed":
-                    print("************s_run_id not present in DB Trying to call Post*****************")
+                    logging.info("************s_run_id not present in DB Trying to call Post*****************")
                     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
             else:
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
                 ### first try to rerun the data
                 if dataUpload.suite_uploaded == False:
-                    print("------Retrying to Upload Suite Data------")
+                    logging.info("------Retrying to Upload Suite Data------")
                     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             
         self.makeOutputFolder()
@@ -141,7 +141,7 @@ class Engine:
                 DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
             ### Trying to reupload suite data
             if dataUpload.suite_uploaded == False:
-                print("------Retrying to Upload Suite Data------")
+                logging.info("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
@@ -149,7 +149,7 @@ class Engine:
             jewelLink = DefaultSettings.getUrls('jewel-url')
             self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
             if len(dataUpload.not_uploaded) != 0:
-                print("------Trying again to Upload Testcase------")
+                logging.info("------Trying again to Upload Testcase------")
                 for testcase in dataUpload.not_uploaded:
                     dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             failed_Utestcases = len(dataUpload.not_uploaded) 
@@ -273,9 +273,9 @@ class Engine:
             else:
                 try:
                     self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
-                    print("--------- url", self.s3_url)
+                    logging.info("--------- url" + str(self.s3_url))
                 except Exception as e:
-                    print(e)
+                    logging.info(e)
         #add suite_vars here 
 
     def parseMails(self):
@@ -284,7 +284,6 @@ class Engine:
         """
         if("MAIL" in self.PARAMS.keys()):
             self.mail = common.parseMails(self.PARAMS["MAIL"])
-            print(self.mail)
 
     def makeSuiteDetails(self):
         """
@@ -340,7 +339,7 @@ class Engine:
                 self.updateSuiteData()
             except Exception as err:
                 logging.error(traceback.format_exc())
-                print(err)
+                logging.info(err)
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             # need to add reason of failure of the suite in misc
 
@@ -431,7 +430,6 @@ class Engine:
                     
                     else:
 
-                        print("----------------here--------------------")
                         dependency_error = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
@@ -589,7 +587,7 @@ class Engine:
                 s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=log_path,tag="public")[0]["Url"]) 
                 s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
             except Exception as e:
-                print(e)
+                logging.info(e)
         testcase_dict["log_file"] = s3_log_file_url
         testcase_dict["result_file"] = None
         testcase_dict["base_user"] = getpass.getuser()

@@ -44,7 +44,7 @@ class XmlConfig(AbstarctBaseConfig):
         suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
         LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
         # LoggingConfig(suiteLogsLoc)
-        print("------suite logs------",suiteLogsLoc)
+        logging.info("------suite logs------"+ str(suiteLogsLoc))
 
 
         self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)

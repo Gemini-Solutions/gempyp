@@ -26,8 +26,8 @@ class Api:
                     if not isinstance(request.body, str):
                         request.body = json.dumps(request.body)
                 except Exception as e:
-                    print("JSON object can not be serialized")
-                    print(str(e))
+                    logging.info("JSON object can not be serialized")
+                    logging.info(str(e))
             # write code for authentication 
             # decrypt password
         auth = None
@@ -176,8 +176,8 @@ class Api:
                 result = obj
                 
         except Exception as e:
-                print(traceback.format_exc())
-                print(str(e))
+                traceback.print_exc()
+                logging.info(str(e))
                 result = obj
             
             # add retries if required
@@ -204,7 +204,7 @@ class Api:
         except Exception as e:
             enc_pass = None
             traceback.print_exc()
-            print(e)
+            logging.info(e)
         return enc_pass
 
     def decrypt_(self, enc_pass, key):
@@ -219,7 +219,7 @@ class Api:
         except Exception as e:
             dec_pass = None
             traceback.print_exc()
-            print(e)
+            logging.info(e)
         return dec_pass
 
 

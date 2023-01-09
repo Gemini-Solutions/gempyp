@@ -385,7 +385,7 @@ class DvRunner(Base):
 
     def writeExcel(self,valDict,keyDict):
 
-            print("----------in add excel---------")
+            logging.info("----------in add excel---------")
             self.logger.info("In Add Excel Function")
             outputFolder = self.data['OUTPUT_FOLDER'] + "\\"
             excelPath = outputFolder + self.configData['NAME'] + '.xlsx'
@@ -412,7 +412,7 @@ class DvRunner(Base):
                 try:
                     s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token = self.data["SUITE_VARS"]["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
                 except Exception as e:
-                    print(e)
+                    logging.warn(e)
                 if not s3_url:
                     self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
                 else:

@@ -17,7 +17,6 @@ def read_json(file_path):
     try:
         with open(file_path) as fobj:
             res = json.load(fobj)
-            print(res)
     except Exception:
         res = None
     return res
@@ -168,5 +167,5 @@ def control_text_size(data, **kwargs):
             if url:
                 fin_str = f'<a target=_blank  href={url}>Click here</a>'
         except Exception as e:
-            print(e)
+            logging.info(e)
     return fin_str
