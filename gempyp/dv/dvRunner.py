@@ -455,8 +455,8 @@ class DvRunner(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            file_obj = download_common_file(file_name,self.data.get("SUITE_VARS",None))
-            file_obj= moduleImports(file_obj)
+            file_path = download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_path)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = DvObj(
@@ -514,8 +514,8 @@ class DvRunner(Base):
             #     my_bucket = after_file[2].split(".")[0]
             #     file = after_file[-1]
             #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
-            file_obj = download_common_file(file_name,self.data.get("SUITE_VARS",None))
-            file_obj= moduleImports(file_obj)
+            file_path = download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_path)
             self.logger.info("Running After method")
             obj_ = file_obj
             after_obj = DvObj(
