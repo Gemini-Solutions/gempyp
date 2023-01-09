@@ -10,12 +10,16 @@ from gempyp.engine import dataUpload
 def createJira(jira_body, bridge_token, user_name):
     logging.info("----------- Trying to create Jira Ticket ------------")
     create_jira_api = DefaultSettings.urls["data"]["jira-api"]
+    logging.info(jira_body)
     try:
         jira_res = dataUpload._sendData(jira_body, url=create_jira_api, bridge_token=bridge_token, user_name=user_name)
         if jira_res.status_code == 201 or jira_res.status_code == 200:
             jira_json = json.loads(jira_res.text)
-            jira_id = jira_json["data"].get("key", None)
-            return jira_id
+            try:
+                return jira_json.get("data", None).get("key", None)
+            except:
+                logging.info("No need to create jira")            
+                return None
         else:
             logging.info("Jira API Response - ", str(jira_res.text))
     except Exception as e:
