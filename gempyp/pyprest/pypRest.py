@@ -461,8 +461,8 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
-            file_name= moduleImports(file_obj)
+            file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_path)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
@@ -519,9 +519,9 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
-            file_name= moduleImports(file_obj)
-            
+            file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj = moduleImports(file_path)
+
             self.logger.info("Running after method")
             obj_ = file_obj
             after_obj = RestObj(
