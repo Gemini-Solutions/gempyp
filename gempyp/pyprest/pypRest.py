@@ -18,6 +18,7 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import download_beforeAfter_file
+from gempyp.libs.common import moduleImports
 
 # from gempyp.libs import custom_s3
 
@@ -469,8 +470,9 @@ class PypRest(Base):
         
 
 
-    
+            
             file_obj=download_beforeAfter_file(file_name,self.data.get("SUITE_VARS",None))
+            file_name= moduleImports(file_obj)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
@@ -543,6 +545,7 @@ class PypRest(Base):
 
 
             file_obj=download_beforeAfter_file(file_name,self.data.get("SUITE_VARS",None))
+            file_name= moduleImports(file_obj)
             self.logger.info("Running after method")
             obj_ = file_obj
             after_obj = RestObj(
