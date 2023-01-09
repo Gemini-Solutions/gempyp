@@ -440,7 +440,7 @@ class PypRest(Base):
         self.logger.info("CHECKING FOR BEFORE FILE___________________________")
 
         file_str = self.data["config_data"].get("BEFORE_FILE", "")
-        if file_str == "" or file_str == " ":
+        if not file_str or file_str == "" or file_str == " ":
             self.logger.info("BEFORE FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for pre API steps", "No Pre API steps found", status.INFO)
 
@@ -499,7 +499,7 @@ class PypRest(Base):
         self.logger.info("CHECKING FOR AFTER FILE___________________________")
 
         file_str = self.data["config_data"].get("AFTER_FILE", "")
-        if file_str == "" or file_str == " ":
+        if not file_str or file_str == "" or file_str == " ":
             self.logger.info("AFTER FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for post API steps", "No Post API steps found", status.INFO)
             return
