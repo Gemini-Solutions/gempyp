@@ -133,7 +133,9 @@ def moduleImports(file_name):
             return e
 
 
-def download_common_file(file_name,headers):
+
+
+def download_common_file(file_name,headers=None):
     try:
         if(file_name.__contains__('S3')):
             logging.info("File is from S3")
@@ -150,7 +152,6 @@ def download_common_file(file_name,headers):
                 file_name=fetchFileFromGit(list_url[2],list_url[3],username=list_url[-2],bearer_token=list_url[-1])
             else:
                 file_name=fetchFileFromGit(list_url[2],list_url[3])
-        file_name = moduleImports(file_name)
         return file_name
     except Exception as e:
         traceback.print_exc()

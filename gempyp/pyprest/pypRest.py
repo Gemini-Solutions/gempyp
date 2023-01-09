@@ -18,6 +18,7 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import download_common_file, control_text_size
+from gempyp.libs.common import moduleImports
 
 # from gempyp.libs import custom_s3
 
@@ -460,8 +461,19 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-    
+            # trying to download from s3 path
+           
+            #     before_file=file_name.split("/")
+            #     folder = before_file[3:]
+            #     my_bucket = before_file[2].split(".")[0]
+            #     file = before_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+        
+
+
+            
             file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_name= moduleImports(file_obj)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
@@ -519,7 +531,16 @@ class PypRest(Base):
         self.logger.info("After file mthod:- " + method_name)
         try:
 
+            # if(file_name.__contains__('s3')):
+            #     after_file=file_name.split("/")
+            #     folder = after_file[3:]
+            #     my_bucket = after_file[2].split(".")[0]
+            #     file = after_file[-1]
+            #     file_name = custom_s3.download(bucket=my_bucket, file_name=file, folder=folder)
+
+
             file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_name= moduleImports(file_obj)
             self.logger.info("Running after method")
             obj_ = file_obj
             after_obj = RestObj(
