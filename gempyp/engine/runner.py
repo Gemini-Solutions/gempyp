@@ -22,7 +22,8 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     testcase_meta.pop("config_data")
     try:
         file_name = config_data.get("PATH")
-        dynamic_testcase = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
+        file_path = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
+        dynamic_testcase=moduleImports(file_path)
         try:
             # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
