@@ -1,8 +1,7 @@
 from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
-from gempyp.config.GitLinkXML import fetchFileFromGit
-from gempyp.libs.common import download_beforeAfter_file
+from gempyp.libs.common import download_common_file
 
 class Gempyp:
     def __init__(self):
@@ -58,7 +57,7 @@ class Gempyp:
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
         s_run_id = vars(self)["RUN_ID"]
-        file_path=download_beforeAfter_file(self.config)
+        file_path=download_common_file(self.config)
         config=XmlConfig(file_path,s_run_id)
         if not self.args:
             del self.__dict__["args"]
