@@ -10,7 +10,7 @@ class Compare():
 
     def run(self):
        #function for running this testcase
-       print(dir())
+       (dir())
        print(f"Executing testcase {self.testcase_name}")
        res = dc.worker_process((self.test_id,self.config_data))
        r_val, key_only_in_src, key_only_in_tgt,comm_key, diff_count, match_count = res

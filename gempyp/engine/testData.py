@@ -99,7 +99,7 @@ class TestData:
         {"key1": "value1", "key2": "value2"...}"""
         if len(misc_data) > 0:
             for miscs in misc_data:
-                print("--- misc key", miscs.get("key", None))
+                # logging.info("--- misc key", miscs.get("key", None))
                 key = str(miscs["key"])
                 val = str(miscs["value"])
                 test_data["user_defined_data"][key] = val

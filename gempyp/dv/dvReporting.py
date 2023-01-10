@@ -58,7 +58,7 @@ def writeToReport(dv_obj):
 
     # getting the log file ( the custom gempyp logger)
     try:
-        s3_log_file_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=dv_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=dv_obj.data.get("SUITE_VARS", None).get("username",None), file=dv_obj.configData.get("log_path","N.A"),tag="public")[0]["Url"])
+        s3_log_file_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=dv_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=dv_obj.data.get("SUITE_VARS", None).get("username",None), file=dv_obj.configData.get("log_path", dv_obj.configData.get("LOG_PATH","N.A")),tag="public")[0]["Url"])
         s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
     except Exception:
         s3_log_file_url=None
@@ -70,5 +70,4 @@ def writeToReport(dv_obj):
     singleTestcase["json_data"] = dv_obj.json_data
     singleTestcase["misc"]["log_file"] = s3_log_file_url
     output.append(singleTestcase)
-    
     return output

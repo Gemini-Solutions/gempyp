@@ -6,7 +6,7 @@ import uuid
 from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 import getpass
-from gempyp.libs.common import download_common_file
+from gempyp.libs.common import download_common_file, moduleImports
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
 
@@ -18,11 +18,14 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     """
     logging.info("---------- In testcase Runner -----------")
     config_data: Dict = testcase_meta.get("config_data")
+    if testcase_meta.get("default_urls", None):
+        DefaultSettings.urls.update(testcase_meta.get("default_urls"))  # only for optimized mode, urls not shared between processes
     logger = config_data.get("LOGGER")
     testcase_meta.pop("config_data")
     try:
         file_name = config_data.get("PATH")
-        dynamic_testcase = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
+        file_path = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
+        dynamic_testcase = moduleImports(file_path)
         try:
             # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
@@ -36,7 +39,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
                     and name != "AbstractSimpleTestcase"
                 ):
 
-                    print("------- In subclass check --------")
+                    logging.info("------- In subclass check --------")
                     result_data = cls().RUN(cls, config_data, **testcase_meta)
 
 
@@ -99,9 +102,8 @@ def getOutput(data):
     except Exception:
         log_file = None
     tempdict["log_file"] = log_file
-
     try:
-        s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", "N.A"),tag="public")[0]["Url"])
+        s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", data["config_data"].get("LOG_PATH", "N.A")),tag="public")[0]["Url"])
         s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
     except Exception:
          s3_log_file_url = None
@@ -109,7 +111,7 @@ def getOutput(data):
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = data.get("MISC")
     singleTestcase["json_data"] = data.get("json_data")
-    singleTestcase["misc"]["log_file"]= s3_log_file_url
+    singleTestcase["misc"]["log_file"] = s3_log_file_url
     return singleTestcase
 
 def getError(error, config_data: Dict) -> Dict:

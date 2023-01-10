@@ -1,7 +1,7 @@
 from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
-from gempyp.config.GitLinkXML import fetchFileFromGit
+from gempyp.libs.common import download_common_file
 
 class Gempyp:
     def __init__(self):
@@ -57,14 +57,8 @@ class Gempyp:
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
         s_run_id = vars(self)["RUN_ID"]
-        if("GIT" in self.config):
-            list_url=file_name.split(":")
-            if(len(list_url)>=5):
-                file_name=fetchFileFromGit(list_url[2],list_url[3],username=list_url[-2],bearer_token=list_url[-1])
-            else:
-                file_name=fetchFileFromGit(list_url[2],list_url[3])
-        else:
-            config = XmlConfig(self.config, s_run_id)
+        file_path=download_common_file(self.config)
+        config=XmlConfig(file_path,s_run_id)
         if not self.args:
             del self.__dict__["args"]
             config.cli_config = vars(self)

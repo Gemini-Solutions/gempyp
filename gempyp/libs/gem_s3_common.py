@@ -35,20 +35,19 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
             headers["Content-Type"] = "text/plain"
             params["file"] = file
             try:
-                data = data.encode('utf-8')
+                data = str(data).encode('utf-8')
             except Exception as e:
-                print(e)
+                logging.warn(e)
                 traceback.print_exc()
             response = requests.post(api, params=params, data=data, headers=headers)
             data = json.loads(response.text)  
-            print(response.text)  
             if response.status_code == 200:
                 data = json.loads(response.text)    
                 data_info = data["data"]
                 return data_info
         except Exception as e:
             traceback.print_exc()
-            print(e)
+            logging.warn(e)
     elif file is not None:
         file = file.split(",")
         files = list()
@@ -56,11 +55,11 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
         api = DefaultSettings.getUrls('bucket-file-upload-api') if not api else api
         for f in file:
             if not os.path.isfile(f) or f == "N.A":
-                logging.error("Path of file invalid - ", f)
+                logging.error("Path of file invalid - " + str(f))
                 continue
             files.append(("file", open(f, "rb")))
         response = requests.post(api, files=files, params=params, headers=headers)  
-        data = json.loads(response.text)  
+        data = json.loads(response.text) 
         if response.status_code == 200:
             data = json.loads(response.text)    
             file_info = data["data"]

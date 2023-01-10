@@ -1,7 +1,7 @@
 from traceback import print_exc, print_stack
 import traceback
 from gempyp.libs.enums.status import status
-import logging as logger
+import logging
 
 
 ##   check if actual value is string or not
@@ -19,8 +19,6 @@ def compareTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
         exp_value = value.strip('"').strip("'").lower()
         
     if actual_value == exp_value:
-        print("YES")
-        print(actual_value)
         if isLegacyPresent:
             if isLegacyResponse:
                 obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.PASS, CURRENT_API = "-",LEGACY_API = f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied" )
@@ -128,7 +126,7 @@ def compareIn(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
         try:
             exp_value = [float(i) for i in exp_value]
         except Exception as e:
-            print(str(e)) 
+            logging.info(str(e)) 
     else:
         actual_value = str(actual_value).lower()
     if actual_value in exp_value:
@@ -166,7 +164,7 @@ def compareNotIn(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent =
         try:
             exp_value = [float(i) for i in exp_value]
         except Exception as e:
-            print(str(e))
+            logging.info(str(e))
     else:
         actual_value = str(actual_value).lower()
         exp_value = value.strip('"').strip("'").lower()
@@ -217,5 +215,5 @@ def compareContains(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresen
 
 
 def noOperator(obj):
-    logger.info("operator not supported")
+    logging.info("operator not supported")
     return obj

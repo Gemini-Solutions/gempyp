@@ -21,13 +21,12 @@ def addComment(testcase_info, s_run_id, jira_id, email, access_token, jewel_link
     body = {"email": email, "accessToken": access_token, "jiraId": jira_id, "comment": comment_text}
     try:
         comment_res = requests.post(comment_api, data=json.dumps(body), headers={"Content-Type": "application/json"})
-        print(comment_res.status_code)
         if comment_res.status_code == 201 or comment_res.status_code == 200:
             return jira_id
         else:
             logging.error("Comment could not be added")
     except Exception as e:
-        print(e)
+        logging.info(e)
         traceback.format_exc()
         return None
 
@@ -41,13 +40,12 @@ def createJira(email, access_token, title, project_id):
         if jira_res.status_code == 201 or jira_res.status_code == 200:
             jira_json = json.loads(jira_res.text)
             jira_id = jira_json["data"]["key"]
-            print(jira_id)
             return jira_id
         else:
             logging.error("Unable to create the Jira")
     except Exception as e:
         traceback.format_exc()
-        print(e)
+        logging.info(e)
         return None
 
 
@@ -65,7 +63,7 @@ def jiraIntegration(s_run_id, suite_status, testcase_info, jewel_link, email, ac
             prev_run_details = json.loads(response.text)
             jira_id = prev_run_details[0].get("Jira_id", None)
     except Exception as e:
-        print(e)
+        logging.info(e)
         return None
     if suite_status.upper() == "PASS" and prev_run_details[0]["Status"].upper() == "PASS":
         logging.info("----- \nCurrent suite_status is PASS and prev suite is also pass \nNo need to create jira \n------")
@@ -87,7 +85,7 @@ def jiraIntegration(s_run_id, suite_status, testcase_info, jewel_link, email, ac
             jira_id = addComment(testcase_info, s_run_id, jira_id, email, access_token, jewel_link)
             return jira_id
         except Exception as e:
-            print(e)
+            logging.info(e)
             return None
         
 

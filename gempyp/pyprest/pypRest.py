@@ -18,19 +18,20 @@ from gempyp.pyprest.postAssertion import PostAssertion
 from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import download_common_file, control_text_size
-
-# from gempyp.libs import custom_s3
+from gempyp.libs.common import moduleImports
+from gempyp.config import DefaultSettings
 
 
 class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
-        # self.logger.root.setLevel(self.logger.DEBUG)
+
         self.data = data    
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
         self.isLegacyPresent = self.isLegacyPresent()
-
+        if data.get("default_urls", None):
+            DefaultSettings.urls.update(data.get("default_urls"))   # only for optimized mode, urls not shared between processes
         # set vars
         self.setVars()
 
@@ -64,7 +65,7 @@ class PypRest(Base):
             return output, None
         except Exception as e:
             self.logger.error(traceback.print_exc())
-            common.errorHandler(self.logger, e, "Error occured while running the testcas")
+            common.errorHandler(self.logger, e, "Error occured while running the testcase")
             error_dict = getError(e, self.data["config_data"])
             error_dict["json_data"] = self.reporter.serialize()
             return None, error_dict
@@ -92,15 +93,19 @@ class PypRest(Base):
         
         if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()):
             # self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
-            self.list_subtestcases=self.data["config_data"]["SUBTESTCASES_DATA"]
-            
+
+            self.list_subtestcases = self.data["config_data"]["SUBTESTCASES_DATA"]
+            # print(self.list_subtestcases, "----------------------- subtestcases----------------")
             
             self.variables["local"] = {}
             self.variables["suite"] = self.data["SUITE_VARS"]
-            self.parent_data=self.data["config_data"]
+            self.parent_data = self.data["config_data"]
             for i in range(len(self.list_subtestcases)):
                 self.reporter.addRow("<b>Subtestcase</b>",f'<b>Subtestcase Name: {self.list_subtestcases[i]["NAME"]}</b>',status.INFO)
+                log_path = self.data["config_data"].get("log_path", None)
                 self.data["config_data"]=self.list_subtestcases[i]
+                self.data["config_data"]["log_path"] = log_path
+                
                 self.getVals()
 
                 requestObj=api.Request()
@@ -222,7 +227,6 @@ class PypRest(Base):
                 self.req_obj.auth = "PASSWORD"
 
 
-    
         """legacy api request"""
         # create legacy request
         if hasattr(self,'legacy_api'):
@@ -329,8 +333,8 @@ class PypRest(Base):
             self.logger.info(f"{self.req_obj.__dict__}")
             
 
-            legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.legacy_req.body}" if self.legacy_req.method.upper() != "GET" else ""
-            current_request_body = f"</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
+            legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.get_text(self.legacy_req.body)}" if self.legacy_req.method.upper() != "GET" else ""
+            current_request_body = f"</br><b>REQUEST BODY</b>: {self.get_text(self.req_obj.body)}" if self.req_obj.method.upper() != "GET" else ""
                 
             self.reporter.addRow("Executing the rest endpoint","Execution of base api and legacy api simultaneously",
                             status.INFO ,
@@ -365,11 +369,11 @@ class PypRest(Base):
             self.reporter.addRow("Details of the REST endpoint execution","Execution of Current and Legacy API simultaneously",
                             status.INFO ,
                             CURRENT_API= f"<b>CURRENT RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
-                             + f"<b>CURRENT RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
-                             + f"<b>CURRENT RESPONSE BODY</b>:{current_response_body}",
+                             + f"<b>CURRENT RESPONSE HEADERS</b>: {self.get_text(self.res_obj.response_headers)}</br>" 
+                             + f"<b>CURRENT RESPONSE BODY</b>:{self.get_text(current_response_body)}",
                             LEGACY_API=f"<b>LEGACY STATUS CODE</b>: {self.legacy_res.status_code}</br>" 
-                             + f"<b>LEGACY RESPONSE HEADERS</b>: {self.legacy_res.response_headers}</br>" 
-                             + f"<b>LEGACY RESPONSE BODY</b>: {legacy_response_body}"
+                             + f"<b>LEGACY RESPONSE HEADERS</b>: {self.get_text(self.legacy_res.response_headers)}</br>" 
+                             + f"<b>LEGACY RESPONSE BODY</b>: {self.get_text(legacy_response_body)}"
                              )
             if (self.legacy_res.status_code in self.legacy_exp_status_code) and (self.res_obj.status_code in self.exp_status_code) :
                 self.reporter.addRow("Validating Response Code with Expected Status Codes", "Both status codes are matching with expected status codes",
@@ -399,8 +403,8 @@ class PypRest(Base):
         
             self.reporter.addRow("Details of Request Execution", 
                                  f"<b>RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
-                                 + f"<b>RESPONSE HEADERS</b>: {self.res_obj.response_headers}</br>" 
-                                 + f"<b>RESPONSE BODY</b>: {str(body)}", 
+                                 + f"<b>RESPONSE HEADERS</b>: {self.get_text(self.res_obj.response_headers)}</br>" 
+                                 + f"<b>RESPONSE BODY</b>: {self.get_text(str(body))}", 
                                  status.INFO)
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
@@ -436,7 +440,7 @@ class PypRest(Base):
         self.logger.info("CHECKING FOR BEFORE FILE___________________________")
 
         file_str = self.data["config_data"].get("BEFORE_FILE", "")
-        if file_str == "" or file_str == " ":
+        if not file_str or file_str == "" or file_str == " ":
             self.logger.info("BEFORE FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for pre API steps", "No Pre API steps found", status.INFO)
 
@@ -457,8 +461,8 @@ class PypRest(Base):
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-    
-            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj= moduleImports(file_path)
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = RestObj(
@@ -495,7 +499,7 @@ class PypRest(Base):
         self.logger.info("CHECKING FOR AFTER FILE___________________________")
 
         file_str = self.data["config_data"].get("AFTER_FILE", "")
-        if file_str == "" or file_str == " ":
+        if not file_str or file_str == "" or file_str == " ":
             self.logger.info("AFTER FILE NOT FOUND___________________________")
             self.reporter.addRow("Searching for post API steps", "No Post API steps found", status.INFO)
             return
@@ -515,8 +519,9 @@ class PypRest(Base):
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
+            file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            file_obj = moduleImports(file_path)
 
-            file_obj=download_common_file(file_name,self.data.get("SUITE_VARS",None))
             self.logger.info("Running after method")
             obj_ = file_obj
             after_obj = RestObj(
@@ -591,7 +596,8 @@ class PypRest(Base):
     
 
     def get_text(self, text):
-        return control_text_size(data=text, bridge_token=self.data.get("SUITE_VARS", None).get("bridge_token",None), username=self.data.get("SUITE_VARS", None).get("username",None))
-
+        if self.data.get("SUITE_VARS", {}).get("bridge_token",None) and self.data.get("SUITE_VARS", None).get("username",None):
+            return control_text_size(data=text, bridge_token=self.data.get("SUITE_VARS", None).get("bridge_token",None), username=self.data.get("SUITE_VARS", None).get("username",None))
+        else:
+            return str(text)
    
-
