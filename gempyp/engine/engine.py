@@ -51,14 +51,8 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
         "dv":{"class": DvRunner, "classParam": data, "function": "dvEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
-
-    _type = data.get("config_data").get("TYPE","GEMPYP")
+    _type = data.get("config_data").get("TYPE","GEMPYP") if data.get("config_data").get("TYPE", None) else "GEMPYP"
     dv = ["data validator","dv","datavalidator","dvalidator"]
-    if _type in dv:
-        _type = "dv"
-
-    _type = data.get("config_data")["TYPE"]
-    dv = ["data validator","dv","datavalidator","dvvalidator"]
     if _type in dv:
         _type = "dv"
 
@@ -505,14 +499,17 @@ class Engine:
                     error.get('log_path', None),
                 )
                 output = [output]
-            unsorted_dict = output[0]['json_data']['meta_data'][2]
-            sorted_dict = self.totalOrder(unsorted_dict)
-            output[0]['json_data']['meta_data'][2] = sorted_dict
+            if 'json_data' in output[0]:
+                unsorted_dict = output[0]['json_data']['meta_data'][2]
+                sorted_dict = self.totalOrder(unsorted_dict)
+                output[0]['json_data']['meta_data'][2] = sorted_dict
 
             output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'] = self.set_run_type_mode()
             for i in output:
-
-                i["testcase_dict"]["steps"] = i["json_data"]["steps"]
+                if 'json_data' in i:
+                    i["testcase_dict"]["steps"] = i["json_data"]["steps"]
+                else:
+                    i["testcase_dict"]["steps"] = self.build_err_step_case()
                 
                 testcase_dict = i["testcase_dict"]
                 try:
@@ -535,6 +532,11 @@ class Engine:
         except Exception as e:
             traceback.print_exc()
             logging.error("in update_df: {e}".format(e=e))
+    
+    def build_err_step_case(self):
+        step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}]
+         
+        return step
 
     def set_run_type_mode(self):
         type, mode = None, None
@@ -567,14 +569,10 @@ class Engine:
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
         tc_run_id = f"{testcase_name}_{self.unique_id}"  # testcase should not be testcase + s_run_id
-        # try:
-        #     unique_id = unique_id.split(self.env.upper()).strip("_")
-        # except Exception as e:
-        #     print(e)
-        # tc_run_id = f"{testcase_name}_{self.project_env}_{uuid.uuid4()}"
+
         tc_run_id = tc_run_id.upper()
         testcase_dict["tc_run_id"] = tc_run_id
-        testcase_dict["status"] = status.FAIL.name
+        testcase_dict["status"] = status.ERR.name
         testcase_dict["start_time"] = datetime.now(timezone.utc)
         testcase_dict["end_time"] = datetime.now(timezone.utc)
         testcase_dict["name"] = testcase_name
@@ -599,6 +597,7 @@ class Engine:
         result["testcase_dict"] = testcase_dict
         misc["REASON OF FAILURE"] = message
         result["misc"] = misc
+        # result["json_data"] = {}
         return result
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):

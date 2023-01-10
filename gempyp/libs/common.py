@@ -98,6 +98,8 @@ def importFromPath(file_name):
     
 def moduleImports(file_name):
     import_flag = 0
+    if not file_name:
+        return None
     try:
         logging.info("--------Trying importing modules--------")
         dynamicTestcase = importlib.import_module(file_name)       
@@ -131,12 +133,9 @@ def moduleImports(file_name):
             traceback.print_exc()
             return e
 
-
-
-
 def download_common_file(file_name,headers=None):
     try:
-        if(file_name.__contains__('S3')):
+        if file_name and (file_name.__contains__('S3')):
             logging.info("File is from S3")
             fileContent=download_from_s3(api=file_name.replace("S3:",""),username=headers.get("username",None),bridge_token=headers.get("bridge_token",None))
             file_name = os.path.join(file_name.split(":")[-1])
@@ -144,7 +143,7 @@ def download_common_file(file_name,headers=None):
                 fp.seek(0)
                 fp.write(fileContent)
                 fp.truncate()
-        elif(file_name.__contains__('GIT')):
+        elif file_name and (file_name.__contains__('GIT')):
             logging.info("File is from GIT")
             list_url=file_name.split(":")
             if(len(list_url)>=5):

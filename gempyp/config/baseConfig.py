@@ -75,20 +75,25 @@ class AbstarctBaseConfig(ABC):
 
         for key, value in testcase_data.items():
             testcases = ""
-            if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
-                testcases=value.get("SUBTESTCASES").upper().split(",")  ## uppercase
-                testcases.append(key)
+            # if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
+            #     testcases=value.get("SUBTESTCASES").upper().split(",")  ## uppercase
+            #     testcases.append(key)
+            
             # if value.get("RUN_FLAG", "N").upper() != "Y":  # to be removed
             #     continue
 
-            if self.filter_category(value):
-                continue
-            # if self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None)!=None and value.get("CATEGORY") not in self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None).split(","):
+            # if self.filter_category(value):
             #     continue
-            filtered_dict[key] = value
+
+            # filtered_dict[key] = value
             if value.get("RUN_FLAG", "Y").upper() == "Y":
+                if self.filter_category(value):
+                    continue
                 self.total_yflag_testcase += 1
-            
+                filtered_dict[key] = value
+                if "SUBTESTCASES" in value.keys():
+                    testcases=value.get("SUBTESTCASES").upper().split(",")
+                    testcases.append(key)
             if(len(testcases)>0):
                 for i in range(len(testcases)):
                     if(testcases[i] in testcase_data.keys()):
@@ -113,23 +118,24 @@ class AbstarctBaseConfig(ABC):
     def update(self):
         """to update the data that is passed by cli"""
         try:
-            for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
-                os.environ[key.lower()] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
+            for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS', {}):
+                os.environ[key.lower()] = self._CONFIG['SUITE_DATA'].get('ENV-VARS', {}).get(key, None)
         except Exception as error:
-            logging.error("Error in updating environment variable" + str(error))
+            logging.error("Error in updating environment variable - " + str(error))
         try:
             for key in self._CONFIG['SUITE_DATA'].keys():
                 value=self._CONFIG['SUITE_DATA'][key]
-                if("$[#ENV." in value):
+                if value and ("$[#ENV." in value):
                         envValue=value
                         value=value.replace("$[#ENV.","").strip("]").lower()
                         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
                         self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
-                if("$[#" in value):
+                if value and ("$[#" in value):
                         value=value.strip("$[#").strip("]").lower()
                         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
         except Exception as error:
-            logging.error("error occurs in finding environment variable" + str(error))
+            traceback.print_exc()
+            logging.error("error occurs in finding environment variable - " + str(error))
         try:
             for element in self.cli_config.keys():
                 if self.cli_config[element]:
