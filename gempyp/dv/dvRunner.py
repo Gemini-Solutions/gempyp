@@ -387,9 +387,10 @@ class DvRunner(Base):
 
             logging.info("----------in add excel---------")
             self.logger.info("In Add Excel Function")
-            outputFolder = self.data['OUTPUT_FOLDER'] + "\\"
-            excelPath = outputFolder + self.configData['NAME'] + '.xlsx'
-            excel = ".\\testcases\\" + self.configData['NAME'] + '.xlsx'
+            outputFolder = self.data['OUTPUT_FOLDER']
+            unique_id = uuid.uuid4()
+            excelPath = os.path.join(outputFolder,self.configData['NAME']+str(unique_id)+'.xlsx')
+            excel = os.path.join(".","testcases",self.configData['NAME']+str(unique_id)+'.xlsx')
             self.value_df = pd.DataFrame(valDict)
             self.keys_df = pd.DataFrame(keyDict)
             if "AFTER_FILE" in self.configData:
