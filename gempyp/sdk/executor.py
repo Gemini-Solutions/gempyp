@@ -25,11 +25,11 @@ from gempyp.libs.enums.status import status
 class Executor(TestcaseReporter):
     def __init__(self, **kwargs):
         self.method = kwargs.get("tc_name", self.getMethodName())
-        self.log_file = tempfile.gettempdir() + "\logs.log"
+        self.log_file = tempfile.gettempdir() + "\logs.txt"
         # os.makedirs("testcase_log_folder")
         sys.stdout = sys.stderr =  open(self.log_file, 'w')
-        logging.basicConfig(filename="logs.log", filemode='w', format='%(name)s - %(asctime)s-%(levelname)s - %(message)s',level=logging.DEBUG)
-        # custom_logger = my_custom_logger("logs.log")
+        logging.basicConfig(filename="logs.txt", filemode='w', format='%(name)s - %(asctime)s-%(levelname)s - %(message)s',level=logging.DEBUG)
+        # custom_logger = my_custom_logger("logs.txt")
         logging.info("inside constructor here--------------------")
         logging.info(f"-------Executing testcase - {self.getMethodName()}---------")
         self.data = self.getTestcaseData()

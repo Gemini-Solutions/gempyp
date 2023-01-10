@@ -158,7 +158,7 @@ def main():
         args = parseCmdLine()
         r_val = checkCmdLineParams(args)
         if r_val == 0:
-            configuratorObj = configurator.Configurator(args)
+            configuratorObj = ""  # configurator.Configurator(args)
             r_val = configuratorObj.set_config()
             if r_val == 0:
                 config_data, db_data = configuratorObj.get_config()

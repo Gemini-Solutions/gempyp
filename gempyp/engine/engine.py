@@ -25,7 +25,7 @@ import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
-from gempyp.libs.gem_s3_common import upload_to_s3
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 
 
 
@@ -35,35 +35,23 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
     Takes single testcase data as input
     """
-
-    print("--------- In Executor Factory ----------\n")
+    logging.info("--------- In Executor Factory ----------\n")
     if custom_logger == None:
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
-        + os.environ.get('unique_id') + '.log')
+        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility
         custom_logger = my_custom_logger(log_path)
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
     if 'log_path' not in data['config_data']:
-        data['config_data']['LOG_PATH'] = log_path
-    
+        data['config_data']['LOG_PATH'] = log_path    
 
-    
-    # engine_control = {"pyprest": {"function": PypRest(data).restEngine(), "log": custom_logger.info("Starting the PYPREST testcase")},
-    # "dvm": {"function": DvmRunner(data).dvmEngine(), "log": custom_logger.info("Starting the DVM testcase")}, 
-    # "gempyp": {"function": testcaseRunner(data), "log": custom_logger.info("Starting the GEMPYP testcase")}}
     engine_control = {
         "pyprest":{"class": PypRest, "classParam": data, "function": "restEngine"},
         "dv":{"class": DvRunner, "classParam": data, "function": "dvEngine"},
         "gempyp":{"function": testcaseRunner, "functionParam": data}
     }
-
-    _type = data.get("config_data").get("TYPE","GEMPYP")
+    _type = data.get("config_data").get("TYPE","GEMPYP") if data.get("config_data").get("TYPE", None) else "GEMPYP"
     dv = ["data validator","dv","datavalidator","dvalidator"]
-    if _type in dv:
-        _type = "dv"
-
-    _type = data.get("config_data")["TYPE"]
-    dv = ["data validator","dv","datavalidator","dvvalidator"]
     if _type in dv:
         _type = "dv"
 
@@ -103,7 +91,7 @@ class Engine:
 
         self.DATA = TestData()
         # get the env for the engine Runner
-        self.ENV = os.getenv("ENV_BASE", "BETA").upper()
+        self.ENV = os.getenv("appenv", "BETA").upper()
         # initial SETUP
         self.setUP(params_config)
         self.parseMails()
@@ -112,6 +100,9 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
+        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data
+            logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
+            sys.exit()
         if self.jewel_user:
             #trying first rerun of base url api in case of api failure
             if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
@@ -120,17 +111,17 @@ class Engine:
 
             # code for checking s_run_id present in db 
             if "RUN_ID" in self.PARAMS:
-                print("************Trying to check If s_run_id is present in DB*****************")
+                logging.info("************Trying to check If s_run_id is present in DB*****************")
                 response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
                 if response == "failed":
-                    print("************s_run_id not present in DB Trying to call Post*****************")
+                    logging.info("************s_run_id not present in DB Trying to call Post*****************")
                     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
             else:
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
                 ### first try to rerun the data
                 if dataUpload.suite_uploaded == False:
-                    print("------Retrying to Upload Suite Data------")
+                    logging.info("------Retrying to Upload Suite Data------")
                     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             
         self.makeOutputFolder()
@@ -143,7 +134,7 @@ class Engine:
                 DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
             ### Trying to reupload suite data
             if dataUpload.suite_uploaded == False:
-                print("------Retrying to Upload Suite Data------")
+                logging.info("------Retrying to Upload Suite Data------")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
@@ -151,7 +142,7 @@ class Engine:
             jewelLink = DefaultSettings.getUrls('jewel-url')
             self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
             if len(dataUpload.not_uploaded) != 0:
-                print("------Trying again to Upload Testcase------")
+                logging.info("------Trying again to Upload Testcase------")
                 for testcase in dataUpload.not_uploaded:
                     dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             failed_Utestcases = len(dataUpload.not_uploaded) 
@@ -182,7 +173,7 @@ class Engine:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
 
             if skip_jira == 0:
-                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.ENV, jira_workflow, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)
+                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.project_env, jira_workflow, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
             # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
@@ -227,43 +218,57 @@ class Engine:
         os.makedirs(self.testcase_log_folder)
 
     def setUP(self, config: Type[AbstarctBaseConfig]):
+
         """
+
         assigning values to some attributes which will be used in method makeSuiteDetails
+
         """
+
         self.PARAMS = config.getSuiteConfig()
+
         #checking if url is present in file and calling get api
         # if self.PARAMS.get("BASE_URL", None):
         #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         self.CONFIG = config
+
         self.testcase_data = {}
+
         self.total_runable_testcase = config.total_yflag_testcase
+
         self.machine = platform.node()
+
         self.user = self.PARAMS.get("USERNAME", getpass.getuser())
         self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
+
         self.platform = platform.system()
+
         self.start_time = datetime.now(timezone.utc)
+
         self.project_name = self.PARAMS["PROJECT"]
         self.report_name = self.PARAMS.get("REPORT_NAME")
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
-        self.user_suite_variables = self.PARAMS["SUITE_VARS"]
+        self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.jewel_run = False
         self.jewel_user = False
         self.s3_url = ""
         if self.PARAMS.get("BRIDGE_TOKEN", None) and self.PARAMS.get("USERNAME", None):
+            self.user_suite_variables["bridge_token"]=self.PARAMS["BRIDGE_TOKEN"]
+            self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
             self.jewel_user = True
         if self.jewel_user:
-            if self.PARAMS.get("BASE_URL", None):
-                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            # if self.PARAMS.get("BASE_URL", None):
+            #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             if self.PARAMS.get("S_ID", None):
                 self.jewel_run = True
             else:
                 try:
                     self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
-                    print("--------- url", self.s3_url)
+                    logging.info("--------- url" + str(self.s3_url))
                 except Exception as e:
-                    print(e)
+                    logging.info(e)
         #add suite_vars here 
 
     def parseMails(self):
@@ -272,7 +277,6 @@ class Engine:
         """
         if("MAIL" in self.PARAMS.keys()):
             self.mail = common.parseMails(self.PARAMS["MAIL"])
-            print(self.mail)
 
     def makeSuiteDetails(self):
         """
@@ -312,11 +316,8 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-        print("here")
-        try:
-            if self.CONFIG.getTestcaseLength() <= 0:
-                raise Exception("no testcase found to run")
 
+        try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
             elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
@@ -331,7 +332,7 @@ class Engine:
                 self.updateSuiteData()
             except Exception as err:
                 logging.error(traceback.format_exc())
-                print(err)
+                logging.info(err)
             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             # need to add reason of failure of the suite in misc
 
@@ -372,16 +373,16 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
-
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
                 log_path = os.path.join(self.testcase_log_folder,
-                data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.log')
+                data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 conn = None
                 output, error = executorFactory(data,conn, custom_logger)
+                
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -396,7 +397,6 @@ class Engine:
         start calling executorFactory for testcases in parallel according to their drependency 
         at last of each testcase calls the update_df()
         """
-        
         pool = None
         try:
             
@@ -406,8 +406,6 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             # pool = Pool(threads)
-           
-           
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
 
         # create a list to keep connections
@@ -418,10 +416,8 @@ class Engine:
                     # only append testcases whose dependency are passed otherwise just update the databasee
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
-                    
                     else:
 
-                        print("----------------here--------------------")
                         dependency_error = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
@@ -442,6 +438,7 @@ class Engine:
                     processes = []
                     parent_connections = []
                     for testcase in chunk_list:
+                        testcase["default_urls"] = DefaultSettings.urls
                         parent_conn, child_conn = Pipe()
                         parent_connections.append(parent_conn)
 
@@ -457,22 +454,24 @@ class Engine:
                     for process in processes:
                         process.start()
                     for parent_connection in parent_connections:
+
                         instances_total.append(parent_connection.recv()[0])
-                        
-                    for row in instances_total:
-                        if not row or len(row) < 2:
-                            raise Exception(
-                                "Some error occured while running the testcases"
-                            )
-                        output = row[0]
-                        
-                        error = row[1]
-                        if error:
-                            logging.error(
-                                f"Error occured while executing the testcase: {error['testcase']}"
-                            )
-                            logging.error(f"message: {error['message']}")
-                        self.update_df(output, error)
+                        if len(instances_total) > 0:
+                            row = instances_total[-1]
+                            if not row or len(row) < 2:
+                                raise Exception(
+                                    "Some error occured while running the testcases"
+                                )
+                            output = row[0]
+                            
+                            error = row[1]
+                            if error:
+                                logging.error(
+                                    f"Error occured while executing the testcase: {error['testcase']}"
+                                )
+                                logging.error(f"message: {error['message']}")
+                            self.update_df(output, error)
+
                     for process in processes:
                         process.join()
         except Exception:
@@ -494,17 +493,19 @@ class Engine:
                     error.get("category"),
                     error.get("product_type"),
                     error.get('log_path', None),
-                    error.get('invoke_user', None),
                 )
                 output = [output]
-            unsorted_dict = output[0]['json_data']['meta_data'][2]
-            sorted_dict = self.totalOrder(unsorted_dict)
-            output[0]['json_data']['meta_data'][2] = sorted_dict
+            if 'json_data' in output[0]:
+                unsorted_dict = output[0]['json_data']['meta_data'][2]
+                sorted_dict = self.totalOrder(unsorted_dict)
+                output[0]['json_data']['meta_data'][2] = sorted_dict
 
             output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'] = self.set_run_type_mode()
             for i in output:
-
-                i["testcase_dict"]["steps"] = i["json_data"]["steps"]
+                if 'json_data' in i:
+                    i["testcase_dict"]["steps"] = i["json_data"]["steps"]
+                else:
+                    i["testcase_dict"]["steps"] = self.build_err_step_case()
                 
                 testcase_dict = i["testcase_dict"]
                 try:
@@ -521,11 +522,17 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
+        
                 if(self.jewel_user):
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
         except Exception as e:
             traceback.print_exc()
             logging.error("in update_df: {e}".format(e=e))
+    
+    def build_err_step_case(self):
+        step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}]
+         
+        return step
 
     def set_run_type_mode(self):
         type, mode = None, None
@@ -546,7 +553,6 @@ class Engine:
         category: str = None,
         product_type: str = None,
         log_path: str = None,
-        invoke_user: str = None
     ) -> Dict:
         """
         store the data of failed testcase and return it as a dict to update_df
@@ -559,20 +565,23 @@ class Engine:
         if not self.unique_id:
             self.unique_id = uuid.uuid4()
         tc_run_id = f"{testcase_name}_{self.unique_id}"  # testcase should not be testcase + s_run_id
-        # try:
-        #     unique_id = unique_id.split(self.env.upper()).strip("_")
-        # except Exception as e:
-        #     print(e)
-        # tc_run_id = f"{testcase_name}_{self.project_env}_{uuid.uuid4()}"
+
         tc_run_id = tc_run_id.upper()
         testcase_dict["tc_run_id"] = tc_run_id
-        testcase_dict["status"] = status.FAIL.name
+        testcase_dict["status"] = status.ERR.name
         testcase_dict["start_time"] = datetime.now(timezone.utc)
         testcase_dict["end_time"] = datetime.now(timezone.utc)
         testcase_dict["name"] = testcase_name
         testcase_dict["ignore"] = False
         if category:
             testcase_dict["category"] = category
+        s3_log_file_url = log_path
+        if self.jewel_user:
+            try:
+                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=log_path,tag="public")[0]["Url"]) 
+                s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+            except Exception as e:
+                logging.info(e)
         testcase_dict["log_file"] = log_path
         testcase_dict["result_file"] = None
         testcase_dict["base_user"] = getpass.getuser()
@@ -584,6 +593,8 @@ class Engine:
         result["testcase_dict"] = testcase_dict
         misc["REASON OF FAILURE"] = message
         result["misc"] = misc
+        result["misc"]["log_file"] = s3_log_file_url
+        # result["json_data"] = {}
         return result
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):

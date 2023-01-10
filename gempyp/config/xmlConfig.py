@@ -41,10 +41,10 @@ class XmlConfig(AbstarctBaseConfig):
         os.environ['unique_id'] = self.unique_id
         os.environ['log_dir'] = self.log_dir
         warnings.filterwarnings('ignore')
-        suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.log'))
-        LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.log'))
+        suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
+        LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
         # LoggingConfig(suiteLogsLoc)
-        print("------suite logs------",suiteLogsLoc)
+        logging.info("------suite logs------"+ str(suiteLogsLoc))
 
 
         self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)

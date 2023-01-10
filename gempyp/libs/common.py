@@ -8,13 +8,15 @@ import typing
 from gempyp.config import DefaultSettings
 import importlib
 import sys
+from gempyp.libs.gem_s3_common import download_from_s3, upload_to_s3, create_s3_link
+from gempyp.config.GitLinkXML import fetchFileFromGit
+from gempyp.config import DefaultSettings
 
 
 def read_json(file_path):
     try:
         with open(file_path) as fobj:
             res = json.load(fobj)
-            print(res)
     except Exception:
         res = None
     return res
@@ -96,9 +98,11 @@ def importFromPath(file_name):
     
 def moduleImports(file_name):
     import_flag = 0
+    if not file_name:
+        return None
     try:
         logging.info("--------Trying importing modules--------")
-        dynamicTestcase = importlib.import_module(file_name)        
+        dynamicTestcase = importlib.import_module(file_name)       
         return dynamicTestcase
     except Exception as i:
         logging.info("-------Testcase not imported as module, Trying with absolute path-------")
@@ -129,3 +133,38 @@ def moduleImports(file_name):
             traceback.print_exc()
             return e
 
+def download_common_file(file_name,headers=None):
+    try:
+        if file_name and (file_name.__contains__('S3')):
+            logging.info("File is from S3")
+            fileContent=download_from_s3(api=file_name.replace("S3:",""),username=headers.get("username",None),bridge_token=headers.get("bridge_token",None))
+            file_name = os.path.join(file_name.split(":")[-1])
+            with open(file_name, "w+") as fp:
+                fp.seek(0)
+                fp.write(fileContent)
+                fp.truncate()
+        elif file_name and (file_name.__contains__('GIT')):
+            logging.info("File is from GIT")
+            list_url=file_name.split(":")
+            if(len(list_url)>=5):
+                file_name=fetchFileFromGit(list_url[2],list_url[3],username=list_url[-2],bearer_token=list_url[-1])
+            else:
+                file_name=fetchFileFromGit(list_url[2],list_url[3])
+        return file_name
+    except Exception as e:
+        traceback.print_exc()
+        return e
+            
+
+def control_text_size(data, **kwargs):
+
+    fin_str = data
+    if len(str(data)) > 150:
+        url = None
+        try:
+            url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-data-upload-api"], data=data, bridge_token=kwargs.get("bridge_token", None), username=kwargs.get("username", None), tag="public")["Url"])
+            if url:
+                fin_str = f'<a target=_blank  href={url}>Click here</a>'
+        except Exception as e:
+            logging.info(e)
+    return fin_str
