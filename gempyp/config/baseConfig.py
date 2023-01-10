@@ -59,7 +59,6 @@ class AbstarctBaseConfig(ABC):
         testcase_data = self.getTestcaseConfig()
         filtered_dict = {}
         filtered_dict_subtestcases = {}
-
         ###code for passing testcases through cli jira-113
         if "TESTCASE_LIST" in self._CONFIG['SUITE_DATA']:
             test = {}
@@ -79,16 +78,16 @@ class AbstarctBaseConfig(ABC):
             if(value.get("RUN_FLAG", "N").upper()=="Y" and "SUBTESTCASES" in value.keys()):
                 testcases=value.get("SUBTESTCASES").upper().split(",")  ## uppercase
                 testcases.append(key)
-            if value.get("RUN_FLAG", "N").upper() != "Y":  # to be removed
+            # if value.get("RUN_FLAG", "N").upper() != "Y":  # to be removed
+            #     continue
+
+            if self.filter_category(value):
                 continue
+            # if self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None)!=None and value.get("CATEGORY") not in self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None).split(","):
+            #     continue
+            filtered_dict[key] = value
             if value.get("RUN_FLAG", "Y").upper() == "Y":
                 self.total_yflag_testcase += 1
-            if self.filter_category(value):
-
-                continue
-            if self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None)!=None and value.get("CATEGORY") not in self._CONFIG.get("SUITE_DATA",None).get("CATEGORY",None).split(","):
-                continue
-            filtered_dict[key] = value
             
             if(len(testcases)>0):
                 for i in range(len(testcases)):
@@ -99,15 +98,14 @@ class AbstarctBaseConfig(ABC):
 
     def filter_category(self, value):
         """ filtering the categories that we want to run, if any. Returns 0 if we want to run the testcase"""
-        
         exp_category = None
         this_category = []
-        if self.cli_config.get("CATEGORY", None):
-            exp_category = self.cli_config["CATEGORY"] if isinstance(self.cli_config["CATEGORY"], list) else str(self.cli_config["CATEGORY"]).upper().split(",")
+        if self._CONFIG['SUITE_DATA'].get("CATEGORY", None):
+            exp_category = self._CONFIG['SUITE_DATA']["CATEGORY"] if isinstance(self._CONFIG['SUITE_DATA']["CATEGORY"], list) else str(self._CONFIG['SUITE_DATA']["CATEGORY"]).upper().split(",")
         if value.get("CATEGORY", None):
             this_category = value.get("CATEGORY") if isinstance(value.get("CATEGORY"), list) else str(value.get("CATEGORY")).upper().split(",")
         if exp_category:
-            if not len(list(set(exp_category) & set(this_category))) < 1:
+            if not len(list(set([i.lower() for i in exp_category]) & set([i.lower() for i in this_category]))) > 0:
                 return 1
         return 0
 
@@ -118,7 +116,7 @@ class AbstarctBaseConfig(ABC):
             for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
                 os.environ[key.lower()] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
         except Exception as error:
-            logging.error("Error in updating environment variable",error)
+            logging.error("Error in updating environment variable" + str(error))
         try:
             for key in self._CONFIG['SUITE_DATA'].keys():
                 value=self._CONFIG['SUITE_DATA'][key]
@@ -130,10 +128,8 @@ class AbstarctBaseConfig(ABC):
                 if("$[#" in value):
                         value=value.strip("$[#").strip("]").lower()
                         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
-          
-
         except Exception as error:
-            logging.error("error occurs in finding environment variable",error)
+            logging.error("error occurs in finding environment variable" + str(error))
         try:
             for element in self.cli_config.keys():
                 if self.cli_config[element]:
@@ -146,6 +142,6 @@ class AbstarctBaseConfig(ABC):
                     else:
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:
-            logging.error("error occurs in update",error)
+            logging.error("error occurs in update" + str(error))
         
         
