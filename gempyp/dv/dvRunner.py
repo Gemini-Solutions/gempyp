@@ -12,7 +12,7 @@ from gempyp.libs.common import moduleImports
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
 from gempyp.dv.dvReporting import writeToReport
-from telnetlib import STATUS
+# from telnetlib import STATUS
 import traceback
 import pandas as pd
 import logging
@@ -21,6 +21,8 @@ import numpy
 import pg8000
 from gempyp.dv.dvObj import DvObj
 from gempyp.libs.common import download_common_file
+from gempyp.engine.runner import getError
+from gempyp.libs import common
 
 class DvRunner(Base):
 
@@ -36,11 +38,20 @@ class DvRunner(Base):
         # # setting self.reporter object
         self.logger.info("--------------------Report object created ------------------------")
         self.reporter = Base(project_name=self.project, testcase_name=self.tcname)
-        
+
     def dvEngine(self):
-        
         try:
-            column =[]
+            self.validate()
+        except Exception as e:
+            self.logger.error(traceback.print_exc())
+            self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
+            common.errorHandler(self.logger, e, "Error occured while running the testcase")
+            error_dict = getError(e, self.data["config_data"])
+            error_dict["json_data"] = self.reporter.serialize()
+            return None, error_dict
+
+        try:
+            column = []
             try:
                 if "DATABASE" in self.configData:
                     if self.configData["DATABASE"].lower() == 'custom': 
@@ -157,7 +168,6 @@ class DvRunner(Base):
             traceback.print_exc()
             self.addReasonOfFailure(traceback)
             output = writeToReport(self)
-            self.addReasonOfFailure(traceback)
             return output, None
 
     def csvFileReader(self, path, delimiter, db):
@@ -172,6 +182,14 @@ class DvRunner(Base):
         except Exception:
             raise Exception
 
+    def validate(self):
+        if "KEYS" in self.configData:
+            if 'SOURCE_CONN' in self.configData or 'SOURCE_CSV' in self.configData or 'SOURCE_DB' in self.configData:
+                pass
+            else:
+                raise Exception("Tags for Source connection not Present in Config, Please review config.xml")
+        else:
+            raise Exception("Keys not Present in Config, Please recheck")
 
     def connectDB(self,cred, db):
         try:

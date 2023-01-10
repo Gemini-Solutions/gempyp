@@ -70,5 +70,4 @@ def writeToReport(dv_obj):
     singleTestcase["json_data"] = dv_obj.json_data
     singleTestcase["misc"]["log_file"] = s3_log_file_url
     output.append(singleTestcase)
-    
     return output

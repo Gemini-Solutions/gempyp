@@ -65,7 +65,7 @@ class PypRest(Base):
             return output, None
         except Exception as e:
             self.logger.error(traceback.print_exc())
-            common.errorHandler(self.logger, e, "Error occured while running the testcas")
+            common.errorHandler(self.logger, e, "Error occured while running the testcase")
             error_dict = getError(e, self.data["config_data"])
             error_dict["json_data"] = self.reporter.serialize()
             return None, error_dict
