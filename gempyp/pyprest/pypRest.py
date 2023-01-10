@@ -19,19 +19,19 @@ from gempyp.pyprest.restObj import RestObj
 from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import download_common_file, control_text_size
 from gempyp.libs.common import moduleImports
-
-# from gempyp.libs import custom_s3
+from gempyp.config import DefaultSettings
 
 
 class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
-        # self.logger.root.setLevel(self.logger.DEBUG)
+
         self.data = data    
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
         self.isLegacyPresent = self.isLegacyPresent()
-
+        if data.get("default_urls", None):
+            DefaultSettings.urls.update(data.get("default_urls"))   # only for optimized mode, urls not shared between processes
         # set vars
         self.setVars()
 

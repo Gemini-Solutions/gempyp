@@ -33,6 +33,8 @@ class DvRunner(Base):
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside DV FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
+        if data.get("default_urls", None):
+            DefaultSettings.urls.update(data.get("default_urls"))   # only for optimized mode, urls not shared between processes
         # # set vars
         self.setVars()
         # # setting self.reporter object

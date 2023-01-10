@@ -18,6 +18,8 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     """
     logging.info("---------- In testcase Runner -----------")
     config_data: Dict = testcase_meta.get("config_data")
+    if testcase_meta.get("default_urls", None):
+        DefaultSettings.urls.update(testcase_meta.get("default_urls"))  # only for optimized mode, urls not shared between processes
     logger = config_data.get("LOGGER")
     testcase_meta.pop("config_data")
     try:

@@ -35,7 +35,6 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     calls the differnt executors method based on testcase type e.g. gempyp,pyprest,dvm
     Takes single testcase data as input
     """
-
     logging.info("--------- In Executor Factory ----------\n")
     if custom_logger == None:
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
@@ -260,8 +259,8 @@ class Engine:
             self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
             self.jewel_user = True
         if self.jewel_user:
-            if self.PARAMS.get("BASE_URL", None):
-                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            # if self.PARAMS.get("BASE_URL", None):
+            #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             if self.PARAMS.get("S_ID", None):
                 self.jewel_run = True
             else:
@@ -374,7 +373,6 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
-
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -399,7 +397,6 @@ class Engine:
         start calling executorFactory for testcases in parallel according to their drependency 
         at last of each testcase calls the update_df()
         """
-        
         pool = None
         try:
             
@@ -409,8 +406,6 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             # pool = Pool(threads)
-           
-           
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
 
         # create a list to keep connections
@@ -421,7 +416,6 @@ class Engine:
                     # only append testcases whose dependency are passed otherwise just update the databasee
                     if self.isDependencyPassed(testcase):
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
-                    
                     else:
 
                         dependency_error = {
@@ -444,6 +438,7 @@ class Engine:
                     processes = []
                     parent_connections = []
                     for testcase in chunk_list:
+                        testcase["default_urls"] = DefaultSettings.urls
                         parent_conn, child_conn = Pipe()
                         parent_connections.append(parent_conn)
 
@@ -459,6 +454,7 @@ class Engine:
                     for process in processes:
                         process.start()
                     for parent_connection in parent_connections:
+
                         instances_total.append(parent_connection.recv()[0])
                         if len(instances_total) > 0:
                             row = instances_total[-1]

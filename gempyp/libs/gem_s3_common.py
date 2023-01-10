@@ -59,7 +59,7 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
                 continue
             files.append(("file", open(f, "rb")))
         response = requests.post(api, files=files, params=params, headers=headers)  
-        data = json.loads(response.text)  
+        data = json.loads(response.text) 
         if response.status_code == 200:
             data = json.loads(response.text)    
             file_info = data["data"]

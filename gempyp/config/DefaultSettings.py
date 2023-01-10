@@ -41,7 +41,7 @@ def getEnterPoint(url, bridge_token, user_name):
 
 # for sending urls to dataupload file
 def getUrls(apiName):
-        return urls["data"].get(apiName, None)
+    return urls["data"].get(apiName, None)
 
 def checkUrl(url):
     try:
