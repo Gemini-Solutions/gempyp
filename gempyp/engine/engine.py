@@ -586,7 +586,7 @@ class Engine:
                 s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
             except Exception as e:
                 logging.info(e)
-        testcase_dict["log_file"] = s3_log_file_url
+        testcase_dict["log_file"] = log_path
         testcase_dict["result_file"] = None
         testcase_dict["base_user"] = getpass.getuser()
         testcase_dict["invoke_user"] = self.invoke_user
@@ -597,6 +597,7 @@ class Engine:
         result["testcase_dict"] = testcase_dict
         misc["REASON OF FAILURE"] = message
         result["misc"] = misc
+        result["misc"]["log_file"] = s3_log_file_url
         # result["json_data"] = {}
         return result
 
