@@ -28,13 +28,13 @@ def createJira(jira_body, bridge_token, user_name):
         return None
 
 
-def jiraIntegration(s_run_id, email, access_token, project_id, env, workflow, bridge_token, user_name, suiteName):
+def jiraIntegration(s_run_id, email, access_token, project_id, env, workflow, title, bridge_token, user_name, suiteName):  # adding title  ######################### post 1.0.4
     logging.info("---------- In Jira Integration ---------")
     
     jira_id = None
     if workflow:
         workflow = workflow.strip("'").strip('"').split(",")
-        workflow = [str(i.strip(" ")) for i in workflow]
+        workflow = [str(i.strip(" ")) for i in workflow] 
    
     jira_body = {
         "email": email, 
@@ -43,10 +43,13 @@ def jiraIntegration(s_run_id, email, access_token, project_id, env, workflow, br
         "s_run_id": s_run_id,
         "flow": workflow,
         "env": env,
-        "suiteName": suiteName
-    }
+        "suiteName": suiteName,
+        "title": title
+    }  # adding title  ######################### post 1.0.4
     if not workflow:
         del jira_body["flow"]
+    if not title:
+        del jira_body["title"]  # adding title  ######################### post 1.0.4
     jira_body = json.loads(json.dumps(str(jira_body).replace("'", '"')))
     try:
         logging.info("----------- Requesting JIRA API ------------")

@@ -163,6 +163,7 @@ class Engine:
             jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
             jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
             jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
+            jira_title = self.PARAMS.get("JIRA_TITLE", None)  # adding title  ######################### post 1.0.4
             if jira_access_token is None and jira_email is None:
                 skip_jira = 1
         except Exception as e:
@@ -173,7 +174,7 @@ class Engine:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
 
             if skip_jira == 0:
-                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.project_env, jira_workflow, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)
+                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.project_env, jira_workflow, jira_title, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)  # adding title  ######################### post 1.0.4
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
             # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
@@ -651,6 +652,7 @@ class Engine:
         """
         adj_list={}
         for key,value in testcases.items():
+            if value.get("DEPENDENCY", None):  ########## post 1.0.4
                 adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
@@ -697,7 +699,8 @@ class Engine:
 
         # split on ','
         listOfTestcases=[]
-        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))
+        ############### post 1.0.4
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""])) if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
                     dep_split = list(dep.split(":"))
