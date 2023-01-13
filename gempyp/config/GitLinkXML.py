@@ -7,7 +7,7 @@ import uuid
 from requests.auth import HTTPBasicAuth
 from base64 import b64encode
 
-def fetchFileFromGit(link,branch,username=None,bearer_token=None):
+def fetchFileFromGit(link,branch,username=None,bearer_token=None):  ################ post 1.0.4
         list=link.split("/")
         api = f'https://api.github.com/repos/{list[3]}/{list[4]}/contents/{"/".join(list[7:])}?ref={branch}'
         print(api)
@@ -29,10 +29,13 @@ def fetchFileFromGit(link,branch,username=None,bearer_token=None):
                 if not os.path.exists(log_dir):
                     os.makedirs(log_dir)
                 file = os.path.join(log_dir, 'XML_' + str(uuid.uuid4()) + '.xml')
+                logging.info("GIT XML PATH"+str(file))
             else:
-                file=os.path.join(link.split("/")[-1])
+                file=os.path.join(tempfile.gettempdir(),link.split("/")[-1])
+                logging.info("GIT FILE PATH"+str(file))
             with open(file, "w+") as f:
                 f.write(response_content.text)
+            logging.info("FILE IS DOWNLOADED")
             return file
         except Exception as e:                  
             logging.info("Some Error while running the API")

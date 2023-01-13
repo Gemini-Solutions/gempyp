@@ -24,8 +24,7 @@ from gempyp.config import DefaultSettings
 
 class PypRest(Base):
     def __init__(self, data) -> Tuple[List, Dict]:
-
-        self.data = data    
+        self.data = data
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
@@ -53,18 +52,18 @@ class PypRest(Base):
                 else:
                     self.logger.error(str(e))
                     traceback.print_exc()
-                    self.logger.error(traceback.print_exc())
-                    self.reporter.addMisc("REASON OF FAILURE", f"Something went wrong:- {str(e)}")
+                    self.logger.error(traceback.format_exc())
+                    self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                     self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
-                    exceptiondata = traceback.format_exc().splitlines()
-                    exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
-                    self.reporter.addMisc("Reason of Failure",exceptionarray[0])
+                    # exceptiondata = traceback.format_exc().splitlines()
+                    # exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+                    # self.reporter.addMisc("Reason of Failure", common.get_reason_of_failure(traceback.format_exc(), e))
 
             VarReplacement(self).valueNotFound()
             output = writeToReport(self)
             return output, None
         except Exception as e:
-            self.logger.error(traceback.print_exc())
+            self.logger.error(traceback.format_exc())
             common.errorHandler(self.logger, e, "Error occured while running the testcase")
             error_dict = getError(e, self.data["config_data"])
             error_dict["json_data"] = self.reporter.serialize()
@@ -86,7 +85,7 @@ class PypRest(Base):
         self.response_obj=[]
         if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
             # update REASON OF FAILURE in misc
-            self.reporter.addMisc("REASON OF FAILURE", "Mandatory keys are missing")
+            # self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), "Mandatory keys Mising"))
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
      
@@ -189,8 +188,16 @@ class PypRest(Base):
         
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
-        self.body=json.loads(self.body) if type(self.body) == str else self.body 
-        self.headers=json.loads(self.headers) if type(self.headers) == str else self.headers 
+        try:
+            self.body = json.loads(str(self.body))
+        except Exception as e:
+            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}</br>Body - " + str(self.get_text(str(self.body))), status.FAIL)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        try:
+            self.headers=json.loads(str(self.headers))
+        except Exception as e:
+            self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}</br>Headers - " + str(self.get_text(str(self.headers))), status.FAIL)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
     def file_upload(self,json_form_data): 
         files_data=[]
@@ -302,9 +309,9 @@ class PypRest(Base):
         except Exception as e:
             if str(e) == "abort":
                 raise Exception("abort")
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", f"Some error occurred while sending request- {str(e)}")
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise Exception(f"Error occured while sending request - {str(e)}")
 
     def setVars(self):
@@ -484,7 +491,7 @@ class PypRest(Base):
             self.extractObj(fin_obj)
             
         except Exception as e:
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
         VarReplacement(self).variableReplacement()
     

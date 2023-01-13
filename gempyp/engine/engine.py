@@ -163,6 +163,7 @@ class Engine:
             jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
             jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
             jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
+            jira_title = self.PARAMS.get("JIRA_TITLE", None)  # adding title  ######################### post 1.0.4
             if jira_access_token is None and jira_email is None:
                 skip_jira = 1
         except Exception as e:
@@ -173,7 +174,7 @@ class Engine:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
 
             if skip_jira == 0:
-                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.project_env, jira_workflow, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)
+                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.project_env, jira_workflow, jira_title, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)  # adding title  ######################### post 1.0.4
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
             # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
@@ -316,7 +317,6 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-
         try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
@@ -373,6 +373,7 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -406,6 +407,7 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             # pool = Pool(threads)
+
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
 
         # create a list to keep connections
@@ -651,7 +653,8 @@ class Engine:
         """
         adj_list={}
         for key,value in testcases.items():
-                adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
+
+            adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
             new_list = []
@@ -697,7 +700,8 @@ class Engine:
 
         # split on ','
         listOfTestcases=[]
-        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))
+        ############### post 1.0.4
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
                     dep_split = list(dep.split(":"))

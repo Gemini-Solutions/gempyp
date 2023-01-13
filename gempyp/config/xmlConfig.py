@@ -27,6 +27,7 @@ class XmlConfig(AbstarctBaseConfig):
         logging.info("-------- Started the Xml parsing in XmlConfig ---------")
         self.handleSpecialSymbols(filePath)
         data = et.parse(filePath)
+        
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data)        
 
         self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
@@ -37,7 +38,6 @@ class XmlConfig(AbstarctBaseConfig):
              self.unique_id = self.s_run_id
         elif "RUN_ID" in self._CONFIG["SUITE_DATA"]:
             self.unique_id = self._CONFIG["SUITE_DATA"]["RUN_ID"]
-
         os.environ['unique_id'] = self.unique_id
         os.environ['log_dir'] = self.log_dir
         warnings.filterwarnings('ignore')
@@ -45,10 +45,7 @@ class XmlConfig(AbstarctBaseConfig):
         LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
         # LoggingConfig(suiteLogsLoc)
         logging.info("------suite logs------"+ str(suiteLogsLoc))
-
-
         self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)
-
         self._CONFIG["SUITE_DATA"]['LOG_DIR'] = self.log_dir
         self._CONFIG["SUITE_DATA"]['UNIQUE_ID'] = self.unique_id
 

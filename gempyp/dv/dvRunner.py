@@ -45,7 +45,7 @@ class DvRunner(Base):
         try:
             self.validate()
         except Exception as e:
-            self.logger.error(traceback.print_exc())
+            self.logger.error(traceback.format_exc())
             self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
             common.errorHandler(self.logger, e, "Error occured while running the testcase")
             error_dict = getError(e, self.data["config_data"])
@@ -89,7 +89,7 @@ class DvRunner(Base):
                 traceback.print_exc()
                 self.reporter.addRow("Parsing DB Conf","Exception Occurred",status.FAIL)
                 output = writeToReport(self)
-                self.addReasonOfFailure(traceback)
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                 return output, None
             self.keys = self.configData["KEYS"].split(',')
             self.reporter.addMisc("KEYS",", ".join(self.keys))
@@ -114,7 +114,7 @@ class DvRunner(Base):
                     traceback.print_exc()
                     self.reporter.addRow("Parsing Source File Path","Exception Occurred",status.FAIL)
                     output = writeToReport(self)
-                    self.addReasonOfFailure(traceback)
+                    self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                     return output, None
             else:
                 """Connecting to sourceDB"""
@@ -134,7 +134,7 @@ class DvRunner(Base):
                     traceback.print_exc()
                     self.reporter.addRow("Parsing Target File Path","Exception Occurred",status.FAIL)
                     output = writeToReport(self)
-                    self.addReasonOfFailure(traceback)
+                    self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                     return output, None
             else:
                 """Connecting to TargetDB"""
@@ -158,7 +158,7 @@ class DvRunner(Base):
                 self.reporter.addRow("Column in Table","Not Found",status.FAIL)
                 self.logger.info("--------Same Column not Present in Both Table--------")
                 output = writeToReport(self)
-                self.addReasonOfFailure(traceback)
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                 return output, None
             
             self.df_compare(self.source_df, self.target_df, self.keys)
@@ -168,7 +168,7 @@ class DvRunner(Base):
         except Exception as e:
             self.logger.error(str(e))
             traceback.print_exc()
-            self.addReasonOfFailure(traceback)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             output = writeToReport(self)
             return output, None
 
@@ -204,7 +204,7 @@ class DvRunner(Base):
         except Exception as e:
             self.logger.error(str(e))
             self.reporter.addRow(f"Connection to {db}DB: "+ str(cred["host"]),"Exception Occurred",status.FAIL)
-            self.addReasonOfFailure(traceback)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise e
                 
         try:
@@ -217,7 +217,7 @@ class DvRunner(Base):
             self.logger.error(str(e))
             self.reporter.addRow(f"Executing {db} SQL","Exception Occurred",status.FAIL)
             output = writeToReport(self)
-            self.addReasonOfFailure(traceback)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise e
         
         self.matchKeys(columns, db)
@@ -308,9 +308,9 @@ class DvRunner(Base):
             self.key_check = len(self.key_dict["REASON OF FAILURE"])
             self.value_check = len(value_dict["REASON OF FAILURE"])
             self.writeExcel(value_dict,self.key_dict)
-        except Exception:
+        except Exception as e:
             traceback.print_exc()
-            self.addReasonOfFailure(traceback)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
 
     def setVars(self):
@@ -443,11 +443,11 @@ class DvRunner(Base):
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))
 
 
-    def addReasonOfFailure(self,rof):
+    # def addReasonOfFailure(self,rof):
 
-        exceptiondata = rof.format_exc().splitlines()
-        exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
-        self.reporter.addMisc("reason of failure",exceptionarray[0])
+    #     exceptiondata = rof.format_exc().splitlines()
+    #     exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+    #     self.reporter.addMisc("reason of failure",exceptionarray[0])
 
     
     def beforeMethod(self):
@@ -502,7 +502,7 @@ class DvRunner(Base):
             self.extractBeforeObj(fin_obj)
             
         except Exception as e:
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
     
     def afterMethod(self):
