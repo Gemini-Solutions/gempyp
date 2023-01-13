@@ -653,8 +653,8 @@ class Engine:
         """
         adj_list={}
         for key,value in testcases.items():
-            # if value.get("DEPENDENCY", None):  ########## post 1.0.4
-                adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
+
+            adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
             new_list = []

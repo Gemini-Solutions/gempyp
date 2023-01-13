@@ -78,6 +78,19 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
         logging.error(f"traceback: {traceback.format_exc()}")
         return []
 
+def remove_none_from_dict(data):
+    try:
+        key_list = [key for key in data.keys()]
+        for key in key_list:
+            if isinstance(data[key], dict):
+                remove_none_from_dict(data[key])
+            if not data[key]:
+                del data[key]
+    except Exception as e:
+        traceback.print_exc()
+        pass
+    return data
+
 
 # custom encoder to encode date to epoch
 class dateTimeEncoder(json.JSONEncoder):
@@ -168,3 +181,20 @@ def control_text_size(data, **kwargs):
         except Exception as e:
             logging.info(e)
     return fin_str
+
+
+def check_json(data):
+    try:
+        data = json.loads(str(data))
+    except Exception as e:
+        logging.WARN(traceback.format_exc())
+
+    return data
+
+def get_reason_of_failure(data, e):  
+    try:
+        exceptiondata = data.splitlines()
+        exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
+        return exceptionarray[0]
+    except:
+        return e
