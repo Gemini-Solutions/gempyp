@@ -309,7 +309,7 @@ class PypRest(Base):
         except Exception as e:
             if str(e) == "abort":
                 raise Exception("abort")
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             # self.reporter.addRow("Executing API", "Some error occurred while hitting the API", status.FAIL)
             self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise Exception(f"Error occured while sending request - {str(e)}")
@@ -491,7 +491,7 @@ class PypRest(Base):
             self.extractObj(fin_obj)
             
         except Exception as e:
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
         VarReplacement(self).variableReplacement()
     

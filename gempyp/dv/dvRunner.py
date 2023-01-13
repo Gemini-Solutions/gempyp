@@ -45,7 +45,7 @@ class DvRunner(Base):
         try:
             self.validate()
         except Exception as e:
-            self.logger.error(traceback.print_exc())
+            self.logger.error(traceback.format_exc())
             self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
             common.errorHandler(self.logger, e, "Error occured while running the testcase")
             error_dict = getError(e, self.data["config_data"])
@@ -502,7 +502,7 @@ class DvRunner(Base):
             self.extractBeforeObj(fin_obj)
             
         except Exception as e:
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
     
     def afterMethod(self):

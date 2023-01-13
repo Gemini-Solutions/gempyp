@@ -19,7 +19,7 @@ def writeToReport(dv_obj):
                 if dv_obj.data.get("OUTPUT_FOLDER", dv_obj.default_report_path) is None:
                     os.makedirs(dv_obj.data.get("OUTPUT_FOLDER", dv_obj.default_report_path))
             except Exception as e:
-                dv_obj.logger.info(traceback.print_exc())
+                dv_obj.logger.info(traceback.format_exc())
             dv_obj.reporter.json_data = dv_obj.reporter.template_data.makeTestcaseReport()
             dv_obj.json_data = dv_obj.reporter.json_data
             result = dv_obj.reporter.serialize()
