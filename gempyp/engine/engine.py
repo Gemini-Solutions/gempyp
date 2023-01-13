@@ -317,7 +317,6 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-
         try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
@@ -374,6 +373,7 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -407,6 +407,7 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             # pool = Pool(threads)
+
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
 
         # create a list to keep connections
@@ -652,7 +653,7 @@ class Engine:
         """
         adj_list={}
         for key,value in testcases.items():
-            if value.get("DEPENDENCY", None):  ########## post 1.0.4
+            # if value.get("DEPENDENCY", None):  ########## post 1.0.4
                 adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
@@ -700,7 +701,7 @@ class Engine:
         # split on ','
         listOfTestcases=[]
         ############### post 1.0.4
-        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""])) if testcase.get("DEPENDENCY", None) else listOfTestcases
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
                     dep_split = list(dep.split(":"))
