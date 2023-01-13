@@ -308,7 +308,7 @@ class DvRunner(Base):
             self.key_check = len(self.key_dict["REASON OF FAILURE"])
             self.value_check = len(value_dict["REASON OF FAILURE"])
             self.writeExcel(value_dict,self.key_dict)
-        except Exception:
+        except Exception as e:
             traceback.print_exc()
             self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
