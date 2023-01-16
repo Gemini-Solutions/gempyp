@@ -10,6 +10,7 @@ from unittest import TestCase
 import uuid
 from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
+# from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.engine.testData import TestData
 from gempyp.libs.enums.status import status
 from gempyp.libs.enums.run_types import RunTypes
@@ -100,11 +101,11 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
-        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data
+        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data 
             logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
             sys.exit()
         if self.jewel_user:
-            #trying first rerun of base url api in case of api failure
+            #trying rerun of base url api in case of api failure
             if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
                 logging.info("Retrying to call Api for getting urls")
                 DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
@@ -128,10 +129,6 @@ class Engine:
         self.start()
 
         if(self.jewel_user):
-            #trying second rerun of base url api in case of api failure
-            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
-                logging.info("Second Time Retrying to call Api for getting urls")
-                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
             ### Trying to reupload suite data
             if dataUpload.suite_uploaded == False:
                 logging.info("------Retrying to Upload Suite Data------")
@@ -186,6 +183,8 @@ class Engine:
             unuploaded_path = os.path.join(self.ouput_folder, "Unuploaded_suiteData.json")
             with open(unuploaded_path,'w') as w:
                 w.write(listToStr)
+                w.write(listToStr)
+
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
         TemplateData().repSummary(self.repJson, output_file_path, self.jewel, failed_Utestcases, unuploaded_path)
 
@@ -260,8 +259,11 @@ class Engine:
             self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
             self.jewel_user = True
         if self.jewel_user:
-            # if self.PARAMS.get("BASE_URL", None):
-            #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            # trying first run of base url api in case of api failure
+            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+                logging.info("Trying to call Api for getting urls")
+                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+
             if self.PARAMS.get("S_ID", None):
                 self.jewel_run = True
             else:
@@ -383,7 +385,7 @@ class Engine:
                 data['config_data']['log_path'] = log_path
                 conn = None
                 output, error = executorFactory(data,conn, custom_logger)
-                
+
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -596,7 +598,13 @@ class Engine:
         misc["REASON OF FAILURE"] = message
         result["misc"] = misc
         result["misc"]["log_file"] = s3_log_file_url
-        # result["json_data"] = {}
+        # self.reporter = Base(project_name=self.project_name, testcase_name=testcase_name)
+        # result["json_data"] = self.reporter.template_data.makeTestcaseReport()
+        # all_status = result["json_data"]["meta_data"][2]
+        # total = 0
+        # for key in all_status:
+        #     total += all_status[key]
+        # result["json_data"]["meta_data"][2]["TOTAL"] = total   # we can not get dummy data because here testcase does not exist
         return result
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):
