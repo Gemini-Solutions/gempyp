@@ -101,11 +101,11 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
-        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data
+        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data 
             logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
             sys.exit()
         if self.jewel_user:
-            #trying first rerun of base url api in case of api failure
+            #trying rerun of base url api in case of api failure
             if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
                 logging.info("Retrying to call Api for getting urls")
                 DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
@@ -129,10 +129,6 @@ class Engine:
         self.start()
 
         if(self.jewel_user):
-            #trying second rerun of base url api in case of api failure
-            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
-                logging.info("Second Time Retrying to call Api for getting urls")
-                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
             ### Trying to reupload suite data
             if dataUpload.suite_uploaded == False:
                 logging.info("------Retrying to Upload Suite Data------")
@@ -263,8 +259,11 @@ class Engine:
             self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
             self.jewel_user = True
         if self.jewel_user:
-            # if self.PARAMS.get("BASE_URL", None):
-            #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            # trying first run of base url api in case of api failure
+            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+                logging.info("Trying to call Api for getting urls")
+                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+
             if self.PARAMS.get("S_ID", None):
                 self.jewel_run = True
             else:
