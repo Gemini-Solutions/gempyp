@@ -2,6 +2,7 @@ import traceback
 import requests
 import logging
 from gempyp.config import DefaultSettings
+from gempyp.libs.enums.status import status
 import logging
 import re
 import json
@@ -13,7 +14,7 @@ suite_uploaded = False
 list_of_testcase = []
 respon = {}
 
-stat = {"TOTAL": 0, "PASS": 0, "FAIL": 0, "EXE": 0, "ERR": 0, "WARN": 0}
+stat = {k: 0 for k in status}
 def _getHeaders(bridge_token, user_name):
     """
     for getting the bridgeToken in _sendData method
@@ -52,6 +53,10 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
             global suite_uploaded
             logging.info("Suite data uploaded successfully")
             suite_uploaded = True
+            try:
+                DefaultSettings.project_id = json.loads(response.text)["data"]["p_id"]
+            except Exception as e:
+                logging.info(traceback.format_exc())
             if payload in suite_data:
                 suite_data.remove(payload)
         elif response and response.status_code == 200:

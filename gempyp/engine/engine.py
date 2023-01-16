@@ -140,7 +140,7 @@ class Engine:
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
         if dataUpload.suite_uploaded == True:
             jewelLink = DefaultSettings.getUrls('jewel-url')
-            self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
+            self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
             if len(dataUpload.not_uploaded) != 0:
                 logging.info("------Trying again to Upload Testcase------")
                 for testcase in dataUpload.not_uploaded:
