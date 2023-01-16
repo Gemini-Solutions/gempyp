@@ -441,9 +441,22 @@ class DvRunner(Base):
                 except Exception as e:
                     logging.warn(e)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report",f"""
+                    Common Keys: {len(self.common_keys)}<br>
+                    Keys only in Source: {len(self.keys_only_in_src)}<br>
+                    Keys only in Target: {len(self.keys_only_in_tgt)}<br>
+                    Mismatched Cells: {self.value_check}<br>
+                    Matched Keys: {len(self.common_keys)}<br>
+                    DV Result File: <a href={excel}>Result File</a>
+                    """, status= status.FAIL )
                 else:
-                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+s3_url+'>Result File</a>', status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report",f"""
+                    Common Keys: {len(self.common_keys)}<br>
+                    Keys only in Source: {len(self.keys_only_in_src)}<br>
+                    Keys only in Target: {len(self.keys_only_in_tgt)}<br>
+                    Mismatched Cells: {self.value_check}<br>
+                    Matched Keys: {len(self.common_keys)}<br>
+                    DV Result File: <a href={s3_url}>Result File</a>""", status= status.FAIL )
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
             self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))
