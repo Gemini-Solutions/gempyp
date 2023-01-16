@@ -51,7 +51,8 @@ class DvRunner(Base):
             error_dict = getError(e, self.data["config_data"])
             error_dict["json_data"] = self.reporter.serialize()
             return None, error_dict
-
+        sourceCred = None
+        targetCred = None
         try:
             column = []
             try:
@@ -119,7 +120,6 @@ class DvRunner(Base):
             else:
                 """Connecting to sourceDB"""
                 self.source_df, self.source_columns = self.connectDB(sourceCred, "SOURCE")
-
             if 'TARGET_CSV' in self.configData:
                 try:
                     self.logger.info("Getting Target_CSV File Path")
@@ -138,7 +138,10 @@ class DvRunner(Base):
                     return output, None
             else:
                 """Connecting to TargetDB"""
-                self.target_df, self.target_columns = self.connectDB(targetCred, "TARGET")
+                if targetCred==None:
+                    self.reporter.addRow("Getting Target Connection Details","Not Found",status.FAIL)
+                else:
+                    self.target_df, self.target_columns = self.connectDB(targetCred, "TARGET")
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
                 self.li1 = []
@@ -155,7 +158,7 @@ class DvRunner(Base):
                 else:
                     raise Exception
             except Exception:
-                self.reporter.addRow("Column in Table","Not Found",status.FAIL)
+                self.reporter.addRow("Same Columns in Table","Not Found",status.FAIL)
                 self.logger.info("--------Same Column not Present in Both Table--------")
                 output = writeToReport(self)
                 self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
@@ -186,7 +189,10 @@ class DvRunner(Base):
 
     def validate(self):
         if "KEYS" in self.configData:
-            if 'SOURCE_CONN' in self.configData or 'SOURCE_CSV' in self.configData or 'SOURCE_DB' in self.configData:
+            if 'SOURCE_CONN' in self.configData or 'SOURCE_DB' in self.configData or 'TARGET_CONN' in self.configData or 'TARGET_DB' in self.configData:
+                if 'DATABASE' not in self.configData:
+                    raise Exception("Tags for Source connection not Present in Config, Please review config.xml")
+            elif 'SOURCE_CSV' in self.configData:
                 pass
             else:
                 raise Exception("Tags for Source connection not Present in Config, Please review config.xml")
