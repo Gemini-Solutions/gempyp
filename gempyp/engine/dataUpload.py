@@ -14,7 +14,9 @@ suite_uploaded = False
 list_of_testcase = []
 respon = {}
 
-stat = {k: 0 for k in status}
+# stat = {k.name: 0 for k in status}
+# stat.update({"TOTAL":0})
+stat= {**{k.name: 0 for k in status}, **{"TOTAL":0}}
 def _getHeaders(bridge_token, user_name):
     """
     for getting the bridgeToken in _sendData method
@@ -43,6 +45,7 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
+
     try:
         if len(respon) != 0:
             payload = dataAlter(payload)
@@ -148,41 +151,65 @@ def dataAlter(payload):
         for key, value in stat.items():
             if key in payload['testcase_info']:
                 payload['testcase_info'][key] += value
-                
+    
     # making testcase info in order
-    prio_list = ['TOTAL', 'PASS', 'FAIL'] 
-    sorted_dict = {}
-    for key in prio_list:
-        if key in payload['testcase_info'] :
-            sorted_dict[key] = payload['testcase_info'][key]
-            if key == "PASS" or key == "FAIL":
-                pass
-            else:
-                if sorted_dict[key] == 0:
-                    sorted_dict.pop(key)
-            payload['testcase_info'].pop(key)
-        elif key == "PASS" or key == 'FAIL':
-                sorted_dict[key] = 0
-    sorted_dict.update(payload['testcase_info']) 
-    status = "PASS"
-    if sorted_dict["PASS"] != sorted_dict["TOTAL"]:
-        status = "FAIL"
+    prev_tc_count = 0
+    try:
+        prev_tc_count = sum(list(set(respon['data'].get('testcase_info', {}).values()) - set(['TOTAL'])))
+    except Exception as e:
+        print(e)
+
+    #### to be improved, testcase info is incorrect, suite status is incorrect ##########    
+    # prio_list = ['TOTAL', 'PASS', 'FAIL']
+    # sorted_dict = {'TOTAL':0, 'PASS':0, 'FAIL':0}
+    # sorted_dict = {}
+    # for key in prio_list:
+    #     if key in payload['testcase_info'] :
+    #         sorted_dict[key] = payload['testcase_info'][key]
+    #         if key == "PASS" or key == "FAIL":
+    #             pass
+    #         else:
+    #             if sorted_dict[key] == 0:
+    #                 sorted_dict.pop(key)
+    #         payload['testcase_info'].pop(key)
+    #     elif key == "PASS" or key == 'FAIL':
+    #             sorted_dict[key] = 0                   ## useless
+
+    sorted_dict = {'TOTAL':0, 'PASS':0, 'FAIL':0}
+    sorted_dict.update(payload['testcase_info'])
+
+
+    # status = "PASS"
+    # if sorted_dict["PASS"] != sorted_dict["TOTAL"]:
+    #     status = "FAIL"                                 ## useless
     payload['testcase_info'] = sorted_dict
-    payload['status'] = status
-    # updating the expected testcase
-    payload['expected_testcases'] += respon['data']['expected_testcases']
+
+
+    # payload['status'] = status
+    #### to be improved, testcase info is incorrect, suite status is incorrect ########## 
+
+    payload['expected_testcases'] += prev_tc_count  # respon['data']['expected_testcases']  ## incorrect
     # updating the suite status of according to new run
-    if payload['status'] != "PASS":
-        pass
-    else:
-        payload['status'] = respon['data']['status']
-    return  json.dumps(payload)
+    # if payload['status'] != "PASS":
+    #     pass
+    # else:
+    #     payload['status'] = respon['data']['status']
+    
+    # if old status = EXE, new status = EXE, incorrect logic                            ## incorrect
+
+    for s in status:
+        if sorted_dict.get(s.name, 0) > 0:
+            payload['status'] = s.name  ## updated code to get correct status of the suite, based on the whole testcase info dict
+
+    return  json.dumps(payload) 
 
 # code for checking and updating testcase details
 def getTestcase(payload, method, bridge_token, user_name):
     global flag
+
     for i in respon['data']['testcase_details']:
-        if payload['tc_run_id'][:-37] in i:
+
+        if respon['data']['testcase_details'] and payload['tc_run_id'][:-37] in i:
             url = DefaultSettings.getUrls("test-exe-api") + "?tc_run_id=" + i
             response = _sendData(" ",url, bridge_token, user_name, "GET")
             if response.status_code == 200:
