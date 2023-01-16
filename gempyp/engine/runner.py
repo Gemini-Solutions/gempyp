@@ -11,7 +11,7 @@ from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
-
+    result_data = None
     """
     actually imports the testcase files and call the run method 
     set the json data that is required to update in db
@@ -30,7 +30,6 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
             # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
             all_classes = inspect.getmembers(dynamic_testcase, inspect.isclass)
-
             for name, cls in all_classes:
                 # currently running only one class easily extensible to run multiple classes
                 # from single file
@@ -47,16 +46,16 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
             # testcase has successfully ran
             # make the output Dict
             output = []
+            if result_data:
+                for data in result_data:
+                    data["TESTCASEMETADATA"] = testcase_meta
+                    data["config_data"] = config_data
 
-            for data in result_data:
-                data["TESTCASEMETADATA"] = testcase_meta
-                data["config_data"] = config_data
+                    singleTestcase = getOutput(data)
 
-                singleTestcase = getOutput(data)
-
-                output.append(singleTestcase)
-            return output, None
-
+                    output.append(singleTestcase)
+                return output, None
+            raise Exception("Testcase not found")
         except Exception as e:
             logger.error("Error occured while running the testcase: {e}".format(e=e))
             return None, getError(e, config_data)

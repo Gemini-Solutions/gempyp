@@ -43,7 +43,12 @@ class DvRunner(Base):
 
     def dvEngine(self):
         try:
-            self.validate()
+            try:
+
+                self.validate()
+            except Exception as e:
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+                self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
         except Exception as e:
             self.logger.error(traceback.format_exc())
             self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
@@ -51,6 +56,8 @@ class DvRunner(Base):
             error_dict = getError(e, self.data["config_data"])
             error_dict["json_data"] = self.reporter.serialize()
             return None, error_dict
+
+        
         sourceCred = None
         targetCred = None
         try:

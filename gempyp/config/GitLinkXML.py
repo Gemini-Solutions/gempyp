@@ -10,7 +10,6 @@ from base64 import b64encode
 def fetchFileFromGit(link,branch,username=None,bearer_token=None):  ################ post 1.0.4
         list=link.split("/")
         api = f'https://api.github.com/repos/{list[3]}/{list[4]}/contents/{"/".join(list[7:])}?ref={branch}'
-        print(api)
         try:
             # if(username is not None and token is not None):
             headers=None
