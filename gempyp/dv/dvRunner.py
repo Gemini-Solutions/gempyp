@@ -224,7 +224,7 @@ class DvRunner(Base):
             self.logger.info(f"----Executing the {db}SQL----")
             sql = f"{db}_SQL"
             myCursor.execute(self.configData[sql])
-            self.reporter.addRow(f"Executing {db} SQL",f"{db} SQL executed Successfull",status.PASS)
+            self.reporter.addRow(f"Executing {db} SQL",f"{self.configData[sql]}<br>{db} SQL executed Successfull",status.PASS)
             columns = [i[0] for i in myCursor.description]
         except Exception as e:
             self.logger.error(str(e))
@@ -462,9 +462,12 @@ class DvRunner(Base):
                     Keys only in Target: {len(self.keys_only_in_tgt)}<br>
                     Mismatched Cells: {self.value_check}<br>
                     DV Result File: <a href={s3_url}>Result File</a>""", status= status.FAIL )
+                
+                self.reporter.addMisc("REASON OF FAILURE",str(f"Mismatched Keys: {self.key_check},Mismatched Cells: {self.value_check}"))
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
             self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))
+            self.reporter.addMisc("Mismatched Cells", str(self.value_check))
 
 
     # def addReasonOfFailure(self,rof):

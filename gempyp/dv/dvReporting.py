@@ -4,6 +4,7 @@ import uuid
 import getpass
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
+from collections import OrderedDict
 
 
 def writeToReport(dv_obj):
@@ -66,8 +67,20 @@ def writeToReport(dv_obj):
 
     singleTestcase = {}
     singleTestcase["testcase_dict"] = tempdict
-    singleTestcase["misc"] = result.get("MISC")
+    # singleTestcase["misc"] = result.get("MISC")
+    miscSorted = totalOrder(result.get("MISC"))
+    singleTestcase["misc"] = miscSorted
     singleTestcase["json_data"] = dv_obj.json_data
     singleTestcase["misc"]["log_file"] = s3_log_file_url
     output.append(singleTestcase)
     return output
+
+def totalOrder(unsorted_dict):
+    prio_list = ['KEYS','common Keys','Keys Only in Source','Keys Only In Target','MisMatched Cells','REASON OF FAILURE','log_file']
+    sorted_dict = {}
+    for key in prio_list:
+        if key in unsorted_dict :
+            sorted_dict[key] = unsorted_dict[key]
+            unsorted_dict.pop(key)
+    sorted_dict.update(unsorted_dict)
+    return sorted_dict
