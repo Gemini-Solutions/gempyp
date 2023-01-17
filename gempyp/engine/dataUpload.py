@@ -194,13 +194,13 @@ def dataAlter(payload):
     #     pass
     # else:
     #     payload['status'] = respon['data']['status']
-    
+
     # if old status = EXE, new status = EXE, incorrect logic                            ## incorrect
 
     for s in status:
         if sorted_dict.get(s.name, 0) > 0:
             payload['status'] = s.name  ## updated code to get correct status of the suite, based on the whole testcase info dict
-
+            break
     return  json.dumps(payload) 
 
 # code for checking and updating testcase details
