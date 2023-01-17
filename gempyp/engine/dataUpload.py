@@ -159,47 +159,15 @@ def dataAlter(payload):
     except Exception as e:
         print(e)
 
-    #### to be improved, testcase info is incorrect, suite status is incorrect ##########    
-    # prio_list = ['TOTAL', 'PASS', 'FAIL']
-    # sorted_dict = {'TOTAL':0, 'PASS':0, 'FAIL':0}
-    # sorted_dict = {}
-    # for key in prio_list:
-    #     if key in payload['testcase_info'] :
-    #         sorted_dict[key] = payload['testcase_info'][key]
-    #         if key == "PASS" or key == "FAIL":
-    #             pass
-    #         else:
-    #             if sorted_dict[key] == 0:
-    #                 sorted_dict.pop(key)
-    #         payload['testcase_info'].pop(key)
-    #     elif key == "PASS" or key == 'FAIL':
-    #             sorted_dict[key] = 0                   ## useless
-
     sorted_dict = {'TOTAL':0, 'PASS':0, 'FAIL':0}
     sorted_dict.update(payload['testcase_info'])
-
-
-    # status = "PASS"
-    # if sorted_dict["PASS"] != sorted_dict["TOTAL"]:
-    #     status = "FAIL"                                 ## useless
     payload['testcase_info'] = sorted_dict
 
-
-    # payload['status'] = status
-    #### to be improved, testcase info is incorrect, suite status is incorrect ########## 
-
-    payload['expected_testcases'] += prev_tc_count  # respon['data']['expected_testcases']  ## incorrect
-    # updating the suite status of according to new run
-    # if payload['status'] != "PASS":
-    #     pass
-    # else:
-    #     payload['status'] = respon['data']['status']
-
-    # if old status = EXE, new status = EXE, incorrect logic                            ## incorrect
+    payload['expected_testcases'] += prev_tc_count
 
     for s in status:
         if sorted_dict.get(s.name, 0) > 0:
-            payload['status'] = s.name  ## updated code to get correct status of the suite, based on the whole testcase info dict
+            payload['status'] = s.name
             break
     return  json.dumps(payload) 
 
