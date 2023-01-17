@@ -103,7 +103,7 @@ class Engine:
         failed_Utestcases = 0
         if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data 
             logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
-            sys.exit()
+            sys.exit() 
         if self.jewel_user:
             #trying rerun of base url api in case of api failure
             if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
@@ -117,7 +117,9 @@ class Engine:
                 if response == "failed":
                     logging.info("************s_run_id not present in DB Trying to call Post*****************")
                     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-
+                else:
+                    print("s_run_id already present --------------")
+                    dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"],mode="PUT")
             else:
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
                 ### first try to rerun the data
