@@ -164,7 +164,6 @@ def dataAlter(payload):
     except Exception as e:
         print(e)
 
-    print(tc_count)
     if tc_count > 0:
         payload['expected_testcases'] = tc_count
     for s in status:

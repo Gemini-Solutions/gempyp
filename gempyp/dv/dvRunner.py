@@ -12,7 +12,6 @@ from gempyp.libs.common import moduleImports
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
 from gempyp.dv.dvReporting import writeToReport
-# from telnetlib import STATUS
 import traceback
 import pandas as pd
 import logging
@@ -96,8 +95,8 @@ class DvRunner(Base):
                 self.logger.error(str(e))
                 traceback.print_exc()
                 self.reporter.addRow("Parsing DB Conf","Exception Occurred",status.FAIL)
-                output = writeToReport(self)
                 self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+                output = writeToReport(self)
                 return output, None
             self.keys = self.configData["KEYS"].split(',')
             self.reporter.addMisc("KEYS",", ".join(self.keys))
@@ -121,8 +120,8 @@ class DvRunner(Base):
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.reporter.addRow("Parsing Source File Path","Exception Occurred",status.FAIL)
-                    output = writeToReport(self)
                     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+                    output = writeToReport(self)
                     return output, None
             else:
                 """Connecting to sourceDB"""
@@ -140,8 +139,8 @@ class DvRunner(Base):
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.reporter.addRow("Parsing Target File Path","Exception Occurred",status.FAIL)
-                    output = writeToReport(self)
                     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+                    output = writeToReport(self)
                     return output, None
             else:
                 """Connecting to TargetDB"""
@@ -167,8 +166,8 @@ class DvRunner(Base):
             except Exception:
                 self.reporter.addRow("Same Columns in Table","Not Found",status.FAIL)
                 self.logger.info("--------Same Column not Present in Both Table--------")
-                output = writeToReport(self)
                 self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+                output = writeToReport(self)
                 return output, None
             
             self.df_compare(self.source_df, self.target_df, self.keys)
@@ -191,8 +190,8 @@ class DvRunner(Base):
             self.reporter.addRow(f"Parsing {db} File","Parsing File is Successfull",status.PASS)
             self.matchKeys(columns, db)
             return df, columns
-        except Exception:
-            raise Exception
+        except Exception as e:
+            raise Exception(f"Could not read file, {e}")
 
     def validate(self):
         if "KEYS" in self.configData:
@@ -217,8 +216,7 @@ class DvRunner(Base):
         except Exception as e:
             self.logger.error(str(e))
             self.reporter.addRow(f"Connection to {db}DB: "+ str(cred["host"]),"Exception Occurred",status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-            raise e
+            raise Exception(e)
                 
         try:
             self.logger.info(f"----Executing the {db}SQL----")
@@ -229,8 +227,6 @@ class DvRunner(Base):
         except Exception as e:
             self.logger.error(str(e))
             self.reporter.addRow(f"Executing {db} SQL","Exception Occurred",status.FAIL)
-            output = writeToReport(self)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise e
         
         self.matchKeys(columns, db)
@@ -284,7 +280,7 @@ class DvRunner(Base):
                 self.reporter.addRow(f"Matching Given Keys in {db}",f"Keys are Present in {db}",status.PASS)
                 self.logger.info(f"Given Keys are Present in {db} DB")
             else:
-                raise (f"Keys are not Present in {db}")   
+                raise(f"Keys are not Present in {db}")   
         except Exception as e:
             keyString1 = ", ".join(key)
             self.reporter.addRow(f"Matching Given Keys in {db}","Keys: " + keyString1 +f" are not Present in {db}DB",status.FAIL)
@@ -339,7 +335,6 @@ class DvRunner(Base):
         self.tcname = self.data["config_data"]["NAME"]
         self.env = self.data["ENV"]
         self.category = self.data["config_data"].get("CATEGORY", None)
-    
 
     def truncate(self,f, n):
 
@@ -372,12 +367,6 @@ class DvRunner(Base):
                     for field in self.headers:
                         src_val = self.df_1.loc[key_val,field]
                         tgt_val = self.df_2.loc[key_val,field]
-                        # if type(src_val) == pd.core.series.Series:
-                        #     val = src_val[len(src_val)-1]
-                        #     src_val = val
-                        # if type(tgt_val) == pd.core.series.Series:
-                        #     val = tgt_val[len(tgt_val)-1]
-                        #     tgt_val = val
                         if src_val == src_val or tgt_val == tgt_val:
                             if "THRESHOLD" in self.configData:
                                 self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
@@ -470,13 +459,6 @@ class DvRunner(Base):
             self.reporter.addMisc("Mismatched Cells", str(self.value_check))
 
 
-    # def addReasonOfFailure(self,rof):
-
-    #     exceptiondata = rof.format_exc().splitlines()
-    #     exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
-    #     self.reporter.addMisc("reason of failure",exceptionarray[0])
-
-    
     def beforeMethod(self):
         """This function
         -checks for the before file tag

@@ -191,7 +191,7 @@ def check_json(data):
 
     return data
 
-def get_reason_of_failure(data, e):  
+def get_reason_of_failure(data, e=None):  
     try:
         exceptiondata = data.splitlines()
         exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
