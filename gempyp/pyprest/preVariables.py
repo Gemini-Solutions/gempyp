@@ -78,7 +78,7 @@ class PreVariables:
                     val = "Null"
                 return val
             except:
-                self.pyprest_obj.logger.info(traceback.print_exc())
+                self.pyprest_obj.logger.info(traceback.format_exc())
                 return "Null"
         else:
             return var_name.strip(" ")

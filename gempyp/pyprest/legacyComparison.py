@@ -114,7 +114,7 @@ class legacyApiComparison:
                 self.logger.warning("---------- Missmatch in responses status codes. ")
 
         except Exception as e:
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             self.reporter.addMisc("REASON OF FAILURE", f"Some error occurred while sending request- {str(e)}")
             raise Exception("Error occured while sending request - {0}".format(str(e)))
 

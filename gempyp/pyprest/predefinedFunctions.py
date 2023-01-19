@@ -131,14 +131,14 @@ class PredefinedFunctions:
         try:
             date_format = args[1].strip('"').strip("'")
         except Exception as e:
-            self.pyprest_obj.logger.info(traceback.print_exc())
+            self.pyprest_obj.logger.info(traceback.format_exc())
             date_format = 'ddmmyyyy'
         try:
             self.data_N_days_after = date.today() + timedelta(days = int(n_value))
             self.value = self.data_N_days_after.strftime(str(self.date_formats[date_format]))
             return self.value
         except Exception as e:
-            self.pyprest_obj.logger.info(traceback.print_exc())
+            self.pyprest_obj.logger.info(traceback.format_exc())
             self.pyprest_obj.logger.info("Error occured while excuting getDateFromNow() function")
 
     # getDate function with format

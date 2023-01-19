@@ -66,7 +66,8 @@ class VariableReplacement:
     def getVariableValues(self, var_name):
         varName = var_name.strip("$[#]")
         try:
-            if "SUITE.".casefold() or "ENV.".casefold() in varName.casefold():
+            # if "SUITE.".casefold() or "ENV.".casefold() in varName.casefold()
+            if "SUITE.".casefold() in varName.casefold() or "ENV.".casefold() in varName.casefold():  # ############ post 1.0.4
                 varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
             else:
                 varValue = self.local_pre_variables[varName]
@@ -94,7 +95,6 @@ class VariableReplacement:
             return "null"
          
 
-
     def updateDataDictionary(self, data):
         for k,v in data.copy().items():
             if isinstance(v,dict):
@@ -111,7 +111,7 @@ class VariableReplacement:
                             newValStr = data[k].replace(var_name, str(var_val))
                         del data[k]
                         data[k] = newValStr
-
+            
         return data
 
     def variableReplacement(self):

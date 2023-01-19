@@ -100,7 +100,6 @@ class TestcaseReporter:
 
         if not self.status:
             self.status = self.findStatus()
-            print(self.findStatus())
         self.end_time = datetime.now(timezone.utc)
         for key in list(self.status_count):
             if self.status_count[key] == 0:

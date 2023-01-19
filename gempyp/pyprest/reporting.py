@@ -23,7 +23,7 @@ def writeToReport(pyprest_obj):
                 if pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path) is None:
                     os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
             except Exception as e:
-                pyprest_obj.logger.info(traceback.print_exc())
+                pyprest_obj.logger.info(traceback.format_exc())
             pyprest_obj.reporter.json_data = pyprest_obj.reporter.template_data.makeTestcaseReport()
             pyprest_obj.json_data = pyprest_obj.reporter.json_data
             result = pyprest_obj.reporter.serialize()
@@ -36,7 +36,7 @@ def writeToReport(pyprest_obj):
                     pyprest_obj.logger.info(str(e))
 
         except Exception as e:
-            pyprest_obj.logger.info(traceback.print_exc())
+            pyprest_obj.logger.info(traceback.format_exc())
     output = []
     tempdict = {} 
     unique_id = uuid.uuid4()

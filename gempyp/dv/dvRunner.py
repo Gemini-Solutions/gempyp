@@ -12,7 +12,6 @@ from gempyp.libs.common import moduleImports
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import readPath
 from gempyp.dv.dvReporting import writeToReport
-# from telnetlib import STATUS
 import traceback
 import pandas as pd
 import logging
@@ -43,15 +42,23 @@ class DvRunner(Base):
 
     def dvEngine(self):
         try:
-            self.validate()
+            try:
+
+                self.validate()
+            except Exception as e:
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+                self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
         except Exception as e:
-            self.logger.error(traceback.print_exc())
+            self.logger.error(traceback.format_exc())
             self.reporter.addRow("Executing Test steps", f'Something went wrong while executing the testcase- {str(e)}', status.ERR)
             common.errorHandler(self.logger, e, "Error occured while running the testcase")
             error_dict = getError(e, self.data["config_data"])
             error_dict["json_data"] = self.reporter.serialize()
             return None, error_dict
 
+        
+        sourceCred = None
+        targetCred = None
         try:
             column = []
             try:
@@ -88,8 +95,8 @@ class DvRunner(Base):
                 self.logger.error(str(e))
                 traceback.print_exc()
                 self.reporter.addRow("Parsing DB Conf","Exception Occurred",status.FAIL)
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                 output = writeToReport(self)
-                self.addReasonOfFailure(traceback)
                 return output, None
             self.keys = self.configData["KEYS"].split(',')
             self.reporter.addMisc("KEYS",", ".join(self.keys))
@@ -113,13 +120,12 @@ class DvRunner(Base):
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.reporter.addRow("Parsing Source File Path","Exception Occurred",status.FAIL)
+                    self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                     output = writeToReport(self)
-                    self.addReasonOfFailure(traceback)
                     return output, None
             else:
                 """Connecting to sourceDB"""
                 self.source_df, self.source_columns = self.connectDB(sourceCred, "SOURCE")
-
             if 'TARGET_CSV' in self.configData:
                 try:
                     self.logger.info("Getting Target_CSV File Path")
@@ -133,12 +139,15 @@ class DvRunner(Base):
                     self.logger.error(str(e))
                     traceback.print_exc()
                     self.reporter.addRow("Parsing Target File Path","Exception Occurred",status.FAIL)
+                    self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                     output = writeToReport(self)
-                    self.addReasonOfFailure(traceback)
                     return output, None
             else:
                 """Connecting to TargetDB"""
-                self.target_df, self.target_columns = self.connectDB(targetCred, "TARGET")
+                if targetCred==None:
+                    self.reporter.addRow("Getting Target Connection Details","Not Found",status.FAIL)
+                else:
+                    self.target_df, self.target_columns = self.connectDB(targetCred, "TARGET")
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
                 self.li1 = []
@@ -155,10 +164,10 @@ class DvRunner(Base):
                 else:
                     raise Exception
             except Exception:
-                self.reporter.addRow("Column in Table","Not Found",status.FAIL)
+                self.reporter.addRow("Same Columns in Table","Not Found",status.FAIL)
                 self.logger.info("--------Same Column not Present in Both Table--------")
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                 output = writeToReport(self)
-                self.addReasonOfFailure(traceback)
                 return output, None
             
             self.df_compare(self.source_df, self.target_df, self.keys)
@@ -168,7 +177,7 @@ class DvRunner(Base):
         except Exception as e:
             self.logger.error(str(e))
             traceback.print_exc()
-            self.addReasonOfFailure(traceback)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             output = writeToReport(self)
             return output, None
 
@@ -181,12 +190,15 @@ class DvRunner(Base):
             self.reporter.addRow(f"Parsing {db} File","Parsing File is Successfull",status.PASS)
             self.matchKeys(columns, db)
             return df, columns
-        except Exception:
-            raise Exception
+        except Exception as e:
+            raise Exception(f"Could not read file, {e}")
 
     def validate(self):
         if "KEYS" in self.configData:
-            if 'SOURCE_CONN' in self.configData or 'SOURCE_CSV' in self.configData or 'SOURCE_DB' in self.configData:
+            if 'SOURCE_CONN' in self.configData or 'SOURCE_DB' in self.configData or 'TARGET_CONN' in self.configData or 'TARGET_DB' in self.configData:
+                if 'DATABASE' not in self.configData:
+                    raise Exception("Tags for Source connection not Present in Config, Please review config.xml")
+            elif 'SOURCE_CSV' in self.configData:
                 pass
             else:
                 raise Exception("Tags for Source connection not Present in Config, Please review config.xml")
@@ -204,20 +216,17 @@ class DvRunner(Base):
         except Exception as e:
             self.logger.error(str(e))
             self.reporter.addRow(f"Connection to {db}DB: "+ str(cred["host"]),"Exception Occurred",status.FAIL)
-            self.addReasonOfFailure(traceback)
-            raise e
+            raise Exception(e)
                 
         try:
             self.logger.info(f"----Executing the {db}SQL----")
             sql = f"{db}_SQL"
             myCursor.execute(self.configData[sql])
-            self.reporter.addRow(f"Executing {db} SQL",f"{db} SQL executed Successfull",status.PASS)
+            self.reporter.addRow(f"Executing {db} SQL",f"{self.configData[sql]}<br>{db} SQL executed Successfull",status.PASS)
             columns = [i[0] for i in myCursor.description]
         except Exception as e:
             self.logger.error(str(e))
             self.reporter.addRow(f"Executing {db} SQL","Exception Occurred",status.FAIL)
-            output = writeToReport(self)
-            self.addReasonOfFailure(traceback)
             raise e
         
         self.matchKeys(columns, db)
@@ -271,7 +280,7 @@ class DvRunner(Base):
                 self.reporter.addRow(f"Matching Given Keys in {db}",f"Keys are Present in {db}",status.PASS)
                 self.logger.info(f"Given Keys are Present in {db} DB")
             else:
-                raise (f"Keys are not Present in {db}")   
+                raise(f"Keys are not Present in {db}")   
         except Exception as e:
             keyString1 = ", ".join(key)
             self.reporter.addRow(f"Matching Given Keys in {db}","Keys: " + keyString1 +f" are not Present in {db}DB",status.FAIL)
@@ -308,9 +317,9 @@ class DvRunner(Base):
             self.key_check = len(self.key_dict["REASON OF FAILURE"])
             self.value_check = len(value_dict["REASON OF FAILURE"])
             self.writeExcel(value_dict,self.key_dict)
-        except Exception:
+        except Exception as e:
             traceback.print_exc()
-            self.addReasonOfFailure(traceback)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
 
     def setVars(self):
@@ -326,7 +335,6 @@ class DvRunner(Base):
         self.tcname = self.data["config_data"]["NAME"]
         self.env = self.data["ENV"]
         self.category = self.data["config_data"].get("CATEGORY", None)
-    
 
     def truncate(self,f, n):
 
@@ -359,12 +367,6 @@ class DvRunner(Base):
                     for field in self.headers:
                         src_val = self.df_1.loc[key_val,field]
                         tgt_val = self.df_2.loc[key_val,field]
-                        # if type(src_val) == pd.core.series.Series:
-                        #     val = src_val[len(src_val)-1]
-                        #     src_val = val
-                        # if type(tgt_val) == pd.core.series.Series:
-                        #     val = tgt_val[len(tgt_val)-1]
-                        #     tgt_val = val
                         if src_val == src_val or tgt_val == tgt_val:
                             if "THRESHOLD" in self.configData:
                                 self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
@@ -435,21 +437,28 @@ class DvRunner(Base):
                 except Exception as e:
                     logging.warn(e)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+excel+'>Result File</a>', status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report",f"""
+                    Matched Keys: {len(self.common_keys)}<br>
+                    Keys only in Source: {len(self.keys_only_in_src)}<br>
+                    Keys only in Target: {len(self.keys_only_in_tgt)}<br>
+                    Mismatched Cells: {self.value_check}<br>
+                    DV Result File: <a href={excel}>Result File</a>
+                    """, status= status.FAIL )
                 else:
-                    self.reporter.addRow("Data Validation Report","DV Result File: "+'<a href='+s3_url+'>Result File</a>', status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report",f"""
+                    Matched Keys: {len(self.common_keys)}<br>
+                    Keys only in Source: {len(self.keys_only_in_src)}<br>
+                    Keys only in Target: {len(self.keys_only_in_tgt)}<br>
+                    Mismatched Cells: {self.value_check}<br>
+                    DV Result File: <a href={s3_url}>Result File</a>""", status= status.FAIL )
+                
+                self.reporter.addMisc("REASON OF FAILURE",str(f"Mismatched Keys: {self.key_check},Mismatched Cells: {self.value_check}"))
             self.reporter.addMisc("common Keys", str(len(self.common_keys)))
             self.reporter.addMisc("Keys Only in Source",str(len(self.keys_only_in_src)))
             self.reporter.addMisc("Keys Only In Target", str(len(self.keys_only_in_tgt)))
+            self.reporter.addMisc("Mismatched Cells", str(self.value_check))
 
 
-    def addReasonOfFailure(self,rof):
-
-        exceptiondata = rof.format_exc().splitlines()
-        exceptionarray = [exceptiondata[-1]] + exceptiondata[1:-1]
-        self.reporter.addMisc("reason of failure",exceptionarray[0])
-
-    
     def beforeMethod(self):
         """This function
         -checks for the before file tag
@@ -502,7 +511,7 @@ class DvRunner(Base):
             self.extractBeforeObj(fin_obj)
             
         except Exception as e:
-            self.logger.info(traceback.print_exc())
+            self.logger.info(traceback.format_exc())
             self.reporter.addRow("Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
     
     def afterMethod(self):

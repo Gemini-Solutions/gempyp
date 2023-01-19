@@ -9,6 +9,7 @@ DEBUG = True
 THREADS = 8
 _VERSION = "1.0.0"
 apiSuccess = False
+project_id = "Test_id"
 urls = {"data":{
                 "jewel-url": "https://jewel.gemecosystem.com",
                 "suiteInfo": "https://apis.gemecosystem.com/suiteinfo/",
