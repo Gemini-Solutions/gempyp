@@ -2,6 +2,7 @@ import traceback
 import requests
 import logging
 from gempyp.config import DefaultSettings
+from gempyp.libs.enums.status import status
 import logging
 import re
 import json
@@ -13,7 +14,9 @@ suite_uploaded = False
 list_of_testcase = []
 respon = {}
 
-stat = {"TOTAL": 0, "PASS": 0, "FAIL": 0, "EXE": 0, "ERR": 0, "WARN": 0}
+# stat = {k.name: 0 for k in status}
+# stat.update({"TOTAL":0})
+stat= {**{k.name: 0 for k in status}, **{"TOTAL":0}}
 def _getHeaders(bridge_token, user_name):
     """
     for getting the bridgeToken in _sendData method
@@ -30,7 +33,8 @@ def checkingData(run_id, bridge_token, user_name):
             global respon, suite_uploaded, list_of_testcase
             suite_uploaded = True
             respon = response.json()
-            list_of_testcase = [s[:-37] for s in respon['data']['testcase_details']]
+            # list_of_testcase = [s[:-37] for s in respon['data']['testcase_details']]
+            list_of_testcase = [s[:-37] for s in respon['data'].get('testcase_details', [])] if respon['data'].get('testcase_details', None) else []
             return response._content
         else:
             return "failed"
@@ -42,16 +46,21 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
     for checking the sendSuiteData api response
     """
+
     try:
         if len(respon) != 0:
             payload = dataAlter(payload)
         payload = noneRemover(payload)
         response = _sendData(payload, DefaultSettings.getUrls("suite-exe-api"), bridge_token, user_name, mode)
 
-        if response and response.status_code == 201:
+        if response and response.status_code in [201, 200]:
             global suite_uploaded
             logging.info("Suite data uploaded successfully")
             suite_uploaded = True
+            try:
+                DefaultSettings.project_id = json.loads(response.text)["data"]["p_id"]
+            except Exception as e:
+                logging.info(traceback.format_exc())
             if payload in suite_data:
                 suite_data.remove(payload)
         elif response and response.status_code == 200:
@@ -122,7 +131,6 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
     return response
 
 def noneRemover(payload):
-    
     data = json.loads(payload)
     for key,value in dict(data).items():
         if value == "-":
@@ -135,6 +143,7 @@ def dataAlter(payload):
     global respon, stat
     # changing start time
     payload['s_start_time'] = respon['data']['s_start_time']
+    payload['testcase_info'] = {} if payload['testcase_info'] == "-" else payload['testcase_info']
     if respon['data']['testcase_info']:
         # adding the testcase analytics of both run
         payload['testcase_info'] = {i: payload['testcase_info'].get(i, 0) + respon['data']['testcase_info'].get(i, 0)
@@ -143,41 +152,33 @@ def dataAlter(payload):
         for key, value in stat.items():
             if key in payload['testcase_info']:
                 payload['testcase_info'][key] += value
-                
-    # making testcase info in order
-    prio_list = ['TOTAL', 'PASS', 'FAIL'] 
-    sorted_dict = {}
-    for key in prio_list:
-        if key in payload['testcase_info'] :
-            sorted_dict[key] = payload['testcase_info'][key]
-            if key == "PASS" or key == "FAIL":
-                pass
-            else:
-                if sorted_dict[key] == 0:
-                    sorted_dict.pop(key)
-            payload['testcase_info'].pop(key)
-        elif key == "PASS" or key == 'FAIL':
-                sorted_dict[key] = 0
-    sorted_dict.update(payload['testcase_info']) 
-    status = "PASS"
-    if sorted_dict["PASS"] != sorted_dict["TOTAL"]:
-        status = "FAIL"
+
+    sorted_dict = {'TOTAL':0, 'PASS':0, 'FAIL':0}
+    sorted_dict.update(payload['testcase_info'])
     payload['testcase_info'] = sorted_dict
-    payload['status'] = status
-    # updating the expected testcase
-    payload['expected_testcases'] += respon['data']['expected_testcases']
-    # updating the suite status of according to new run
-    if payload['status'] != "PASS":
-        pass
-    else:
-        payload['status'] = respon['data']['status']
-    return  json.dumps(payload)
+
+    tc_count = 0
+    try:
+        # tc_count = sum(list(set(payload.get('testcase_info', {}).values()) - set(['TOTAL'])))
+        tc_count = sum(payload.get('testcase_info', {}).values()) - payload.get('testcase_info', {}).get("TOTAL", 0)
+    except Exception as e:
+        print(e)
+
+    if tc_count > 0:
+        payload['expected_testcases'] = tc_count
+    for s in status:
+        if sorted_dict.get(s.name, 0) > 0:
+            payload['status'] = s.name
+            break
+    return  json.dumps(payload) 
 
 # code for checking and updating testcase details
 def getTestcase(payload, method, bridge_token, user_name):
     global flag
+
     for i in respon['data']['testcase_details']:
-        if payload['tc_run_id'][:-37] in i:
+
+        if respon['data']['testcase_details'] and payload['tc_run_id'][:-37] in i:
             url = DefaultSettings.getUrls("test-exe-api") + "?tc_run_id=" + i
             response = _sendData(" ",url, bridge_token, user_name, "GET")
             if response.status_code == 200:

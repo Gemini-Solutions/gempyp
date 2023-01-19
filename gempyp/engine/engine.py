@@ -10,6 +10,7 @@ from unittest import TestCase
 import uuid
 from datetime import datetime, timezone
 from gempyp.config.baseConfig import AbstarctBaseConfig
+# from gempyp.engine.baseTemplate import TestcaseReporter as Base
 from gempyp.engine.testData import TestData
 from gempyp.libs.enums.status import status
 from gempyp.libs.enums.run_types import RunTypes
@@ -100,11 +101,11 @@ class Engine:
         self.jewel = ''
         unuploaded_path = ""
         failed_Utestcases = 0
-        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data
+        if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data 
             logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
-            sys.exit()
+            sys.exit() 
         if self.jewel_user:
-            #trying first rerun of base url api in case of api failure
+            #trying rerun of base url api in case of api failure
             if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
                 logging.info("Retrying to call Api for getting urls")
                 DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
@@ -116,7 +117,9 @@ class Engine:
                 if response == "failed":
                     logging.info("************s_run_id not present in DB Trying to call Post*****************")
                     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-
+                else:
+                    print("s_run_id already present --------------")
+                    dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"],mode="PUT")
             else:
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
                 ### first try to rerun the data
@@ -128,10 +131,6 @@ class Engine:
         self.start()
 
         if(self.jewel_user):
-            #trying second rerun of base url api in case of api failure
-            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
-                logging.info("Second Time Retrying to call Api for getting urls")
-                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
             ### Trying to reupload suite data
             if dataUpload.suite_uploaded == False:
                 logging.info("------Retrying to Upload Suite Data------")
@@ -140,7 +139,7 @@ class Engine:
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
         if dataUpload.suite_uploaded == True:
             jewelLink = DefaultSettings.getUrls('jewel-url')
-            self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
+            self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
             if len(dataUpload.not_uploaded) != 0:
                 logging.info("------Trying again to Upload Testcase------")
                 for testcase in dataUpload.not_uploaded:
@@ -163,6 +162,7 @@ class Engine:
             jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
             jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
             jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
+            jira_title = self.PARAMS.get("JIRA_TITLE", None)  # adding title  ######################### post 1.0.4
             if jira_access_token is None and jira_email is None:
                 skip_jira = 1
         except Exception as e:
@@ -173,7 +173,7 @@ class Engine:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
 
             if skip_jira == 0:
-                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.project_env, jira_workflow, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)
+                jira_id = jiraIntegration(self.s_run_id, jira_email, jira_access_token, jira_project_id, self.project_env, jira_workflow, jira_title, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)  # adding title  ######################### post 1.0.4
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
             # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
@@ -185,6 +185,8 @@ class Engine:
             unuploaded_path = os.path.join(self.ouput_folder, "Unuploaded_suiteData.json")
             with open(unuploaded_path,'w') as w:
                 w.write(listToStr)
+                w.write(listToStr)
+
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
         TemplateData().repSummary(self.repJson, output_file_path, self.jewel, failed_Utestcases, unuploaded_path)
 
@@ -259,8 +261,11 @@ class Engine:
             self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
             self.jewel_user = True
         if self.jewel_user:
-            # if self.PARAMS.get("BASE_URL", None):
-            #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            # trying first run of base url api in case of api failure
+            if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+                logging.info("Trying to call Api for getting urls")
+                DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+
             if self.PARAMS.get("S_ID", None):
                 self.jewel_run = True
             else:
@@ -316,7 +321,6 @@ class Engine:
         """
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
-
         try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
@@ -373,6 +377,7 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
+
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
@@ -382,7 +387,7 @@ class Engine:
                 data['config_data']['log_path'] = log_path
                 conn = None
                 output, error = executorFactory(data,conn, custom_logger)
-                
+
                 if error:
                     custom_logger.error(
                         f"Error occured while executing the testcase: {error['testcase']}"
@@ -406,6 +411,7 @@ class Engine:
             except:
                 threads = DefaultSettings.THREADS
             # pool = Pool(threads)
+
             for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
 
         # create a list to keep connections
@@ -594,7 +600,13 @@ class Engine:
         misc["REASON OF FAILURE"] = message
         result["misc"] = misc
         result["misc"]["log_file"] = s3_log_file_url
-        # result["json_data"] = {}
+        # self.reporter = Base(project_name=self.project_name, testcase_name=testcase_name)
+        # result["json_data"] = self.reporter.template_data.makeTestcaseReport()
+        # all_status = result["json_data"]["meta_data"][2]
+        # total = 0
+        # for key in all_status:
+        #     total += all_status[key]
+        # result["json_data"]["meta_data"][2]["TOTAL"] = total   # we can not get dummy data because here testcase does not exist
         return result
 
     def updateTestcaseMiscData(self, misc: Dict, tc_run_id: str):
@@ -651,7 +663,8 @@ class Engine:
         """
         adj_list={}
         for key,value in testcases.items():
-                adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
+
+            adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
 
         for key, value in adj_list.items():
             new_list = []
@@ -697,7 +710,8 @@ class Engine:
 
         # split on ','
         listOfTestcases=[]
-        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))
+        ############### post 1.0.4
+        listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
                     dep_split = list(dep.split(":"))

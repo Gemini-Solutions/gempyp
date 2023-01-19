@@ -115,7 +115,9 @@ class TemplateData:
         # self.testcaseData = json.dumps(self.testcaseData)
         reportJson = json.dumps(reportJson)
         suiteReport = suiteReport.replace("DATA_1", reportJson)
-
+        
+        # if not len(testcase_data) > 0:   ##TODO
+        #     return repJson, None
         ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
         ouput_file_path = ResultFile
         with open(ResultFile, "w+") as f:
@@ -148,7 +150,7 @@ class TemplateData:
             if failed_testcases != 0:
                 logging.info(f"Number of Testcases not Uploaded:{failed_testcases}")
                 logging.info(f"Unuploaded Testcase File Path:{unuploaded_path}")
-            
+            #  we will check if output report is None, then display report not created
             if len(jewel_link)>0:
                 logging.info('Report at Jewel: {link}'.format(link = jewel_link))
             logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
