@@ -130,11 +130,11 @@ class Engine:
         self.makeOutputFolder()
         self.start()
 
-        if(self.jewel_user):
-            ### Trying to reupload suite data
-            if dataUpload.suite_uploaded == False:
-                logging.info("------Retrying to Upload Suite Data------")
-                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+        # if(self.jewel_user):
+        #     ### Trying to reupload suite data
+        #     if dataUpload.suite_uploaded == False:
+        #         logging.info("------Retrying to Upload Suite Data------")
+        #         dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
         if dataUpload.suite_uploaded == True:
@@ -149,10 +149,11 @@ class Engine:
             if len(dataUpload.not_uploaded) != 0:
                 if dataUpload.flag == True:
                     logging.warning("Testcase may be present with same tc_run_id in database")
-                listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
-                unuploaded_path = os.path.join(self.ouput_folder, "Unploaded_testCases.json")
-                with open(unuploaded_path,'w') as w:
-                    w.write(listToStr)
+                unuploaded_path=self.unuploadedFile(dataUpload.not_uploaded,"Unploaded_testCases.json")
+                # listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
+                # unuploaded_path = os.path.join(self.ouput_folder, "Unploaded_testCases.json")
+                # with open(unuploaded_path,'w') as w:
+                #     w.write(listToStr)
         self.updateSuiteData()
         # suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
         # testcase_info = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_info"]
@@ -181,11 +182,12 @@ class Engine:
             if not self.PARAMS.get("BASE_URL", None):
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
             dataUpload.suite_data.append(self.DATA.toSuiteJson())
-            listToStr = ',\n'.join(map(str, dataUpload.suite_data))
-            unuploaded_path = os.path.join(self.ouput_folder, "Unuploaded_suiteData.json")
-            with open(unuploaded_path,'w') as w:
-                w.write(listToStr)
-                w.write(listToStr)
+            unuploaded_path=self.unuploadedFile(dataUpload.suite_data,"Unuploaded_suiteData.json")
+            # listToStr = ',\n'.join(map(str, dataUpload.suite_data))
+            # unuploaded_path = os.path.join(self.ouput_folder, "Unuploaded_suiteData.json")
+            # with open(unuploaded_path,'w') as w:
+            #     w.write(listToStr)
+            #     w.write(listToStr)
 
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
         TemplateData().repSummary(self.repJson, output_file_path, self.jewel, failed_Utestcases, unuploaded_path)
@@ -753,3 +755,11 @@ class Engine:
         sorted_dict.update(unsorted_dict)
 
         return sorted_dict
+
+    ### Function to create unuploadedFile
+    def unuploadedFile(self,data,fileName):
+        listToStr = ',\n'.join(map(str, data))
+        unuploaded_path = os.path.join(self.ouput_folder, fileName)
+        with open(unuploaded_path,'w') as w:
+            w.write(listToStr)
+        return unuploaded_path
