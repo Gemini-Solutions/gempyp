@@ -4,7 +4,10 @@ import json
 from gempyp.libs.common import dateTimeEncoder, findDuration
 from datetime import datetime, timezone
 import numpy as np
-
+from gempyp.engine import dataUpload
+import logging
+import os
+from gempyp.config import DefaultSettings
 
 class TestData:
     def __init__(self):
@@ -192,3 +195,72 @@ class TestData:
         group["total"] = total
 
         return group
+
+    def validateSrunidInDB(self,jewel_user,s_run_id,params):
+        if jewel_user:
+            if "RUN_ID" in params:
+                logging.info("************Trying to check If s_run_id is present in DB*****************")
+                # response =  dataUpload.checkingData(s_run_id, params["BRIDGE_TOKEN"], params["USERNAME"])
+                if not dataUpload.checkingData(s_run_id, params["BRIDGE_TOKEN"], params["USERNAME"]):
+                    logging.info("************s_run_id not present in DB Trying to call Post*****************")
+                    dataUpload.sendSuiteData((self.toSuiteJson()), params["BRIDGE_TOKEN"], params["USERNAME"])
+                else:
+                    print("s_run_id already present --------------")
+                    dataUpload.sendSuiteData((self.toSuiteJson()), params["BRIDGE_TOKEN"], params["USERNAME"],mode="PUT")
+            else:
+                dataUpload.sendSuiteData((self.toSuiteJson()), params["BRIDGE_TOKEN"], params["USERNAME"])
+                ### first try to rerun the data
+                self.retryUploadSuiteData(params["BRIDGE_TOKEN"],params["USERNAME"])
+
+    
+    def retryUploadSuiteData(self,bridgetoken,username):
+            # if dataUpload.suite_uploaded == False:
+            if not dataUpload.suite_uploaded:
+                        logging.info("------Retrying to Upload Suite Data------")
+                        dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken, username)
+
+
+    def retryUploadTestcases(self,s_run_id,bridgetoken,username,output_folder):
+        jewel = ''
+        unuploaded_path = ""
+        failed_Utestcases=0
+        # if dataUpload.suite_uploaded == True:
+        if dataUpload.suite_uploaded:
+            jewelLink = DefaultSettings.getUrls('jewel-url')
+            jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
+            if len(dataUpload.not_uploaded) != 0:
+                logging.info("------Trying again to Upload Testcase------")
+                for testcase in dataUpload.not_uploaded:
+                    dataUpload.sendTestcaseData(testcase,bridgetoken, username)
+                if dataUpload.flag:
+                    logging.warning("Testcase may be present with same tc_run_id in database")
+                unuploaded_path=self.unuploadedFile(output_folder,dataUpload.not_uploaded,"Unploaded_testCases.json")
+            failed_Utestcases = len(dataUpload.not_uploaded) 
+            ### Creating file for unuploaded testcases
+            # if len(dataUpload.not_uploaded) != 0:
+            #     if dataUpload.flag == True:
+            #         logging.warning("Testcase may be present with same tc_run_id in database")
+            #     unuploaded_path=self.unuploadedFile(output_folder,dataUpload.not_uploaded,"Unploaded_testCases.json")
+        return jewel,failed_Utestcases,unuploaded_path
+
+
+    def WriteSuiteFile(self,params,output_folder):
+            if not params.get("BASE_URL", None):
+                logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
+            dataUpload.suite_data.append(self.toSuiteJson())
+            unuploaded_path=self.unuploadedFile(output_folder,dataUpload.suite_data,"Unuploaded_suiteData.json")
+            return unuploaded_path
+
+
+    ### Function to create unuploadedFile
+    def unuploadedFile(self,output_folder,data,fileName):
+        unuploaded_path = ""
+        listToStr = ',\n'.join(map(str, data))
+        unuploaded_path = os.path.join(output_folder, fileName)
+        with open(unuploaded_path,'w') as w:
+            w.write(listToStr)
+        return unuploaded_path
+        
+
+
+   

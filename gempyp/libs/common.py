@@ -11,6 +11,10 @@ import sys
 from gempyp.libs.gem_s3_common import download_from_s3, upload_to_s3, create_s3_link
 from gempyp.config.GitLinkXML import fetchFileFromGit
 from gempyp.config import DefaultSettings
+from gempyp.engine import dataUpload
+import logging
+import requests
+from gempyp.engine.dataUpload import _getHeaders
 
 
 def read_json(file_path):
@@ -60,6 +64,7 @@ def errorHandler(logging, Error, msg="some Error Occured"):
 
 def parseMails(mail: Union[str, typing.TextIO]) -> List:
     try:
+        mailPayload={}
 
         if hasattr(mail, "read"):
             mails = mail.read()
@@ -68,10 +73,11 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
             file = open(mail, "r")
             mails = file.read()
             file.close()
-
         mails = mail.strip()
-        mails = mails.split(",")
-        return mails
+        # mails = mails.split(",")
+        mails=mails.split("//")
+        mailPayload={i.split(":")[0]:i.split(":")[1].split(",") for i in mails}
+        return mailPayload
     except Exception as e:
         logging.error("Error while parsing the mails")
         logging.error(f"Error : {e}")
@@ -198,3 +204,41 @@ def get_reason_of_failure(data, e=None):
         return exceptionarray[0]
     except:
         return e
+
+
+def validateZeroTestcases(testcaseLength):
+    if not testcaseLength:  # in case of zero testcases, we should not insert suite data 
+            logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
+            sys.exit()
+
+def runBaseUrls(jewel_user,params):
+    if jewel_user:
+            #trying rerun of base url api in case of api failure
+            if params.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+                logging.info("Retrying to call Api for getting urls")
+                DefaultSettings.getEnterPoint(params["BASE_URL"] ,params["BRIDGE_TOKEN"], params["USERNAME"])
+
+
+def sendMail(s_run_id,mails,bridge_token,username):
+    try:
+        # payload={"to": mails, "s_run_id": s_run_id}
+        mails["s_run_id"]=s_run_id
+        response = requests.request(
+        method="POST",
+        url=DefaultSettings.getUrls("email-api"),
+        data=json.dumps(mails),
+        headers=_getHeaders(bridge_token, username),
+        )
+        if response.status_code == 200:
+            logging.info("Report successfully sent on mail")
+        else:
+            logging.info(response.text)
+    except Exception as e:
+        traceback.print_exc()
+
+
+
+
+
+
+ 

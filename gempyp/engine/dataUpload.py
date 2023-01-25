@@ -37,10 +37,12 @@ def checkingData(run_id, bridge_token, user_name):
             list_of_testcase = [s[:-37] for s in respon['data'].get('testcase_details', [])] if respon['data'].get('testcase_details', None) else []
             return response._content
         else:
-            return "failed"
+            # return "failed"
+            return False
     except Exception as e:
         traceback.print_exc()
-        return "failed"
+        # return "failed"
+        return False
 
 def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
     """
