@@ -454,21 +454,28 @@ class PypRest(Base):
             return
         self.reporter.addRow("Searching for pre API steps", "Searching for before API steps", status.INFO)
         
-        file_name = file_str.split("path=")[1].split(",")[0]
-        if "CLASS=" in file_str.upper():
-            class_name = file_str.split("class=")[1].split(",")[0]
+    
+        if("return obj" in file_str):
+            file_name,class_name,method_name=self.parseBeforeAfterTag(file_str,"BEFORE_CLASS","BEFORE_METHOD")
         else:
-            class_name = ""
-        if "METHOD=" in file_str.upper():
-            method_name = file_str.split("method=")[1].split(",")[0]
-        else:
-            method_name = "before"
+            file_name = file_str.split("path=")[1].split(",")[0]
+            if "CLASS=" in file_str.upper():
+                class_name = file_str.split("class=")[1].split(",")[0]
+            else:
+                class_name = ""
+            if "METHOD=" in file_str.upper():
+                method_name = file_str.split("method=")[1].split(",")[0]
+            else:
+                method_name = "before"
         
         self.logger.info("Before file path:- " + file_name)
         self.logger.info("Before file class:- " + class_name)
         self.logger.info("Before file mthod:- " + method_name)
         try:
-            file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            if("return obj" in file_name):
+                file_path=self.writeBeforeAfterCodeInFile(file_name,"BeforeFile.py")
+            else:
+                file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
             file_obj= moduleImports(file_path)
             self.logger.info("Running before method")
             obj_ = file_obj
@@ -512,21 +519,26 @@ class PypRest(Base):
             return
 
         self.reporter.addRow("Searching for post API steps", "Searching for after method steps", status.INFO)
-        
-        file_name = file_str.split("path=")[1].split(",")[0]
-        if "CLASS=" in file_str.upper():
-            class_name = file_str.split("class=")[1].split(",")[0]
+        if("return obj" in file_str):
+            file_name,class_name,method_name=self.parseBeforeAfterTag(file_str,"AFTER_CLASS","AFTER_METHOD")
         else:
-            class_name = ""
-        if "METHOD=" in file_str.upper():
-            method_name = file_str.split("method=")[1].split(",")[0]
-        else:
-            method_name = "after"
+            file_name = file_str.split("path=")[1].split(",")[0]
+            if "CLASS=" in file_str.upper():
+                class_name = file_str.split("class=")[1].split(",")[0]
+            else:
+                class_name = ""
+            if "METHOD=" in file_str.upper():
+                method_name = file_str.split("method=")[1].split(",")[0]
+            else:
+                method_name = "after"
         self.logger.info("After file path:- " + file_name)
         self.logger.info("After file class:- " + class_name)
         self.logger.info("After file mthod:- " + method_name)
         try:
-            file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
+            if("return obj" in file_name):
+                file_path=self.writeBeforeAfterCodeInFile(file_name,"AfterFile.py")
+            else:
+                file_path=download_common_file(file_name,self.data.get("SUITE_VARS",None))
             file_obj = moduleImports(file_path)
 
             self.logger.info("Running after method")
@@ -607,4 +619,27 @@ class PypRest(Base):
             return control_text_size(data=text, bridge_token=self.data.get("SUITE_VARS", None).get("bridge_token",None), username=self.data.get("SUITE_VARS", None).get("username",None))
         else:
             return str(text)
+
+
+    def parseBeforeAfterTag(self,file_str,tagClass,tagMethod):
+        if("return obj" in file_str):
+            file_name = file_str.split("path=")[1]
+            if tagClass in self.data["config_data"].keys():
+                class_name = self.data["config_data"].get(tagClass)
+            else:
+                class_name = ""
+            if tagMethod in self.data["config_data"].keys():
+                method_name = self.data["config_data"].get(tagMethod)
+            else:
+                method_name = "before"
+        return file_name,class_name,method_name
+
+
+    def writeBeforeAfterCodeInFile(self,file_name,fileName):
+            file_path=os.path.join(fileName)
+            with open(file_path,"w+") as fp:
+                fp.write(file_name)
+            return file_path
+
+
    
