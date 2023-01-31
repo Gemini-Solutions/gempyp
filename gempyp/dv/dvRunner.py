@@ -650,7 +650,7 @@ class DvRunner(Base):
     def getValueDict(self,df_1,df_2):
 
         splitSize = 100000
-        common_keys_splited = [self.common_keys[x:x+splitSize] for x in range(0, len(self.common_keys), splitedSize)]
+        common_keys_splited = [self.common_keys[x:x+splitSize] for x in range(0, len(self.common_keys), splitSize)]
         df_1_splited = [df_1[x:x+splitSize] for x in range(0, len(df_1), splitSize)]
         df_2_splited = [df_2[x:x+splitSize] for x in range(0, len(df_2), splitSize)]
         final_value_diffs = {}
