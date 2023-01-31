@@ -22,6 +22,7 @@ from gempyp.dv.dvObj import DvObj
 from gempyp.libs.common import download_common_file
 from gempyp.engine.runner import getError
 from gempyp.libs import common
+import time
 
 
 class DvRunner(Base):
@@ -318,35 +319,53 @@ class DvRunner(Base):
     def df_compare(self, df_1, df_2, key):
 
         try:
+            print(time.time())
             self.logger.info("In df_compare Function")
-            self.df_1 = df_1
-            self.df_2 = df_2
-            self.df_1['key'] = self.df_1[key].apply(
+            self.headers = list(set(list(df_1.columns)) - set(key))
+            df_1['key'] = df_1[key].apply(
                 lambda row: '--'.join(row.values.astype(str)), axis=1)
-            self.df_2['key'] = self.df_2[key].apply(
+            df_2['key'] = df_2[key].apply(
                 lambda row: '--'.join(row.values.astype(str)), axis=1)
-            self.df_1.set_index('key', inplace=True)
-            self.df_2.set_index('key', inplace=True)
-            self.df_1.drop(key, axis=1, inplace=True)
-            self.df_2.drop(key, axis=1, inplace=True)
-            src_key_values = self.df_1.index.values
-            tgt_key_values = self.df_2.index.values
-            self.headers = list(set(list(df_1.columns)) - set(key+['key']))
+            df_1.set_index('key', inplace=True)
+            df_2.set_index('key', inplace=True)
+            df_1.drop(key, axis=1, inplace=True)
+            df_2.drop(key, axis=1, inplace=True)
+            src_key_values = df_1.index.values
+            tgt_key_values = df_2.index.values
+            
             self.common_keys = list(set(src_key_values) & set(tgt_key_values))
             self.keys_only_in_src = list(
                 set(src_key_values) - set(tgt_key_values))
             self.keys_only_in_tgt = list(
                 set(tgt_key_values) - set(src_key_values))
-
+            df_1.drop(self.keys_only_in_src,inplace=True)
+            df_2.drop(self.keys_only_in_tgt,inplace=True)
             self.value_check = 0
             self.key_check = 0
             self.dict1 = {'REASON OF FAILURE': []}
             self.key_dict = {}
-            value_dict = self.addCommonExcel(self.common_keys)
             """calling src and tgt for getting different keys"""
-            srcDict = self.addExcel(self.keys_only_in_src, "Source")
-            tgtDict = self.addExcel(self.keys_only_in_tgt, "Target")
-            self.key_check = len(self.key_dict["REASON OF FAILURE"])
+            self.addExcel(self.keys_only_in_src, "Source")
+            self.addExcel(self.keys_only_in_tgt, "Target")
+            df_1.index.astype(str)
+            df_2.index.astype(str)
+            df_1.sort_values(by=['key'],inplace=True)
+            df_2.sort_values(by=['key'],inplace=True)
+            self.common_keys.sort()
+            # splitedSize = 100000
+            # a_splited = [self.common_keys[x:x+splitedSize] for x in range(0, len(self.common_keys), splitedSize)]
+            # df_1_splited = [df_1[x:x+splitedSize] for x in range(0, len(df_1), splitedSize)]
+            # df_2_splited = [df_2[x:x+splitedSize] for x in range(0, len(df_2), splitedSize)]
+            # value_dict = {}
+            # for i in range(len(a_splited)):
+            #     chunk_diffs = self.compareValues(a_splited[i],df_1_splited[i],df_2_splited[i])
+            #     for keys in chunk_diffs.keys():
+            #         if keys in value_dict.keys():
+            #             value_dict[keys] = value_dict[keys] + chunk_diffs[keys]
+            #         else:
+            #             value_dict[keys] = chunk_diffs[keys]
+            value_dict = self.getValueDict(df_1,df_2)
+            self.key_check = len(self.key_dict["REASON OF FAILURE"])#need to remove this from here and add in write excel
             self.value_check = len(value_dict["REASON OF FAILURE"])
             self.writeExcel(value_dict, self.key_dict)
         except Exception as e:
@@ -376,7 +395,7 @@ class DvRunner(Base):
 
         if _list:
             for i in _list:
-                li = i.split("--")
+                li = i.split("----")
                 for i in range(len(li)):
                     key = self.keys[i]
                     self.li1[i].append(li[i])
@@ -387,64 +406,56 @@ class DvRunner(Base):
         self.key_dict.update(self.dict1)
         return self.key_dict
 
-    def addCommonExcel(self, commonList: list):
+    def compareValues(self, commonList: list,df_1,df_2):
+            self.logger.info("In compareValues Function")
+            dummy_dict = { 'Column_Name':[],'Source_Value':[],'Target_Value':[],'REASON OF FAILURE':[]}
+            comm_dict ={}
 
-        self.logger.info("In addCommonExcel Function")
-        dummy_dict = {'Column_Name': [], 'Source_Value': [],
-                      'Target_Value': [], 'REASON OF FAILURE': []}
-        comm_dict = {}
-
-        if commonList:
-            for key_val in commonList:
-                for field in self.headers:
-                    src_val = self.df_1.loc[key_val, field]
-                    tgt_val = self.df_2.loc[key_val, field]
-                    if src_val == src_val or tgt_val == tgt_val:
-                        if "THRESHOLD" in self.configData:
-                            self.reporter.addMisc("Threshold", str(
-                                self.configData["THRESHOLD"]))
-                            if type(src_val) == numpy.float64 and math.isnan(src_val) == False:
-                                src_val = self.truncate(
-                                    src_val, int(self.configData["THRESHOLD"]))
-                            if type(tgt_val) == numpy.float64 and math.isnan(tgt_val) == False:
-                                tgt_val = self.truncate(
-                                    tgt_val, int(self.configData["THRESHOLD"]))
-
-                        if src_val != tgt_val and type(src_val) == type(tgt_val):
-
-                            li = key_val.split('--')
-                            for i in range(len(li)):
-                                key = self.keys[i]
-                                self.li2[i].append(li[i])
-                                value = self.li2[i]
-                                comm_dict[key] = value
-                            dummy_dict.get('Column_Name').append(field)
-                            dummy_dict.get('Source_Value').append(src_val)
-                            dummy_dict.get('Target_Value').append(tgt_val)
-                            dummy_dict.get('REASON OF FAILURE').append(
-                                "Difference In Value")
-
-                        elif type(src_val) != type(tgt_val):
-
-                            li = key_val.split('--')
-                            for i in range(len(li)):
-                                key = self.keys[i]
-                                self.li2[i].append(li[i])
-                                value = self.li2[i]
-                                comm_dict[key] = value
-                            dummy_dict.get('Column_Name').append(field)
-                            dummy_dict.get('Source_Value').append(src_val)
-                            dummy_dict.get('Target_Value').append(tgt_val)
-                            dummy_dict.get('REASON OF FAILURE').append(
-                                "Difference In Datatype")
-
-            comm_dict.update(dummy_dict)
-            return comm_dict
+            if commonList:
+                for key_val in commonList:
+                    for field in self.headers:
+                        src_val = df_1.loc[key_val,field]
+                        tgt_val = df_2.loc[key_val,field]
+                        if src_val == src_val or tgt_val == tgt_val:
+                            if "THRESHOLD" in self.configData:
+                                self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
+                                if type(src_val)== numpy.float64 and math.isnan(src_val) == False:
+                                    src_val = self.truncate(src_val,int(self.configData["THRESHOLD"]))
+                                if type(tgt_val)== numpy.float64 and math.isnan(tgt_val) == False:
+                                    tgt_val = self.truncate(tgt_val,int(self.configData["THRESHOLD"]))
+                                
+                            if src_val != tgt_val and type(src_val)==type(tgt_val):
+                                    
+                                li = key_val.split('--')
+                                for i in range(len(li)):
+                                    key = self.keys[i]
+                                    li1 = []
+                                    li1.append(li[i])
+                                    comm_dict[key] = comm_dict.get(key,[]) + li1
+                                dummy_dict.get('Column_Name').append(field)
+                                dummy_dict.get('Source_Value').append(src_val)
+                                dummy_dict.get('Target_Value').append(tgt_val)
+                                dummy_dict.get('REASON OF FAILURE').append("Difference In Value")                       
+                                    
+                            elif type(src_val)!= type(tgt_val):
+                                        
+                                li = key_val.split('--')
+                                for i in range(len(li)):
+                                    key = self.keys[i]
+                                    li1 = []
+                                    li1.append(li[i])
+                                    comm_dict[key] = comm_dict.get(key,[]) + li1
+                                dummy_dict.get('Column_Name').append(field)
+                                dummy_dict.get('Source_Value').append(src_val)
+                                dummy_dict.get('Target_Value').append(tgt_val)
+                                dummy_dict.get('REASON OF FAILURE').append("Difference In Datatype")
+                comm_dict.update(dummy_dict)               
+                return comm_dict
 
     def writeExcel(self, valDict, keyDict):
 
-        logging.info("----------in add excel---------")
-        self.logger.info("In Add Excel Function")
+        logging.info("----------in Write excel---------")
+        self.logger.info("In write Excel Function")
         outputFolder = self.data['OUTPUT_FOLDER']
         unique_id = uuid.uuid4()
         excelPath = os.path.join(
@@ -502,6 +513,7 @@ class DvRunner(Base):
         self.reporter.addMisc("Keys Only In Target",
                               str(len(self.keys_only_in_tgt)))
         self.reporter.addMisc("Mismatched Cells", str(self.value_check))
+        print(time.time())
 
     def beforeMethod(self):
         """This function
@@ -634,3 +646,20 @@ class DvRunner(Base):
         self.value_df = obj.value_df
         self.keys_df = obj.keys_df
         self.env = obj.env
+
+    def getValueDict(self,df_1,df_2):
+
+        splitSize = 100000
+        common_keys_splited = [self.common_keys[x:x+splitSize] for x in range(0, len(self.common_keys), splitedSize)]
+        df_1_splited = [df_1[x:x+splitSize] for x in range(0, len(df_1), splitSize)]
+        df_2_splited = [df_2[x:x+splitSize] for x in range(0, len(df_2), splitSize)]
+        final_value_diffs = {}
+        for i in range(len(common_keys_splited)):
+            chunk_diffs = self.compareValues(common_keys_splited[i],df_1_splited[i],df_2_splited[i])
+            for keys in chunk_diffs.keys():
+                if keys in final_value_diffs.keys():
+                    final_value_diffs[keys] = final_value_diffs[keys] + chunk_diffs[keys]
+                else:
+                    final_value_diffs[keys] = chunk_diffs[keys]
+        return final_value_diffs
+            
