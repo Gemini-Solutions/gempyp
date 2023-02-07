@@ -277,10 +277,8 @@ class Engine:
         except Exception as e:
             pass
 
-        self.mail={}
-        self.mail["to"]=common.parseMails(self.PARAMS.get("MAIL",None))
-        self.mail["cc"]=common.parseMails(self.PARAMS.get("CCMAIL",None))
-        self.mail["bcc"]=common.parseMails(self.PARAMS.get("BCCMAIL",None))
+        mail_items={"to":"MAIL","cc":"CCMAIL","bcc":"BCCMAIL"}
+        self.mail={key:common.parseMails(self.PARAMS.get(value,None)) for key,value in mail_items.items()}
 
         self.project_name = self.PARAMS["PROJECT"]
         self.report_name = self.PARAMS.get("REPORT_NAME")
