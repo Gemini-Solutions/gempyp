@@ -74,10 +74,8 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
             mails = file.read()
             file.close()
         mails = mail.strip()
-        # mails = mails.split(",")
-        mails=mails.split("//")
-        mailPayload={i.split(":")[0]:i.split(":")[1].split(",") for i in mails}
-        return mailPayload
+        mails = mails.split(",")
+        return mails
     except Exception as e:
         logging.error("Error while parsing the mails")
         logging.error(f"Error : {e}")
