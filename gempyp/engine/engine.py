@@ -278,12 +278,9 @@ class Engine:
             pass
 
         self.mail={}
-        if("MAIL" in self.PARAMS.keys()):
-            self.mail["to"]=common.parseMails(self.PARAMS["MAIL"])
-        if("CCMAIL" in self.PARAMS.keys()):
-            self.mail["cc"]=common.parseMails(self.PARAMS["CCMAIL"])
-        if("BCCMAIL" in self.PARAMS.keys()):
-            self.mail["bcc"]=common.parseMails(self.PARAMS["BCCMAIL"])
+        self.mail["to"]=common.parseMails(self.PARAMS.get("MAIL",None))
+        self.mail["cc"]=common.parseMails(self.PARAMS.get("CCMAIL",None))
+        self.mail["bcc"]=common.parseMails(self.PARAMS.get("BCCMAIL",None))
 
         self.project_name = self.PARAMS["PROJECT"]
         self.report_name = self.PARAMS.get("REPORT_NAME")
