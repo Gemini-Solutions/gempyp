@@ -4,7 +4,7 @@ from gempyp.config import DefaultSettings
 import mysql.connector
 import os
 import uuid
-from configparser import ConfigParser
+import configparser
 from typing import Dict
 import pandas as pd
 from gempyp.engine.baseTemplate import TestcaseReporter as Base
@@ -22,7 +22,8 @@ from gempyp.dv.dvObj import DvObj
 from gempyp.libs.common import download_common_file
 from gempyp.engine.runner import getError
 from gempyp.libs import common
-import time
+from gempyp.dv.dvDataframe import Dataframe
+from gempyp.dv.dvCompare import df_compare
 
 
 class DvRunner(Base):
@@ -51,19 +52,20 @@ class DvRunner(Base):
         self.sourceCred = None
         self.targetCred = None
         try:
-            column = []
             try:
                 if "DATABASE" in self.configData:
                     if self.configData["DATABASE"].lower() == 'custom':
                         pass
-                    else:
+                    elif "DB_CONFIG_PATH" in self.configData:
                         configPath = self.configData["DB_CONFIG_PATH"]
-                        self.configur = ConfigParser()
+                        self.configur = configparser.RawConfigParser()
                         config = readPath(configPath)
                         self.configur.read(config)
+                    else:
+                        self.configur = None
             except Exception as e:
                 self.reporter.addRow(
-                    "Config File", "Path is not Correct", status.FAIL)
+                    "Config File", "Path is not Correct", status.ERR)
                 raise Exception(e)
 
             if 'DATABASE' in self.configData:
@@ -74,84 +76,28 @@ class DvRunner(Base):
                 self.reporter.addMisc("KEYS", ", ".join(self.keys))
             else:
                 self.reporter.addRow(
-                    "Checking Keys", "User Given Keys Tag not Found", status.FAIL)
+                    "Checking Keys", "User Given Keys Tag not Found", status.ERR)
                 self.reporter.addMisc(
                     "REASON OF FAILURE", "User Given Keys Tag not Found")
                 raise Exception("User Given Keys not Found")
 
-            """checking whether data is present in csv form or in db"""
-            if 'SOURCE_CSV' in self.configData:
-                try:
-                    self.logger.info("Getting Source_CSV File Path")
-                    path = self.configData['SOURCE_CSV']
-                    sourceCsvPath = readPath(path)
-                    file_obj = download_common_file(
-                        sourceCsvPath, self.data.get("SUITE_VARS", None))
-                    sourceDelimiter = self.configData.get(
-                        'SOURCE_DELIMITER', ',')
-                    self.source_df, self.source_columns = self.csvFileReader(
-                        file_obj, sourceDelimiter, "source")
-                except Exception as e:
-                    self.reporter.addRow(
-                        "Parsing Source File Path", "Exception Occurred", status.FAIL)
-                    self.reporter.addMisc(
-                        "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-                    raise Exception(e)
-            else:
-                """Connecting to sourceDB"""
-                if self.sourceCred == None:
-                    self.reporter.addMisc(
-                        "REASON OF FAILURE", "Database or Source Connection tag not found")
-                    self.reporter.addRow("Getting Source Connection Details",
-                                         "Recheck Database Tag and Source Connection Tag", status.FAIL)
-                    raise Exception(
-                        "Recheck Database Tag or Source Connection Tag")
-                else:
-                    self.source_df, self.source_columns = self.connectDB(
-                        self.sourceCred, "SOURCE")
-
-            if 'TARGET_CSV' in self.configData:
-                try:
-                    self.logger.info("Getting Target_CSV File Path")
-                    path = self.configData['TARGET_CSV']
-                    targetCsvPath = readPath(path)
-                    file_obj = download_common_file(
-                        targetCsvPath, self.data.get("SUITE_VARS", None))
-                    targetDelimiter = self.configData.get(
-                        'TARGET_DELIMITER', ',')
-                    self.target_df, self.target_columns = self.csvFileReader(
-                        file_obj, targetDelimiter, "Target")
-                except Exception as e:
-                    self.reporter.addRow(
-                        "Parsing Target File Path", "Exception Occurred", status.FAIL)
-                    self.reporter.addMisc(
-                        "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-                    raise Exception(e)
-            else:
-                """Connecting to TargetDB"""
-                if self.targetCred == None:
-                    self.reporter.addMisc(
-                        "REASON OF FAILURE", "Database or Source Connection tag not found")
-                    self.reporter.addRow("Getting Target Connection Details",
-                                         "Recheck for Database or Source Connection tag", status.FAIL)
-                    raise Exception(
-                        "Database or Source Connection tag not found")
-                else:
-                    self.target_df, self.target_columns = self.connectDB(
-                        self.targetCred, "TARGET")
+            obj = Dataframe()
+            source_df, source_columns = Dataframe.getSourceDataFrame(
+                obj, self.data, self.logger, self.reporter, self.sourceCred)
+            target_df, target_columns = Dataframe.getTargetDataframe(
+                obj, self.data, self.logger, self.reporter, self.targetCred)
+            # for columns mapping
+            if "COLUMN_MAP" in self.configData:
+                target_df.rename(columns=eval(
+                    self.configData["COLUMN_MAP"]), inplace=True)
+                target_columns = list(target_df.columns)
 
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
-            self.li1 = []
-            self.li2 = []
-            for i in self.keys:
-                column.append(i)
-                self.li1.append([])
-                self.li2.append([])
-            self.matchKeys(self.source_columns, "SOURCE")
-            self.matchKeys(self.target_columns, "TARGET")
+            self.matchKeys(source_columns, "SOURCE")
+            self.matchKeys(target_columns, "TARGET")
 
-            if self.source_columns == self.target_columns:
+            if source_columns == target_columns:
                 pass
             else:
                 self.logger.info(
@@ -162,7 +108,16 @@ class DvRunner(Base):
                     "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
                 raise Exception("Same Columns in Table")
 
-            self.df_compare(self.source_df, self.target_df, self.keys)
+            """deleting duplicates from df and keeping last ones"""
+            self.logger.info("Removing Duplicates Rows")
+            source_df.drop_duplicates(
+                subset=self.keys, keep='last', inplace=True)
+            target_df.drop_duplicates(
+                subset=self.keys, keep='last', inplace=True)
+
+            value_dict, key_dict, common_keys, keys_length = df_compare(
+                source_df, target_df, self.keys, self.logger, self.reporter, self.configData)
+            self.writeExcel(value_dict, key_dict, common_keys, keys_length)
             self.reporter.finalizeReport()
             output = writeToReport(self)
             return output, None
@@ -172,93 +127,38 @@ class DvRunner(Base):
             output = writeToReport(self)
             return output, None
 
-    def csvFileReader(self, path, delimiter, db):
-        try:
-            self.logger.info(f"Reading data from {db} CSV File")
-            df = pd.read_csv(path, delimiter)
-            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-            columns = df.columns.values.tolist()
-            self.reporter.addRow(
-                f"Parsing {db} File", "Parsing File is Successfull", status.PASS)
-            # self.matchKeys(columns, db)
-            return df, columns
-        except Exception as e:
-            raise Exception(f"Could not read file, {e}")
-
     def dbConnParser(self):
         try:
             # in custom mode we are sending host name using source cred while in other mode we are sending credentenials using self.sourceCred
 
             if self.configData["DATABASE"].lower() == 'custom':
                 if 'SOURCE_CONN' in self.configData:
-                    self.sourceCred = self.getHost('SOURCE_CONN')
+                    self.sourceCred = self.configData['SOURCE_CONN']
                 if 'TARGET_CONN' in self.configData:
-                    self.targetCred = self.getHost('TARGET_CONN')
+                    self.targetCred = self.configData['TARGET_CONN']
 
             else:
                 self.logger.info("----Parsing the Config File----")
-                if 'SOURCE_DB' in self.configData:
-                    self.sourceCred = {"host": self.configur.get(self.configData["SOURCE_DB"], 'host'), "dbName": self.configur.get(self.configData["SOURCE_DB"], 'databaseName'), "userName": self.configur.get(
-                        self.configData["SOURCE_DB"], 'userName'), "password": self.configur.get(self.configData["SOURCE_DB"], 'password'), "port": self.configur.get(self.configData["SOURCE_DB"], 'port')}
-                if 'TARGET_DB' in self.configData:
-                    self.targetCred = {"host": self.configur.get(self.configData["TARGET_DB"], 'host'), "dbName": self.configur.get(self.configData["TARGET_DB"], 'databaseName'), "userName": self.configur.get(
-                        self.configData["TARGET_DB"], 'userName'), "password": self.configur.get(self.configData["TARGET_DB"], 'password'), "port": self.configur.get(self.configData["TARGET_DB"], 'port')}
+                if 'SOURCE_CONN' in self.configData:
+                    if self.configur == None:
+                        self.sourceCred = eval(self.configData["SOURCE_CONN"])
+                    else:
+                        self.sourceCred = dict(self.configur.items(
+                            self.configData["SOURCE_CONN"]))
+                if 'TARGET_CONN' in self.configData:
+                    if self.configur == None:
+                        self.targetCred = eval(self.configData["TARGET_CONN"])
+                    else:
+                        self.targetCred = dict(self.configur.items(
+                            self.configData["TARGET_CONN"]))
                 self.reporter.addRow(
                     "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
         except Exception as e:
             self.reporter.addRow(
-                "Parsing DB Conf", "Exception Occurred", status.FAIL)
+                "Parsing DB Conf", "Exception Occurred", status.ERR)
             self.reporter.addMisc(
                 "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise Exception(e)
-
-    def validate(self):
-        if "KEYS" in self.configData:
-            if 'SOURCE_CONN' in self.configData or 'SOURCE_DB' in self.configData or 'TARGET_CONN' in self.configData or 'TARGET_DB' in self.configData:
-                if 'DATABASE' not in self.configData:
-                    raise Exception(
-                        "Tags for Source connection not Present in Config, Please review config.xml")
-            elif 'SOURCE_CSV' in self.configData:
-                pass
-            else:
-                raise Exception(
-                    "Tags for Source connection not Present in Config, Please review config.xml")
-        else:
-            raise Exception("Keys not Present in Config, Please recheck")
-
-    def connectDB(self, cred, db):
-        try:
-            log = f"----Connecting to {db}DB----"
-            self.logger.info(log)
-            dbType = f"{db}DB"
-            db_conn = f"{db}_CONN"
-            myDB = self.connectingDB(dbType, db_conn, cred)
-            myCursor = myDB.cursor()
-        except Exception as e:
-            self.logger.error(str(e))
-            self.reporter.addRow(
-                f"Connection to {db}DB: " + str(cred["host"]), "Exception Occurred", status.FAIL)
-            raise Exception(e)
-
-        try:
-            self.logger.info(f"----Executing the {db}SQL----")
-            sql = f"{db}_SQL"
-            myCursor.execute(self.configData[sql])
-            self.reporter.addRow(
-                f"Executing {db} SQL", f"{self.configData[sql]}<br>{db} SQL executed Successfull", status.PASS)
-            columns = [i[0] for i in myCursor.description]
-        except Exception as e:
-            self.logger.error(str(e))
-            self.reporter.addRow(
-                f"Executing {db} SQL", "Exception Occurred", status.FAIL)
-            raise e
-
-        # self.matchKeys(columns, db)
-        results = myCursor.fetchall()
-        db_1 = pd.DataFrame(results,
-                            columns=columns)
-        myDB.close()
-        return db_1, columns
 
     def getHost(self, conn):
         conn_string = self.configData[conn]
@@ -273,28 +173,6 @@ class DvRunner(Base):
                     break
         host = conn_string[li[0]+1:li[1]]
         return {'host': host}
-
-    def connectingDB(self, db, conn, cred):
-
-        if self.configData["DATABASE"].lower() == 'custom':
-            db1 = self.configData[conn]
-            ind = db1.index("(")
-            module = db1[0:ind-8:1]
-            __import__(module)
-            myDB = eval(db1)
-            self.reporter.addRow(
-                f"Connection to {db}: " + cred['host'], f"Connection to {db} is Successfull", status.PASS)
-        elif self.configData["DATABASE"].lower() == 'mysql':
-            myDB = mysql.connector.connect(
-                host=cred['host'], user=cred["userName"], password=cred['password'], database=cred['dbName'], port=cred['port'])
-            self.reporter.addRow(f"Connection to {db}: " + str(
-                cred["host"]), f"Connection to {db} is Successfull", status.PASS)
-        elif self.configData["DATABASE"].lower() == 'postgresql':
-            myDB = pg8000.connect(host=cred['host'], user=cred["userName"],
-                                  password=cred['password'], database=cred['dbName'], port=cred['port'])
-            self.reporter.addRow(f"Connection to {db}: " + str(
-                cred["host"]), f"Connection to {db} is Successfull", status.PASS)
-        return myDB
 
     def matchKeys(self, columns, db):
 
@@ -313,65 +191,8 @@ class DvRunner(Base):
         except Exception as e:
             keyString1 = ", ".join(key)
             self.reporter.addRow(
-                f"Matching Given Keys in {db}", "Keys: " + keyString1 + f" are not Present in {db}DB", status.FAIL)
+                f"Matching Given Keys in {db}", "Keys: " + keyString1 + f" are not Present in {db}DB", status.ERR)
             self.logger.info("------Given Keys are not present in DB------")
-
-    def df_compare(self, df_1, df_2, key):
-
-        try:
-            print(time.time())
-            self.logger.info("In df_compare Function")
-            self.headers = list(set(list(df_1.columns)) - set(key))
-            df_1['key'] = df_1[key].apply(
-                lambda row: '--'.join(row.values.astype(str)), axis=1)
-            df_2['key'] = df_2[key].apply(
-                lambda row: '--'.join(row.values.astype(str)), axis=1)
-            df_1.set_index('key', inplace=True)
-            df_2.set_index('key', inplace=True)
-            df_1.drop(key, axis=1, inplace=True)
-            df_2.drop(key, axis=1, inplace=True)
-            src_key_values = df_1.index.values
-            tgt_key_values = df_2.index.values
-            
-            self.common_keys = list(set(src_key_values) & set(tgt_key_values))
-            self.keys_only_in_src = list(
-                set(src_key_values) - set(tgt_key_values))
-            self.keys_only_in_tgt = list(
-                set(tgt_key_values) - set(src_key_values))
-            df_1.drop(self.keys_only_in_src,inplace=True)
-            df_2.drop(self.keys_only_in_tgt,inplace=True)
-            self.value_check = 0
-            self.key_check = 0
-            self.dict1 = {'REASON OF FAILURE': []}
-            self.key_dict = {}
-            """calling src and tgt for getting different keys"""
-            self.addExcel(self.keys_only_in_src, "Source")
-            self.addExcel(self.keys_only_in_tgt, "Target")
-            df_1.index.astype(str)
-            df_2.index.astype(str)
-            df_1.sort_values(by=['key'],inplace=True)
-            df_2.sort_values(by=['key'],inplace=True)
-            self.common_keys.sort()
-            # splitedSize = 100000
-            # a_splited = [self.common_keys[x:x+splitedSize] for x in range(0, len(self.common_keys), splitedSize)]
-            # df_1_splited = [df_1[x:x+splitedSize] for x in range(0, len(df_1), splitedSize)]
-            # df_2_splited = [df_2[x:x+splitedSize] for x in range(0, len(df_2), splitedSize)]
-            # value_dict = {}
-            # for i in range(len(a_splited)):
-            #     chunk_diffs = self.compareValues(a_splited[i],df_1_splited[i],df_2_splited[i])
-            #     for keys in chunk_diffs.keys():
-            #         if keys in value_dict.keys():
-            #             value_dict[keys] = value_dict[keys] + chunk_diffs[keys]
-            #         else:
-            #             value_dict[keys] = chunk_diffs[keys]
-            value_dict = self.getValueDict(df_1,df_2)
-            self.key_check = len(self.key_dict["REASON OF FAILURE"])#need to remove this from here and add in write excel
-            self.value_check = len(value_dict["REASON OF FAILURE"])
-            self.writeExcel(value_dict, self.key_dict)
-        except Exception as e:
-            traceback.print_exc()
-            self.reporter.addMisc(
-                "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
     def setVars(self):
         """
@@ -387,75 +208,13 @@ class DvRunner(Base):
         self.env = self.data["ENV"]
         self.category = self.data["config_data"].get("CATEGORY", None)
 
-    def truncate(self, f, n):
+    def writeExcel(self, valDict, keyDict, common_keys, keys_length):
 
-        return math.floor(f * 10 ** n) / 10 ** n
+        logging.info("----------in add excel---------")
+        key_check = len(keyDict["REASON OF FAILURE"])
+        value_check = len(valDict["REASON OF FAILURE"])
 
-    def addExcel(self, _list, db):
-
-        if _list:
-            for i in _list:
-                li = i.split("----")
-                for i in range(len(li)):
-                    key = self.keys[i]
-                    self.li1[i].append(li[i])
-                    value = self.li1[i]
-                    self.key_dict[key] = value
-                self.dict1.get("REASON OF FAILURE").append(
-                    f"keys only in {db}")
-        self.key_dict.update(self.dict1)
-        return self.key_dict
-
-    def compareValues(self, commonList: list,df_1,df_2):
-            self.logger.info("In compareValues Function")
-            dummy_dict = { 'Column_Name':[],'Source_Value':[],'Target_Value':[],'REASON OF FAILURE':[]}
-            comm_dict ={}
-
-            if commonList:
-                for key_val in commonList:
-                    for field in self.headers:
-                        src_val = df_1.loc[key_val,field]
-                        tgt_val = df_2.loc[key_val,field]
-                        if src_val == src_val or tgt_val == tgt_val:
-                            if "THRESHOLD" in self.configData:
-                                self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
-                                if type(src_val)== numpy.float64 and math.isnan(src_val) == False:
-                                    src_val = self.truncate(src_val,int(self.configData["THRESHOLD"]))
-                                if type(tgt_val)== numpy.float64 and math.isnan(tgt_val) == False:
-                                    tgt_val = self.truncate(tgt_val,int(self.configData["THRESHOLD"]))
-                                
-                            if src_val != tgt_val and type(src_val)==type(tgt_val):
-                                    
-                                li = key_val.split('--')
-                                for i in range(len(li)):
-                                    key = self.keys[i]
-                                    li1 = []
-                                    li1.append(li[i])
-                                    comm_dict[key] = comm_dict.get(key,[]) + li1
-                                dummy_dict.get('Column_Name').append(field)
-                                dummy_dict.get('Source_Value').append(src_val)
-                                dummy_dict.get('Target_Value').append(tgt_val)
-                                dummy_dict.get('REASON OF FAILURE').append("Difference In Value")                       
-                                    
-                            elif type(src_val)!= type(tgt_val):
-                                        
-                                li = key_val.split('--')
-                                for i in range(len(li)):
-                                    key = self.keys[i]
-                                    li1 = []
-                                    li1.append(li[i])
-                                    comm_dict[key] = comm_dict.get(key,[]) + li1
-                                dummy_dict.get('Column_Name').append(field)
-                                dummy_dict.get('Source_Value').append(src_val)
-                                dummy_dict.get('Target_Value').append(tgt_val)
-                                dummy_dict.get('REASON OF FAILURE').append("Difference In Datatype")
-                comm_dict.update(dummy_dict)               
-                return comm_dict
-
-    def writeExcel(self, valDict, keyDict):
-
-        logging.info("----------in Write excel---------")
-        self.logger.info("In write Excel Function")
+        self.logger.info("In Add Excel Function")
         outputFolder = self.data['OUTPUT_FOLDER']
         unique_id = uuid.uuid4()
         excelPath = os.path.join(
@@ -466,19 +225,19 @@ class DvRunner(Base):
         self.keys_df = pd.DataFrame(keyDict)
         if "AFTER_FILE" in self.configData:
             self.afterMethod()
-        if (self.key_check + self.value_check) == 0:
+        if (key_check + value_check) == 0:
             self.reporter.addRow("Data Validation Report",
                                  "No MisMatch Value Found", status=status.PASS)
             self.logger.info("----No MisMatch Value Found----")
         else:
             self.logger.info("----Adding Data to Excel----")
             with pd.ExcelWriter(excelPath) as writer1:
-                if self.key_check == 0:
+                if key_check == 0:
                     pass
                 else:
                     self.keys_df.to_excel(
                         writer1, sheet_name='key_difference', index=False)
-                if self.value_check == 0:
+                if value_check == 0:
                     pass
                 else:
                     self.value_df.to_excel(
@@ -491,29 +250,28 @@ class DvRunner(Base):
                 logging.warn(e)
             if not s3_url:
                 self.reporter.addRow("Data Validation Report", f"""
-                    Matched Keys: {len(self.common_keys)}<br>
-                    Keys only in Source: {len(self.keys_only_in_src)}<br>
-                    Keys only in Target: {len(self.keys_only_in_tgt)}<br>
-                    Mismatched Cells: {self.value_check}<br>
+                    Matched Keys: {len(common_keys)}<br>
+                    Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                    Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                    Mismatched Cells: {value_check}<br>
                     DV Result File: <a href={excel}>Result File</a>
                     """, status=status.FAIL)
             else:
                 self.reporter.addRow("Data Validation Report", f"""
-                    Matched Keys: {len(self.common_keys)}<br>
-                    Keys only in Source: {len(self.keys_only_in_src)}<br>
-                    Keys only in Target: {len(self.keys_only_in_tgt)}<br>
-                    Mismatched Cells: {self.value_check}<br>
+                    Matched Keys: {len(common_keys)}<br>
+                    Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                    Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                    Mismatched Cells: {value_check}<br>
                     DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
 
             self.reporter.addMisc("REASON OF FAILURE", str(
-                f"Mismatched Keys: {self.key_check},Mismatched Cells: {self.value_check}"))
-        self.reporter.addMisc("common Keys", str(len(self.common_keys)))
+                f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
+        self.reporter.addMisc("common Keys", str(len(common_keys)))
         self.reporter.addMisc("Keys Only in Source",
-                              str(len(self.keys_only_in_src)))
+                              str(keys_length['keys_only_in_src']))
         self.reporter.addMisc("Keys Only In Target",
-                              str(len(self.keys_only_in_tgt)))
-        self.reporter.addMisc("Mismatched Cells", str(self.value_check))
-        print(time.time())
+                              str(keys_length['keys_only_in_tgt']))
+        self.reporter.addMisc("Mismatched Cells", str(value_check))
 
     def beforeMethod(self):
         """This function
@@ -646,20 +404,3 @@ class DvRunner(Base):
         self.value_df = obj.value_df
         self.keys_df = obj.keys_df
         self.env = obj.env
-
-    def getValueDict(self,df_1,df_2):
-
-        splitSize = 100000
-        common_keys_splited = [self.common_keys[x:x+splitSize] for x in range(0, len(self.common_keys), splitSize)]
-        df_1_splited = [df_1[x:x+splitSize] for x in range(0, len(df_1), splitSize)]
-        df_2_splited = [df_2[x:x+splitSize] for x in range(0, len(df_2), splitSize)]
-        final_value_diffs = {}
-        for i in range(len(common_keys_splited)):
-            chunk_diffs = self.compareValues(common_keys_splited[i],df_1_splited[i],df_2_splited[i])
-            for keys in chunk_diffs.keys():
-                if keys in final_value_diffs.keys():
-                    final_value_diffs[keys] = final_value_diffs[keys] + chunk_diffs[keys]
-                else:
-                    final_value_diffs[keys] = chunk_diffs[keys]
-        return final_value_diffs
-            
