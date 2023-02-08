@@ -75,10 +75,12 @@ def parseMails(mail: Union[str, typing.TextIO]) -> List:
                 mails = file.read()
                 file.close()
             mails = mail.strip()
-            mails = mails.split(",")
-            # mails=mails.split("//")
-            # mailPayload={i.split(":")[0]:i.split(":")[1].split(",") for i in mails}
-            return mails
+            emails=[]
+            regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+            for mail in mails.split(","):
+                if(re.fullmatch(regex, mail)):
+                    emails.append(mail)
+            return emails
     except Exception as e:
         logging.error("Error while parsing the mails")
         logging.error(f"Error : {e}")
