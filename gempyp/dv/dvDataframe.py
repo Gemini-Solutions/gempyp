@@ -108,7 +108,8 @@ class Dataframe:
             log = f"----Connecting to {db}DB----"
             self.logger.info(log)
             dbType = f"{db}DB"
-            myDB = self.connectingDB(dbType, cred)
+            conn = f"{db}_CONN"
+            myDB = self.connectingDB(dbType, cred, conn)
             myCursor = myDB.cursor()
         except Exception as e:
             self.reporter.addRow(
@@ -141,10 +142,11 @@ class Dataframe:
         myDB.close()
         return db_1, columns
 
-    def connectingDB(self, db, cred):
+    def connectingDB(self, db, cred, conn):
 
         if self.configData["DATABASE"].lower() == 'custom':
-            myDB = eval(cred)
+            db = self.configData[conn]
+            myDB = eval(db)
             self.reporter.addRow(
                 f"Connection to {db}", f"Connection to {db} is Successfull", status.PASS)
         else:

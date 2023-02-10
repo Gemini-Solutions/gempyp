@@ -114,7 +114,6 @@ class DvRunner(Base):
                 subset=self.keys, keep='last', inplace=True)
             target_df.drop_duplicates(
                 subset=self.keys, keep='last', inplace=True)
-
             value_dict, key_dict, common_keys, keys_length = df_compare(
                 source_df, target_df, self.keys, self.logger, self.reporter, self.configData)
             self.writeExcel(value_dict, key_dict, common_keys, keys_length)
@@ -210,11 +209,10 @@ class DvRunner(Base):
 
     def writeExcel(self, valDict, keyDict, common_keys, keys_length):
 
-        logging.info("----------in add excel---------")
+        logging.info("----------in write excel---------")
         key_check = len(keyDict["REASON OF FAILURE"])
         value_check = len(valDict["REASON OF FAILURE"])
-
-        self.logger.info("In Add Excel Function")
+        self.logger.info("In write Excel Function")
         outputFolder = self.data['OUTPUT_FOLDER']
         unique_id = uuid.uuid4()
         excelPath = os.path.join(
