@@ -114,6 +114,15 @@ class DvRunner(Base):
                 subset=self.keys, keep='last', inplace=True)
             target_df.drop_duplicates(
                 subset=self.keys, keep='last', inplace=True)
+            # hadling case insensitivity
+            if 'MATCH_CASE' in self.configData:
+                if self.configData['MATCH_CASE'].lower() == 'true':
+                    columns = source_columns
+                else:
+                    columns = self.configData['MATCH_CASE'].split(',')
+                for i in columns:
+                    source_df[i] = source_df[i].str.lower()
+                    target_df[i] = target_df[i].str.lower()
             value_dict, key_dict, common_keys, keys_length = df_compare(
                 source_df, target_df, self.keys, self.logger, self.reporter, self.configData)
             self.writeExcel(value_dict, key_dict, common_keys, keys_length)
@@ -159,20 +168,6 @@ class DvRunner(Base):
                 "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise Exception(e)
 
-    def getHost(self, conn):
-        conn_string = self.configData[conn]
-        ind = conn_string.index('host')
-        count = 0
-        li = []
-        for i in range(ind, len(conn_string)):
-            if conn_string[i] == "'":
-                count += 1
-                li.append(i)
-                if count == 2:
-                    break
-        host = conn_string[li[0]+1:li[1]]
-        return {'host': host}
-
     def matchKeys(self, columns, db):
 
         try:
@@ -216,9 +211,9 @@ class DvRunner(Base):
         outputFolder = self.data['OUTPUT_FOLDER']
         unique_id = uuid.uuid4()
         excelPath = os.path.join(
-            outputFolder, self.configData['NAME']+str(unique_id)+'.xlsx')
+            outputFolder, self.configData['NAME']+str(unique_id)+'.csv')
         excel = os.path.join(
-            ".", "testcases", self.configData['NAME']+str(unique_id)+'.xlsx')
+            ".", "testcases", self.configData['NAME']+str(unique_id)+'.csv')
         self.value_df = pd.DataFrame(valDict)
         self.keys_df = pd.DataFrame(keyDict)
         if "AFTER_FILE" in self.configData:
@@ -229,17 +224,24 @@ class DvRunner(Base):
             self.logger.info("----No MisMatch Value Found----")
         else:
             self.logger.info("----Adding Data to Excel----")
-            with pd.ExcelWriter(excelPath) as writer1:
-                if key_check == 0:
-                    pass
-                else:
-                    self.keys_df.to_excel(
-                        writer1, sheet_name='key_difference', index=False)
-                if value_check == 0:
-                    pass
-                else:
-                    self.value_df.to_excel(
-                        writer1, sheet_name='value_difference', index=False)
+            # with pd.ExcelWriter(excelPath) as writer1:
+                # if key_check == 0:
+                #     pass
+                # else:
+                #     self.keys_df.to_excel(
+                #         writer1, sheet_name='key_difference', index=False)
+                # if value_check == 0:
+                #     pass
+                # else:
+                #     self.value_df.to_excel(
+                #         writer1, sheet_name='value_difference', index=False)
+            df = pd.concat([self.value_df, self.keys_df], axis=0, ignore_index=True)
+            df_columns = set(df.columns)
+            fixed_columns = {"Column_Name","Source_Value","Target_Value","REASON OF FAILURE"}
+            diff_columns = df_columns - fixed_columns
+            new_order = list(diff_columns)+list(fixed_columns)
+            df = df[new_order]
+            df.to_csv(excelPath, index=False,header=True)
             s3_url = None
             try:
                 s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.data["SUITE_VARS"]

@@ -35,8 +35,8 @@ def df_compare(df_1, df_2, key, logger, reporter, configData):
         # for keys in src_key_dict.keys():
         #     src_key_dict[keys] = src_key_dict[keys] + tgt_key_dict[keys]
         diff_keys_dict = collections.defaultdict(list)
-        for key, val in itertools.chain(src_key_dict.items(), tgt_key_dict.items()):
-            diff_keys_dict[key] += val
+        for keys, val in itertools.chain(src_key_dict.items(), tgt_key_dict.items()):
+            diff_keys_dict[keys] += val
         diff_keys_dict = dict(diff_keys_dict)
         df_1.index.astype(str)
         df_2.index.astype(str)
@@ -153,11 +153,11 @@ def getValueDict(df_1, df_2, common_keys, headers, key, configData, logger):
     df_2_splited = [df_2[x : x + splitSize] for x in range(0, len(df_2), splitSize)]
     # final_value_diffs = collections.defaultdict(list)
     final_value_diffs = {
-        "Column_Name": [],
-        "Source_Value": [],
-        "Target_Value": [],
-        "REASON OF FAILURE": [],
-    }
+            "Column_Name": [],
+            "Source_Value": [],
+            "Target_Value": [],
+            "REASON OF FAILURE": [],
+        }
     for i in range(len(common_keys_splited)):
         logger.info(time.time())
         chunk_diffs = compareValues(
