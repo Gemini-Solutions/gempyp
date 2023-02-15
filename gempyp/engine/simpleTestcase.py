@@ -6,6 +6,8 @@ from gempyp.libs import common
 import sys,traceback
 from gempyp.libs.enums.status import status
 import logging
+import json
+import time
 
 
 class AbstractSimpleTestcase(ABC):
@@ -31,6 +33,11 @@ class AbstractSimpleTestcase(ABC):
             try:
                 method_name = getattr(cls(), method_name)
                 method_name(reporter)
+                if("POLL_WAIT" in testcase_settings.keys()):
+                    self.pollnwait=json.loads(testcase_settings.get("POLL_WAIT"))
+                    self.poll_wait(reporter,cls,testcase_settings.get("METHOD", "main"))
+
+                
             except Exception as err:
                 logger.error(traceback.format_exc())
                 etype, value, tb = sys.exc_info()
@@ -54,7 +61,21 @@ class AbstractSimpleTestcase(ABC):
                 # reporter.addMisc("Reason of Failure",exceptionarray[0])
                 reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             
-        
+    def poll_wait(self,reporter,cls,method_name1):
+        if(self.pollnwait is not None):
+            try:
+                    poll=self.pollnwait.get("poll",None)
+                    wait=self.pollnwait.get("wait",None)
+                    n=0
+                    while(n<poll):
+                        reporter.addRow("<b>Poll n wait</b>", f'<b>Current Poll: {n}</b>', status.INFO) 
+                        method_name = getattr(cls(), method_name1)
+                        method_name(reporter)
+                        time.sleep(wait)
+                        n=n+1
+            except Exception as e:
+                reporter.addRow("Executing poll n wait", f"Some error occurred while executing the poll and wait- {str(e)}", status.ERR)
+      
 
     def RUN(self, cls, testcase_settings: Dict, **kwargs) -> List:
         """
