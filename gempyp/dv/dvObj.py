@@ -30,6 +30,6 @@ class DvObj:
         if "keys_df" in kwargs:
             self.keys_df = kwargs["keys_df"]
 
-    @property
-    def returnObj():
-        return DvObj()
+@property
+def returnObj():
+    return DvObj()

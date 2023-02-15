@@ -82,22 +82,21 @@ class DvRunner(Base):
                 raise Exception("User Given Keys not Found")
 
             obj = Dataframe()
-            source_df, source_columns = Dataframe.getSourceDataFrame(
+            self.source_df, self.source_columns = Dataframe.getSourceDataFrame(
                 obj, self.data, self.logger, self.reporter, self.sourceCred)
-            target_df, target_columns = Dataframe.getTargetDataframe(
+            self.target_df, self.target_columns = Dataframe.getTargetDataframe(
                 obj, self.data, self.logger, self.reporter, self.targetCred)
-            # for columns mapping
-            if "COLUMN_MAP" in self.configData:
-                target_df.rename(columns=eval(
-                    self.configData["COLUMN_MAP"]), inplace=True)
-                target_columns = list(target_df.columns)
-
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
-            self.matchKeys(source_columns, "SOURCE")
-            self.matchKeys(target_columns, "TARGET")
+            # for columns mapping
+            if "COLUMN_MAP" in self.configData:
+                self.target_df.rename(columns=eval(
+                    self.configData["COLUMN_MAP"]), inplace=True)
+                self.target_columns = list(self.target_df.columns)
+            self.matchKeys(self.source_columns, "SOURCE")
+            self.matchKeys(self.target_columns, "TARGET")
 
-            if source_columns == target_columns:
+            if self.source_columns == self.target_columns:
                 pass
             else:
                 self.logger.info(
@@ -110,21 +109,15 @@ class DvRunner(Base):
 
             """deleting duplicates from df and keeping last ones"""
             self.logger.info("Removing Duplicates Rows")
-            source_df.drop_duplicates(
+            self.source_df.drop_duplicates(
                 subset=self.keys, keep='last', inplace=True)
-            target_df.drop_duplicates(
+            self.target_df.drop_duplicates(
                 subset=self.keys, keep='last', inplace=True)
             # hadling case insensitivity
             if 'MATCH_CASE' in self.configData:
-                if self.configData['MATCH_CASE'].lower() == 'true':
-                    columns = source_columns
-                else:
-                    columns = self.configData['MATCH_CASE'].split(',')
-                for i in columns:
-                    source_df[i] = source_df[i].str.lower()
-                    target_df[i] = target_df[i].str.lower()
+                self.matchCase()
             value_dict, key_dict, common_keys, keys_length = df_compare(
-                source_df, target_df, self.keys, self.logger, self.reporter, self.configData)
+                self.source_df, self.target_df, self.keys, self.logger, self.reporter, self.configData)
             self.writeExcel(value_dict, key_dict, common_keys, keys_length)
             self.reporter.finalizeReport()
             output = writeToReport(self)
@@ -404,3 +397,13 @@ class DvRunner(Base):
         self.value_df = obj.value_df
         self.keys_df = obj.keys_df
         self.env = obj.env
+ 
+    def matchCase(self):
+        
+        if self.configData['MATCH_CASE'].lower() == 'true':
+            columns = self.source_columns
+        else:
+            columns = self.configData['MATCH_CASE'].split(',')
+        for i in columns:
+            self.source_df[i] = self.source_df[i].str.lower()
+            self.target_df[i] = self.target_df[i].str.lower()
