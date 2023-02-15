@@ -103,9 +103,7 @@ class DvRunner(Base):
                     "--------Same Column not Present in Both Table--------")
                 self.reporter.addRow(
                     "Same Columns in Table", "Not Found", status.FAIL)
-                self.reporter.addMisc(
-                    "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-                raise Exception("Same Columns in Table")
+                raise Exception("Same Columns Not Found")
 
             """deleting duplicates from df and keeping last ones"""
             self.logger.info("Removing Duplicates Rows")
@@ -399,11 +397,11 @@ class DvRunner(Base):
         self.env = obj.env
  
     def matchCase(self):
-        
-        if self.configData['MATCH_CASE'].lower() == 'true':
-            columns = self.source_columns
-        else:
+        try:
             columns = self.configData['MATCH_CASE'].split(',')
-        for i in columns:
-            self.source_df[i] = self.source_df[i].str.lower()
-            self.target_df[i] = self.target_df[i].str.lower()
+            for i in columns:
+                self.source_df[i] = self.source_df[i].apply(str.lower)
+                self.target_df[i] = self.target_df[i].apply(str.lower)
+        except Exception as e:
+            self.reporter.addRow("Trying to Match Case",common.get_reason_of_failure(traceback.format_exc(), e), status.ERR)
+            raise e
