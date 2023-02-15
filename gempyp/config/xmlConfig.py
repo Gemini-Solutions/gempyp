@@ -8,6 +8,7 @@ from gempyp.libs.logConfig import LoggingConfig
 import sys, os
 import warnings
 import uuid
+import json
 
 class XmlConfig(AbstarctBaseConfig):
     def __init__(self, filePath: str, s_run_id):
@@ -25,8 +26,9 @@ class XmlConfig(AbstarctBaseConfig):
         newfilePath = os.sep.join(path_list)
         sys.path.append({"XMLConfigDir":newfilePath})
         logging.info("-------- Started the Xml parsing in XmlConfig ---------")
-        self.handleSpecialSymbols(filePath)
+        filePath=self.handleSpecialSymbols(filePath)
         data = et.parse(filePath)
+        
         
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data)        
 
@@ -54,6 +56,7 @@ class XmlConfig(AbstarctBaseConfig):
         suite_data = data.find("suite")
 
         suite_dict = xmlToDict(suite_data)
+        suite_dict={key.replace('-','_'):value for key,value in suite_dict.items()}
         suite_dict["SUITE_VARS"] = {}
         logging.info("--------suite_dict--------\n {suite_dict} \n----------".format(suite_dict=suite_dict))
         # do your validations here
@@ -68,6 +71,9 @@ class XmlConfig(AbstarctBaseConfig):
 
         for i in testcase_list:
             i["NAME"] = i["NAME"].upper()  ## uppercase
+
+        testcase_list=[{key.replace('-','_'):value for key,value in testcase.items()} for testcase in testcase_list]
+
         testcase_dict = {k['NAME']: k for k in testcase_list}  #####################
 
         # do your validation here
@@ -75,9 +81,11 @@ class XmlConfig(AbstarctBaseConfig):
         return testcase_dict
     
     def handleSpecialSymbols(self,filePath):
+        filePath1=os.path.join(tempfile.gettempdir(),"temp.xml")
         f=open(filePath,"r")
         content=f.read()
         if(content.__contains__("&") and not(content.__contains__("&amp;"))):
             content=content.replace("&","&amp;")
-        f1=open(filePath,"w")
+        f1=open(filePath1,"w")
         f1.write(content)
+        return filePath1
