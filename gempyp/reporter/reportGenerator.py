@@ -155,6 +155,7 @@ class TemplateData:
                 s3_report_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=bridgetoken, username=username, file=output_file_path.split('/')[-1],tag="public")[0]["Url"]) 
                 logging.info('Report at Jewel: {link}'.format(link = jewel_link))
                 logging.info('Report at S3: {link}'.format(link = s3_report_file_url))
+                
             if not jewel_user:
                 logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
 
