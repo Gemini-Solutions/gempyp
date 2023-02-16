@@ -204,8 +204,8 @@ class Engine:
         if("MAIL" in self.PARAMS.keys()):
             sendMail(self.s_run_id,self.mail,self.PARAMS.get("BRIDGE_TOKEN",None), self.PARAMS.get("USERNAME",None))
 
-        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
-        TemplateData().repSummary(self.repJson, output_file_path, jewel, failed_Utestcases, unuploaded_path,self.PARAMS.get("BRIDGE_TOKEN",None),self.PARAMS.get("USERNAME",None))
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
+        TemplateData().repSummary(self.repJson, output_file_path, jewel, failed_Utestcases, unuploaded_path,self.PARAMS.get("BRIDGE_TOKEN",None),self.PARAMS.get("USERNAME",None),self.jewel_user)
 
     def makeOutputFolder(self):
         """
