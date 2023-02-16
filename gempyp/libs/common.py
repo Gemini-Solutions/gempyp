@@ -213,6 +213,14 @@ def validateZeroTestcases(testcaseLength):
     if not testcaseLength:  # in case of zero testcases, we should not insert suite data 
             logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
             sys.exit()
+            
+            
+def setDefaultUrls(jewel_user,params):
+    if(jewel_user):
+        logging.info("Setting Default urls")
+        DefaultSettings.getEnterPoint(DefaultSettings.default_baseurl ,params["BRIDGE_TOKEN"], params["USERNAME"])
+
+
 
 def runBaseUrls(jewel_user,params):
     if jewel_user:
