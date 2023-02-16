@@ -196,8 +196,8 @@ class DvRunner(Base):
     def writeExcel(self, valDict, keyDict, common_keys, keys_length):
 
         logging.info("----------in write excel---------")
-        key_check = len(keyDict["REASON OF FAILURE"])
-        value_check = len(valDict["REASON OF FAILURE"])
+        key_check = len(keyDict["Reason-of-Failure"])
+        value_check = len(valDict["Reason-of-Failure"])
         self.logger.info("In write Excel Function")
         outputFolder = self.data['OUTPUT_FOLDER']
         unique_id = uuid.uuid4()
@@ -228,9 +228,9 @@ class DvRunner(Base):
                 #         writer1, sheet_name='value_difference', index=False)
             df = pd.concat([self.value_df, self.keys_df], axis=0, ignore_index=True)
             df_columns = set(df.columns)
-            fixed_columns = {"Column_Name","Source_Value","Target_Value","REASON OF FAILURE"}
+            fixed_columns = {"Column-Name","Source-Value","Target-Value","Reason-of-Failure"}
             diff_columns = df_columns - fixed_columns
-            new_order = list(diff_columns)+list(fixed_columns)
+            new_order = list(diff_columns)+["Column-Name","Source-Value","Target-Value","Reason-of-Failure"]
             df = df[new_order]
             df.to_csv(excelPath, index=False,header=True)
             s3_url = None

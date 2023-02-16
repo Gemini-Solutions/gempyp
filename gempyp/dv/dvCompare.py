@@ -62,7 +62,7 @@ def df_compare(df_1, df_2, key, logger, reporter, configData):
 def addDiffKeysDict(_list, db, keys, logger):
     logger.info("In addDiffKeysDict Function")
     key_dict = {}
-    dict1 = {"REASON OF FAILURE": []}
+    dict1 = {"Reason-of-Failure": []}
     li1 = []
     for i in keys:
         li1.append([])
@@ -74,7 +74,7 @@ def addDiffKeysDict(_list, db, keys, logger):
                 li1[i].append(li[i])
                 value = li1[i]
                 key_dict[key] = value
-            dict1.get("REASON OF FAILURE").append(f"keys only in {db}")
+            dict1.get("Reason-of-Failure").append(f"keys only in {db}")
     key_dict.update(dict1)
     return key_dict
 
@@ -82,10 +82,10 @@ def addDiffKeysDict(_list, db, keys, logger):
 def compareValues(commonList: list, df_1, df_2, headers, keys, configData, logger):
     logger.info("In compareValues Function")
     dummy_dict = {
-        "Column_Name": [],
-        "Source_Value": [],
-        "Target_Value": [],
-        "REASON OF FAILURE": [],
+        "Column-Name": [],
+        "Source-Value": [],
+        "Target-Value": [],
+        "Reason-of-Failure": [],
     }
     comm_dict = {}
 
@@ -115,10 +115,10 @@ def compareValues(commonList: list, df_1, df_2, headers, keys, configData, logge
                             li1 = []
                             li1.append(li[i])
                             comm_dict[key] = comm_dict.get(key, []) + li1
-                        dummy_dict.get("Column_Name").append(field)
-                        dummy_dict.get("Source_Value").append(src_val)
-                        dummy_dict.get("Target_Value").append(tgt_val)
-                        dummy_dict.get("REASON OF FAILURE").append(
+                        dummy_dict.get("Column-Name").append(field)
+                        dummy_dict.get("Source-Value").append(src_val)
+                        dummy_dict.get("Target-Value").append(tgt_val)
+                        dummy_dict.get("Reason-of-Failure").append(
                             "Difference In Value"
                         )
 
@@ -129,10 +129,10 @@ def compareValues(commonList: list, df_1, df_2, headers, keys, configData, logge
                             li1 = []
                             li1.append(li[i])
                             comm_dict[key] = comm_dict.get(key, []) + li1
-                        dummy_dict.get("Column_Name").append(field)
-                        dummy_dict.get("Source_Value").append(src_val)
-                        dummy_dict.get("Target_Value").append(tgt_val)
-                        dummy_dict.get("REASON OF FAILURE").append(
+                        dummy_dict.get("Column-Name").append(field)
+                        dummy_dict.get("Source-Value").append(src_val)
+                        dummy_dict.get("Target-Value").append(tgt_val)
+                        dummy_dict.get("Reason-of-Failure").append(
                             "Difference In Datatype"
                         )
         comm_dict.update(dummy_dict)
@@ -153,10 +153,10 @@ def getValueDict(df_1, df_2, common_keys, headers, key, configData, logger):
     df_2_splited = [df_2[x : x + splitSize] for x in range(0, len(df_2), splitSize)]
     # final_value_diffs = collections.defaultdict(list)
     final_value_diffs = {
-            "Column_Name": [],
-            "Source_Value": [],
-            "Target_Value": [],
-            "REASON OF FAILURE": [],
+            "Column-Name": [],
+            "Source-Value": [],
+            "Target-Value": [],
+            "Reason-of-Failure": [],
         }
     for i in range(len(common_keys_splited)):
         logger.info(time.time())
