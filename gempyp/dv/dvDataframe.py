@@ -70,8 +70,8 @@ class Dataframe:
             except Exception as e:
                 reporter.addRow(
                     "Parsing Target File Path", "Exception Occurred", status.FAIL)
-                reporter.addMisc(
-                    "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
+                # reporter.addMisc(
+                #     "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
                 raise Exception(e)
         else:
             """Connecting to TargetDB"""
@@ -115,8 +115,8 @@ class Dataframe:
             self.reporter.addRow(
                 f"Connection to {db}DB: ", "Exception Occurred", status.ERR)
             self.logger.error(str(e))
-            self.reporter.addMisc(
-                    "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
+            # self.reporter.addMisc(
+            #         "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
 
             raise Exception(e)
 
@@ -129,8 +129,8 @@ class Dataframe:
             columns = [i[0] for i in myCursor.description]
         except Exception as e:
             self.logger.error(str(e))
-            self.reporter.addMisc(
-                    "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
+            # self.reporter.addMisc(
+            #         "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
 
             self.reporter.addRow(
                 f"Executing {db} SQL", "Exception Occurred", status.ERR)
@@ -142,13 +142,15 @@ class Dataframe:
         myDB.close()
         return db_1, columns
 
-    def connectingDB(self, db, cred, conn):
-
+    def connectingDB(self, dbType, cred, conn):
+        
         if self.configData["DATABASE"].lower() == 'custom':
             db = self.configData[conn]
             myDB = eval(db)
+            # this is just to check whether connection is established or not
+            dbCursor = myDB.cursor()
             self.reporter.addRow(
-                f"Connection to {db}", f"Connection to {db} is Successfull", status.PASS)
+                f"Connection to {dbType}:", f"Connection to {dbType} is Successfull", status.PASS)
         else:
             dv = Databases()
             lib, connect = Databases.getConnectionString(
@@ -158,7 +160,7 @@ class Dataframe:
             myDB = connection(**cred)
             connDetails = self.getHostDetails(cred)
             self.reporter.addRow(
-                f"Connection to {db}: {connDetails}", f"Connection to {db} is Successfull", status.PASS)
+                f"Connection to {dbType}: {connDetails}", f"Connection to {dbType} is Successfull", status.PASS)
         return myDB
 
     def getHostDetails(self, details):

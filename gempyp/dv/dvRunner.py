@@ -19,7 +19,7 @@ import math
 import numpy
 import pg8000
 from gempyp.dv.dvObj import DvObj
-from gempyp.libs.common import download_common_file
+from gempyp.libs.common import download_common_file,get_reason_of_failure
 from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
@@ -77,8 +77,8 @@ class DvRunner(Base):
             else:
                 self.reporter.addRow(
                     "Checking Keys", "User Given Keys Tag not Found", status.ERR)
-                self.reporter.addMisc(
-                    "REASON OF FAILURE", "User Given Keys Tag not Found")
+                # self.reporter.addMisc(
+                #     "REASON OF FAILURE", "User Given Keys Tag not Found")
                 raise Exception("User Given Keys not Found")
 
             obj = Dataframe()
@@ -102,7 +102,7 @@ class DvRunner(Base):
                 self.logger.info(
                     "--------Same Column not Present in Both Table--------")
                 self.reporter.addRow(
-                    "Same Columns in Table", "Not Found", status.FAIL)
+                    "Same Columns in Table", "Not Found", status.ERR)
                 raise Exception("Same Columns Not Found")
 
             """deleting duplicates from df and keeping last ones"""
@@ -121,6 +121,8 @@ class DvRunner(Base):
             output = writeToReport(self)
             return output, None
         except Exception as e:
+            self.reporter.addMisc(
+                    "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
             self.logger.error(str(e))
             traceback.print_exc()
             output = writeToReport(self)
@@ -150,8 +152,9 @@ class DvRunner(Base):
                     else:
                         self.targetCred = dict(self.configur.items(
                             self.configData["TARGET_CONN"]))
-                self.reporter.addRow(
-                    "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
+                if self.configur != None:
+                    self.reporter.addRow(
+                        "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
         except Exception as e:
             self.reporter.addRow(
                 "Parsing DB Conf", "Exception Occurred", status.ERR)
@@ -178,6 +181,7 @@ class DvRunner(Base):
             self.reporter.addRow(
                 f"Matching Given Keys in {db}", "Keys: " + keyString1 + f" are not Present in {db}DB", status.ERR)
             self.logger.info("------Given Keys are not present in DB------")
+            raise Exception("Keys not Present in DB")
 
     def setVars(self):
         """
@@ -195,74 +199,79 @@ class DvRunner(Base):
 
     def writeExcel(self, valDict, keyDict, common_keys, keys_length):
 
-        logging.info("----------in write excel---------")
-        key_check = len(keyDict["Reason-of-Failure"])
-        value_check = len(valDict["Reason-of-Failure"])
-        self.logger.info("In write Excel Function")
-        outputFolder = self.data['OUTPUT_FOLDER']
-        unique_id = uuid.uuid4()
-        excelPath = os.path.join(
-            outputFolder, self.configData['NAME']+str(unique_id)+'.csv')
-        excel = os.path.join(
-            ".", "testcases", self.configData['NAME']+str(unique_id)+'.csv')
-        self.value_df = pd.DataFrame(valDict)
-        self.keys_df = pd.DataFrame(keyDict)
-        if "AFTER_FILE" in self.configData:
-            self.afterMethod()
-        if (key_check + value_check) == 0:
-            self.reporter.addRow("Data Validation Report",
-                                 "No MisMatch Value Found", status=status.PASS)
-            self.logger.info("----No MisMatch Value Found----")
-        else:
-            self.logger.info("----Adding Data to Excel----")
-            # with pd.ExcelWriter(excelPath) as writer1:
-                # if key_check == 0:
-                #     pass
-                # else:
-                #     self.keys_df.to_excel(
-                #         writer1, sheet_name='key_difference', index=False)
-                # if value_check == 0:
-                #     pass
-                # else:
-                #     self.value_df.to_excel(
-                #         writer1, sheet_name='value_difference', index=False)
-            df = pd.concat([self.value_df, self.keys_df], axis=0, ignore_index=True)
-            df_columns = set(df.columns)
-            fixed_columns = {"Column-Name","Source-Value","Target-Value","Reason-of-Failure"}
-            diff_columns = df_columns - fixed_columns
-            new_order = list(diff_columns)+["Column-Name","Source-Value","Target-Value","Reason-of-Failure"]
-            df = df[new_order]
-            df.to_csv(excelPath, index=False,header=True)
-            s3_url = None
-            try:
-                s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.data["SUITE_VARS"]
-                                        ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
-            except Exception as e:
-                logging.warn(e)
-            if not s3_url:
-                self.reporter.addRow("Data Validation Report", f"""
-                    Matched Keys: {len(common_keys)}<br>
-                    Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                    Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                    Mismatched Cells: {value_check}<br>
-                    DV Result File: <a href={excel}>Result File</a>
-                    """, status=status.FAIL)
+        try:
+            logging.info("----------in write excel---------")
+            key_check = len(keyDict["Reason-of-Failure"])
+            value_check = len(valDict["Reason-of-Failure"])
+            self.logger.info("In write Excel Function")
+            outputFolder = self.data['OUTPUT_FOLDER']
+            unique_id = uuid.uuid4()
+            excelPath = os.path.join(
+                outputFolder, self.configData['NAME']+str(unique_id)+'.csv')
+            excel = os.path.join(
+                ".", "testcases", self.configData['NAME']+str(unique_id)+'.csv')
+            self.value_df = pd.DataFrame(valDict)
+            self.keys_df = pd.DataFrame(keyDict)
+            if "AFTER_FILE" in self.configData:
+                self.afterMethod()
+            if (key_check + value_check) == 0:
+                self.reporter.addRow("Data Validation Report",
+                                    "No MisMatch Value Found", status=status.PASS)
+                self.logger.info("----No MisMatch Value Found----")
             else:
-                self.reporter.addRow("Data Validation Report", f"""
-                    Matched Keys: {len(common_keys)}<br>
-                    Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                    Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                    Mismatched Cells: {value_check}<br>
-                    DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
+                self.logger.info("----Adding Data to Excel----")
+                # with pd.ExcelWriter(excelPath) as writer1:
+                    # if key_check == 0:
+                    #     pass
+                    # else:
+                    #     self.keys_df.to_excel(
+                    #         writer1, sheet_name='key_difference', index=False)
+                    # if value_check == 0:
+                    #     pass
+                    # else:
+                    #     self.value_df.to_excel(
+                    #         writer1, sheet_name='value_difference', index=False)
+                df = pd.concat([self.value_df, self.keys_df], axis=0, ignore_index=True)
+                df_columns = set(df.columns)
+                fixed_columns = {"Column-Name","Source-Value","Target-Value","Reason-of-Failure"}
+                diff_columns = df_columns - fixed_columns
+                new_order = list(diff_columns)+["Column-Name","Source-Value","Target-Value","Reason-of-Failure"]
+                df = df[new_order]
+                df.to_csv(excelPath, index=False,header=True)
+                s3_url = None
+                try:
+                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.data["SUITE_VARS"]
+                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
+                except Exception as e:
+                    logging.warn(e)
+                if not s3_url:
+                    self.reporter.addRow("Data Validation Report", f"""
+                        Matched Keys: {len(common_keys)}<br>
+                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                        Mismatched Cells: {value_check}<br>
+                        DV Result File: <a href={excel}>Result File</a>
+                        """, status=status.FAIL)
+                else:
+                    self.reporter.addRow("Data Validation Report", f"""
+                        Matched Keys: {len(common_keys)}<br>
+                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                        Mismatched Cells: {value_check}<br>
+                        DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
 
-            self.reporter.addMisc("REASON OF FAILURE", str(
-                f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
-        self.reporter.addMisc("common Keys", str(len(common_keys)))
-        self.reporter.addMisc("Keys Only in Source",
-                              str(keys_length['keys_only_in_src']))
-        self.reporter.addMisc("Keys Only In Target",
-                              str(keys_length['keys_only_in_tgt']))
-        self.reporter.addMisc("Mismatched Cells", str(value_check))
+                self.reporter.addMisc("REASON OF FAILURE", str(
+                    f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
+            self.reporter.addMisc("common Keys", str(len(common_keys)))
+            self.reporter.addMisc("Keys Only in Source",
+                                str(keys_length['keys_only_in_src']))
+            self.reporter.addMisc("Keys Only In Target",
+                                str(keys_length['keys_only_in_tgt']))
+            self.reporter.addMisc("Mismatched Cells", str(value_check))
+        except Exception as e:
+            self.reporter.addMisc(
+                    "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
+            self.reporter.addRow("Writing Data into CSV","Exception Occured",status.ERR)
 
     def beforeMethod(self):
         """This function
