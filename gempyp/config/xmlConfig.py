@@ -38,8 +38,8 @@ class XmlConfig(AbstarctBaseConfig):
         self.unique_id = str(uuid.uuid4())
         if self.s_run_id != None:
              self.unique_id = self.s_run_id
-        elif "RUN_ID" in self._CONFIG["SUITE_DATA"]:
-            self.unique_id = self._CONFIG["SUITE_DATA"]["RUN_ID"]
+        elif "S_RUN_ID" in self._CONFIG["SUITE_DATA"]:
+            self.unique_id = self._CONFIG["SUITE_DATA"]["S_RUN_ID"]
         os.environ['unique_id'] = self.unique_id
         os.environ['log_dir'] = self.log_dir
         warnings.filterwarnings('ignore')
