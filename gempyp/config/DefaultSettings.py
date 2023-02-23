@@ -36,7 +36,8 @@ def getUrls(apiName):
 def checkUrl(url):
     try:
         l = url.index('.com')
-        url = url[:l+4:] + "/enter-point"
+        # url = url[:l+4:] + "/enter-point"
+        url=url+"/enter-point"
         return url
     except Exception:
         traceback.print_exc()
