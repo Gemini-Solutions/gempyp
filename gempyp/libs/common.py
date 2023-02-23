@@ -218,12 +218,6 @@ def validateZeroTestcases(testcaseLength):
             logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
             sys.exit()
             
-            
-def setDefaultUrls(jewel_user,params):
-    if(jewel_user):
-        logging.info("Setting Default urls")
-        DefaultSettings.getEnterPoint(DefaultSettings.default_baseurl ,params["BRIDGE_TOKEN"], params["USERNAME"])
-
 
 
 def runBaseUrls(jewel_user,params):
@@ -232,6 +226,8 @@ def runBaseUrls(jewel_user,params):
             if params.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
                 logging.info("Retrying to call Api for getting urls")
                 DefaultSettings.getEnterPoint(params["BASE_URL"] ,params["BRIDGE_TOKEN"], params["USERNAME"])
+            else:
+                DefaultSettings.getEnterPoint(DefaultSettings.default_baseurl ,params["BRIDGE_TOKEN"], params["USERNAME"])
 
 
 def sendMail(s_run_id,mails,bridge_token,username):
