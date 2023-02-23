@@ -292,8 +292,6 @@ class Engine:
             self.user_suite_variables["bridge_token"]=self.PARAMS["BRIDGE_TOKEN"]
             self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
             self.jewel_user = True
-            
-        setDefaultUrls(self.jewel_user,self.PARAMS)
 
         runBaseUrls(self.jewel_user,self.PARAMS)  ### Run base Urls
         if self.jewel_user:
