@@ -9,8 +9,8 @@ class DvObj:
 
         value_df will contain mismatch for values and keys_df will contain the mismatch for keys 
         """
-        if "pg" in kwargs:
-            self.pg = kwargs['pg']
+        if "object" in kwargs:
+            self.object = kwargs['object']
         if "project" in kwargs:
             self.project = kwargs["project"]
         if "source_df" in kwargs:      

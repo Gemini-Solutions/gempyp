@@ -86,6 +86,7 @@ class DvRunner(Base):
                 obj, self.data, self.logger, self.reporter, self.sourceCred)
             self.target_df, self.target_columns = Dataframe.getTargetDataframe(
                 obj, self.data, self.logger, self.reporter, self.targetCred)
+            
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
             # for columns mapping
@@ -95,6 +96,11 @@ class DvRunner(Base):
                 self.target_columns = list(self.target_df.columns)
             self.matchKeys(self.source_columns, "SOURCE")
             self.matchKeys(self.target_columns, "TARGET")
+
+            #calling getDuplicatekeysDf function to get dataframe of duplicate keys 
+
+            source_duplicates_df = self.getDuplicateKeysDf(self.source_df, "SOURCE")
+            target_duplicates_df = self.getDuplicateKeysDf(self.target_df, "TARGET")
 
             if self.source_columns == self.target_columns:
                 pass
@@ -116,7 +122,7 @@ class DvRunner(Base):
                 self.matchCase()
             value_dict, key_dict, common_keys, keys_length = df_compare(
                 self.source_df, self.target_df, self.keys, self.logger, self.reporter, self.configData)
-            self.writeExcel(value_dict, key_dict, common_keys, keys_length)
+            self.writeExcel(value_dict, key_dict, common_keys, keys_length, source_duplicates_df,target_duplicates_df)
             self.reporter.finalizeReport()
             output = writeToReport(self)
             return output, None
@@ -197,12 +203,14 @@ class DvRunner(Base):
         self.env = self.data["ENV"]
         self.category = self.data["config_data"].get("CATEGORY", None)
 
-    def writeExcel(self, valDict, keyDict, common_keys, keys_length):
+    def writeExcel(self, valDict, keyDict, common_keys, keys_length, source_duplicates_df, target_duplicates_df):
 
         try:
             logging.info("----------in write excel---------")
             key_check = len(keyDict["Reason-of-Failure"])
             value_check = len(valDict["Reason-of-Failure"])
+            source_dup_keys = len(source_duplicates_df["Reason-of-Failure"])
+            target_dup_keys = len(target_duplicates_df["Reason-of-Failure"])
             self.logger.info("In write Excel Function")
             outputFolder = self.data['OUTPUT_FOLDER']
             unique_id = uuid.uuid4()
@@ -214,7 +222,7 @@ class DvRunner(Base):
             self.keys_df = pd.DataFrame(keyDict)
             if "AFTER_FILE" in self.configData:
                 self.afterMethod()
-            if (key_check + value_check) == 0:
+            if (key_check + value_check + source_dup_keys + target_dup_keys) == 0:
                 self.reporter.addRow("Data Validation Report",
                                     "No MisMatch Value Found", status=status.PASS)
                 self.logger.info("----No MisMatch Value Found----")
@@ -231,7 +239,7 @@ class DvRunner(Base):
                     # else:
                     #     self.value_df.to_excel(
                     #         writer1, sheet_name='value_difference', index=False)
-                df = pd.concat([self.value_df, self.keys_df], axis=0, ignore_index=True)
+                df = pd.concat([self.value_df, self.keys_df, source_duplicates_df , target_duplicates_df ], axis=0, ignore_index=True)
                 df_columns = set(df.columns)
                 fixed_columns = {"Column-Name","Source-Value","Target-Value","Reason-of-Failure"}
                 diff_columns = df_columns - fixed_columns
@@ -250,6 +258,7 @@ class DvRunner(Base):
                         Keys only in Source: {keys_length['keys_only_in_src']}<br>
                         Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
                         Mismatched Cells: {value_check}<br>
+                        Duplicate Keys: {source_dup_keys+target_dup_keys}<br>
                         DV Result File: <a href={excel}>Result File</a>
                         """, status=status.FAIL)
                 else:
@@ -258,6 +267,7 @@ class DvRunner(Base):
                         Keys only in Source: {keys_length['keys_only_in_src']}<br>
                         Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
                         Mismatched Cells: {value_check}<br>
+                        Duplicate Keys: {source_dup_keys+target_dup_keys}<br>
                         DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
 
                 self.reporter.addMisc("REASON OF FAILURE", str(
@@ -314,7 +324,7 @@ class DvRunner(Base):
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = DvObj(
-                pg=self.reporter,
+                object=self.reporter,
                 project=self.project,
                 source_df=self.source_df,
                 target_df=self.target_df,
@@ -371,7 +381,7 @@ class DvRunner(Base):
             self.logger.info("Running After method")
             obj_ = file_obj
             after_obj = DvObj(
-                pg=self.reporter,
+                object=self.reporter,
                 project=self.project,
                 value_df=self.value_df,
                 keys_df=self.keys_df,
@@ -388,7 +398,7 @@ class DvRunner(Base):
     def extractBeforeObj(self, obj):
         """To ofload the data from pyprest obj helper, assign the values back to self object"""
 
-        self.reporter = obj.pg
+        self.reporter = obj.object
         self.project = obj.project
         self.source_columns = obj.source_columns
         self.target_columns = obj.target_columns
@@ -399,7 +409,7 @@ class DvRunner(Base):
 
     def extractAfterObj(self, obj):
 
-        self.reporter = obj.pg
+        self.reporter = obj.object
         self.project = obj.project
         self.value_df = obj.value_df
         self.keys_df = obj.keys_df
@@ -414,3 +424,13 @@ class DvRunner(Base):
         except Exception as e:
             self.reporter.addRow("Trying to Match Case",common.get_reason_of_failure(traceback.format_exc(), e), status.ERR)
             raise e
+        
+    def getDuplicateKeysDf(self, df, type):
+
+        self.logger.info("Checking Dulicates Keys")
+        dup_df = df[df[self.keys].duplicated(keep=False)]
+        dup_keys_df = dup_df[self.keys]
+        dup_keys_df['Reason-of-Failure'] = f'Duplicate Key in {type}'
+        if len(dup_keys_df['Reason-of-Failure']) > 0:
+            self.reporter.addRow(f"Checking for Duplicates Keys in {type}",f"Found Duplicate Keys in {type}",status.FAIL)
+        return dup_keys_df
