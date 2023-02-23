@@ -7,7 +7,8 @@ import json
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import findDuration, dateTimeEncoder
 import traceback
-
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.config import DefaultSettings
 
 class TemplateData:
     def __init__(self, header="Gemini Report"):
@@ -134,7 +135,7 @@ class TemplateData:
         json_data = self._toJSON()
         return json.loads(json_data)
 
-    def repSummary(self, repJson, output_file_path, jewel_link, failed_testcases, unuploaded_path,jewel_user):
+    def repSummary(self, repJson, output_file_path, jewel_link, failed_testcases, unuploaded_path,bridgetoken,username,jewel_user):
         """
         logging some information
         """
