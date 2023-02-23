@@ -15,6 +15,7 @@ from gempyp.engine import dataUpload
 import logging
 import requests
 from gempyp.engine.dataUpload import _getHeaders
+import re
 
 
 def read_json(file_path):
@@ -64,8 +65,6 @@ def errorHandler(logging, Error, msg="some Error Occured"):
 
 def parseMails(mail: Union[str, typing.TextIO]) -> List:
     try:
-        mailPayload={}
-
         if(mail is not None):
             if hasattr(mail, "read"):
                 mails = mail.read()
@@ -220,14 +219,14 @@ def validateZeroTestcases(testcaseLength):
             
 
 
-def runBaseUrls(jewel_user,params):
+def runBaseUrls(jewel_user,base_url,username,bridgetoken):
     if jewel_user:
             #trying rerun of base url api in case of api failure
-            if params.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
+            if base_url and DefaultSettings.apiSuccess == False:
                 logging.info("Retrying to call Api for getting urls")
-                DefaultSettings.getEnterPoint(params["BASE_URL"] ,params["BRIDGE_TOKEN"], params["USERNAME"])
-            else:
-                DefaultSettings.getEnterPoint(DefaultSettings.default_baseurl ,params["BRIDGE_TOKEN"], params["USERNAME"])
+                DefaultSettings.getEnterPoint(base_url ,bridgetoken,username)
+            if not base_url:
+                DefaultSettings.getEnterPoint(DefaultSettings.default_baseurl ,bridgetoken, username)
 
 
 def sendMail(s_run_id,mails,bridge_token,username):
