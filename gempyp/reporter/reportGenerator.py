@@ -96,7 +96,7 @@ class TemplateData:
             logging.error(f"Error: {e}")
         return "Error"
     
-    def makeSuiteReport(self, json_data, testcase_data, ouput_folder):
+    def makeSuiteReport(self, json_data, testcase_data, ouput_folder,jewel_user):
         """
         saves the report json 
         """
