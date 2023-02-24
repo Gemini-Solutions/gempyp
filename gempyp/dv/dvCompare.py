@@ -8,27 +8,43 @@ from gempyp.libs.enums.status import status
 import time
 
 
-def df_compare(df_1, df_2, key, logger, reporter, configData):
+def df_compare(src_df, tgt_df, key, logger, reporter, configData):
     try:
         logger.info("In df_compare Function")
-        headers = list(set(list(df_1.columns)) - set(key))
-        df_1["key"] = df_1[key].apply(
+        headers = list(set(list(src_df.columns)) - set(key))
+        src_df["key"] = src_df[key].apply(
             lambda row: "----".join(row.values.astype(str)), axis=1
         )
-        df_2["key"] = df_2[key].apply(
+        tgt_df["key"] = tgt_df[key].apply(
             lambda row: "----".join(row.values.astype(str)), axis=1
         )
-        df_1.set_index("key", inplace=True)
-        df_2.set_index("key", inplace=True)
-        df_1.drop(key, axis=1, inplace=True)
-        df_2.drop(key, axis=1, inplace=True)
-        src_key_values = df_1.index.values
-        tgt_key_values = df_2.index.values
+        src_df.set_index("key", inplace=True)
+        tgt_df.set_index("key", inplace=True)
+        src_df.drop(key, axis=1, inplace=True)
+        tgt_df.drop(key, axis=1, inplace=True)
+        src_key_values = src_df.index.values
+        tgt_key_values = tgt_df.index.values
         common_keys = list(set(src_key_values) & set(tgt_key_values))
         keys_only_in_src = list(set(src_key_values) - set(tgt_key_values))
         keys_only_in_tgt = list(set(tgt_key_values) - set(src_key_values))
-        df_1.drop(keys_only_in_src, inplace=True)
-        df_2.drop(keys_only_in_tgt, inplace=True)
+        src_df.drop(keys_only_in_src, inplace=True)
+        tgt_df.drop(keys_only_in_tgt, inplace=True)
+        if 'SKIP_COLUMN' in configData:
+            try:
+                skip_column = configData["SKIP_COLUMN"].split(',')
+                flag = False
+                for i in key:
+                    if i in skip_column:
+                        flag = True
+                        break
+                if flag:
+                    reporter.addRow("Column Given for Skip are Present in Keys Tag","Aborting Skip Columns",status.INFO)
+                else:
+                    src_df.drop(skip_column,axis=1,inplace=True)
+                    tgt_df.drop(skip_column,axis=1,inplace=True)
+                    headers = list(set(headers)-set(skip_column))
+            except Exception as e:
+                reporter.addRow("While Skipping Columns",get_reason_of_failure(traceback.format_exc(), e),status.INFO)
         """calling src and tgt for getting different keys"""
         src_key_dict = addDiffKeysDict(keys_only_in_src, "Source", key, logger)
         tgt_key_dict = addDiffKeysDict(keys_only_in_tgt, "Target", key, logger)
@@ -38,13 +54,13 @@ def df_compare(df_1, df_2, key, logger, reporter, configData):
         for keys, val in itertools.chain(src_key_dict.items(), tgt_key_dict.items()):
             diff_keys_dict[keys] += val
         diff_keys_dict = dict(diff_keys_dict)
-        df_1.index.astype(str)
-        df_2.index.astype(str)
-        df_1.sort_values(by=["key"], inplace=True)
-        df_2.sort_values(by=["key"], inplace=True)
+        src_df.index.astype(str)
+        tgt_df.index.astype(str)
+        src_df.sort_values(by=["key"], inplace=True)
+        tgt_df.sort_values(by=["key"], inplace=True)
         common_keys.sort()
         value_dict = getValueDict(
-            df_1, df_2, common_keys, headers, key, configData, logger
+            src_df, tgt_df, common_keys, headers, key, configData, logger
         )
         keys_length = {
             "keys_only_in_src": len(keys_only_in_src),
@@ -79,7 +95,7 @@ def addDiffKeysDict(_list, db, keys, logger):
     return key_dict
 
 
-def compareValues(commonList: list, df_1, df_2, headers, keys, configData, logger):
+def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, logger):
     logger.info("In compareValues Function")
     dummy_dict = {
         "Column-Name": [],
@@ -92,8 +108,8 @@ def compareValues(commonList: list, df_1, df_2, headers, keys, configData, logge
     if commonList:
         for key_val in commonList:
             for field in headers:
-                src_val = df_1.loc[key_val, field]
-                tgt_val = df_2.loc[key_val, field]
+                src_val = src_df.loc[key_val, field]
+                tgt_val = tgt_df.loc[key_val, field]
                 if src_val == src_val or tgt_val == tgt_val:
                     if "TOLERANCE" in configData:
                         # self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
@@ -143,14 +159,14 @@ def truncate(f, n):
     return math.floor(f * 10**n) / 10**n
 
 
-def getValueDict(df_1, df_2, common_keys, headers, key, configData, logger):
+def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
     logger.info("In getValueDict Function")
     splitSize = 100000
     common_keys_splited = [
         common_keys[x : x + splitSize] for x in range(0, len(common_keys), splitSize)
     ]
-    df_1_splited = [df_1[x : x + splitSize] for x in range(0, len(df_1), splitSize)]
-    df_2_splited = [df_2[x : x + splitSize] for x in range(0, len(df_2), splitSize)]
+    src_df_splited = [src_df[x : x + splitSize] for x in range(0, len(src_df), splitSize)]
+    tgt_df_splited = [tgt_df[x : x + splitSize] for x in range(0, len(tgt_df), splitSize)]
     # final_value_diffs = collections.defaultdict(list)
     final_value_diffs = {
             "Column-Name": [],
@@ -162,8 +178,8 @@ def getValueDict(df_1, df_2, common_keys, headers, key, configData, logger):
         logger.info(time.time())
         chunk_diffs = compareValues(
             common_keys_splited[i],
-            df_1_splited[i],
-            df_2_splited[i],
+            src_df_splited[i],
+            tgt_df_splited[i],
             headers,
             key,
             configData,
