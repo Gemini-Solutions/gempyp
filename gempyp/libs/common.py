@@ -245,4 +245,5 @@ def sendMail(s_run_id,mails,bridge_token,username):
             logging.info(response.text)
     except Exception as e:
         traceback.print_exc()
+
         

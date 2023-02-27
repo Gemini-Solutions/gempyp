@@ -82,8 +82,8 @@ class PypRest(Base):
 
 
     def poll_wait(self):
-        if(self.pollnwait is not None and type(self.pollnwait)==dict):
-            try:
+        try:
+            if(self.pollnwait is not None and type(self.pollnwait)==dict):
                     poll=self.pollnwait.get("poll",None)
                     wait=self.pollnwait.get("wait",None)
                     n=0
@@ -94,8 +94,11 @@ class PypRest(Base):
                         MiscVariables(self).miscVariables()
                         time.sleep(wait)
                         n=n+1
-            except Exception as e:
-                self.reporter.addRow("Executing poll n wait", f"Some error occurred while executing the poll and wait- {str(e)}", status.ERR)
+            else:
+                raise Exception
+        except Exception as e:
+            self.reporter.addRow("Executing poll n wait", f"Some error occurred while executing the poll and wait- {str(e)}", status.ERR)
+
     
 
     def validateConf(self):
