@@ -344,9 +344,9 @@ class PypRest(Base):
         For setting variables like testcase name, output folder etc.
         """
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
-        self.data["OUTPUT_FOLDER"] = self.data.get("OUTPUT_FOLDER", self.default_report_path)
-        if self.data["OUTPUT_FOLDER"].strip(" ") == "":
-            self.data["OUTPUT_FOLDER"] = self.default_report_path
+        self.data["REPORT_LOCATION"] = self.data.get("REPORT_LOCATION", self.default_report_path)
+        if self.data["REPORT_LOCATION"].strip(" ") == "":
+            self.data["REPORT_LOCATION"] = self.default_report_path
         self.project = self.data["PROJECT_NAME"]
         self.tcname = self.data["config_data"]["NAME"]
         self.legacy_req = None

@@ -201,7 +201,7 @@ class Engine:
             #     w.write(listToStr)
             unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder)
             
-        if("EMAILTO" in self.PARAMS.keys()):
+        if("EMAIL-TO" in self.PARAMS.keys()):
             sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
 
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
@@ -219,9 +219,9 @@ class Engine:
             report_folder_name = report_folder_name + f"_{self.report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if "OUTPUT_FOLDER" in self.PARAMS and self.PARAMS["OUTPUT_FOLDER"]:
+        if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
             self.ouput_folder = os.path.join(
-                self.PARAMS["OUTPUT_FOLDER"], report_folder_name
+                self.PARAMS["REPORT_LOCATION"], report_folder_name
             )
         else:
             home = str(Path.home())
@@ -261,7 +261,7 @@ class Engine:
         self.user = self.PARAMS.get("USER", getpass.getuser())
         self.username=self.PARAMS.get("USER", None)
         self.bridgetoken=self.PARAMS.get("BRIDGE_TOKEN", None)
-        self.base_url=self.PARAMS.get("BASE_URL",None)
+        self.base_url=self.PARAMS.get("ENTER_POINT",None)
         self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
 
@@ -280,7 +280,7 @@ class Engine:
         except Exception as e:
             pass
 
-        mail_items={"to":"EMAILTO","cc":"EMAILCC","bcc":"EMAILBCC"}
+        mail_items={"to":"EMAIL-TO","cc":"EMAIL-CC","bcc":"EMAIL-BCC"}
         self.mail={key:common.parseMails(self.PARAMS.get(value,None)) for key,value in mail_items.items()}
 
         self.project_name = self.PARAMS["PROJECT_NAME"]
@@ -685,7 +685,7 @@ class Engine:
         data["S_RUN_ID"] = self.s_run_id
         # data["USER"] = self.user
         data["MACHINE"] = self.machine
-        data["OUTPUT_FOLDER"] = self.testcase_folder
+        data["REPORT_LOCATION"] = self.testcase_folder
         data["SUITE_VARS"] = self.user_suite_variables
         data["INVOKE_USER"] = self.invoke_user
         data["USER"] = self.user

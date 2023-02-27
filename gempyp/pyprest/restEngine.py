@@ -45,7 +45,7 @@ class REngine:
             # data["S_RUN_ID"] = ""
             data["USER"] = getpass.getuser()
             data["MACHINE"] = platform.node()
-            data["OUTPUT_FOLDER"] = ""
+            data["REPORT_LOCATION"] = ""
         return data
 
     def setUp(self, config: Type[AbstarctBaseConfig]):

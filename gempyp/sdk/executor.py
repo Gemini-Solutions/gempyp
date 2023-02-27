@@ -80,7 +80,7 @@ class Executor(TestcaseReporter):
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
             dict_ = {}
             dict_["testcases"] = {}
-            dict_["OUTPUT_FOLDER"] = os.getenv("OUTPUT_FOLDER")
+            dict_["REPORT_LOCATION"] = os.getenv("REPORT_LOCATION")
             dict_["misc_data"] = {}
             tmp_dir = os.path.join(tempfile.gettempdir(), self.s_run_id + ".txt")
             
@@ -135,7 +135,7 @@ class Executor(TestcaseReporter):
         self.env = data["ENV"] = config_file['ReportSetting'].get("env", "PROD")
         data["USERNAME"] = config_file['ReportSetting'].get("USERNAME", getpass.getuser())
         data["BRIDGE_TOKEN"] = config_file['ReportSetting'].get("BRIDGE_TOKEN", None)
-        data["OUTPUT_FOLDER"] = config_file['ReportSetting'].get("outputfolder", None)
+        data["REPORT_LOCATION"] = config_file['ReportSetting'].get("outputfolder", None)
         data["MACHINE"] = platform.node()
         data["MAIL"] = config_file['ReportSetting'].get("mail", None)
         self.report_name = data["REPORT_NAME"] = config_file['ReportSetting'].get("reportname", "SMOKE_TEST")
@@ -153,7 +153,7 @@ class Executor(TestcaseReporter):
             'S_RUN_ID': self.data["S_RUN_ID"], 
             'USER': self.data["USERNAME"], 
             'MACHINE': self.data["MACHINE"], 
-            'OUTPUT_FOLDER': self.data["OUTPUT_FOLDER"]}
+            'REPORT_LOCATION': self.data["REPORT_LOCATION"]}
         return data
 
     def getMethodName(self):
@@ -231,16 +231,16 @@ class Executor(TestcaseReporter):
             report_folder_name = report_folder_name + f"_{self.report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if self.data.get("OUTPUT_FOLDER"):
+        if self.data.get("REPORT_LOCATION"):
             self.ouput_folder = os.path.join(
-                self.data.get("OUTPUT_FOLDER"), report_folder_name
+                self.data.get("REPORT_LOCATION"), report_folder_name
             )
         else:
             home = str(Path.home())
             self.ouput_folder = os.path.join(
                 home, "gempyp_reports", report_folder_name
             )
-        os.environ["OUTPUT_FOLDER"] = self.ouput_folder
+        os.environ["REPORT_LOCATION"] = self.ouput_folder
 
         os.makedirs(self.ouput_folder)
 

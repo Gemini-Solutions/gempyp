@@ -22,7 +22,7 @@ def create_report(data, s_run_id):
     data = json.loads(data)
     json_data = data[s_run_id]
     testcaseData = data["testcases"]
-    output_folder = data["OUTPUT_FOLDER"]
+    output_folder = data["REPORT_LOCATION"]
     repJson, ouput_file_path = TemplateData().makeSuiteReport(json.dumps(json_data), testcaseData, output_folder)
     suite_data = json_data["suits_details"]
     suite_data["s_id"] = data["s_id"]
