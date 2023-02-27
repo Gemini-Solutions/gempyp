@@ -87,7 +87,7 @@ def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, i
     elif '?' not in api and id is not None:
         params = {"id": id}
     response = requests.get(api, params=params, headers=headers)  
-    return response.text
+    return response
 
 
 def create_s3_link(**kwargs):
