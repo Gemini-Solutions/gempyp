@@ -20,6 +20,7 @@ from gempyp.pyprest.miscVariables import MiscVariables
 from gempyp.libs.common import download_common_file, control_text_size
 from gempyp.libs.common import moduleImports
 from gempyp.config import DefaultSettings
+import time
 
 
 class PypRest(Base):
@@ -75,8 +76,27 @@ class PypRest(Base):
         self.execRequest()
         self.postProcess()
         MiscVariables(self).miscVariables()
+        self.poll_wait()
         self.logger.info("--------------------Execution Completed ------------------------")
         self.reporter.finalizeReport()
+
+
+    def poll_wait(self):
+        if(self.pollnwait is not None):
+            try:
+                    poll=self.pollnwait.get("poll",None)
+                    wait=self.pollnwait.get("wait",None)
+                    n=0
+                    while(n<poll):
+                        self.reporter.addRow("<b>Poll n wait</b>", f'<b>Current Poll: {n}</b>', status.INFO) 
+                        self.execRequest()
+                        self.postProcess()
+                        MiscVariables(self).miscVariables()
+                        time.sleep(wait)
+                        n=n+1
+            except Exception as e:
+                self.reporter.addRow("Executing poll n wait", f"Some error occurred while executing the poll and wait- {str(e)}", status.ERR)
+    
 
     def validateConf(self):
         mandate = ["API", "METHOD"]
@@ -152,6 +172,7 @@ class PypRest(Base):
 
         #get miscellaneous variables for report.
         self.report_misc = self.data["config_data"].get("REPORT_MISC","")
+        self.pollnwait=self.data["config_data"].get("POLL_WAIT",None)
         
         # get body
         self.body = self.data["config_data"].get("BODY", {})
@@ -188,6 +209,10 @@ class PypRest(Base):
         
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
+        try:
+            self.pollnwait=json.loads(self.pollnwait)
+        except:
+            pass
         try:
             self.body = json.loads(str(self.body))
         except Exception as e:

@@ -106,8 +106,8 @@ class Engine:
         # if not self.CONFIG.getTestcaseLength():  # in case of zero testcases, we should not insert suite data 
         #     logging.warning("NO TESTCASES TO RUN..... PLEASE CHECK RUN FLAGS. ABORTING.................")
         #     sys.exit() 
-        runBaseUrls(self.jewel_user,self.PARAMS)  ### retrying to run Base Urls
-        self.DATA.validateSrunidInDB(self.jewel_user,self.s_run_id,self.PARAMS)
+        runBaseUrls(self.jewel_user,self.base_url,self.username,self.bridgetoken)  ### retrying to run Base Urls
+        self.DATA.validateSrunidInDB(self.jewel_user,self.s_run_id,self.username,self.bridgetoken)
         # if self.jewel_user:
         #     #trying rerun of base url api in case of api failure
         #     # if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
@@ -135,14 +135,14 @@ class Engine:
         self.start()
 
         if(self.jewel_user):
-            self.DATA.retryUploadSuiteData(self.PARAMS["BRIDGE_TOKEN"],self.PARAMS["USERNAME"])
+            self.DATA.retryUploadSuiteData(self.bridgetoken,self.username)
             ### Trying to reupload suite data
             # if dataUpload.suite_uploaded == False:
             #     logging.info("------Retrying to Upload Suite Data------")
             #     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
-        jewel,failed_Utestcases,unuploaded_path=self.DATA.retryUploadTestcases(self.s_run_id,self.PARAMS.get("BRIDGE_TOKEN",None),self.PARAMS.get("USERNAME",None),self.ouput_folder)
+        jewel,failed_Utestcases,unuploaded_path=self.DATA.retryUploadTestcases(self.s_run_id,self.bridgetoken,self.username,self.ouput_folder)
         # if dataUpload.suite_uploaded == True:
         #     jewelLink = DefaultSettings.getUrls('jewel-url')
         #     self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
@@ -183,10 +183,10 @@ class Engine:
         # ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         # if dataUpload.suite_uploaded == True:
         if dataUpload.suite_uploaded:
-            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
+            dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.bridgetoken, self.username, mode="PUT")
 
             if self.skip_jira == 0:
-                jira_id = jiraIntegration(self.s_run_id, self.jira_email, self.jira_access_token, self.jira_project_id, self.project_env, self.jira_workflow, self.jira_title, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], self.report_name)  # adding title  ######################### post 1.0.4
+                jira_id = jiraIntegration(self.s_run_id, self.jira_email, self.jira_access_token, self.jira_project_id, self.project_env, self.jira_workflow, self.jira_title, self.bridgetoken, self.username, self.report_name)  # adding title  ######################### post 1.0.4
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
             # # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
@@ -199,13 +199,13 @@ class Engine:
             # with open(unuploaded_path,'w') as w:
             #     w.write(listToStr)
             #     w.write(listToStr)
-            unuploaded_path=self.DATA.WriteSuiteFile(self.PARAMS,self.ouput_folder)
+            unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder)
             
-        if("MAIL" in self.PARAMS.keys()):
-            sendMail(self.s_run_id,self.mail,self.PARAMS.get("BRIDGE_TOKEN",None), self.PARAMS.get("USERNAME",None))
+        if("EMAILTO" in self.PARAMS.keys()):
+            sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
 
-        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder)
-        TemplateData().repSummary(self.repJson, output_file_path, jewel, failed_Utestcases, unuploaded_path)
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
+        TemplateData().repSummary(self.repJson, output_file_path, jewel, failed_Utestcases, unuploaded_path,self.bridgetoken,self.username,self.jewel_user)
 
     def makeOutputFolder(self):
         """
@@ -258,7 +258,10 @@ class Engine:
 
         self.machine = platform.node()
 
-        self.user = self.PARAMS.get("USERNAME", getpass.getuser())
+        self.user = self.PARAMS.get("USER", getpass.getuser())
+        self.username=self.PARAMS.get("USER", None)
+        self.bridgetoken=self.PARAMS.get("BRIDGE_TOKEN", None)
+        self.base_url=self.PARAMS.get("BASE_URL",None)
         self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
 
@@ -277,10 +280,10 @@ class Engine:
         except Exception as e:
             pass
 
-        if("MAIL" in self.PARAMS.keys()):
-            self.mail = common.parseMails(self.PARAMS["MAIL"])
+        mail_items={"to":"EMAILTO","cc":"EMAILCC","bcc":"EMAILBCC"}
+        self.mail={key:common.parseMails(self.PARAMS.get(value,None)) for key,value in mail_items.items()}
 
-        self.project_name = self.PARAMS["PROJECT"]
+        self.project_name = self.PARAMS["PROJECT_NAME"]
         self.report_name = self.PARAMS.get("REPORT_NAME")
         self.project_env = self.PARAMS["ENV"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
@@ -288,12 +291,12 @@ class Engine:
         self.jewel_run = False
         self.jewel_user = False
         self.s3_url = ""
-        if self.PARAMS.get("BRIDGE_TOKEN", None) and self.PARAMS.get("USERNAME", None):
-            self.user_suite_variables["bridge_token"]=self.PARAMS["BRIDGE_TOKEN"]
-            self.user_suite_variables["username"]=self.PARAMS["USERNAME"]
+        if self.bridgetoken and self.username:
+            self.user_suite_variables["bridge_token"]=self.bridgetoken
+            self.user_suite_variables["username"]=self.username
             self.jewel_user = True
 
-        runBaseUrls(self.jewel_user,self.PARAMS)  ### Run base Urls
+        runBaseUrls(self.jewel_user,self.base_url,self.username,self.bridgetoken)  ### Run base Urls
         if self.jewel_user:
             # trying first run of base url api in case of api failure
             # if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
@@ -304,7 +307,7 @@ class Engine:
                 self.jewel_run = True
             else:
                 try:
-                    self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=self.PARAMS["config"])[0]["Url"]
+                    self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
                     logging.info("--------- url" + str(self.s3_url))
                 except Exception as e:
                     logging.info(e)
@@ -321,8 +324,8 @@ class Engine:
         """
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
-        if "RUN_ID" in self.PARAMS:
-            self.s_run_id = self.PARAMS["RUN_ID"]
+        if "S_RUN_ID" in self.PARAMS:
+            self.s_run_id = self.PARAMS["S_RUN_ID"]
         else:
             if not self.unique_id:
                 self.unique_id = uuid.uuid4()
@@ -356,9 +359,9 @@ class Engine:
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
-            if self.PARAMS["MODE"].upper() == "SEQUENCE":
+            if self.PARAMS["RUN_MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-            elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
+            elif self.PARAMS["RUN_MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
                 self.startParallel()
             else:
                 raise TypeError("mode can only be sequence or optimize")
@@ -371,7 +374,7 @@ class Engine:
             except Exception as err:
                 logging.error(traceback.format_exc())
                 logging.info(err)
-            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.bridgetoken, self.username)
             # need to add reason of failure of the suite in misc
 
 
@@ -565,7 +568,7 @@ class Engine:
                 )
         
                 if(self.jewel_user):
-                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
+                    dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.bridgetoken, self.username)
         except Exception as e:
             traceback.print_exc()
             logging.error("in update_df: {e}".format(e=e))
@@ -619,7 +622,7 @@ class Engine:
         s3_log_file_url = log_path
         if self.jewel_user:
             try:
-                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.PARAMS["BRIDGE_TOKEN"], username=self.PARAMS["USERNAME"], file=log_path,tag="public")[0]["Url"]) 
+                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="public")[0]["Url"]) 
                 s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
             except Exception as e:
                 logging.info(e)

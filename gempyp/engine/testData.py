@@ -196,21 +196,22 @@ class TestData:
 
         return group
 
-    def validateSrunidInDB(self,jewel_user,s_run_id,params):
+    def validateSrunidInDB(self,jewel_user,s_run_id,username,bridgetoken):
         if jewel_user:
-            if "RUN_ID" in params:
+            # if "RUN_ID" in params:
+            if s_run_id:
                 logging.info("************Trying to check If s_run_id is present in DB*****************")
                 # response =  dataUpload.checkingData(s_run_id, params["BRIDGE_TOKEN"], params["USERNAME"])
-                if not dataUpload.checkingData(s_run_id, params["BRIDGE_TOKEN"], params["USERNAME"]):
+                if not dataUpload.checkingData(s_run_id,bridgetoken, username):
                     logging.info("************s_run_id not present in DB Trying to call Post*****************")
-                    dataUpload.sendSuiteData((self.toSuiteJson()), params["BRIDGE_TOKEN"], params["USERNAME"])
+                    dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken,username)
                 else:
                     print("s_run_id already present --------------")
-                    dataUpload.sendSuiteData((self.toSuiteJson()), params["BRIDGE_TOKEN"], params["USERNAME"],mode="PUT")
+                    dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken, username,mode="PUT")
             else:
-                dataUpload.sendSuiteData((self.toSuiteJson()), params["BRIDGE_TOKEN"], params["USERNAME"])
+                dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken, username)
                 ### first try to rerun the data
-                self.retryUploadSuiteData(params["BRIDGE_TOKEN"],params["USERNAME"])
+                self.retryUploadSuiteData(bridgetoken,username)
 
     
     def retryUploadSuiteData(self,bridgetoken,username):
@@ -244,8 +245,8 @@ class TestData:
         return jewel,failed_Utestcases,unuploaded_path
 
 
-    def WriteSuiteFile(self,params,output_folder):
-            if not params.get("BASE_URL", None):
+    def WriteSuiteFile(self,base_url,output_folder):
+            if not base_url:
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
             dataUpload.suite_data.append(self.toSuiteJson())
             unuploaded_path=self.unuploadedFile(output_folder,dataUpload.suite_data,"Unuploaded_suiteData.json")
