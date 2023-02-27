@@ -117,5 +117,5 @@ class AbstractSimpleTestcase(ABC):
                 report.json_data = report.template_data.makeTestcaseReport()
             result = report.serialize()
             Data.append(result)
-
         return Data
+

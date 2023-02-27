@@ -37,8 +37,10 @@ def checkUrl(url):
     try:
         l = url.index('.com')
         # url = url[:l+4:] + "/enter-point"
-        url=url+"/enter-point"
-        return url
+        if(url.__contains__("/enter-point")):
+            return url
+        else:
+            return url.strip("/")+"/enter-point"
     except Exception:
         traceback.print_exc()
         logging.warning("Error Occurs While handling the BASE_URLs")

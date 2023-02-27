@@ -58,7 +58,7 @@ class Gempyp:
         """
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
-        s_run_id = vars(self)["RUN_ID"]
+        s_run_id = vars(self)["S_RUN_ID"]
         file_path=download_common_file(self.config)
         config=XmlConfig(file_path,s_run_id)
         if not self.args:

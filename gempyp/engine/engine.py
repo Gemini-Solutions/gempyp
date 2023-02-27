@@ -789,13 +789,6 @@ class Engine:
             elif key == "PASS" or key == 'FAIL':
                 sorted_dict[key] = 0
         sorted_dict.update(unsorted_dict)
-
         return sorted_dict
-
-
-
-
-   
-
-
+     
     

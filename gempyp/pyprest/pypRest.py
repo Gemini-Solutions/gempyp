@@ -82,7 +82,7 @@ class PypRest(Base):
 
 
     def poll_wait(self):
-        if(self.pollnwait is not None):
+        if(self.pollnwait is not None and type(self.pollnwait)==dict):
             try:
                     poll=self.pollnwait.get("poll",None)
                     wait=self.pollnwait.get("wait",None)
