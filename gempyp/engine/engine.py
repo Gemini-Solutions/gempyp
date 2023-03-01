@@ -259,8 +259,8 @@ class Engine:
         self.machine = platform.node()
 
         self.user = self.PARAMS.get("USER", getpass.getuser())
-        self.username=self.PARAMS.get("USER", None)
-        self.bridgetoken=self.PARAMS.get("BRIDGE_TOKEN", None)
+        self.username=self.PARAMS.get("JEWEL_USER", None)
+        self.bridgetoken=self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
         self.base_url=self.PARAMS.get("ENTER_POINT",None)
         self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
@@ -285,7 +285,7 @@ class Engine:
 
         self.project_name = self.PARAMS["PROJECT_NAME"]
         self.report_name = self.PARAMS.get("REPORT_NAME")
-        self.project_env = self.PARAMS["ENV"]
+        self.project_env = self.PARAMS["ENVIRONMENT"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.jewel_run = False
@@ -340,8 +340,8 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.project_name,
             "report_name": self.report_name,  # earlier it was report info
-            "user": self.user,
-            "env": self.project_env,
+            "jewel_user": self.user,
+            "environment": self.project_env,
             "machine": self.machine,
             "os": platform.system().upper(),
             "meta_data": [],
@@ -359,9 +359,9 @@ class Engine:
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
-            if self.PARAMS["RUN_MODE"].upper() == "SEQUENCE":
+            if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-            elif self.PARAMS["RUN_MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
+            elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("RUN_MODE", None) is None:
                 self.startParallel()
             else:
                 raise TypeError("mode can only be sequence or optimize")
@@ -679,7 +679,7 @@ class Engine:
                 list_subtestcases.append(self.CONFIG.getSubTestcaseData(key1))
             data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
         data["PROJECT_NAME"] = self.project_name
-        data["ENV"] = self.project_env
+        data["ENVIRONMENT"] = self.project_env
         if(self.project_env.upper() in self.PARAMS.keys()):
             data[self.project_env.upper()]=self.PARAMS[self.project_env.upper()]
         data["S_RUN_ID"] = self.s_run_id
@@ -790,5 +790,6 @@ class Engine:
                 sorted_dict[key] = 0
         sorted_dict.update(unsorted_dict)
         return sorted_dict
+    
      
     
