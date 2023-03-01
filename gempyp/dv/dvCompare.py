@@ -65,8 +65,9 @@ def df_compare(src_df, tgt_df, key, logger, reporter, configData):
         keys_length = {
             "keys_only_in_src": len(keys_only_in_src),
             "keys_only_in_tgt": len(keys_only_in_tgt),
+            "common_keys": len(common_keys)
         }
-        return value_dict, diff_keys_dict, common_keys, keys_length
+        return value_dict, diff_keys_dict, keys_length
     except Exception as e:
         traceback.print_exc()
         reporter.addRow("Comparing Data", "Error Occured", status.ERR)
