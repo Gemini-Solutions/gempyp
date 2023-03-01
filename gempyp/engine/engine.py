@@ -280,7 +280,7 @@ class Engine:
         except Exception as e:
             pass
 
-        mail_items={"to":"EMAIL_TO","cc":"EMAI_CC","bcc":"EMAIL_BCC"}
+        mail_items={"to":"EMAIL_TO","cc":"EMAIL_CC","bcc":"EMAIL_BCC"}
         self.mail={key:common.parseMails(self.PARAMS.get(value,None)) for key,value in mail_items.items()}
 
         self.project_name = self.PARAMS["PROJECT_NAME"]
