@@ -203,7 +203,7 @@ class DvRunner(Base):
 
         self.project = self.data["PROJECT_NAME"]
         self.tcname = self.data["config_data"]["NAME"]
-        self.env = self.data["ENV"]
+        self.env = self.data["ENVIRONMENT"]
         self.category = self.data["config_data"].get("CATEGORY", None)
 
     def writeExcel(self, valDict, keyDict, keys_length, duplicate_keys_df, dup_keys_len):
@@ -213,7 +213,7 @@ class DvRunner(Base):
             key_check = len(keyDict["Reason-of-Failure"])
             value_check = len(valDict["Reason-of-Failure"])
             self.logger.info("In write Excel Function")
-            outputFolder = self.data['OUTPUT_FOLDER']
+            outputFolder = self.data['REPORT_LOCATION']
 
             unique_id = uuid.uuid4()
             excelPath = os.path.join(
