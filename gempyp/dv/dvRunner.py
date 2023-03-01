@@ -213,7 +213,7 @@ class DvRunner(Base):
             source_dup_keys = len(source_duplicates_df["Reason-of-Failure"])
             target_dup_keys = len(target_duplicates_df["Reason-of-Failure"])
             self.logger.info("In write Excel Function")
-            outputFolder = self.data['OUTPUT_FOLDER']
+            outputFolder = self.data['REPORT_LOCATION']
 
             unique_id = uuid.uuid4()
             excelPath = os.path.join(
