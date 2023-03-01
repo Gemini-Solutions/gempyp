@@ -201,7 +201,7 @@ class Engine:
             #     w.write(listToStr)
             unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder)
             
-        if("EMAIL-TO" in self.PARAMS.keys()):
+        if("EMAIL_TO" in self.PARAMS.keys()):
             sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
 
         self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
@@ -280,7 +280,7 @@ class Engine:
         except Exception as e:
             pass
 
-        mail_items={"to":"EMAIL-TO","cc":"EMAIL-CC","bcc":"EMAIL-BCC"}
+        mail_items={"to":"EMAIL_TO","cc":"EMAI_CC","bcc":"EMAIL_BCC"}
         self.mail={key:common.parseMails(self.PARAMS.get(value,None)) for key,value in mail_items.items()}
 
         self.project_name = self.PARAMS["PROJECT_NAME"]
