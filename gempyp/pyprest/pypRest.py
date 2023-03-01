@@ -84,18 +84,19 @@ class PypRest(Base):
     def poll_wait(self):
         if(self.pollnwait is not None):
             try:
-                    poll=self.pollnwait.get("poll",None)
-                    wait=self.pollnwait.get("wait",None)
-                    n=0
-                    while(n<poll):
-                        self.reporter.addRow("<b>Poll n wait</b>", f'<b>Current Poll: {n}</b>', status.INFO) 
-                        self.execRequest()
-                        self.postProcess()
-                        MiscVariables(self).miscVariables()
-                        time.sleep(wait)
-                        n=n+1
+                poll=self.pollnwait.get("poll",None)
+                wait=self.pollnwait.get("wait",None)
+                n=0
+                while(n<poll):
+                    self.reporter.addRow("<b>Poll n wait</b>", f'<b>Current Poll: {n}</b>', status.INFO) 
+                    self.execRequest()
+                    self.postProcess()
+                    MiscVariables(self).miscVariables()
+                    time.sleep(wait)
+                    n=n+1
             except Exception as e:
                 self.reporter.addRow("Executing poll n wait", f"Some error occurred while executing the poll and wait- {str(e)}", status.ERR)
+
     
 
     def validateConf(self):
@@ -666,5 +667,3 @@ class PypRest(Base):
                 fp.write(file_name)
             return file_path
 
-
-   

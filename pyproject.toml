@@ -37,6 +37,8 @@ requests-ntlm = "^1.1.0"
 six = "^1.16.0"
 urllib3 = "^1.26.12"
 XlsxWriter = "^3.0.3"
+snowflake-connector-python = "^2.8.3"
+fsspec = "^2023.1.0"
 
 [tool.poetry.dev-dependencies]
 Sphinx = "^4.0.2"
