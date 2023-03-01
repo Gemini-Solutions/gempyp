@@ -258,9 +258,9 @@ class Engine:
 
         self.machine = platform.node()
 
-        self.user = self.PARAMS.get("USER", getpass.getuser())
-        self.username=self.PARAMS.get("USER", None)
-        self.bridgetoken=self.PARAMS.get("BRIDGE_TOKEN", None)
+        self.user = self.PARAMS.get("JEWEL_USER", getpass.getuser())
+        self.username=self.PARAMS.get("JEWEL_USER", None)
+        self.bridgetoken=self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
         self.base_url=self.PARAMS.get("ENTER_POINT",None)
         self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
@@ -285,7 +285,7 @@ class Engine:
 
         self.project_name = self.PARAMS["PROJECT_NAME"]
         self.report_name = self.PARAMS.get("REPORT_NAME")
-        self.project_env = self.PARAMS["ENV"]
+        self.project_env = self.PARAMS["ENVIRONMENT"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.jewel_run = False
@@ -359,9 +359,9 @@ class Engine:
          check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
-            if self.PARAMS["RUN_MODE"].upper() == "SEQUENCE":
+            if self.PARAMS["MODE"].upper() == "SEQUENCE":
                 self.startSequence()
-            elif self.PARAMS["RUN_MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
+            elif self.PARAMS["MODE"].upper() == "OPTIMIZE" or self.PARAMS.get("MODE", None) is None:
                 self.startParallel()
             else:
                 raise TypeError("mode can only be sequence or optimize")
