@@ -12,14 +12,14 @@ class Gempyp:
         self.MAIL = None
         self.PROJECT_NAME = None
         self.REPORT_NAME = None
-        self.RUN_MODE = None
-        self.ENV = None
+        self.MODE = None
+        self.ENVIRONMENT = None
         self.args = None
         self.THREADS = None
-        self.BRIDGE_TOKEN = None 
+        self.JEWEL_BRIDGE_TOKEN = None 
         self.REPORT_LOCATION = None
         self.CATEGORY=None
-        self.USER=None
+        self.JEWEL_USER=None
         self.S_RUN_ID = None
         self.TESTCASE_LIST = None
         self.ENTER_POINT = None
@@ -37,11 +37,11 @@ class Gempyp:
         parser.add_argument('-mailBcc','-mailBcc',dest='MAIL-BCC', type=str, required=False)
         parser.add_argument('-project','-p',dest='PROJECT_NAME', type=str, required=False)
         parser.add_argument('-Report_name','-rn',dest='REPORT_NAME', type=str, required=False)
-        parser.add_argument('-mode','-mode',dest='RUN_MODE', type=str, required=False)
-        parser.add_argument('-env','-env',dest='ENV', type=str, required=False)
+        parser.add_argument('-mode','-mode',dest='MODE', type=str, required=False)
+        parser.add_argument('-env','-env',dest='ENVIRONMENT', type=str, required=False)
         parser.add_argument('-threads','-t',dest='THREADS',type=str, required=False)
-        parser.add_argument('-bridge_token','-token',dest='BRIDGE_TOKEN',type=str, required=False)
-        parser.add_argument('-username','-username',dest='USER',type=str, required=False)
+        parser.add_argument('-bridge_token','-token',dest='JEWEL_BRIDGE_TOKEN',type=str, required=False)
+        parser.add_argument('-username','-username',dest='JEWEL_USER',type=str, required=False)
         parser.add_argument('-report_location','-rl',dest='REPORT_LOCATION',type=str, required=False)
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
         parser.add_argument('-run_id','-run_id',dest='S_RUN_ID',type=str, required=False)

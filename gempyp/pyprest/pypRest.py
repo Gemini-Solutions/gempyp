@@ -156,7 +156,7 @@ class PypRest(Base):
 
         for k, v in self.data["config_data"].items():
             self.data.update({k.upper(): v})
-        self.env = self.data.get("ENV", "PROD").strip(" ").upper()
+        self.env = self.data.get("ENVIRONMENT", "PROD").strip(" ").upper()
         # get the api url
         if self.env not in self.data.keys():
             self.api = self.data["config_data"]["API"].strip(" ")
@@ -355,7 +355,7 @@ class PypRest(Base):
         self.res_obj = None
         self.legacy_res = None
         self.request_file = None
-        self.env = self.data["ENV"]
+        self.env = self.data["ENVIRONMENT"]
         self.variables = {}
         self.category = self.data["config_data"].get("CATEGORY", None)
         # self.product_type = self.data["PRODUCT_TYPE"]
@@ -667,5 +667,3 @@ class PypRest(Base):
                 fp.write(file_name)
             return file_path
 
-
-   

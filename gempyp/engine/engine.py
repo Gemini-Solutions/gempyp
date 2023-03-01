@@ -340,8 +340,8 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.project_name,
             "report_name": self.report_name,  # earlier it was report info
-            "user": self.user,
-            "env": self.project_env,
+            "jewel_user": self.user,
+            "environment": self.project_env,
             "machine": self.machine,
             "os": platform.system().upper(),
             "meta_data": [],
@@ -679,7 +679,7 @@ class Engine:
                 list_subtestcases.append(self.CONFIG.getSubTestcaseData(key1))
             data["config_data"]["SUBTESTCASES_DATA"]=list_subtestcases
         data["PROJECT_NAME"] = self.project_name
-        data["ENV"] = self.project_env
+        data["ENVIRONMENT"] = self.project_env
         if(self.project_env.upper() in self.PARAMS.keys()):
             data[self.project_env.upper()]=self.PARAMS[self.project_env.upper()]
         data["S_RUN_ID"] = self.s_run_id
@@ -790,5 +790,6 @@ class Engine:
                 sorted_dict[key] = 0
         sorted_dict.update(unsorted_dict)
         return sorted_dict
+    
      
     
