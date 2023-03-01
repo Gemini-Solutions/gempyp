@@ -201,7 +201,7 @@ class DvRunner(Base):
 
         self.project = self.data["PROJECT_NAME"]
         self.tcname = self.data["config_data"]["NAME"]
-        self.env = self.data["ENV"]
+        self.env = self.data["ENVIRONMENT"]
         self.category = self.data["config_data"].get("CATEGORY", None)
 
     def writeExcel(self, valDict, keyDict, common_keys, keys_length, source_duplicates_df, target_duplicates_df):
