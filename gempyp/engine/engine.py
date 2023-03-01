@@ -340,8 +340,8 @@ class Engine:
             "status": status.EXE.name,
             "project_name": self.project_name,
             "report_name": self.report_name,  # earlier it was report info
-            "jewel_user": self.user,
-            "environment": self.project_env,
+            "user": self.user,
+            "env": self.project_env,
             "machine": self.machine,
             "os": platform.system().upper(),
             "meta_data": [],
