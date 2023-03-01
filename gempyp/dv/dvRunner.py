@@ -194,10 +194,11 @@ class DvRunner(Base):
         For setting variables like testcase name, output folder etc.
         """
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
-        self.data["OUTPUT_FOLDER"] = self.data.get(
-            "OUTPUT_FOLDER", self.default_report_path)
-        if self.data["OUTPUT_FOLDER"].strip(" ") == "":
-            self.data["OUTPUT_FOLDER"] = self.default_report_path
+
+        self.data["REPORT_LOCATION"] = self.data.get("REPORT_LOCATION", self.default_report_path)
+        if self.data["REPORT_LOCATION"].strip(" ") == "":
+            self.data["REPORT_LOCATION"] = self.default_report_path
+
         self.project = self.data["PROJECT_NAME"]
         self.tcname = self.data["config_data"]["NAME"]
         self.env = self.data["ENV"]
@@ -213,6 +214,7 @@ class DvRunner(Base):
             target_dup_keys = len(target_duplicates_df["Reason-of-Failure"])
             self.logger.info("In write Excel Function")
             outputFolder = self.data['OUTPUT_FOLDER']
+
             unique_id = uuid.uuid4()
             excelPath = os.path.join(
                 outputFolder, self.configData['NAME']+str(unique_id)+'.csv')

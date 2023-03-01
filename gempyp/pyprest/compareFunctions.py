@@ -87,8 +87,8 @@ def compareNotTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent =
     
     actual_value = key_val_dict.get(key, key)
     if isinstance(actual_value, (int, float)):
-        actual_value = actual_value
-        exp_value = float(value.strip('"').strip("'").lower()) 
+        actual_value = str(actual_value)
+        exp_value = str(value.strip('"').strip("'"))
     else:
         actual_value = str(actual_value).lower()
         exp_value = value.strip('"').strip("'").lower()

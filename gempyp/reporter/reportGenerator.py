@@ -7,7 +7,8 @@ import json
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import findDuration, dateTimeEncoder
 import traceback
-
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.config import DefaultSettings
 
 class TemplateData:
     def __init__(self, header="Gemini Report"):
@@ -96,7 +97,7 @@ class TemplateData:
             logging.error(f"Error: {e}")
         return "Error"
     
-    def makeSuiteReport(self, json_data, testcase_data, ouput_folder):
+    def makeSuiteReport(self, json_data, testcase_data, ouput_folder,jewel_user):
         """
         saves the report json 
         """
@@ -118,10 +119,12 @@ class TemplateData:
         
         # if not len(testcase_data) > 0:   ##TODO
         #     return repJson, None
-        ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
-        ouput_file_path = ResultFile
-        with open(ResultFile, "w+") as f:
-            f.write(suiteReport)
+        ouput_file_path=""
+        if not jewel_user:
+            ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
+            ouput_file_path = ResultFile
+            with open(ResultFile, "w+") as f:
+                f.write(suiteReport)
         return repJson, ouput_file_path
     
     def makeTestcaseReport(self):
@@ -132,7 +135,7 @@ class TemplateData:
         json_data = self._toJSON()
         return json.loads(json_data)
 
-    def repSummary(self, repJson, output_file_path, jewel_link, failed_testcases, unuploaded_path):
+    def repSummary(self, repJson, output_file_path, jewel_link, failed_testcases, unuploaded_path,bridgetoken,username,jewel_user):
         """
         logging some information
         """
@@ -152,8 +155,12 @@ class TemplateData:
                 logging.info(f"Unuploaded Testcase File Path:{unuploaded_path}")
             #  we will check if output report is None, then display report not created
             if len(jewel_link)>0:
+#                 s3_report_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=bridgetoken, username=username, file=output_file_path.split('/')[-1],tag="public")[0]["Url"]) 
                 logging.info('Report at Jewel: {link}'.format(link = jewel_link))
-            logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
+#                 logging.info('Report at S3: {link}'.format(link = s3_report_file_url))
+                
+            if not jewel_user:
+                logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
 
 
         except Exception as e:

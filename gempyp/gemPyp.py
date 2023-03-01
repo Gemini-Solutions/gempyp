@@ -10,19 +10,19 @@ class Gempyp:
         """
         self.config = None
         self.MAIL = None
-        self.PROJECT = None
+        self.PROJECT_NAME = None
         self.REPORT_NAME = None
         self.MODE = None
-        self.ENV = None
+        self.ENVIRONMENT = None
         self.args = None
         self.THREADS = None
-        self.BRIDGE_TOKEN = None 
-        self.OUTPUT_FOLDER = None
+        self.JEWEL_BRIDGE_TOKEN = None 
+        self.REPORT_LOCATION = None
         self.CATEGORY=None
-        self.USERNAME=None
-        self.RUN_ID = None
+        self.JEWEL_USER=None
+        self.S_RUN_ID = None
         self.TESTCASE_LIST = None
-        self.BASE_URL = None
+        self.ENTER_POINT = None
         self.S_ID = None
         self.RUN_TYPE = None
         self.RUN_MODE = None
@@ -32,19 +32,21 @@ class Gempyp:
 
         parser = argparse.ArgumentParser()
         parser.add_argument('-config','-c',dest='config',type=str, required=False)
-        parser.add_argument('-mail','-m',dest='MAIL', type=str, required=False)
-        parser.add_argument('-project','-p',dest='PROJECT', type=str, required=False)
+        parser.add_argument('-mailTo','-mailTo',dest='MAIL-TO', type=str, required=False)
+        parser.add_argument('-mailCc','-mailCc',dest='MAIL-CC', type=str, required=False)
+        parser.add_argument('-mailBcc','-mailBcc',dest='MAIL-BCC', type=str, required=False)
+        parser.add_argument('-project','-p',dest='PROJECT_NAME', type=str, required=False)
         parser.add_argument('-Report_name','-rn',dest='REPORT_NAME', type=str, required=False)
         parser.add_argument('-mode','-mode',dest='MODE', type=str, required=False)
-        parser.add_argument('-env','-env',dest='ENV', type=str, required=False)
+        parser.add_argument('-env','-env',dest='ENVIRONMENT', type=str, required=False)
         parser.add_argument('-threads','-t',dest='THREADS',type=str, required=False)
-        parser.add_argument('-bridge_token','-token',dest='BRIDGE_TOKEN',type=str, required=False)
-        parser.add_argument('-username','-username',dest='USERNAME',type=str, required=False)
-        parser.add_argument('-output_folder','-of',dest='OUTPUT_FOLDER',type=str, required=False)
+        parser.add_argument('-bridge_token','-token',dest='JEWEL_BRIDGE_TOKEN',type=str, required=False)
+        parser.add_argument('-username','-username',dest='JEWEL_USER',type=str, required=False)
+        parser.add_argument('-report_location','-rl',dest='REPORT_LOCATION',type=str, required=False)
         parser.add_argument('-category','-category',dest='CATEGORY',type=str, required=False)
-        parser.add_argument('-run_id','-run_id',dest='RUN_ID',type=str, required=False)
+        parser.add_argument('-run_id','-run_id',dest='S_RUN_ID',type=str, required=False)
         parser.add_argument('-tc','-testcase_list',dest='TESTCASE_LIST',type=str, required=False)
-        parser.add_argument('-base_url','-base_url',dest='BASE_URL',type=str, required=False)
+        parser.add_argument('-enter_point','-enter_point',dest='ENTER_POINT',type=str, required=False)
         parser.add_argument('-s_id','-s_id',dest='S_ID',type=str, required=False)
         parser.add_argument('-run_type','-run_type',dest='RUN_TYPE',type=str, required=False)
         parser.add_argument('-run_mode','-run_mode',dest='RUN_MODE',type=str, required=False)
@@ -56,7 +58,7 @@ class Gempyp:
         """
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
-        s_run_id = vars(self)["RUN_ID"]
+        s_run_id = vars(self)["S_RUN_ID"]
         file_path=download_common_file(self.config)
         config=XmlConfig(file_path,s_run_id)
         if not self.args:

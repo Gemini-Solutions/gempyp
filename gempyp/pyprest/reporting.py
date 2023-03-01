@@ -20,8 +20,8 @@ def writeToReport(pyprest_obj):
         try:
             try:
                 pyprest_obj.reporter.finalizeReport()   ## need to test
-                if pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path) is None:
-                    os.makedirs(pyprest_obj.data.get("OUTPUT_FOLDER", pyprest_obj.default_report_path))
+                if pyprest_obj.data.get("REPORT_LOCATION", pyprest_obj.default_report_path) is None:
+                    os.makedirs(pyprest_obj.data.get("REPORT_LOCATION", pyprest_obj.default_report_path))
             except Exception as e:
                 pyprest_obj.logger.info(traceback.format_exc())
             pyprest_obj.reporter.json_data = pyprest_obj.reporter.template_data.makeTestcaseReport()
@@ -95,6 +95,6 @@ def makeReport_pypRest(obj, json_data):
 
         result_data = result_data.replace("::DATA::", json_data)
 
-        result_file = os.path.join(obj.data.get("OUTPUT_FOLDER"), f"{obj.reporter.testcase_name + str(time.time())}.html")
+        result_file = os.path.join(obj.data.get("REPORT_LOCATION"), f"{obj.reporter.testcase_name + str(time.time())}.html")
         with open(result_file, "w+") as f:
             f.write(result_data)
