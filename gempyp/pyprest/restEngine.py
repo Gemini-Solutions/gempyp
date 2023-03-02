@@ -41,11 +41,11 @@ class REngine:
             self.PARAMS = config.getSuiteConfig()
             data["config_data"] = config.getTestcaseData(tcname)
             data["PROJECT_NAME"] = self.PARAMS["PROJECT"]
-            data["ENV"] = self.PARAMS["ENV"]
+            data["ENVIRONMENT"] = self.PARAMS["ENVIRONMENT"]
             # data["S_RUN_ID"] = ""
             data["USER"] = getpass.getuser()
             data["MACHINE"] = platform.node()
-            data["OUTPUT_FOLDER"] = ""
+            data["REPORT_LOCATION"] = ""
         return data
 
     def setUp(self, config: Type[AbstarctBaseConfig]):
@@ -58,7 +58,7 @@ class REngine:
         self.start_time = datetime.now(timezone.utc)
         self.project_name = self.PARAMS["PROJECT"]
         self.report_name = self.PARAMS.get("REPORTNAME")
-        self.project_env = self.PARAMS["ENV"]
+        self.project_env = self.PARAMS["ENVIRONMENT"]
 
     def parseArguments(self, parser):
         parser.add_argument("-t", "--testcase",dest="testcase", help="name of the testcase to run")
