@@ -24,6 +24,7 @@ from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
+import re
 
 
 class DvRunner(Base):
@@ -53,10 +54,8 @@ class DvRunner(Base):
         self.targetCred = None
         try:
             try:
-                if "DATABASE" in self.configData:
-                    if self.configData["DATABASE"].lower() == 'custom':
-                        pass
-                    elif "DB_CONFIG_PATH" in self.configData:
+                if "SOURCE_DB" or "TARGET_DB" in self.configData:
+                    if "DB_CONFIG_PATH" in self.configData:
                         configPath = self.configData["DB_CONFIG_PATH"]
                         self.configur = configparser.RawConfigParser()
                         config = readPath(configPath)
@@ -68,7 +67,7 @@ class DvRunner(Base):
                     "Config File", "Path is not Correct", status.ERR)
                 raise Exception(e)
 
-            if 'DATABASE' in self.configData:
+            if 'SOURCE_DB' or 'TARGET_DB' in self.configData:
                 self.dbConnParser()
 
             if "KEYS" in self.configData:
@@ -77,8 +76,6 @@ class DvRunner(Base):
             else:
                 self.reporter.addRow(
                     "Checking Keys", "User Given Keys Tag not Found", status.ERR)
-                # self.reporter.addMisc(
-                #     "REASON OF FAILURE", "User Given Keys Tag not Found")
                 raise Exception("User Given Keys not Found")
 
             obj = Dataframe()
@@ -98,7 +95,6 @@ class DvRunner(Base):
             self.matchKeys(self.target_columns, "TARGET")
 
             #calling getDuplicatekeysDf function to get dataframe of duplicate keys 
-
             source_duplicates_df, src_dup_len = self.getDuplicateKeysDf(self.source_df, "SOURCE")
             target_duplicates_df, tgt_dup_len = self.getDuplicateKeysDf(self.target_df, "TARGET")
             dup_keys_length = src_dup_len + tgt_dup_len
@@ -137,32 +133,33 @@ class DvRunner(Base):
             return output, None
 
     def dbConnParser(self):
+        """checking db type and fetching credentials or connection details accordingly"""
         try:
-            # in custom mode we are sending host name using source cred while in other mode we are sending credentenials using self.sourceCred
-
-            if self.configData["DATABASE"].lower() == 'custom':
-                if 'SOURCE_CONN' in self.configData:
-                    self.sourceCred = self.configData['SOURCE_CONN']
-                if 'TARGET_CONN' in self.configData:
-                    self.targetCred = self.configData['TARGET_CONN']
-
-            else:
-                self.logger.info("----Parsing the Config File----")
-                if 'SOURCE_CONN' in self.configData:
-                    if self.configur == None:
-                        self.sourceCred = eval(self.configData["SOURCE_CONN"])
+            if 'SOURCE_DB' in self.configData:
+                if 'SOURCE_CONN' in self.configData: 
+                    if self.configData["SOURCE_DB"].lower() == 'custom':
+                        self.sourceCred = self.configData['SOURCE_CONN']
                     else:
-                        self.sourceCred = dict(self.configur.items(
-                            self.configData["SOURCE_CONN"]))
+                        if re.search("^{.*}$", self.configData["SOURCE_CONN"]):
+                            self.sourceCred = eval(self.configData["SOURCE_CONN"])
+                        else:
+                            self.logger.info("----Parsing the Config File For Source Connections----")
+                            self.sourceCred = dict(self.configur.items(
+                                self.configData["SOURCE_CONN"]))
+
+            if 'TARGET_DB' in self.configData:
                 if 'TARGET_CONN' in self.configData:
-                    if self.configur == None:
-                        self.targetCred = eval(self.configData["TARGET_CONN"])
+                    if self.configData["TARGET_DB"].lower() == 'custom':
+                        self.targetCred = self.configData['TARGET_CONN']
                     else:
-                        self.targetCred = dict(self.configur.items(
-                            self.configData["TARGET_CONN"]))
-                if self.configur != None:
-                    self.reporter.addRow(
-                        "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
+                        if re.search("^{.*}$", self.configData["TARGET_CONN"]):
+                            self.targetCred = eval(self.configData["TARGET_CONN"])
+                        else:
+                            self.targetCred = dict(self.configur.items(
+                                self.configData["TARGET_CONN"]))
+            if self.configur != None:
+                self.reporter.addRow(
+                    "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
         except Exception as e:
             self.reporter.addRow(
                 "Parsing DB Conf", "Exception Occurred", status.ERR)
