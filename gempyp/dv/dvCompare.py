@@ -67,6 +67,10 @@ def df_compare(src_df, tgt_df, key, logger, reporter, configData):
             "keys_only_in_tgt": len(keys_only_in_tgt),
             "common_keys": len(common_keys)
         }
+        if "TOLERANCE" in configData:
+            reporter.addMisc("TOLERANCE",str(configData.get("TOLERANCE",0)))
+        if "ROUND_OFF" in configData:
+            reporter.addMisc("ROUND OFF",str(configData.get("ROUND_OFF",0)))
         return value_dict, diff_keys_dict, keys_length
     except Exception as e:
         traceback.print_exc()
@@ -112,20 +116,36 @@ def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, l
                 src_val = src_df.loc[key_val, field]
                 tgt_val = tgt_df.loc[key_val, field]
                 if src_val == src_val or tgt_val == tgt_val:
-                    if "TOLERANCE" in configData:
-                        # self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
+                    if "ROUND_OFF" in configData:
+                        # self.reporter.addMisc("",str(self.configData["THRESHOLD"]))
                         if (
                             type(src_val) == numpy.float64
                             and math.isnan(src_val) == False
                         ):
-                            src_val = truncate(src_val, int(configData["TOLERANCE"]))
+                            src_val = truncate(src_val, int(configData["ROUND_OFF"]))
                         if (
                             type(tgt_val) == numpy.float64
                             and math.isnan(tgt_val) == False
                         ):
-                            tgt_val = truncate(tgt_val, int(configData["TOLERANCE"]))
+                            tgt_val = truncate(tgt_val, int(configData["ROUND_OFF"]))
 
-                    if src_val != tgt_val and type(src_val) == type(tgt_val):
+                    if type(src_val) == numpy.float64 and type(tgt_val) == numpy.float64:
+                        if math.isnan(src_val) == False and math.isnan(tgt_val) == False:
+                            if src_val - tgt_val > float(configData.get("TOLERANCE",0)):
+                                li = key_val.split("----")
+                                for i in range(len(li)):
+                                    key = keys[i]
+                                    li1 = []
+                                    li1.append(li[i])
+                                    comm_dict[key] = comm_dict.get(key, []) + li1
+                                dummy_dict.get("Column-Name").append(field)
+                                dummy_dict.get("Source-Value").append(src_val)
+                                dummy_dict.get("Target-Value").append(tgt_val)
+                                dummy_dict.get("Reason-of-Failure").append(
+                                    "Difference In Value"
+                                    )   
+
+                    elif src_val != tgt_val and type(src_val) == type(tgt_val):
                         li = key_val.split("----")
                         for i in range(len(li)):
                             key = keys[i]
@@ -194,5 +214,6 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
         # for key, val in itertools.chain(final_value_diffs.items(), chunk_diffs.items()):
         # final_value_diffs[key] += val
         # final_value_diffs = dict(final_value_diffs)
+        
         logger.info(time.time())
     return final_value_diffs
