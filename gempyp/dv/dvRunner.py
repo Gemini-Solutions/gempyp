@@ -252,22 +252,9 @@ class DvRunner(Base):
                 except Exception as e:
                     logging.warn(e)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {keys_length['common_keys']}<br>
-                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                        Mismatched Cells: {value_check}<br>
-                        Duplicate Keys: {dup_keys_len}<br>
-                        DV Result File: <a href={excel}>Result File</a>
-                        """, status=status.FAIL)
+                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File: Result File", status=status.FAIL,Attachment=[excel])
                 else:
-                    self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {keys_length['common_keys']}<br>
-                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                        Mismatched Cells: {value_check}<br>
-                        Duplicate Keys: {dup_keys_len}<br>
-                        DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
+                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File: Result File", status=status.FAIL,Attachment=[s3_url])
 
                 self.reporter.addMisc("REASON OF FAILURE", str(
                     f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))

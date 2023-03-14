@@ -60,7 +60,7 @@ def df_compare(src_df, tgt_df, key, logger, reporter, configData):
         tgt_df.sort_values(by=["key"], inplace=True)
         common_keys.sort()
         value_dict = getValueDict(
-            src_df, tgt_df, common_keys, headers, key, configData, logger
+            src_df, tgt_df, common_keys, headers, key, configData, logger, reporter
         )
         keys_length = {
             "keys_only_in_src": len(keys_only_in_src),
@@ -180,9 +180,16 @@ def truncate(f, n):
     return math.floor(f * 10**n) / 10**n
 
 
-def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
+def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger, reporter):
     logger.info("In getValueDict Function")
     splitSize = 100000
+    """this code is for deciding cutout range"""
+    if len(common_keys) > 100000:
+        length = (10*len(common_keys))//100
+        cut_out = configData.get('CUT_OUT',length)
+    else:
+        cut_out = configData.get('CUT_OUT',100000)
+
     common_keys_splited = [
         common_keys[x : x + splitSize] for x in range(0, len(common_keys), splitSize)
     ]
@@ -214,6 +221,9 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
         # for key, val in itertools.chain(final_value_diffs.items(), chunk_diffs.items()):
         # final_value_diffs[key] += val
         # final_value_diffs = dict(final_value_diffs)
+        if len(final_value_diffs["Reason-of-Failure"])> cut_out:
+            reporter.addRow("Stopping Execution","Mismatch Count is Greater than {}".format(cut_out),status.INFO)
+            break
         
         logger.info(time.time())
     return final_value_diffs
