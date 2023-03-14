@@ -173,7 +173,8 @@ def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, l
                             "Difference In Datatype"
                         )
         comm_dict.update(dummy_dict)
-        return comm_dict
+        return comm_dict 
+    
 
 
 def truncate(f, n):
