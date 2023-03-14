@@ -318,6 +318,7 @@ class DvRunner(Base):
                 target_columns=self.target_columns,
                 keys=self.keys,
                 env=self.env,
+                reporter=self.reporter 
             )
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
@@ -372,6 +373,7 @@ class DvRunner(Base):
                 value_df=self.value_df,
                 keys_df=self.keys_df,
                 env=self.env,
+                reporter=self.reporter 
             )
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
@@ -392,6 +394,7 @@ class DvRunner(Base):
         self.target_df = obj.target_df
         self.keys = obj.keys
         self.env = obj.env
+        self.reporter = obj.reporter
 
     def extractAfterObj(self, obj):
 
@@ -400,6 +403,7 @@ class DvRunner(Base):
         self.value_df = obj.value_df
         self.keys_df = obj.keys_df
         self.env = obj.env
+        self.reporter = obj.reporter
  
     def matchCase(self):
         try:

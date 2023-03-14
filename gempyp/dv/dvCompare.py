@@ -221,7 +221,7 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger, 
         # for key, val in itertools.chain(final_value_diffs.items(), chunk_diffs.items()):
         # final_value_diffs[key] += val
         # final_value_diffs = dict(final_value_diffs)
-        if len(final_value_diffs["Reason-of-Failure"])> cut_out:
+        if len(final_value_diffs["Reason-of-Failure"])> int(cut_out):
             reporter.addRow("Stopping Execution","Mismatch Count is Greater than {}".format(cut_out),status.INFO)
             break
         
