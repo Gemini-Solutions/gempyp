@@ -21,6 +21,8 @@ from gempyp.libs.common import download_common_file, control_text_size
 from gempyp.libs.common import moduleImports
 from gempyp.config import DefaultSettings
 import time
+from typing import List, Union
+import typing
 
 
 class PypRest(Base):
@@ -358,6 +360,11 @@ class PypRest(Base):
         self.env = self.data["ENVIRONMENT"]
         self.variables = {}
         self.category = self.data["config_data"].get("CATEGORY", None)
+        self.loop=self.data["config_data"].get("LOOP",None)
+        if(self.loop is not None):
+            self.loopList=self.parseLoop(self.loop)
+            print(self.loopList)
+            print("###############################")
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
@@ -666,4 +673,21 @@ class PypRest(Base):
             with open(file_path,"w+") as fp:
                 fp.write(file_name)
             return file_path
+
+    def parseLoop(self,loop: Union[str, typing.TextIO]):
+        try:
+                if hasattr(loop, "read"):
+                    loops = loop.read()
+
+                elif os.path.isfile(loop):
+                    file = open(loop, "r")
+                    loops = file.read()
+                    file.close()
+                loops = loop.strip().split(",")
+                return loops
+        except Exception as e:
+            logging.error("Error while parsing the loops")
+            logging.error(f"Error : {e}")
+            logging.error(f"traceback: {traceback.format_exc()}")
+            return None
 

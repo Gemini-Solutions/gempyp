@@ -5,7 +5,7 @@ from gempyp.dv.dvDatabases import Databases
 import traceback
 import pandas as pd
 import mysql.connector
-import snowflake.connector
+# import snowflake.connector
 import pg8000
 import re
 
