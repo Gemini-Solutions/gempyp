@@ -68,6 +68,7 @@ class beforeAfter:
 
         obj.pg.addRow("Modifying Request Body","Modified Body while in Before Method Request Body:  {\"name\": \" JOhn\",\"email\": f\"JOhn{email}@gmail.biz\",\"gender\": \"male\",\"status\": \"inactive\"}",status.INFO)
 
+        obj.request.api="https://gorest.co.in/public/v2/users"
         obj.request.body={        
 
                 "name": " JOhn",
