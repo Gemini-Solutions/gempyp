@@ -24,6 +24,7 @@ from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
+import re
 
 
 class DvRunner(Base):
@@ -53,10 +54,8 @@ class DvRunner(Base):
         self.targetCred = None
         try:
             try:
-                if "DATABASE" in self.configData:
-                    if self.configData["DATABASE"].lower() == 'custom':
-                        pass
-                    elif "DB_CONFIG_PATH" in self.configData:
+                if "SOURCE_DB" or "TARGET_DB" in self.configData:
+                    if "DB_CONFIG_PATH" in self.configData:
                         configPath = self.configData["DB_CONFIG_PATH"]
                         self.configur = configparser.RawConfigParser()
                         config = readPath(configPath)
@@ -67,8 +66,7 @@ class DvRunner(Base):
                 self.reporter.addRow(
                     "Config File", "Path is not Correct", status.ERR)
                 raise Exception(e)
-
-            if 'DATABASE' in self.configData:
+            if 'SOURCE_DB' or 'TARGET_DB' in self.configData:
                 self.dbConnParser()
 
             if "KEYS" in self.configData:
@@ -77,8 +75,6 @@ class DvRunner(Base):
             else:
                 self.reporter.addRow(
                     "Checking Keys", "User Given Keys Tag not Found", status.ERR)
-                # self.reporter.addMisc(
-                #     "REASON OF FAILURE", "User Given Keys Tag not Found")
                 raise Exception("User Given Keys not Found")
 
             obj = Dataframe()
@@ -98,9 +94,10 @@ class DvRunner(Base):
             self.matchKeys(self.target_columns, "TARGET")
 
             #calling getDuplicatekeysDf function to get dataframe of duplicate keys 
-
-            source_duplicates_df = self.getDuplicateKeysDf(self.source_df, "SOURCE")
-            target_duplicates_df = self.getDuplicateKeysDf(self.target_df, "TARGET")
+            source_duplicates_df, src_dup_len = self.getDuplicateKeysDf(self.source_df, "SOURCE")
+            target_duplicates_df, tgt_dup_len = self.getDuplicateKeysDf(self.target_df, "TARGET")
+            dup_keys_length = src_dup_len + tgt_dup_len
+            duplicate_keys_df = pd.concat([source_duplicates_df , target_duplicates_df ], axis=0, ignore_index=True)
 
             if self.source_columns == self.target_columns:
                 pass
@@ -120,9 +117,9 @@ class DvRunner(Base):
             # hadling case insensitivity
             if 'MATCH_CASE' in self.configData:
                 self.matchCase()
-            value_dict, key_dict, common_keys, keys_length = df_compare(
+            value_dict, key_dict, keys_length = df_compare(
                 self.source_df, self.target_df, self.keys, self.logger, self.reporter, self.configData)
-            self.writeExcel(value_dict, key_dict, common_keys, keys_length, source_duplicates_df,target_duplicates_df)
+            self.writeExcel(value_dict, key_dict, keys_length, duplicate_keys_df, dup_keys_length)
             self.reporter.finalizeReport()
             output = writeToReport(self)
             return output, None
@@ -135,32 +132,36 @@ class DvRunner(Base):
             return output, None
 
     def dbConnParser(self):
+        """checking db type and fetching credentials or connection details accordingly"""
         try:
-            # in custom mode we are sending host name using source cred while in other mode we are sending credentenials using self.sourceCred
-
-            if self.configData["DATABASE"].lower() == 'custom':
+            if 'SOURCE_DB' in self.configData:
                 if 'SOURCE_CONN' in self.configData:
-                    self.sourceCred = self.configData['SOURCE_CONN']
+                    if self.configData["SOURCE_DB"].lower() == 'custom':
+                        self.sourceCred = self.configData['SOURCE_CONN']
+                    else:
+                        if re.search("^{.*}$", self.configData["SOURCE_CONN"]):
+                            self.sourceCred = eval(self.configData["SOURCE_CONN"])
+                        else:
+                            self.logger.info("----Parsing the Config File For Source Connections----")
+                            self.sourceCred = dict(self.configur.items(
+                                self.configData["SOURCE_CONN"]))
+                            self.sourceCred=self.parseConfigDict(self.sourceCred)
+            
+            if 'TARGET_DB' in self.configData:
                 if 'TARGET_CONN' in self.configData:
-                    self.targetCred = self.configData['TARGET_CONN']
+                    if self.configData["TARGET_DB"].lower() == 'custom':
+                        self.targetCred = self.configData['TARGET_CONN']
+                    else:
+                        if re.search("^{.*}$", self.configData["TARGET_CONN"]):
+                            self.targetCred = eval(self.configData["TARGET_CONN"])
+                        else:
+                            self.targetCred = dict(self.configur.items(
+                                self.configData["TARGET_CONN"]))
+                            self.targetCred=self.parseConfigDict(self.targetCred)
 
-            else:
-                self.logger.info("----Parsing the Config File----")
-                if 'SOURCE_CONN' in self.configData:
-                    if self.configur == None:
-                        self.sourceCred = eval(self.configData["SOURCE_CONN"])
-                    else:
-                        self.sourceCred = dict(self.configur.items(
-                            self.configData["SOURCE_CONN"]))
-                if 'TARGET_CONN' in self.configData:
-                    if self.configur == None:
-                        self.targetCred = eval(self.configData["TARGET_CONN"])
-                    else:
-                        self.targetCred = dict(self.configur.items(
-                            self.configData["TARGET_CONN"]))
-                if self.configur != None:
-                    self.reporter.addRow(
-                        "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
+            if self.configur != None:
+                self.reporter.addRow(
+                    "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
         except Exception as e:
             self.reporter.addRow(
                 "Parsing DB Conf", "Exception Occurred", status.ERR)
@@ -193,6 +194,7 @@ class DvRunner(Base):
         """
         For setting variables like testcase name, output folder etc.
         """
+        self.data["config_data"]=self.parseConfig(self.data["config_data"])
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
 
         self.data["REPORT_LOCATION"] = self.data.get("REPORT_LOCATION", self.default_report_path)
@@ -204,14 +206,12 @@ class DvRunner(Base):
         self.env = self.data["ENVIRONMENT"]
         self.category = self.data["config_data"].get("CATEGORY", None)
 
-    def writeExcel(self, valDict, keyDict, common_keys, keys_length, source_duplicates_df, target_duplicates_df):
+    def writeExcel(self, valDict, keyDict, keys_length, duplicate_keys_df, dup_keys_len):
 
         try:
             logging.info("----------in write excel---------")
             key_check = len(keyDict["Reason-of-Failure"])
             value_check = len(valDict["Reason-of-Failure"])
-            source_dup_keys = len(source_duplicates_df["Reason-of-Failure"])
-            target_dup_keys = len(target_duplicates_df["Reason-of-Failure"])
             self.logger.info("In write Excel Function")
             outputFolder = self.data['REPORT_LOCATION']
 
@@ -224,7 +224,7 @@ class DvRunner(Base):
             self.keys_df = pd.DataFrame(keyDict)
             if "AFTER_FILE" in self.configData:
                 self.afterMethod()
-            if (key_check + value_check + source_dup_keys + target_dup_keys) == 0:
+            if (key_check + value_check + dup_keys_len) == 0:
                 self.reporter.addRow("Data Validation Report",
                                     "No MisMatch Value Found", status=status.PASS)
                 self.logger.info("----No MisMatch Value Found----")
@@ -241,7 +241,7 @@ class DvRunner(Base):
                     # else:
                     #     self.value_df.to_excel(
                     #         writer1, sheet_name='value_difference', index=False)
-                df = pd.concat([self.value_df, self.keys_df, source_duplicates_df , target_duplicates_df ], axis=0, ignore_index=True)
+                df = pd.concat([self.value_df, self.keys_df, duplicate_keys_df ], axis=0, ignore_index=True)
                 df_columns = set(df.columns)
                 fixed_columns = {"Column-Name","Source-Value","Target-Value","Reason-of-Failure"}
                 diff_columns = df_columns - fixed_columns
@@ -256,25 +256,25 @@ class DvRunner(Base):
                     logging.warn(e)
                 if not s3_url:
                     self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {len(common_keys)}
-                        Keys only in Source: {keys_length['keys_only_in_src']}
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}
-                        Mismatched Cells: {value_check}
-                        Duplicate Keys: {source_dup_keys+target_dup_keys}
+                        Matched Keys: {len(common_keys)}<br>
+                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                        Mismatched Cells: {value_check}<br>
+                        Duplicate Keys: {source_dup_keys+target_dup_keys}<br>
                         DV Result File: <a href={excel}>Result File</a>
                         """, status=status.FAIL)
                 else:
                     self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {len(common_keys)}
-                        Keys only in Source: {keys_length['keys_only_in_src']}
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}
-                        Mismatched Cells: {value_check}
-                        Duplicate Keys: {source_dup_keys+target_dup_keys}
+                        Matched Keys: {len(common_keys)}<br>
+                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                        Mismatched Cells: {value_check}<br>
+                        Duplicate Keys: {source_dup_keys+target_dup_keys}<br>
                         DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
 
                 self.reporter.addMisc("REASON OF FAILURE", str(
                     f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
-            self.reporter.addMisc("common Keys", str(len(common_keys)))
+            self.reporter.addMisc("common Keys", str(keys_length['common_keys']))
             self.reporter.addMisc("Keys Only in Source",
                                 str(keys_length['keys_only_in_src']))
             self.reporter.addMisc("Keys Only In Target",
@@ -334,6 +334,7 @@ class DvRunner(Base):
                 target_columns=self.target_columns,
                 keys=self.keys,
                 env=self.env,
+                reporter=self.reporter 
             )
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
@@ -388,6 +389,7 @@ class DvRunner(Base):
                 value_df=self.value_df,
                 keys_df=self.keys_df,
                 env=self.env,
+                reporter=self.reporter 
             )
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
@@ -408,6 +410,7 @@ class DvRunner(Base):
         self.target_df = obj.target_df
         self.keys = obj.keys
         self.env = obj.env
+        self.reporter = obj.reporter
 
     def extractAfterObj(self, obj):
 
@@ -416,6 +419,7 @@ class DvRunner(Base):
         self.value_df = obj.value_df
         self.keys_df = obj.keys_df
         self.env = obj.env
+        self.reporter = obj.reporter
  
     def matchCase(self):
         try:
@@ -431,8 +435,29 @@ class DvRunner(Base):
 
         self.logger.info("Checking Dulicates Keys")
         dup_df = df[df[self.keys].duplicated(keep=False)]
+
         dup_keys_df = dup_df[self.keys]
+        dup_length = len(dup_keys_df)
+        dup_keys_df.drop_duplicates(
+                keep='last', inplace=True)
         dup_keys_df['Reason-of-Failure'] = f'Duplicate Key in {type}'
         if len(dup_keys_df['Reason-of-Failure']) > 0:
             self.reporter.addRow(f"Checking for Duplicates Keys in {type}",f"Found Duplicate Keys in {type}",status.FAIL)
-        return dup_keys_df
+        return dup_keys_df, dup_length
+    
+    def parseConfig(self,config):
+        pattern = r"ENV.\w*"
+        for key in config.keys():
+            value=config.get(key)
+            if(type(value)!=logging.Logger):
+                match=re.search(pattern, value)
+                if("ENV." in value and match and os.environ.get(match.group().replace("ENV.",""))):
+                    config[key]=re.sub(pattern,os.environ.get(match.group().replace("ENV.","")), value)
+        return config
+    
+    def parseConfigDict(self,conf):
+        for key in conf.keys():
+            if("ENV." in conf.get(key) and os.environ.get(conf.get(key).replace("ENV.",""))):
+                conf[key]=os.environ.get(conf.get(key).replace("ENV.",""))
+        return conf
+                
