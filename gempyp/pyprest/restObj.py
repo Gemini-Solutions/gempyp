@@ -18,6 +18,8 @@ class RestObj:
             self.legacy_req = kwargs["legacy_req"]
         if "request_file" in kwargs:
             self.request_file = kwargs["request_file"]
+        if "legacy_request_file" in kwargs:
+            self.legacy_request_file=kwargs["legacy_request_file"]
         if "env" in kwargs:
             self.env = kwargs["env"]
 

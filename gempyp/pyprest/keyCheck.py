@@ -65,11 +65,11 @@ class KeyCheck:
                     result = ''
                     if 'legacy' in self.key_list[0]:
                         result = self.findKeys(self.legacy_response_body, self.key_list, self.temp_key_list,"legacy")
-                        legacy_content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                        legacy_content_found += "" + ".".join(self.key_list) + "=" + result + " "
 
                     else:
                         result = self.findKeys(self.response_body, self.key_list,self.temp_key_list)
-                        content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                        content_found += "" + ".".join(self.key_list) + "=" + result + " "
                     if "NOT FOUND" in result:
                         count_found_fail += 1
                     if count_found_fail > 0:
@@ -82,7 +82,7 @@ class KeyCheck:
                     result = self.findKeys(self.response_body, self.key_list, self.temp_key_list)
                     if "NOT FOUND" in result:
                         count_found_fail += 1
-                    content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                    content_found += "" + ".".join(self.key_list) + "=" + result + " "
 
                     if count_found_fail > 0:
                         _status = status.FAIL
@@ -105,11 +105,11 @@ class KeyCheck:
                     result = ''
                     if 'legacy' in self.key_list[0]:
                         result = self.findKeys(self.legacy_response_body, self.key_list, self.temp_key_list,"legacy")
-                        legacy_content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                        legacy_content_found += "" + ".".join(self.key_list) + "=" + result + " "
 
                     else:
                         result = self.findKeys(self.response_body, self.key_list,self.temp_key_list)
-                        content_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                        content_found += "" + ".".join(self.key_list) + "=" + result + " "
                     if "NOT FOUND" in result:
                         count_found_fail += 1
                     if count_found_fail > 0:
@@ -121,7 +121,7 @@ class KeyCheck:
                     result = self.findKeys(self.response_body, self.key_list, self.temp_key_list)
                     if result == "FOUND":
                         count_notfound_fail += 1
-                    content_not_found += "<b>" + ".".join(self.key_list) + "</b>=" + result + "<br>"
+                    content_not_found += "" + ".".join(self.key_list) + "=" + result + " "
 
 
                     if count_notfound_fail > 0:
@@ -133,7 +133,7 @@ class KeyCheck:
                 self.pyprest_obj.reporter.addRow("Keys to be check for presence/absence in response body of current and legacy api","Keys are not present in the response status",_status ,CURRENT_API= content_found, LEGACY_API= legacy_content_found)
                 self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Current or Legacy API Response")
             else:    
-                self.pyprest_obj.reporter.addRow("Performing key check", "Checking Keys not required in response body-</br>" + content_not_found, _status_n)
+                self.pyprest_obj.reporter.addRow("Performing key check", "Checking Keys not required in response body-" + content_not_found, _status_n)
 
             if status.FAIL in [_status, _status_n]:
                 self.pyprest_obj.reporter.assMisc("REASON OF FAILURE", "Status of key check is not as expected")

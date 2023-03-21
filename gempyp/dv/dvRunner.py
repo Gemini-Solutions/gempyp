@@ -256,20 +256,20 @@ class DvRunner(Base):
                     logging.warn(e)
                 if not s3_url:
                     self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {len(common_keys)}<br>
-                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                        Mismatched Cells: {value_check}<br>
-                        Duplicate Keys: {source_dup_keys+target_dup_keys}<br>
+                        Matched Keys: {len(common_keys)}
+                        Keys only in Source: {keys_length['keys_only_in_src']}
+                        Keys only in Target: {keys_length['keys_only_in_tgt']}
+                        Mismatched Cells: {value_check}
+                        Duplicate Keys: {source_dup_keys+target_dup_keys}
                         DV Result File: <a href={excel}>Result File</a>
                         """, status=status.FAIL)
                 else:
                     self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {len(common_keys)}<br>
-                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                        Mismatched Cells: {value_check}<br>
-                        Duplicate Keys: {source_dup_keys+target_dup_keys}<br>
+                        Matched Keys: {len(common_keys)}
+                        Keys only in Source: {keys_length['keys_only_in_src']}
+                        Keys only in Target: {keys_length['keys_only_in_tgt']}
+                        Mismatched Cells: {value_check}
+                        Duplicate Keys: {source_dup_keys+target_dup_keys}
                         DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
 
                 self.reporter.addMisc("REASON OF FAILURE", str(

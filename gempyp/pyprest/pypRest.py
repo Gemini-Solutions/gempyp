@@ -90,7 +90,7 @@ class PypRest(Base):
                 wait=self.pollnwait.get("wait",None)
                 n=0
                 while(n<poll):
-                    self.reporter.addRow("<b>Poll n wait</b>", f'<b>Current Poll: {n}</b>', status.INFO) 
+                    self.reporter.addRow("Poll n wait", f'Current Poll: {n}', status.INFO) 
                     self.execRequest()
                     self.postProcess()
                     MiscVariables(self).miscVariables()
@@ -123,7 +123,7 @@ class PypRest(Base):
             self.variables["suite"] = self.data["SUITE_VARS"]
             self.parent_data = self.data["config_data"]
             for i in range(len(self.list_subtestcases)):
-                self.reporter.addRow("<b>Subtestcase</b>",f'<b>Subtestcase Name: {self.list_subtestcases[i]["NAME"]}</b>',status.INFO)
+                self.reporter.addRow("Subtestcase",f'Subtestcase Name: {self.list_subtestcases[i]["NAME"]}',status.INFO)
                 log_path = self.data["config_data"].get("log_path", None)
                 self.data["config_data"]=self.list_subtestcases[i]
                 self.data["config_data"]["log_path"] = log_path
@@ -201,14 +201,17 @@ class PypRest(Base):
         self.password = self.data["config_data"].get("PASSWORD", None)
 
         #get values of mandatory keys of legacy apis
-        if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
-            self.legacy_api = self.data["config_data"]["LEGACY_API"].strip(" ")
-            self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
-            self.legacy_headers = json.loads(str(self.data["config_data"].get("LEGACY_HEADERS", {})))
-            self.legacy_body = json.loads(str(self.data["config_data"].get("LEGACY_BODY", {})))
-            self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
-            self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
+        # if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
+        self.legacy_api = self.data["config_data"].get("LEGACY_API",None)
+        self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
+        self.legacy_headers = self.data["config_data"].get("LEGACY_HEADERS", {})
+        self.legacy_body = self.data["config_data"].get("LEGACY_BODY", {})
+        self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
+        self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
+        self.legacy_file=self.data["config_data"].get("LEGACY_REQUEST_FILE", None)
         #setting variables and variable replacement
+        print(self.variables)
+        print("###############################")
         
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
@@ -217,14 +220,25 @@ class PypRest(Base):
         except:
             pass
         try:
-            self.body = json.loads(str(self.body))
+            self.legacy_body=json.loads(str(self.legacy_body))
         except Exception as e:
-            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}</br>Body - " + str(self.get_text(str(self.body))), status.FAIL)
+            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        try:
+            self.legacy_headers=json.loads(str(self.legacy_headers))
+        except Exception as e:
+            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        try:
+            self.body = json.loads(str(self.body))
+            
+        except Exception as e:
+            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
             self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
         try:
             self.headers=json.loads(str(self.headers))
         except Exception as e:
-            self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}</br>Headers - " + str(self.get_text(str(self.headers))), status.FAIL)
+            self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}Headers - " + str(self.headers), status.FAIL)
             self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
     def file_upload(self,json_form_data): 
@@ -270,6 +284,10 @@ class PypRest(Base):
             self.legacy_req.method = self.legacy_method
             self.legacy_req.headers = self.legacy_headers
             self.legacy_req.body = self.legacy_body  
+            print(self.legacy_file)
+            print("##############################")
+            if(self.legacy_file is not None):
+                self.legacy_req.file=self.file_upload(json.loads(self.legacy_file))
         # calling the before method after creating the request object.
         self.beforeMethod()
         self.logRequest()
@@ -286,10 +304,10 @@ class PypRest(Base):
             self.logger.info(f"headers: {self.req_obj.headers}") 
             
             # addig request misc
-            self.reporter.addMisc("REQUEST URL", self.get_text(str(self.req_obj.api)))
-            self.reporter.addMisc("REQUEST METHOD", self.get_text(str(self.req_obj.method)))
-            self.reporter.addMisc("REQUEST BODY", self.get_text(str(self.req_obj.body)) ) # s3
-            self.reporter.addMisc("REQUEST HEADERS", self.get_text(str(self.req_obj.headers)))
+            self.reporter.addMisc("REQUEST URL", str(self.req_obj.api))
+            self.reporter.addMisc("REQUEST METHOD", str(self.req_obj.method))
+            self.reporter.addMisc("REQUEST BODY", str(self.req_obj.body))# s3
+            self.reporter.addMisc("REQUEST HEADERS",str(self.req_obj.headers))
 
             # execute request
             self.res_obj = api.Api().execute(self.req_obj)
@@ -297,8 +315,8 @@ class PypRest(Base):
                 self.response_obj.append(self.res_obj)
             self.logger.info(f"API response code: {str(self.res_obj.status_code)}")
 
-            self.reporter.addMisc("RESPONSE BODY", self.get_text(str(self.res_obj.response_body)))  # s3
-            self.reporter.addMisc("RESPONSE HEADERS", self.get_text(str(self.res_obj.response_headers)))
+            self.reporter.addMisc("RESPONSE BODY", str(self.res_obj.response_body)) # s3
+            self.reporter.addMisc("RESPONSE HEADERS", str(self.res_obj.response_headers))
             self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.res_obj.status_code}/{str(self.exp_status_code).strip('[]')}")
             # logging legacy api
             try:
@@ -311,15 +329,15 @@ class PypRest(Base):
                 self.logger.info(f"legacy headers: {self.legacy_req.headers}")
 
                 # addig request misc
-                self.reporter.addMisc("LEGACY REQUEST URL", self.get_text(str(self.legacy_req.api)))
-                self.reporter.addMisc("LEGACY REQUEST METHOD", self.get_text(str(self.legacy_req.method)))
-                self.reporter.addMisc("LEGACY REQUEST BODY", self.get_text(str(self.legacy_req.body)))  # s3
-                self.reporter.addMisc("LEGACY REQUEST HEADERS", self.get_text(str(self.legacy_req.headers)))
+                self.reporter.addMisc("LEGACY REQUEST URL", str(self.legacy_req.api))
+                self.reporter.addMisc("LEGACY REQUEST METHOD", str(self.legacy_req.method))
+                self.reporter.addMisc("LEGACY REQUEST BODY", str(self.legacy_req.body)) # s3
+                self.reporter.addMisc("LEGACY REQUEST HEADERS", str(self.legacy_req.headers))
 
                 self.legacy_res = api.Api().execute(self.legacy_req)
 
-                self.reporter.addMisc("LEGACY RESPONSE BODY", self.get_text(str(self.legacy_res.response_body)))  # s3
-                self.reporter.addMisc("LEGACY RESPONSE HEADERS", self.get_text(str(self.legacy_res.response_headers)))
+                self.reporter.addMisc("LEGACY RESPONSE BODY", str(self.legacy_res.response_body))  # s3
+                self.reporter.addMisc("LEGACY RESPONSE HEADERS", str(self.legacy_res.response_headers))
                 self.reporter.addMisc("ACTUAL/EXPECTED RESPONSE CODE", f"{self.legacy_res.status_code}/{str(self.legacy_exp_status_code).strip('[]')}")
 
 
@@ -357,6 +375,7 @@ class PypRest(Base):
         self.res_obj = None
         self.legacy_res = None
         self.request_file = None
+        self.legacy_request_file=None
         self.env = self.data["ENVIRONMENT"]
         self.variables = {}
         self.category = self.data["config_data"].get("CATEGORY", None)
@@ -368,68 +387,70 @@ class PypRest(Base):
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
-        if self.legacy_req is not None and self.legacy_req.api != '':
+        if self.legacy_req is not None and self.legacy_req.api is not None:
+            print(self.legacy_req.api)
+            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             self.logger.info(f"{self.legacy_req.__dict__}")
             self.logger.info(f"{self.req_obj.__dict__}")
             
 
-            legacy_request_body = f"</br><b>REQUEST BODY</b>: {self.get_text(self.legacy_req.body)}" if self.legacy_req.method.upper() != "GET" else ""
-            current_request_body = f"</br><b>REQUEST BODY</b>: {self.get_text(self.req_obj.body)}" if self.req_obj.method.upper() != "GET" else ""
+            legacy_request_body = f"REQUEST BODY: {self.legacy_req.body}" if self.legacy_req.method.upper() != "GET" else ""
+            current_request_body = f"REQUEST BODY: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
                 
             self.reporter.addRow("Executing the rest endpoint","Execution of base api and legacy api simultaneously",
                             status.INFO ,
-                            CURRENT_API= f"<b>URL</b>: {self.req_obj.api}</br>" 
-                             + f"<b>METHOD</b>: {self.req_obj.method}</br>" 
-                             + f"<b>REQUEST HEADERS</b>: {self.req_obj.headers}" 
+                            CURRENT_API= f"URL: {self.req_obj.api}" 
+                             + f"METHOD: {self.req_obj.method}" 
+                             + f"REQUEST HEADERS: {self.req_obj.headers}" 
                              + current_request_body
-                            ,LEGACY_API=f"<b>URL</b>: {self.legacy_req.api}</br>" 
-                             + f"<b>METHOD</b>: {self.legacy_req.method}</br>" 
-                             + f"<b>REQUEST HEADERS</b>: {self.legacy_req.headers}" 
+                            ,LEGACY_API=f"URL: {self.legacy_req.api}" 
+                             + f"METHOD: {self.legacy_req.method}" 
+                             + f"REQUEST HEADERS: {self.legacy_req.headers}" 
                              + legacy_request_body
             )
         else:
-            body_str = f"</br><b>REQUEST BODY</b>: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
+            body_str = f"REQUEST BODY: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
             self.reporter.addRow("Executing the REST Endpoint", 
-                             f"<b>URL</b>: {self.req_obj.api}</br>" 
-                             + f"<b>METHOD</b>: {self.req_obj.method}</br>" 
-                             + f"<b>REQUEST HEADERS</b>: {self.req_obj.headers}" 
+                             f"URL: {self.req_obj.api}" 
+                             + f"METHOD: {self.req_obj.method}" 
+                             + f"REQUEST HEADERS: {self.req_obj.headers}" 
                              + body_str, 
                              status.PASS)
 
     def logResponse(self):
-        if self.legacy_res is not None and self.legacy_req.api !='':
+        if self.legacy_res is not None and self.legacy_req.api is not None:
             legacy_response_body = self.legacy_res.response_body
             current_response_body = self.res_obj.response_body
-            if isinstance(current_response_body, str):
-                if "<!DOCTYPE html>" in current_response_body and "</html>" in current_response_body:
-                    current_response_body = f"<a href={self.res_obj.api} target = '_blank'>Click here</a>"
-            if isinstance(legacy_response_body,str):
-                if "<!DOCTYPE html>" in legacy_response_body and "</html>" in legacy_response_body:
-                    legacy_response_body = f"<a href={self.legacy_res.api} target = '_blank'>Click here</a>"            
+            # if isinstance(current_response_body, str):
+            #     # if "<!DOCTYPE html>" in current_response_body and "</html>" in current_response_body:
+            #     #     current_response_body = f"<a href={self.res_obj.api} target = '_blank'>Click here</a>"
+            # if isinstance(legacy_response_body,str):
+            #     if "<!DOCTYPE html>" in legacy_response_body and "</html>" in legacy_response_body:
+            #         legacy_response_body = f"<a href={self.legacy_res.api} target = '_blank'>Click here</a>"            
             self.reporter.addRow("Details of the REST endpoint execution","Execution of Current and Legacy API simultaneously",
                             status.INFO ,
-                            CURRENT_API= f"<b>CURRENT RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
-                             + f"<b>CURRENT RESPONSE HEADERS</b>: {self.get_text(self.res_obj.response_headers)}</br>" 
-                             + f"<b>CURRENT RESPONSE BODY</b>:{self.get_text(current_response_body)}",
-                            LEGACY_API=f"<b>LEGACY STATUS CODE</b>: {self.legacy_res.status_code}</br>" 
-                             + f"<b>LEGACY RESPONSE HEADERS</b>: {self.get_text(self.legacy_res.response_headers)}</br>" 
-                             + f"<b>LEGACY RESPONSE BODY</b>: {self.get_text(legacy_response_body)}"
+                            CURRENT_API= f"CURRENT RESPONSE CODE: {self.res_obj.status_code}" 
+                             + f"CURRENT RESPONSE HEADERS: {self.res_obj.response_headers}" 
+                             + f"CURRENT RESPONSE BODY:{current_response_body}",
+                            LEGACY_API=f"LEGACY STATUS CODE: {self.legacy_res.status_code}" 
+                             + f"LEGACY RESPONSE HEADERS: {self.legacy_res.response_headers}" 
+                             + f"LEGACY RESPONSE BODY: {legacy_response_body}"
                              )
             if (self.legacy_res.status_code in self.legacy_exp_status_code) and (self.res_obj.status_code in self.exp_status_code) :
                 self.reporter.addRow("Validating Response Code with Expected Status Codes", "Both status codes are matching with expected status codes",
                                 status.PASS,
-                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
-                                 + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code).strip('[]')}</br>" 
-                                 + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
+                                 CURRENT_API= f"EXPECTED CURRENT RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
+                                 + f"ACTUAL CURRENT RESPONSE CODE: {str(self.res_obj.status_code)}", 
+                                 LEGACY_API= f"EXPECTED LEGACY RESPONSE CODE: {str(self.legacy_exp_status_code).strip('[]')}" 
+                                 + f"ACTUAL LEGACY RESPONSE CODE: {str(self.legacy_res.status_code)}"
                                  )
             else:
                 self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "Both status codes are not matching with expected status codes",
                                 status.FAIL,
-                                 CURRENT_API= f"<b>EXPECTED CURRENT RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
-                                 + f"<b>ACTUAL CURRENT RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"<b>EXPECTED LEGACY RESPONSE CODE</b>: {str(self.legacy_exp_status_code).strip('[]')}</br>" 
-                                 + f"<b>ACTUAL LEGACY RESPONSE CODE</b>: {str(self.legacy_res.status_code)}"
+                                 CURRENT_API= f"EXPECTED CURRENT RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
+                                 + f"ACTUAL CURRENT RESPONSE CODE: {str(self.res_obj.status_code)}", 
+                                 LEGACY_API= f"EXPECTED LEGACY RESPONSE CODE: {str(self.legacy_exp_status_code).strip('[]')}" 
+                                 + f"ACTUAL LEGACY RESPONSE CODE: {str(self.legacy_res.status_code)}"
                                  )
                 self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
@@ -437,24 +458,24 @@ class PypRest(Base):
                 # raise Exception("abort")       
         else:
             body = self.res_obj.response_body
-            if isinstance(body, str):
-                if "<!DOCTYPE html>" in body and "</html>" in body:
-                    body = f"<a href={self.req_obj.api} target = '_blank'>Click here</a>"
+            # if isinstance(body, str):
+            #     if "<!DOCTYPE html>" in body and "</html>" in body:
+            #         body = f"<a href={self.req_obj.api} target = '_blank'>Click here</a>"
         
             self.reporter.addRow("Details of Request Execution", 
-                                 f"<b>RESPONSE CODE</b>: {self.res_obj.status_code}</br>" 
-                                 + f"<b>RESPONSE HEADERS</b>: {self.get_text(self.res_obj.response_headers)}</br>" 
-                                 + f"<b>RESPONSE BODY</b>: {self.get_text(str(body))}", 
+                                 f"RESPONSE CODE: {self.res_obj.status_code}" 
+                                 + f"RESPONSE HEADERS: {self.res_obj.response_headers}" 
+                                 + f"RESPONSE BODY: {str(body)}", 
                                  status.INFO)
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
-                                 + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
+                                 f"EXPECTED RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
+                                 + f"ACTUAL RESPONSE CODE: {str(self.res_obj.status_code)}", 
                                  status.PASS)
             else:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"<b>EXPECTED RESPONSE CODE</b>: {str(self.exp_status_code).strip('[]')}</br>" 
-                                 + f"<b>ACTUAL RESPONSE CODE</b>: {str(self.res_obj.status_code)}", 
+                                 f"EXPECTED RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
+                                 + f"ACTUAL RESPONSE CODE: {str(self.res_obj.status_code)}", 
                                  status.FAIL)
                 self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes did not match, aborting testcase.....")
@@ -522,6 +543,7 @@ class PypRest(Base):
                 legacy_req=self.legacy_req,
                 legacy_res=self.legacy_res,
                 request_file=self.file,
+                legacy_request_file=self.legacy_file,
                 env=self.env,
             )
     
@@ -586,6 +608,7 @@ class PypRest(Base):
                 legacy_req=self.legacy_req,
                 legacy_res=self.legacy_res,
                 request_file=self.file,
+                legacy_request_file=self.legacy_file,
                 env=self.env,
             )
             if class_name != "":
@@ -610,6 +633,7 @@ class PypRest(Base):
         self.legacy_req = obj.legacy_req
         self.legacy_res = obj.legacy_res
         self.file = obj.request_file
+        self.legacy_file=obj.legacy_request_file
         self.env = obj.env
 
     def getExpectedStatusCode(self,exp_status_code_param):
