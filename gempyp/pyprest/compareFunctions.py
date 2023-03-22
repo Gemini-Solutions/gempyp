@@ -21,19 +21,19 @@ def compareTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
     if actual_value == exp_value:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.PASS, CURRENT_API = "-",LEGACY_API = f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied" )
+                obj.addRow(f"Running validation for {key}",f"Operator = To",status.PASS, CURRENT_API = "-",LEGACY_API = f"Expected:-- {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied" )
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.PASS, CURRENT_API=f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied",LEGACY_API="-" )
+                obj.addRow(f"Running validation for {key}",f"Operator = To",status.PASS, CURRENT_API=f"Expected:-- {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied",LEGACY_API="-" )
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied", status.PASS)
     else:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.FAIL, CURRENT_API="-",LEGACY_API = f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied" )
+                obj.addRow(f"Running validation for {key}",f"Operator = To",status.FAIL, CURRENT_API="-",LEGACY_API = f"Expected:-- {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied" )
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = To</b>",status.FAIL, CURRENT_API=f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied",LEGACY_API="-" )
+                obj.addRow(f"Running validation for {key}",f"Operator = To",status.FAIL, CURRENT_API=f"Expected:-- {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied",LEGACY_API="-" )
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied", status.FAIL)
         obj.addMisc("REASON OF FAILURE", "Mismatches found during Assertion")
 
 
@@ -47,14 +47,14 @@ def compareToResp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckResu
         if keyCheckResult == "FOUND":
             if actual_value == required_value:
                 if 'legacy' in key:
-                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"Check if values are equal.",status.PASS, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"Check if values are equal.",status.PASS, CURRENT_API=f"Value for {value} is {key_val_dict_legacy[value]}", LEGACY_API=f"Value for {key} is {key_val_dict[key]}")
                 else:
-                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"<b>Check if values are equal",status.PASS, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"Check if values are equal",status.PASS, CURRENT_API=f"Value for {key} is {key_val_dict[key]}", LEGACY_API=f"Value for {value} is {key_val_dict_legacy[value]}")
             else:
                 if 'legacy' in key:
-                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"<b>Check if values are equal",status.FAIL, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"Check if values are equal",status.FAIL, CURRENT_API=f"Value for {value} is {key_val_dict_legacy[value]}", LEGACY_API=f"Value for {key} is {key_val_dict[key]}")
                 else:
-                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"<b>Check if values are equal",status.FAIL, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>")
+                    obj.addRow(f"Comparing  |  Respective values of {key} and {value}",f"Check if values are equal",status.FAIL, CURRENT_API=f"Value for {key} is {key_val_dict[key]}", LEGACY_API=f"Value for {value} is {key_val_dict_legacy[value]}")
     except:
         traceback.print_exc()
 
@@ -65,14 +65,14 @@ def compareNotToResp(obj,key,value, key_val_dict, key_val_dict_legacy, keyCheckR
         if keyCheckResult == 'FOUND':
             if actual_value != required_value:
                 if 'legacy' in key:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are not equal.</b>",status.PASS, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
+                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"Check if values are not equal.",status.PASS, CURRENT_API=f"Value for {value} is {key_val_dict_legacy[value]}", LEGACY_API=f"Value for {key} is {key_val_dict[key]}")
                 else:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are not equal.</b>",status.PASS, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>")
+                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"Check if values are not equal.",status.PASS, CURRENT_API=f"Value for {key} is {key_val_dict[key]}", LEGACY_API=f"Value for {value} is {key_val_dict_legacy[value]}")
             else:
                 if 'legacy' in key:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are not equal.</b>",status.FAIL, CURRENT_API=f"Value for <b>{value}</b> is <b>{key_val_dict_legacy[value]}</b>", LEGACY_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>")
+                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"Check if values are not equal.",status.FAIL, CURRENT_API=f"Value for {value} is {key_val_dict_legacy[value]}", LEGACY_API=f"Value for {key} is {key_val_dict[key]}")
                 else:
-                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"<b>Check if values are not equal.</b>",status.FAIL, CURRENT_API=f"Value for <b>{key}</b> is <b>{key_val_dict[key]}</b>", LEGACY_API="")
+                    obj.addRow(f"Running Assertion on comparing the respective values of {key} and {value}",f"Check if values are not equal.",status.FAIL, CURRENT_API=f"Value for {key} is {key_val_dict[key]}", LEGACY_API="")
                     obj.addMisc("REASON OF FAILURE", "Mismatches found during Assertion")
     except:
         traceback.print_exc()
@@ -96,19 +96,19 @@ def compareNotTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent =
     if actual_value != exp_value:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = Not To</b>",status.PASS, CURRENT_API = "-",LEGACY_API = f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied" )
+                obj.addRow(f"Running validation for {key}",f"Operator = Not To",status.PASS, CURRENT_API = "-",LEGACY_API = f"Expected:-- != {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied" )
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = Not To</b>",status.PASS, CURRENT_API=f"<b>Expected:--</b> {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied",LEGACY_API="-" )
+                obj.addRow(f"Running validation for {key}",f"Operator = Not To",status.PASS, CURRENT_API=f"Expected:-- {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied",LEGACY_API="-" )
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- != {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied", status.PASS)
     else:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = Not To</b>",status.FAIL, CURRENT_API="-",LEGACY_API = f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied" )
+                obj.addRow(f"Running validation for {key}",f"Operator = Not To",status.FAIL, CURRENT_API="-",LEGACY_API = f"Expected:-- != {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied" )
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = Not To</b>",status.FAIL, CURRENT_API=f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied",LEGACY_API="-" )
+                obj.addRow(f"Running validation for {key}",f"Operator = Not To",status.FAIL, CURRENT_API=f"Expected:-- != {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied",LEGACY_API="-" )
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> != {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- != {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied", status.FAIL)
             obj.addMisc("REASON OF FAILURE", "Mismatches found during Assertion")
     
     return obj
@@ -132,19 +132,19 @@ def compareIn(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
     if actual_value in exp_value:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>" ,f"<b>Operator = in</b>", status.PASS, CURRENT_API = "-",LEGACY_API = f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied")
+                obj.addRow(f"Running validation for {key}" ,f"Operator = in", status.PASS, CURRENT_API = "-",LEGACY_API = f"Expected:-- in list {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied")
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>" ,f"<b>Operator = in</b>", status.PASS, CURRENT_API = f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied",LEGACY_API = "-")
+                obj.addRow(f"Running validation for {key}" ,f"Operator = in", status.PASS, CURRENT_API = f"Expected:-- in list {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied",LEGACY_API = "-")
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- in list {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied", status.PASS)
     else:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = in</b>", status.FAIL,CURRENT_API="-", LEGACY_API=f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied")
+                obj.addRow(f"Running validation for {key}",f"Operator = in", status.FAIL,CURRENT_API="-", LEGACY_API=f"Expected:-- in list {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied")
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = in</b>", status.FAIL,CURRENT_API=f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", LEGACY_API="-")
+                obj.addRow(f"Running validation for {key}",f"Operator = in", status.FAIL,CURRENT_API=f"Expected:-- in list {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied", LEGACY_API="-")
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- in list {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied", status.FAIL)
             obj.addMisc("REASON OF FAILURE", "Mismatches found during Assertion")
     
 
@@ -171,19 +171,19 @@ def compareNotIn(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent =
     if actual_value not in exp_value:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = not in</b>",status.PASS,CURRENT_API="-", LEGACY_API=f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied")
+                obj.addRow(f"Running validation for {key}",f"Operator = not in",status.PASS,CURRENT_API="-", LEGACY_API=f"Expected:-- not in list {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied")
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = not in</b>",status.PASS,CURRENT_API=f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", LEGACY_API="-")
+                obj.addRow(f"Running validation for {key}",f"Operator = not in",status.PASS,CURRENT_API=f"Expected:-- not in list {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied", LEGACY_API="-")
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- not in list {str(exp_value)}Actual:-- {str(actual_value)}condition satisfied", status.PASS)
     else:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = not in</b>",status.FAIL,CURRENT_API="-", LEGACY_API=f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied")
+                obj.addRow(f"Running validation for {key}",f"Operator = not in",status.FAIL,CURRENT_API="-", LEGACY_API=f"Expected:-- not in list {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied")
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = not in</b>",status.FAIL,CURRENT_API=f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", LEGACY_API="-")
+                obj.addRow(f"Running validation for {key}",f"Operator = not in",status.FAIL,CURRENT_API=f"Expected:-- not in list {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied", LEGACY_API="-")
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> not in list {str(exp_value)}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- not in list {str(exp_value)}Actual:-- {str(actual_value)}condition not satisfied", status.FAIL)
             obj.addMisc("REASON OF FAILURE", "Mismatches found during Assertion")
         
     return obj
@@ -196,19 +196,19 @@ def compareContains(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresen
     if value.lower().strip("'").strip('"') in str(actual_value).strip("'").strip('"').lower():
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = contains</b>",status.PASS, CURRENT_API="-", LEGACY_API=f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied")
+                obj.addRow(f"Running validation for {key}",f"Operator = contains",status.PASS, CURRENT_API="-", LEGACY_API=f"Expected:-- contains {value}Actual:-- {str(actual_value)}condition satisfied")
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = contains</b>",status.PASS, CURRENT_API=f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", LEGACY_API="-")
+                obj.addRow(f"Running validation for {key}",f"Operator = contains",status.PASS, CURRENT_API=f"Expected:-- contains {value}Actual:-- {str(actual_value)}condition satisfied", LEGACY_API="-")
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition satisfied", status.PASS)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- contains {value}Actual:-- {str(actual_value)}condition satisfied", status.PASS)
     else:
         if isLegacyPresent:
             if isLegacyResponse:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = contains</b>", status.FAIL, CURRENT_API="-", LEGACY_API=f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied")
+                obj.addRow(f"Running validation for {key}",f"Operator = contains", status.FAIL, CURRENT_API="-", LEGACY_API=f"Expected:-- contains {value}Actual:-- {str(actual_value)}condition not satisfied")
             else:
-                obj.addRow(f"Running validation for <b>{key}</b>",f"<b>Operator = contains</b>", status.FAIL, CURRENT_API=f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", LEGACY_API="-")
+                obj.addRow(f"Running validation for {key}",f"Operator = contains", status.FAIL, CURRENT_API=f"Expected:-- contains {value}Actual:-- {str(actual_value)}condition not satisfied", LEGACY_API="-")
         else:
-            obj.addRow(f"Running validation for {key}", f"<b>Expected:--</b> contains {value}</br><b>Actual:--</b> {str(actual_value)}</br>condition not satisfied", status.FAIL)
+            obj.addRow(f"Running validation for {key}", f"Expected:-- contains {value}Actual:-- {str(actual_value)}condition not satisfied", status.FAIL)
             obj.addMisc("REASON OF FAILURE", "Mismatches found during Assertion")
         
     return obj

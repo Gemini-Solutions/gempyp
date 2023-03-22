@@ -68,7 +68,7 @@ class AbstractSimpleTestcase(ABC):
                 wait=self.pollnwait.get("wait",None)
                 n=0
                 while(n<poll):
-                    reporter.addRow("<b>Poll n wait</b>", f'<b>Current Poll: {n}</b>', status.INFO) 
+                    reporter.addRow("Poll n wait", f'Current Poll: {n}', status.INFO) 
                     method_name = getattr(cls(), method_name1)
                     method_name(reporter)
                     time.sleep(wait)

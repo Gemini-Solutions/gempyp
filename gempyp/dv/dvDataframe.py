@@ -5,7 +5,7 @@ from gempyp.dv.dvDatabases import Databases
 import traceback
 import pandas as pd
 import mysql.connector
-import snowflake.connector
+# import snowflake.connector
 import pg8000
 import re
 
@@ -123,7 +123,7 @@ class Dataframe:
             sql = f"{db}_SQL"
             myCursor.execute(self.configData[sql])
             self.reporter.addRow(
-                f"Executing {db} SQL", f"{self.configData[sql]}<br>{db} SQL executed Successfull", status.PASS)
+                f"Executing {db} SQL", f"{self.configData[sql]}{db} SQL executed Successfull", status.PASS)
             columns = [i[0] for i in myCursor.description]
         except Exception as e:
             self.logger.error(str(e))
