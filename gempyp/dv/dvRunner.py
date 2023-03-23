@@ -24,6 +24,7 @@ from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
+from gempyp.dv.dfOperations import dateFormatHandling
 import re
 
 
@@ -118,8 +119,14 @@ class DvRunner(Base):
             # hadling case insensitivity
             if 'MATCH_CASE' in self.configData:
                 self.matchCase()
+
+            # date format handling
+            self.source_df, self.target_df = dateFormatHandling(self.source_df, self.target_df)
+            
+            #checking column compare
             value_dict, key_dict, keys_length = df_compare(
                 self.source_df, self.target_df, self.keys, self.logger, self.reporter, self.configData)
+            
             self.writeExcel(value_dict, key_dict, keys_length, duplicate_keys_df, dup_keys_length)
             self.reporter.finalizeReport()
             output = writeToReport(self)
