@@ -71,12 +71,12 @@ class VariableReplacement:
             if "SUITE.".casefold() in varName.casefold():  # ############ post 1.0.4
                 varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
                 print(varValue)
-            if "ENV.".casefold() in varName.casefold() and os.environ.get(varName.strip("$[#ENV.").strip("]")):
-                varValue = os.environ.get(varName.strip("$[#ENV.").strip("]"))
             else:
                 varValue = self.local_pre_variables[varName]
                 # suite_variables
                 # varValue = self.local_pre_variables[varName]
+            if "ENV.".casefold() in varName.casefold() and os.environ.get(varName.strip("$[#ENV.").strip("]")):
+                varValue = os.environ.get(varName.strip("$[#ENV.").strip("]"))
         except:
             return "null"
         str_val = var_name.replace("$[#"+varName+"]", str(varValue))

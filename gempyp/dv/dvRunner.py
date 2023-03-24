@@ -25,6 +25,8 @@ from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
 import re
+import json
+import ast
 
 
 class DvRunner(Base):
@@ -433,13 +435,16 @@ class DvRunner(Base):
         return dup_keys_df, dup_length
     
     def parseConfig(self,config):
-        pattern = r"ENV.\w*"
+        pattern = r"ENV.([a-zA-Z0-9_]+)"
         for key in config.keys():
             value=config.get(key)
             if(type(value)!=logging.Logger):
-                match=re.search(pattern, value)
-                if("ENV." in value and match and os.environ.get(match.group().replace("ENV.",""))):
-                    config[key]=re.sub(pattern,os.environ.get(match.group().replace("ENV.","")), value)
+                if re.search("^.*{",value):
+                    config[key] = re.sub(pattern, lambda match: f"'{os.environ.get(match.group(1), '')}'", value)
+                else:
+                    if("ENV." in value):
+                        config[key]=os.environ.get(value.replace("ENV.",""))
+        print(config)
         return config
     
     def parseConfigDict(self,conf):
