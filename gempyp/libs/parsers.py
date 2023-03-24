@@ -21,7 +21,8 @@ def xmlToDict(root) -> Dict:
 
         # if the element doesnot have any children
         else:
-            Result[element.tag.upper()] = element.text
+            if(type(element.tag)==str):
+                Result[element.tag.upper()] = element.text
     return remove_none_from_dict(Result)  ##################### post 1.0.4
 
 

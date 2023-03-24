@@ -29,6 +29,8 @@ class DvObj:
             self.value_df = kwargs["value_df"]
         if "keys_df" in kwargs:
             self.keys_df = kwargs["keys_df"]
+        if "reporter" in kwargs:
+            self.reporter = kwargs["reporter"]
 
 @property
 def returnObj():

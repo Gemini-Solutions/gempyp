@@ -24,6 +24,9 @@ from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
+import re
+import json
+import ast
 
 
 class DvRunner(Base):
@@ -53,10 +56,8 @@ class DvRunner(Base):
         self.targetCred = None
         try:
             try:
-                if "DATABASE" in self.configData:
-                    if self.configData["DATABASE"].lower() == 'custom':
-                        pass
-                    elif "DB_CONFIG_PATH" in self.configData:
+                if "SOURCE_DB" or "TARGET_DB" in self.configData:
+                    if "DB_CONFIG_PATH" in self.configData:
                         configPath = self.configData["DB_CONFIG_PATH"]
                         self.configur = configparser.RawConfigParser()
                         config = readPath(configPath)
@@ -67,8 +68,7 @@ class DvRunner(Base):
                 self.reporter.addRow(
                     "Config File", "Path is not Correct", status.ERR)
                 raise Exception(e)
-
-            if 'DATABASE' in self.configData:
+            if 'SOURCE_DB' or 'TARGET_DB' in self.configData:
                 self.dbConnParser()
 
             if "KEYS" in self.configData:
@@ -77,8 +77,6 @@ class DvRunner(Base):
             else:
                 self.reporter.addRow(
                     "Checking Keys", "User Given Keys Tag not Found", status.ERR)
-                # self.reporter.addMisc(
-                #     "REASON OF FAILURE", "User Given Keys Tag not Found")
                 raise Exception("User Given Keys not Found")
 
             obj = Dataframe()
@@ -98,7 +96,6 @@ class DvRunner(Base):
             self.matchKeys(self.target_columns, "TARGET")
 
             #calling getDuplicatekeysDf function to get dataframe of duplicate keys 
-
             source_duplicates_df, src_dup_len = self.getDuplicateKeysDf(self.source_df, "SOURCE")
             target_duplicates_df, tgt_dup_len = self.getDuplicateKeysDf(self.target_df, "TARGET")
             dup_keys_length = src_dup_len + tgt_dup_len
@@ -137,32 +134,36 @@ class DvRunner(Base):
             return output, None
 
     def dbConnParser(self):
+        """checking db type and fetching credentials or connection details accordingly"""
         try:
-            # in custom mode we are sending host name using source cred while in other mode we are sending credentenials using self.sourceCred
-
-            if self.configData["DATABASE"].lower() == 'custom':
-                if 'SOURCE_CONN' in self.configData:
-                    self.sourceCred = self.configData['SOURCE_CONN']
-                if 'TARGET_CONN' in self.configData:
-                    self.targetCred = self.configData['TARGET_CONN']
-
-            else:
-                self.logger.info("----Parsing the Config File----")
-                if 'SOURCE_CONN' in self.configData:
-                    if self.configur == None:
-                        self.sourceCred = eval(self.configData["SOURCE_CONN"])
+            if 'SOURCE_DB' in self.configData:
+                if 'SOURCE_CONN' in self.configData: 
+                    if self.configData["SOURCE_DB"].lower() == 'custom':
+                        self.sourceCred = self.configData['SOURCE_CONN']
                     else:
-                        self.sourceCred = dict(self.configur.items(
-                            self.configData["SOURCE_CONN"]))
+                        if re.search("^{.*}$", self.configData["SOURCE_CONN"]):
+                            self.sourceCred = eval(self.configData["SOURCE_CONN"])
+                        else:
+                            self.logger.info("----Parsing the Config File For Source Connections----")
+                            self.sourceCred = dict(self.configur.items(
+                                self.configData["SOURCE_CONN"]))
+                            self.sourceCred=self.parseConfigDict(self.sourceCred)
+            
+            if 'TARGET_DB' in self.configData:
                 if 'TARGET_CONN' in self.configData:
-                    if self.configur == None:
-                        self.targetCred = eval(self.configData["TARGET_CONN"])
+                    if self.configData["TARGET_DB"].lower() == 'custom':
+                        self.targetCred = self.configData['TARGET_CONN']
                     else:
-                        self.targetCred = dict(self.configur.items(
-                            self.configData["TARGET_CONN"]))
-                if self.configur != None:
-                    self.reporter.addRow(
-                        "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
+                        if re.search("^{.*}$", self.configData["TARGET_CONN"]):
+                            self.targetCred = eval(self.configData["TARGET_CONN"])
+                        else:
+                            self.targetCred = dict(self.configur.items(
+                                self.configData["TARGET_CONN"]))
+                            self.targetCred=self.parseConfigDict(self.targetCred)
+
+            if self.configur != None:
+                self.reporter.addRow(
+                    "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
         except Exception as e:
             self.reporter.addRow(
                 "Parsing DB Conf", "Exception Occurred", status.ERR)
@@ -195,6 +196,7 @@ class DvRunner(Base):
         """
         For setting variables like testcase name, output folder etc.
         """
+        self.data["config_data"]=self.parseConfig(self.data["config_data"])
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
 
         self.data["REPORT_LOCATION"] = self.data.get("REPORT_LOCATION", self.default_report_path)
@@ -203,7 +205,7 @@ class DvRunner(Base):
 
         self.project = self.data["PROJECT_NAME"]
         self.tcname = self.data["config_data"]["NAME"]
-        self.env = self.data["ENV"]
+        self.env = self.data["ENVIRONMENT"]
         self.category = self.data["config_data"].get("CATEGORY", None)
 
     def writeExcel(self, valDict, keyDict, keys_length, duplicate_keys_df, dup_keys_len):
@@ -213,7 +215,7 @@ class DvRunner(Base):
             key_check = len(keyDict["Reason-of-Failure"])
             value_check = len(valDict["Reason-of-Failure"])
             self.logger.info("In write Excel Function")
-            outputFolder = self.data['OUTPUT_FOLDER']
+            outputFolder = self.data['REPORT_LOCATION']
 
             unique_id = uuid.uuid4()
             excelPath = os.path.join(
@@ -255,22 +257,9 @@ class DvRunner(Base):
                 except Exception as e:
                     logging.warn(e)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {keys_length['common_keys']}<br>
-                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                        Mismatched Cells: {value_check}<br>
-                        Duplicate Keys: {dup_keys_len}<br>
-                        DV Result File: <a href={excel}>Result File</a>
-                        """, status=status.FAIL)
+                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[excel])
                 else:
-                    self.reporter.addRow("Data Validation Report", f"""
-                        Matched Keys: {keys_length['common_keys']}<br>
-                        Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                        Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                        Mismatched Cells: {value_check}<br>
-                        Duplicate Keys: {dup_keys_len}<br>
-                        DV Result File: <a href={s3_url}>Result File</a>""", status=status.FAIL)
+                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[s3_url])
 
                 self.reporter.addMisc("REASON OF FAILURE", str(
                     f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
@@ -334,6 +323,7 @@ class DvRunner(Base):
                 target_columns=self.target_columns,
                 keys=self.keys,
                 env=self.env,
+                reporter=self.reporter 
             )
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
@@ -388,6 +378,7 @@ class DvRunner(Base):
                 value_df=self.value_df,
                 keys_df=self.keys_df,
                 env=self.env,
+                reporter=self.reporter 
             )
             if class_name != "":
                 obj_ = getattr(file_obj, class_name)()
@@ -408,6 +399,7 @@ class DvRunner(Base):
         self.target_df = obj.target_df
         self.keys = obj.keys
         self.env = obj.env
+        self.reporter = obj.reporter
 
     def extractAfterObj(self, obj):
 
@@ -416,6 +408,7 @@ class DvRunner(Base):
         self.value_df = obj.value_df
         self.keys_df = obj.keys_df
         self.env = obj.env
+        self.reporter = obj.reporter
  
     def matchCase(self):
         try:
@@ -440,3 +433,23 @@ class DvRunner(Base):
         if len(dup_keys_df['Reason-of-Failure']) > 0:
             self.reporter.addRow(f"Checking for Duplicates Keys in {type}",f"Found Duplicate Keys in {type}",status.FAIL)
         return dup_keys_df, dup_length
+    
+    def parseConfig(self,config):
+        pattern = r"ENV.([a-zA-Z0-9_]+)"
+        for key in config.keys():
+            value=config.get(key)
+            if(type(value)!=logging.Logger):
+                if re.search("mysql.connector.connect",value) or re.search("^{",value):
+                    config[key] = re.sub(pattern, lambda match: f"'{os.environ.get(match.group(1), '')}'", value)
+                else:
+                    if("ENV." in value):
+                        config[key]=os.environ.get(value.replace("ENV.",""))
+        print(config)
+        return config
+    
+    def parseConfigDict(self,conf):
+        for key in conf.keys():
+            if("ENV." in conf.get(key) and os.environ.get(conf.get(key).replace("ENV.",""))):
+                conf[key]=os.environ.get(conf.get(key).replace("ENV.",""))
+        return conf
+                

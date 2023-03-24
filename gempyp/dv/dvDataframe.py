@@ -5,7 +5,7 @@ from gempyp.dv.dvDatabases import Databases
 import traceback
 import pandas as pd
 import mysql.connector
-import snowflake.connector
+# import snowflake.connector
 import pg8000
 import re
 
@@ -40,12 +40,12 @@ class Dataframe:
         else:
             """Connecting to sourceDB"""
             if sourceCred == None:
-                reporter.addMisc(
-                    "REASON OF FAILURE", "Database or Source Connection tag not found")
+                # reporter.addMisc(
+                    # "REASON OF FAILURE", "Source_DB or Source Connection tag not found")
                 reporter.addRow("Getting Source Connection Details",
-                                "Recheck Database Tag and Source Connection Tag", status.ERR)
+                                "Recheck Source_DB Tag and Source Connection Tag", status.ERR)
                 raise Exception(
-                    "Recheck Database Tag or Source Connection Tag")
+                    "Source_DB Tag or Source Connection Tag NOT FOUND")
             else:
                 source_df, source_columns = self.dbOperations(
                     sourceCred, "SOURCE")
@@ -76,12 +76,12 @@ class Dataframe:
         else:
             """Connecting to TargetDB"""
             if targetCred == None:
-                reporter.addMisc(
-                    "REASON OF FAILURE", "Database or Source Connection tag not found")
+                # reporter.addMisc(
+                #     "REASON OF FAILURE", "Target_DB or Target Connection tag not found")
                 reporter.addRow("Getting Target Connection Details",
-                                "Recheck for Database or Target Connection tag", status.ERR)
+                                "Recheck for Target_DB or Target Connection Tag", status.ERR)
                 raise Exception(
-                    "Database or Target Connection tag not found")
+                    "Target_DB or Target Connection Tag Not Found")
             else:
                 target_df, target_columns = self.dbOperations(
                     targetCred, "TARGET")
@@ -107,9 +107,7 @@ class Dataframe:
         try:
             log = f"----Connecting to {db}DB----"
             self.logger.info(log)
-            dbType = f"{db}DB"
-            conn = f"{db}_CONN"
-            myDB = self.connectingDB(dbType, cred, conn)
+            myDB = self.connectingDB(db, cred)
             myCursor = myDB.cursor()
         except Exception as e:
             self.reporter.addRow(
@@ -125,7 +123,7 @@ class Dataframe:
             sql = f"{db}_SQL"
             myCursor.execute(self.configData[sql])
             self.reporter.addRow(
-                f"Executing {db} SQL", f"{self.configData[sql]}<br>{db} SQL executed Successfull", status.PASS)
+                f"Executing {db} SQL", f"{self.configData[sql]}{db} SQL executed Successfull", status.PASS)
             columns = [i[0] for i in myCursor.description]
         except Exception as e:
             self.logger.error(str(e))
@@ -142,25 +140,27 @@ class Dataframe:
         myDB.close()
         return db_1, columns
 
-    def connectingDB(self, dbType, cred, conn):
+    def connectingDB(self, dbType, cred):
         
-        if self.configData["DATABASE"].lower() == 'custom':
+        db = f'{dbType}_DB'
+        if self.configData[db].lower() == 'custom':
+            conn = f"{dbType}_CONN"
             db = self.configData[conn]
             myDB = eval(db)
             # this is just to check whether connection is established or not
             dbCursor = myDB.cursor()
             self.reporter.addRow(
-                f"Connection to {dbType}:", f"Connection to {dbType} is Successfull", status.PASS)
+                f"Connection to {dbType}DB:", f"Connection to {dbType}DB is Successfull", status.PASS)
         else:
             dv = Databases()
             lib, connect = Databases.getConnectionString(
-                dv, self.configData["DATABASE"])
+                dv, self.configData[db])
             lib = importlib.import_module(lib)
             connection = getattr(lib, connect)
             myDB = connection(**cred)
             connDetails = self.getHostDetails(cred)
             self.reporter.addRow(
-                f"Connection to {dbType}: {connDetails}", f"Connection to {dbType} is Successfull", status.PASS)
+                f"Connection to {dbType}DB: {connDetails}", f"Connection to {dbType}DB is Successfull", status.PASS)
         return myDB
 
     def getHostDetails(self, details):

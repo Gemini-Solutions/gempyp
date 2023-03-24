@@ -57,8 +57,8 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
             if not os.path.isfile(f) or f == "N.A":
                 logging.error("Path of file invalid - " + str(f))
                 continue
-            files.append(("file", open(f, "rb")))
-        response = requests.post(api, files=files, params=params, headers=headers)  
+            files.append(("file", (f.split("\\")[-1],open(f, "rb"),'text/xml')))
+        response = requests.post(api, files=files, params=params, headers=headers) 
         data = json.loads(response.text) 
         if response.status_code == 200:
             data = json.loads(response.text)    
