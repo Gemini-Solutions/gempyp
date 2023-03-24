@@ -439,7 +439,7 @@ class DvRunner(Base):
         for key in config.keys():
             value=config.get(key)
             if(type(value)!=logging.Logger):
-                if re.search("^.*{",value):
+                if re.search("mysql.connector.connect",value) or re.search("^{",value):
                     config[key] = re.sub(pattern, lambda match: f"'{os.environ.get(match.group(1), '')}'", value)
                 else:
                     if("ENV." in value):
