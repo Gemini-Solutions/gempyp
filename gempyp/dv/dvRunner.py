@@ -24,7 +24,7 @@ from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
-from gempyp.dv.dfOperations import dateFormatHandling
+from gempyp.dv.dfOperations import dateFormatHandling, columnCompare
 import re
 
 
@@ -116,6 +116,11 @@ class DvRunner(Base):
                 subset=self.keys, keep='last', inplace=True)
             self.target_df.drop_duplicates(
                 subset=self.keys, keep='last', inplace=True)
+            
+            #calling compare column
+            if "COMPARE_COLUMN" in self.configData:
+                compare_column = self.configData.get("COMPARE_COLUMN",'').split(',')
+                self.source_df, self.target_df = columnCompare(self.source_df, self.target_df, self.keys, compare_column)
             # hadling case insensitivity
             if 'MATCH_CASE' in self.configData:
                 self.matchCase()
