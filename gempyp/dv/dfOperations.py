@@ -4,7 +4,6 @@ import pandas as pd
 # for handling data formatting
 def dateFormatHandling(src_df,tgt_df):
     try:
-        # print("tgt_df",tgt_df.dtypes)
         src_df = formatingDate(src_df)
         tgt_df = formatingDate(tgt_df) 
         # print("tgt_df",tgt_df.dtypes)
@@ -13,7 +12,7 @@ def dateFormatHandling(src_df,tgt_df):
         raise Exception
 
 def formatingDate(df):
-    columns = df.select_dtypes(include=['object']).columns
+    columns = df.select_dtypes(include=['datetime64']).columns
     for column in list(columns):
         df[column] = pd.to_datetime(df[column],errors='ignore')
     return df

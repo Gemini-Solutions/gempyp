@@ -26,7 +26,8 @@ from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
 from gempyp.dv.dfOperations import dateFormatHandling, columnCompare
 import re
-
+import json
+import ast
 
 class DvRunner(Base):
 
@@ -149,7 +150,16 @@ class DvRunner(Base):
         try:
             if 'SOURCE_DB' in self.configData:
                 if 'SOURCE_CONN' in self.configData: 
-                    if self.configData["SOURCE_DB"].lower() == 'custom':
+                    is_dict = True
+                    try:
+                        db_details = ast.literal_eval(self.configData["SOURCE_DB"])
+                    except Exception:
+                        is_dict = False
+                    if is_dict == True:
+                        db_type = db_details.get('type')
+                    else:
+                        db_type = self.configData["SOURCE_DB"]
+                    if db_type.lower() == 'custom':
                         self.sourceCred = self.configData['SOURCE_CONN']
                     else:
                         if re.search("^{.*}$", self.configData["SOURCE_CONN"]):
@@ -161,7 +171,17 @@ class DvRunner(Base):
 
             if 'TARGET_DB' in self.configData:
                 if 'TARGET_CONN' in self.configData:
-                    if self.configData["TARGET_DB"].lower() == 'custom':
+                    is_dict = True
+                    try:
+                        db_details = ast.literal_eval(self.configData["TARGET_DB"])
+                    except Exception:
+                        is_dict = False
+                    if is_dict == True:
+                        db_type = db_details.get('type')
+                    else:
+                        db_type = self.configData["TARGET_DB"]
+                    
+                    if db_type.lower() == 'custom':
                         self.targetCred = self.configData['TARGET_CONN']
                     else:
                         if re.search("^{.*}$", self.configData["TARGET_CONN"]):
