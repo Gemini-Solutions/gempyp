@@ -544,7 +544,7 @@ class Engine:
                 sorted_dict = self.totalOrder(unsorted_dict)
                 output[0]['json_data']['meta_data'][2] = sorted_dict
 
-            output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'] = self.set_run_type_mode()
+            output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'],output[0]['testcase_dict']['job_name'],output[0]['testcase_dict']['job_runid'] = self.set_run_type_mode()
             for i in output:
                 if 'json_data' in i:
                     i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -577,18 +577,71 @@ class Engine:
         step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}]
          
         return step
+    
+    def raise_exception(self,name):
+        raise ValueError(name+"does not exist")
 
     def set_run_type_mode(self):
-        type, mode = None, None
-        try:
-            if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value) in [i.value for i in RunTypes]:
-                type = self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value)
+        # type, mode = None, None
+        # try:
+        #     if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value) in [i.value for i in RunTypes]:
+        #         type = self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value)
 
-            operating_system = "cli-" + platform.uname().system
-            mode = self.PARAMS.get('RUN_MODE', operating_system.upper())
-        except Exception as e:
-            traceback.print_exc()
-        return type, mode
+        #     operating_system = "cli-" + platform.uname().system
+        #     mode = self.PARAMS.get('RUN_MODE', operating_system.upper())
+        # except Exception as e:
+        #     traceback.print_exc()
+        # return type, mode
+        try:
+            mappings = {('JEWEL', 'JEWEL_JOB'): { 
+                'run_type': 'Scheduled', 
+                'run_mode': 'JEWEL',
+                'job_name': lambda: os.environ.get('JEWEL_JOB',None), 
+                'job_runid': 'NONE' 
+            },
+            ('SCHEDULER_TOOL'): { 
+            'run_type': 'Scheduled', 
+            'run_mode': lambda: os.environ.get('SCHEDULER_TOOL'), 
+            'job_name': lambda: os.environ.get('SCHEDULER_JOB',self.raise_exception("Schedular job")), 
+            'job_runid': lambda: os.environ.get('SCHEDULER_RUNNUM',self.raise_exception("Schedular rennum"))
+            }, 
+            ('CI_CD_CT_TOOL'): { 
+            'run_type': 'CI-CD-CT', 
+            'run_mode': lambda: os.environ.get('CI_CD_CT_TOOL',self.raise_exception("CI_CD_CT_TOOL")), 
+            'job_name': lambda: os.environ.get('CI_CD_CT_JOB',self.raise_exception('CI_CD_CT_JOB')), 
+            'job_runid': lambda: os.environ.get('CI_CD_CT_RUNNUM',self.raise_exception('CI_CD_CT_RUNNUM')) 
+            }, 
+            ('AUTO_JOB_NAME'): { 
+            'run_type': 'Scheduled', 
+            'run_mode': 'Autosys', 
+            'job_name': lambda: os.environ['AUTOSERV'] + '.' + os.environ['AUTO_JOB_NAME'], 
+            'job_runid': lambda: os.environ['AUTO_JOBID'] 
+            }, 
+            ('JENKINS_URL'): { 
+            'run_type': lambda: 'Scheduled' if os.environ.get('BUILD_CAUSE')=='TIMERTRIGGER' else 'CI-CD-CT' if os.environ.get('BUILD_CAUSE')=='SCMTRIGGER'  else 'On Demand', 
+            'run_mode': 'Jenkins', 
+            'job_name': lambda: os.environ['JOB_DISPLAY_URL'], 
+            'job_runid': lambda: os.environ['BUILD_URL'] }
+            }
+            # Try to match the environment variables to one of the defined mappings 
+            for env_vars, mapping in mappings.items(): 
+                if any(var in os.environ for var in env_vars): 
+                        # Evaluate the values that require computation (i.e. lambda functions) 
+                        run_type = mapping['run_type']() if callable(mapping['run_type']) else mapping['run_type'] 
+                        run_mode = mapping['run_mode']() if callable(mapping['run_mode']) else mapping['run_mode'] 
+                        job_name = mapping['job_name']() if callable(mapping['job_name']) else mapping['job_name'] 
+                        job_runid = mapping['job_runid']() if callable(mapping['job_runid']) else mapping['job_runid'] 
+                        break 
+                else: 
+                    # If no mapping is found, set default values 
+                    run_type = 'On Demand' 
+                    # run_mode = os.name
+                    run_mode=platform.uname().system
+                    job_name = 'NONE' 
+                    job_runid = 'NONE' 
+            return run_type,run_mode,job_name,job_runid
+        except ValueError as e:
+            logging.error(e)
 
     def getErrorTestcase(
         self,
