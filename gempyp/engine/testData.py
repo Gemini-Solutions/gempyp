@@ -8,6 +8,8 @@ from gempyp.engine import dataUpload
 import logging
 import os
 from gempyp.config import DefaultSettings
+from cryptography.fernet import Fernet
+from gempyp.config.DefaultSettings import encrypt_key
 
 class TestData:
     def __init__(self):
@@ -229,37 +231,48 @@ class TestData:
         if dataUpload.suite_uploaded:
             jewelLink = DefaultSettings.getUrls('jewel-url')
             jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
-            if len(dataUpload.not_uploaded) != 0:
-                logging.info("------Trying again to Upload Testcase------")
-                for testcase in dataUpload.not_uploaded:
-                    dataUpload.sendTestcaseData(testcase,bridgetoken, username)
-                if dataUpload.flag:
-                    logging.warning("Testcase may be present with same tc_run_id in database")
-                unuploaded_path=self.unuploadedFile(output_folder,dataUpload.not_uploaded,"Unploaded_testCases.json")
-            failed_Utestcases = len(dataUpload.not_uploaded) 
+        if len(dataUpload.not_uploaded) != 0:
+            logging.info("------Trying again to Upload Testcase------")
+            for testcase in dataUpload.not_uploaded:
+                dataUpload.sendTestcaseData(testcase,bridgetoken, username)
+            # if dataUpload.flag:
+                # logging.warning("Testcase may be present with same tc_run_id in database")
+            # unuploaded_path=self.unuploadedFile(output_folder,dataUpload.not_uploaded,"Unploaded_testCases.json")
+            # failed_Utestcases = len(dataUpload.not_uploaded) 
             ### Creating file for unuploaded testcases
             # if len(dataUpload.not_uploaded) != 0:
             #     if dataUpload.flag == True:
             #         logging.warning("Testcase may be present with same tc_run_id in database")
             #     unuploaded_path=self.unuploadedFile(output_folder,dataUpload.not_uploaded,"Unploaded_testCases.json")
-        return jewel,failed_Utestcases,unuploaded_path
+        # return jewel,failed_Utestcases,unuploaded_path
+        return jewel,failed_Utestcases
 
 
-    def WriteSuiteFile(self,base_url,output_folder):
+    def WriteSuiteFile(self,base_url,output_folder,username,bridge_token):
             if not base_url:
                 logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
             dataUpload.suite_data.append(self.toSuiteJson())
-            unuploaded_path=self.unuploadedFile(output_folder,dataUpload.suite_data,"Unuploaded_suiteData.json")
+            unuploaded_dict = {}
+            unuploaded_dict["suite_data"] = dataUpload.suite_data
+            unuploaded_dict["testcases"] = dataUpload.not_uploaded
+            unuploaded_dict["urls"] = DefaultSettings.urls['data']
+            # unuploaded_dict["base_url"] = base_url
+            unuploaded_dict["user_name"] = username
+            unuploaded_dict["bridge_token"] = bridge_token
+            unuploaded_path=self.unuploadedFile(output_folder,unuploaded_dict,"Unuploaded_data.json")
             return unuploaded_path
 
 
     ### Function to create unuploadedFile
     def unuploadedFile(self,output_folder,data,fileName):
         unuploaded_path = ""
-        listToStr = ',\n'.join(map(str, data))
+        # listToStr = ',\n'.join(map(str, data))
         unuploaded_path = os.path.join(output_folder, fileName)
-        with open(unuploaded_path,'w') as w:
-            w.write(listToStr)
+        data = str(data)
+        fernet = Fernet(encrypt_key)
+        data = fernet.encrypt(data.encode())
+        with open(unuploaded_path,'wb') as w:
+            w.write(data)
         return unuploaded_path
         
 

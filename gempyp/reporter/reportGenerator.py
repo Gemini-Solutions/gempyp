@@ -150,17 +150,16 @@ class TemplateData:
                     log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
             logging.info(log_str.strip(" | "))
 
-            if failed_testcases != 0:
-                logging.info(f"Number of Testcases not Uploaded:{failed_testcases}")
-                logging.info(f"Unuploaded Testcase File Path:{unuploaded_path}")
+            if unuploaded_path != None:
+                logging.info(f"Unuploaded Data File Path:{unuploaded_path}")
             #  we will check if output report is None, then display report not created
             if len(jewel_link)>0:
 #                 s3_report_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=bridgetoken, username=username, file=output_file_path.split('/')[-1],tag="public")[0]["Url"]) 
                 logging.info('Report at Jewel: {link}'.format(link = jewel_link))
 #                 logging.info('Report at S3: {link}'.format(link = s3_report_file_url))
                 
-            if not jewel_user:
-                logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
+            # if not jewel_user:
+                # logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
 
 
         except Exception as e:

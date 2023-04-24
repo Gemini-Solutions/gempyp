@@ -220,10 +220,10 @@ def validateZeroTestcases(testcaseLength):
 
 
 def runBaseUrls(jewel_user,base_url,username,bridgetoken):
-    if jewel_user:
+    
             #trying rerun of base url api in case of api failure
             if base_url and DefaultSettings.apiSuccess == False:
-                logging.info("Retrying to call Api for getting urls")
+                logging.info("Trying to call Api for getting urls")
                 DefaultSettings.getEnterPoint(base_url ,bridgetoken,username)
             if not base_url:
                 DefaultSettings.getEnterPoint(DefaultSettings.default_baseurl ,bridgetoken, username)

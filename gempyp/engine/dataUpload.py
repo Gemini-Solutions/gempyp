@@ -6,6 +6,7 @@ from gempyp.libs.enums.status import status
 import logging
 import re
 import json
+import sys
 
 not_uploaded = []
 suite_data = []
@@ -67,10 +68,17 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
                 suite_data.remove(payload)
         elif response and response.status_code == 200:
             logging.info("Suite Data updated Successfully")
-        else:
+        elif re.search('50[0-9]',str(response.status_code)):
             logging.info("Suite data is not uploaded")
             if payload not in suite_data:
                 suite_data.append(payload)
+        else:
+            logging.info("Some Error From the Client Side, Terminating Execution")
+            sys.exit()
+        # else:
+        #     logging.info("Suite data is not uploaded")
+        #     if payload not in suite_data:
+        #         suite_data.append(payload)
                 
     except Exception as e:
         logging.error(traceback.format_exc())
@@ -101,6 +109,16 @@ def sendTestcaseData(payload, bridge_token, user_name):
             if payload in not_uploaded:
                 not_uploaded.remove(payload)
     ### code for adding unuploaded testcases
+        # elif re.search('50[0-9]',str(response.status_code)):
+        #     if payload not in not_uploaded:
+        #         not_uploaded.append(payload)
+        #         logging.info("Testcase data is not uploaded")
+        #         if x != None:
+        #             global flag
+        #             flag = True
+        # else:
+        #     logging.info("Some Error From the Client Side, Terminating Execution")
+        #     sys.exit()
         else:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)

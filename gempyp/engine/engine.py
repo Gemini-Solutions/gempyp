@@ -142,7 +142,7 @@ class Engine:
             #     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
-        jewel,failed_Utestcases,unuploaded_path=self.DATA.retryUploadTestcases(self.s_run_id,self.bridgetoken,self.username,self.ouput_folder)
+        jewel,failed_Utestcases=self.DATA.retryUploadTestcases(self.s_run_id,self.bridgetoken,self.username,self.ouput_folder)
         # if dataUpload.suite_uploaded == True:
         #     jewelLink = DefaultSettings.getUrls('jewel-url')
         #     self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
@@ -182,6 +182,7 @@ class Engine:
         
         # ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         # if dataUpload.suite_uploaded == True:
+        unuploaded_path = None
         if dataUpload.suite_uploaded:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.bridgetoken, self.username, mode="PUT")
 
@@ -199,7 +200,7 @@ class Engine:
             # with open(unuploaded_path,'w') as w:
             #     w.write(listToStr)
             #     w.write(listToStr)
-            unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder)
+            unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder,self.username,self.bridgetoken)
             
         if("EMAIL_TO" in self.PARAMS.keys()):
             sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
