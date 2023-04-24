@@ -614,14 +614,14 @@ class Engine:
             ('AUTO_JOB_NAME'): { 
             'run_type': 'Scheduled', 
             'run_mode': 'Autosys', 
-            'job_name': lambda: os.environ['AUTOSERV'] + '.' + os.environ['AUTO_JOB_NAME'], 
-            'job_runid': lambda: os.environ['AUTO_JOBID'] 
+            'job_name': lambda: os.environ.get('AUTOSERV',self.raise_exception("CI_CD_CT_TOOL")) + '.' + os.environ.get('AUTO_JOB_NAME',self.raise_exception("CI_CD_CT_TOOL")), 
+            'job_runid': lambda: os.environ.get('AUTO_JOBID',self.raise_exception("CI_CD_CT_TOOL"))
             }, 
             ('JENKINS_URL'): { 
             'run_type': lambda: 'Scheduled' if os.environ.get('BUILD_CAUSE')=='TIMERTRIGGER' else 'CI-CD-CT' if os.environ.get('BUILD_CAUSE')=='SCMTRIGGER'  else 'On Demand', 
             'run_mode': 'Jenkins', 
-            'job_name': lambda: os.environ['JOB_DISPLAY_URL'], 
-            'job_runid': lambda: os.environ['BUILD_URL'] }
+            'job_name': lambda: os.environ.get('JOB_DISPLAY_URL',self.raise_exception("CI_CD_CT_TOOL")), 
+            'job_runid': lambda: os.environ.get('BUILD_URL',self.raise_exception("CI_CD_CT_TOOL"))}
             }
             # Try to match the environment variables to one of the defined mappings 
             for env_vars, mapping in mappings.items(): 
