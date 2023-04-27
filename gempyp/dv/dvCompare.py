@@ -29,22 +29,13 @@ def df_compare(src_df, tgt_df, key, logger, reporter, configData):
         keys_only_in_tgt = list(set(tgt_key_values) - set(src_key_values))
         src_df.drop(keys_only_in_src, inplace=True)
         tgt_df.drop(keys_only_in_tgt, inplace=True)
-        if 'SKIP_COLUMN' in configData:
-            try:
-                skip_column = configData["SKIP_COLUMN"].split(',')
-                flag = False
-                for i in key:
-                    if i in skip_column:
-                        flag = True
-                        break
-                if flag:
-                    reporter.addRow("Column Given for Skip are Present in Keys Tag","Aborting Skip Columns",status.INFO)
-                else:
-                    src_df.drop(skip_column,axis=1,inplace=True)
-                    tgt_df.drop(skip_column,axis=1,inplace=True)
-                    headers = list(set(headers)-set(skip_column))
-            except Exception as e:
-                reporter.addRow("While Skipping Columns",get_reason_of_failure(traceback.format_exc(), e),status.INFO)
+        # if 'SKIP_COLUMN' in configData:
+        #     try:
+            # skip_column = configData["SKIP_COLUMN"].split(',')
+        
+            # headers = list(set(headers)-set(skip_column))
+        #     except Exception as e:
+        #         reporter.addRow("While Skipping Columns",get_reason_of_failure(traceback.format_exc(), e),status.INFO)
         """calling src and tgt for getting different keys"""
         src_key_dict = addDiffKeysDict(keys_only_in_src, "Source", key, logger)
         tgt_key_dict = addDiffKeysDict(keys_only_in_tgt, "Target", key, logger)

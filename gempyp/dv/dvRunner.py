@@ -24,7 +24,7 @@ from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
-from gempyp.dv.dfOperations import dateFormatHandling, columnCompare
+from gempyp.dv.dfOperations import dateFormatHandling, columnCompare, skipColumn
 import re
 import json
 import ast
@@ -96,6 +96,10 @@ class DvRunner(Base):
             self.matchKeys(self.source_columns, "SOURCE")
             self.matchKeys(self.target_columns, "TARGET")
 
+            if 'SKIP_COLUMN' in self.configData:
+                self.source_df, self.target_df = skipColumn(self.configData.get('SKIP_COLUMN'),self.source_df,self.target_df,self.keys,self.reporter)
+                self.source_columns = list(self.source_df.columns)
+                self.target_columns = list(self.target_df.columns)
             #calling getDuplicatekeysDf function to get dataframe of duplicate keys 
             source_duplicates_df, src_dup_len = self.getDuplicateKeysDf(self.source_df, "SOURCE")
             target_duplicates_df, tgt_dup_len = self.getDuplicateKeysDf(self.target_df, "TARGET")
@@ -342,7 +346,6 @@ class DvRunner(Base):
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = DvObj(
-                object=self.reporter,
                 project=self.project,
                 source_df=self.source_df,
                 target_df=self.target_df,
@@ -400,7 +403,6 @@ class DvRunner(Base):
             self.logger.info("Running After method")
             obj_ = file_obj
             after_obj = DvObj(
-                object=self.reporter,
                 project=self.project,
                 value_df=self.value_df,
                 keys_df=self.keys_df,
