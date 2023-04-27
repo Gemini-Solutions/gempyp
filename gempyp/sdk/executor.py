@@ -1,4 +1,3 @@
-from asyncio.log import logger
 import getpass
 import json
 from pathlib import Path
@@ -20,20 +19,22 @@ import sys
 import os
 import pandas as pd
 from gempyp.libs.enums.status import status
+from gempyp.libs.common import *
 
 
 class Executor(TestcaseReporter):
     def __init__(self, **kwargs):
         self.method = kwargs.get("tc_name", self.getMethodName())
-        self.log_file = tempfile.gettempdir() + "\logs.txt"
+        self.log_file = tempfile.gettempdir() + "\logs.log"
         # os.makedirs("testcase_log_folder")
+        print(self.log_file)
         sys.stdout = sys.stderr =  open(self.log_file, 'w')
-        logging.basicConfig(filename="logs.txt", filemode='w', format='%(name)s - %(asctime)s-%(levelname)s - %(message)s',level=logging.DEBUG)
-        # custom_logger = my_custom_logger("logs.txt")
+        logging.basicConfig(filename="logs.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
+        # custom_logger = my_custom_logger("logs.log")
         logging.info("inside constructor here--------------------")
         logging.info(f"-------Executing testcase - {self.getMethodName()}---------")
         self.data = self.getTestcaseData()
-        self.reporter = TestcaseReporter(self.data["PROJECT"], self.data["NAME"])
+        self.reporter = TestcaseReporter(self.data["PROJECT_NAME"], self.data["NAME"])
        
         
 
@@ -42,13 +43,14 @@ class Executor(TestcaseReporter):
         self.DATA = TestData()
         # make suite details and upload it
         self.makeSuiteDetails()
+        runBaseUrls(self.jewel_user,self.data["ENTER_POINT"],self.data["JEWEL_USER"],self.data["JEWEL_BRIDGE_TOKEN"])
         if not os.getenv("PID"):
             self.makeOutputFolder()
             os.environ["PID"] = str(os.getpid())
             subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
             try:
                 logging.info(f"---------------S_RUN_ID-------------{self.s_run_id}")
-                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["BRIDGE_TOKEN"], self.data["USERNAME"]) # check with deamon, should insert only once
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"]) # check with deamon, should insert only once
                   # logging not working
             except Exception as e:
                 print(f"Exception occured - {e}")
@@ -71,12 +73,9 @@ class Executor(TestcaseReporter):
 
         report_dict["TESTCASEMETADATA"] = self.getMetaData()
         report_dict["config_data"] = self.getConfigData()
-
         # creating output json
         output.append(getOutput(report_dict))
-        output[0]["product_type"] = "GEMPYP-SDK"
         for i in output:
-            logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
             dict_ = {}
             dict_["testcases"] = {}
@@ -98,8 +97,6 @@ class Executor(TestcaseReporter):
             if not os.path.exists(tmp_dir):
                 with open(tmp_dir, "w") as f:
                     dict_[self.s_run_id] = self.updateSuiteData(suite_data)
-                    dict_["s_id"] = suite_temp["s_id"]
-                    dict_["misc_data"] = suite_temp["misc_data"]
                     dict_["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.write(json.dumps(dict_))
             else:
@@ -107,13 +104,11 @@ class Executor(TestcaseReporter):
                     data = f.read()
                     data = json.loads(data)
                     data[self.s_run_id] = self.updateSuiteData(suite_data, data[self.s_run_id])
-                    data["s_id"] = suite_temp["s_id"]
-                    data["misc_data"] = suite_temp["misc_data"]
                     data["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.seek(0)
                     f.write(json.dumps(data))
-            
-            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["BRIDGE_TOKEN"], self.data["USERNAME"])  # instead of output, I need to pass s_run id and  tc_run_id
+            logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
+            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"])  # instead of output, I need to pass s_run id and  tc_run_id
             
             # sys.stdout.close()
         
@@ -122,6 +117,7 @@ class Executor(TestcaseReporter):
             
 
     def getTestcaseData(self):
+        self.jewel_user=False
         config_file = configparser.ConfigParser()
         directory_path = os.getcwd()
 
@@ -130,30 +126,36 @@ class Executor(TestcaseReporter):
             sys.exit()
         config_file.read("gempyp.conf")
         data = {}
-        self.projectName = data["PROJECT"] = config_file['ReportSetting']["project"]
+        self.projectName = data["PROJECT_NAME"] = config_file['ReportSetting']["project_name"]
         self.testcaseName = data["NAME"] = self.method
-        self.env = data["ENV"] = config_file['ReportSetting'].get("env", "PROD")
-        data["USERNAME"] = config_file['ReportSetting'].get("USERNAME", getpass.getuser())
-        data["BRIDGE_TOKEN"] = config_file['ReportSetting'].get("BRIDGE_TOKEN", None)
-        data["REPORT_LOCATION"] = config_file['ReportSetting'].get("outputfolder", None)
+        self.env = data["ENVIRONMENT"] = config_file['ReportSetting'].get("environment", "PROD")
+        data["JEWEL_USER"] = config_file['ReportSetting'].get("jewel_user", getpass.getuser())
+        data["JEWEL_BRIDGE_TOKEN"] = config_file['ReportSetting'].get("jewel_bridge_token", None)
+        data["REPORT_LOCATION"] = config_file['ReportSetting'].get("report_location", None)
         data["MACHINE"] = platform.node()
-        data["MAIL"] = config_file['ReportSetting'].get("mail", None)
-        self.report_name = data["REPORT_NAME"] = config_file['ReportSetting'].get("reportname", "SMOKE_TEST")
-        self.report_info=data["REPORT_INFO"]=config_file['ReportSetting'].get("reportinfo", "SMOKE_TEST_INFO")
+        data["MAIL_TO"] = config_file['ReportSetting'].get("mail_to", None)
+        data["MAIL_CC"] = config_file['ReportSetting'].get("mail_cc", None)
+        data["MAIL_BCC"] = config_file['ReportSetting'].get("mail_bcc", None)
+        data["ENTER_POINT"]=config_file['ReportSetting'].get("enter_point", None)
+        if data["JEWEL_USER"] and data["JEWEL_BRIDGE_TOKEN"]:
+            self.jewel_user=True
+        self.report_type = data["REPORT_NAME"] = config_file['ReportSetting'].get("report_name", "SMOKE_TEST")
         if not os.getenv("S_RUN_ID"):
-            s_run_id = data["PROJECT"] + "_" + data["ENV"] + "_" + str(uuid.uuid4())
+            s_run_id = data["PROJECT_NAME"] + "_" + data["ENVIRONMENT"] + "_" + str(uuid.uuid4())
             os.environ["S_RUN_ID"] = s_run_id.upper()
         self.s_run_id = data["S_RUN_ID"] = config_file['ReportSetting'].get("s_run_id", os.getenv("S_RUN_ID"))
         return data
 
     def getMetaData(self):
         data = {
-            'PROJECTNAME': self.data["PROJECT"], 
-            'ENV': self.data["ENV"], 
+            'PROJECT_NAME': self.data["PROJECT_NAME"], 
+            'ENVIRONMENT': self.data["ENVIRONMENT"], 
             'S_RUN_ID': self.data["S_RUN_ID"], 
-            'USER': self.data["USERNAME"], 
+            'USER': self.data["JEWEL_USER"], 
             'MACHINE': self.data["MACHINE"], 
-            'REPORT_LOCATION': self.data["REPORT_LOCATION"]}
+            'REPORT_LOCATION': self.data["REPORT_LOCATION"],
+            'SUITE_VARS': self.data.get("SUITE_VARS", {}),
+            'INVOKE_USER': os.getenv("INVOKEUSER", self.data["JEWEL_USER"])}
         return data
 
     def getMethodName(self):
@@ -181,19 +183,29 @@ class Executor(TestcaseReporter):
         """
         making suite Details 
         """
-
+        
+        run_mode = "LINUX_CLI"
+        if os.name == 'nt':
+            run_mode = "WINDOWS"
         Suite_details = {
             "s_run_id": self.data["S_RUN_ID"],
             "s_start_time": datetime.now(timezone.utc),
             "s_end_time": None,
+            "s_id": self.data.get("S_ID", "test_id"),
             "status": status.EXE.name,
-            "project_name": self.data["PROJECT"],
-            "user": self.data["USERNAME"],
-            "report_name": self.data["REPORT_INFO"],
-            "framework_name": "GEMPYP",
-            "env": self.data["ENV"],
+            "project_name": self.data["PROJECT_NAME"],
+            "report_name": self.data["REPORT_NAME"],
+            "run_type": "ON DEMAND",
+            "user": self.data["JEWEL_USER"],
+            "env": self.data["ENVIRONMENT"],
             "machine": self.data["MACHINE"],
+            "initiated_by": self.data["JEWEL_USER"],
+            "run_mode": run_mode,
             "os": platform.system().upper(),
+            "meta_data": [],
+            "testcase_info": None,
+            "expected_testcases":2,
+            "framework_name": "GEMPYP",
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             Suite_details, ignore_index=True
@@ -227,8 +239,8 @@ class Executor(TestcaseReporter):
 
         logging.info("---------- Making output folders -------------")
         report_folder_name = f"{self.projectName}_{self.env}"
-        if self.report_name:
-            report_folder_name = report_folder_name + f"_{self.report_name}"
+        if self.report_type:
+            report_folder_name = report_folder_name + f"_{self.report_type}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if self.data.get("REPORT_LOCATION"):
@@ -249,11 +261,11 @@ class Executor(TestcaseReporter):
         updates the suiteData after all the runs have been executed
         """
         start_time = current_data["suits_details"]["s_start_time"]
-        end_time = current_data["suits_details"]["testcase_details"][0]["end_time"]
-        testcaseData = current_data["suits_details"]["testcase_details"]
+        end_time = current_data["suits_details"]['testcase_details'][0]["end_time"]
+        testcaseData = current_data["suits_details"]['testcase_details']
         if old_data:
-            testcaseData = (old_data["suits_details"]["testcase_details"]
-             + current_data["suits_details"]["testcase_details"])
+            testcaseData = (old_data["suits_details"]['testcase_details']
+             + current_data["suits_details"]['testcase_details'])
             start_time = old_data["suits_details"]["s_start_time"]
         statusDict = {k.name: 0 for k in status}
         for i in testcaseData:
@@ -267,7 +279,7 @@ class Executor(TestcaseReporter):
                 SuiteStatus = s.name
 
         current_data["suits_details"]["status"] = SuiteStatus
-        current_data["suits_details"]["testcase_details"] = testcaseData
+        current_data["suits_details"]['testcase_details'] = testcaseData
         current_data["suits_details"]["s_start_time"] = start_time
         current_data["suits_details"]["s_end_time"] = end_time
         count = 0
@@ -276,7 +288,8 @@ class Executor(TestcaseReporter):
                 del statusDict[key]
             else:
                 count += statusDict[key]
-        statusDict["Total"] = count
-        current_data["suits_details"]["Testcase_Info"] = statusDict
+        statusDict["total"] = count
+        current_data["suits_details"]["expected_testcases"]=count
+        current_data["suits_details"]["testcase_info"] = statusDict
 
         return current_data
