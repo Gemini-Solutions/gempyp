@@ -28,6 +28,7 @@ from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.libs.common import *
+import re
 
 
 
@@ -324,13 +325,19 @@ class Engine:
         """
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
+        print(self.PARAMS)
+        print("########################################")
         if "S_RUN_ID" in self.PARAMS:
-            self.s_run_id = self.PARAMS["S_RUN_ID"]
+            self.s_run_id = re.sub(r'[^\w\s]', '',self.PARAMS["S_RUN_ID"] )
+            self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
+            print(self.s_run_id)
         else:
             if not self.unique_id:
                 self.unique_id = uuid.uuid4()
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
+            self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
+            self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         suite_details = {
             "s_run_id": self.s_run_id,
@@ -593,6 +600,10 @@ class Engine:
         #     traceback.print_exc()
         # return type, mode
         try:
+            run_type=None
+            run_mode=None
+            job_name=None
+            job_runid=None
             mappings = {('JEWEL', 'JEWEL_JOB'): { 
                 'run_type': 'Scheduled', 
                 'run_mode': 'JEWEL',
@@ -638,10 +649,10 @@ class Engine:
                     # run_mode = os.name
                     run_mode=platform.uname().system
                     job_name = 'NONE' 
-                    job_runid = 'NONE' 
-            return run_type,run_mode,job_name,job_runid
+                    job_runid = 'NONE'
         except ValueError as e:
             logging.error(e)
+        return run_type,run_mode,job_name,job_runid
 
     def getErrorTestcase(
         self,
