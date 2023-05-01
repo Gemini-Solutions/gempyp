@@ -52,6 +52,5 @@ def skipColumn(skip_column,src_df,tgt_df,key,reporter):
                     # headers = list(set(headers)-set(skip_column))
                     return src_df,tgt_df
             except Exception as e:
-                print(e)
-                reporter.addRow("While Skipping Columns",get_reason_of_failure(traceback.format_exc(), e),status.INFO)
+                reporter.addRow("While Skipping Columns",get_reason_of_failure(traceback.format_exc(), e),status.FAIL)
                 return src_df, tgt_df
