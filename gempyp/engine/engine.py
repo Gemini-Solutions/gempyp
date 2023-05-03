@@ -325,8 +325,6 @@ class Engine:
         """
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
-        print(self.PARAMS)
-        print("########################################")
         if "S_RUN_ID" in self.PARAMS:
             self.s_run_id = self.PARAMS["S_RUN_ID"]
         else:
@@ -550,6 +548,8 @@ class Engine:
                 output[0]['json_data']['meta_data'][2] = sorted_dict
 
             output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'],output[0]['testcase_dict']['job_name'],output[0]['testcase_dict']['job_runid'] = self.set_run_type_mode()
+            print(output)
+            print("##################################")
             for i in output:
                 if 'json_data' in i:
                     i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -584,25 +584,15 @@ class Engine:
         return step
     
     def raise_exception(self,name):
-        raise ValueError(name+"does not exist")
+        raise ValueError(name + "does not exist")
 
     def set_run_type_mode(self):
-        # type, mode = None, None
-        # try:
-        #     if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value) in [i.value for i in RunTypes]:
-        #         type = self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value)
-
-        #     operating_system = "cli-" + platform.uname().system
-        #     mode = self.PARAMS.get('RUN_MODE', operating_system.upper())
-        # except Exception as e:
-        #     traceback.print_exc()
-        # return type, mode
         try:
             run_type=None
             run_mode=None
             job_name=None
             job_runid=None
-            mappings = {('JEWEL', 'JEWEL_JOB'): { 
+            mappings = {('JEWEL'): { 
                 'run_type': 'Scheduled', 
                 'run_mode': 'JEWEL',
                 'job_name': lambda: os.environ.get('JEWEL_JOB',None), 
@@ -611,30 +601,30 @@ class Engine:
             ('SCHEDULER_TOOL'): { 
             'run_type': 'Scheduled', 
             'run_mode': lambda: os.environ.get('SCHEDULER_TOOL'), 
-            'job_name': lambda: os.environ.get('SCHEDULER_JOB',self.raise_exception("Schedular job")), 
-            'job_runid': lambda: os.environ.get('SCHEDULER_RUNNUM',self.raise_exception("Schedular rennum"))
+            'job_name': lambda: os.environ.get('SCHEDULER_JOB') if os.environ.get('SCHEDULER_JOB',None) else self.raise_exception("Schedular job"), 
+            'job_runid': lambda: os.environ.get('SCHEDULER_RUNNUM') if os.environ.get('SCHEDULER_RUNNUM',None) else self.raise_exception("Schedular rennum")
             }, 
             ('CI_CD_CT_TOOL'): { 
             'run_type': 'CI-CD-CT', 
-            'run_mode': lambda: os.environ.get('CI_CD_CT_TOOL',self.raise_exception("CI_CD_CT_TOOL")), 
-            'job_name': lambda: os.environ.get('CI_CD_CT_JOB',self.raise_exception('CI_CD_CT_JOB')), 
-            'job_runid': lambda: os.environ.get('CI_CD_CT_RUNNUM',self.raise_exception('CI_CD_CT_RUNNUM')) 
+            'run_mode': lambda: os.environ.get('CI_CD_CT_TOOL') if os.environ.get('CI_CD_CT_TOOL',None) else self.raise_exception("CI_CD_CT_TOOL"), 
+            'job_name': lambda: os.environ.get('CI_CD_CT_JOB') if os.environ.get('CI_CD_CT_JOB',None) else self.raise_exception('CI_CD_CT_JOB'), 
+            'job_runid': lambda: os.environ.get('CI_CD_CT_RUNNUM') if os.environ.get('CI_CD_CT_RUNNUM',None) else self.raise_exception('CI_CD_CT_RUNNUM') 
             }, 
             ('AUTO_JOB_NAME'): { 
             'run_type': 'Scheduled', 
             'run_mode': 'Autosys', 
-            'job_name': lambda: os.environ.get('AUTOSERV',self.raise_exception("CI_CD_CT_TOOL")) + '.' + os.environ.get('AUTO_JOB_NAME',self.raise_exception("CI_CD_CT_TOOL")), 
-            'job_runid': lambda: os.environ.get('AUTO_JOBID',self.raise_exception("CI_CD_CT_TOOL"))
+            'job_name': lambda: os.environ.get('AUTOSERV') + '.' + os.environ.get('AUTO_JOB_NAME') if os.environ.get('AUTOSERV',None) and os.environ.get('AUTO_JOB_NAME',None) else self.raise_exception("AUTOSERV or AUTO_JOB_NAME"), 
+            'job_runid': lambda: os.environ.get('AUTO_JOBID') if os.environ.get('AUTO_JOBID',None) else self.raise_exception("AUTO_JOBID")
             }, 
             ('JENKINS_URL'): { 
             'run_type': lambda: 'Scheduled' if os.environ.get('BUILD_CAUSE')=='TIMERTRIGGER' else 'CI-CD-CT' if os.environ.get('BUILD_CAUSE')=='SCMTRIGGER'  else 'On Demand', 
             'run_mode': 'Jenkins', 
-            'job_name': lambda: os.environ.get('JOB_DISPLAY_URL',self.raise_exception("CI_CD_CT_TOOL")), 
-            'job_runid': lambda: os.environ.get('BUILD_URL',self.raise_exception("CI_CD_CT_TOOL"))}
+            'job_name': lambda: os.environ.get('JOB_DISPLAY_URL') if os.environ.get('JOB_DISPLAY_URL',None) else self.raise_exception("JOB_DISPLAY_URL"), 
+            'job_runid': lambda: os.environ.get('BUILD_URL') if os.environ.get('BUILD_URL',None) else self.raise_exception("BUILD_URL")}
             }
             # Try to match the environment variables to one of the defined mappings 
-            for env_vars, mapping in mappings.items(): 
-                if any(var in os.environ for var in env_vars): 
+            for env_vars, mapping in mappings.items():
+                if (env_vars in os.environ):
                         # Evaluate the values that require computation (i.e. lambda functions) 
                         run_type = mapping['run_type']() if callable(mapping['run_type']) else mapping['run_type'] 
                         run_mode = mapping['run_mode']() if callable(mapping['run_mode']) else mapping['run_mode'] 
@@ -854,4 +844,3 @@ class Engine:
         return sorted_dict
     
      
-    
