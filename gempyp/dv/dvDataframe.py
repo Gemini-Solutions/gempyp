@@ -5,9 +5,10 @@ from gempyp.dv.dvDatabases import Databases
 import traceback
 import pandas as pd
 import mysql.connector
-# import snowflake.connector
+import snowflake.connector
 import pg8000
 import re
+import time
 
 
 class Dataframe:
@@ -113,6 +114,7 @@ class Dataframe:
             self.reporter.addRow(
                 f"Connection to {db}DB: ", "Exception Occurred", status.ERR)
             self.logger.error(str(e))
+            
             # self.reporter.addMisc(
             #         "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
 

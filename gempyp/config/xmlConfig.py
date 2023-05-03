@@ -9,7 +9,8 @@ import sys, os
 import warnings
 import uuid
 import json
-
+from gempyp.config.customParser import CustomXMLParser
+from lxml import etree
 class XmlConfig(AbstarctBaseConfig):
     def __init__(self, filePath: str, s_run_id):
         
@@ -17,6 +18,11 @@ class XmlConfig(AbstarctBaseConfig):
         self.s_run_id = s_run_id
         super().__init__(filePath)
         # do any xml specific validatioins here
+
+    def ignore_comments_and_parse(xml_file):
+        parser = et.XMLParser(target=et.TreeBuilder(), comment_handler=lambda *args: None)
+        tree = et.parse(xml_file, parser=parser)
+        return tree
        
 
     def parse(self, filePath):
@@ -27,7 +33,9 @@ class XmlConfig(AbstarctBaseConfig):
         sys.path.append({"XMLConfigDir":newfilePath})
         logging.info("-------- Started the Xml parsing in XmlConfig ---------")
         filePath=self.handleSpecialSymbols(filePath)
-        data = et.parse(filePath)
+        # data = et.parse(filePath)
+        parser = CustomXMLParser(remove_comments=True)
+        data = etree.parse(filePath, parser=parser)
         
         
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data)        
