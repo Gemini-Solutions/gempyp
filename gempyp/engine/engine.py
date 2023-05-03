@@ -325,9 +325,10 @@ class Engine:
         """
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
+        print(self.PARAMS)
+        print("########################################")
         if "S_RUN_ID" in self.PARAMS:
-            self.s_run_id = re.sub(r'[^\w\s]', '',self.PARAMS["S_RUN_ID"] )
-            self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
+            self.s_run_id = self.PARAMS["S_RUN_ID"]
         else:
             if not self.unique_id:
                 self.unique_id = uuid.uuid4()
