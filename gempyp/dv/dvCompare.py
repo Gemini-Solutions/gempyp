@@ -60,13 +60,17 @@ def df_compare(src_df, tgt_df, key, logger, reporter, configData):
         tgt_df.sort_values(by=["key"], inplace=True)
         common_keys.sort()
         value_dict = getValueDict(
-            src_df, tgt_df, common_keys, headers, key, configData, logger
+            src_df, tgt_df, common_keys, headers, key, configData, logger, reporter
         )
         keys_length = {
             "keys_only_in_src": len(keys_only_in_src),
             "keys_only_in_tgt": len(keys_only_in_tgt),
             "common_keys": len(common_keys)
         }
+        if "TOLERANCE" in configData:
+            reporter.addMisc("TOLERANCE",str(configData.get("TOLERANCE",0)))
+        if "ROUND_OFF" in configData:
+            reporter.addMisc("ROUND OFF",str(configData.get("ROUND_OFF",0)))
         return value_dict, diff_keys_dict, keys_length
     except Exception as e:
         traceback.print_exc()
@@ -96,7 +100,7 @@ def addDiffKeysDict(_list, db, keys, logger):
     return key_dict
 
 
-def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, logger):
+def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, logger,cut_out,count):
     logger.info("In compareValues Function")
     dummy_dict = {
         "Column-Name": [],
@@ -112,20 +116,37 @@ def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, l
                 src_val = src_df.loc[key_val, field]
                 tgt_val = tgt_df.loc[key_val, field]
                 if src_val == src_val or tgt_val == tgt_val:
-                    if "TOLERANCE" in configData:
-                        # self.reporter.addMisc("Threshold",str(self.configData["THRESHOLD"]))
+                    if "ROUND_OFF" in configData:
+                        # self.reporter.addMisc("",str(self.configData["THRESHOLD"]))
                         if (
                             type(src_val) == numpy.float64
                             and math.isnan(src_val) == False
                         ):
-                            src_val = truncate(src_val, int(configData["TOLERANCE"]))
+                            src_val = truncate(src_val, int(configData["ROUND_OFF"]))
                         if (
                             type(tgt_val) == numpy.float64
                             and math.isnan(tgt_val) == False
                         ):
-                            tgt_val = truncate(tgt_val, int(configData["TOLERANCE"]))
+                            tgt_val = truncate(tgt_val, int(configData["ROUND_OFF"]))
 
-                    if src_val != tgt_val and type(src_val) == type(tgt_val):
+                    if type(src_val) == numpy.float64 and type(tgt_val) == numpy.float64:
+                        if math.isnan(src_val) == False and math.isnan(tgt_val) == False:
+                            if src_val - tgt_val > float(configData.get("TOLERANCE",0)):
+                                li = key_val.split("----")
+                                #this is for getting the key value
+                                for i in range(len(li)):
+                                    key = keys[i]
+                                    li1 = []
+                                    li1.append(li[i])
+                                    comm_dict[key] = comm_dict.get(key, []) + li1
+                                dummy_dict.get("Column-Name").append(field)
+                                dummy_dict.get("Source-Value").append(src_val)
+                                dummy_dict.get("Target-Value").append(tgt_val)
+                                dummy_dict.get("Reason-of-Failure").append(
+                                    "Difference In Value"
+                                    )   
+
+                    elif src_val != tgt_val and type(src_val) == type(tgt_val):
                         li = key_val.split("----")
                         for i in range(len(li)):
                             key = keys[i]
@@ -152,6 +173,8 @@ def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, l
                         dummy_dict.get("Reason-of-Failure").append(
                             "Difference In Datatype"
                         )
+            if count + len(dummy_dict['Reason-of-Failure']) > int(cut_out):
+                break   
         comm_dict.update(dummy_dict)
         return comm_dict
 
@@ -160,9 +183,16 @@ def truncate(f, n):
     return math.floor(f * 10**n) / 10**n
 
 
-def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
+def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger, reporter):
     logger.info("In getValueDict Function")
     splitSize = 100000
+    """this code is for deciding cutout range"""
+    if len(common_keys) > 100000:
+        length = (10*len(common_keys))//100
+        cut_out = configData.get('CUT_OUT',length)
+    else:
+        cut_out = configData.get('CUT_OUT',100000)
+        
     common_keys_splited = [
         common_keys[x : x + splitSize] for x in range(0, len(common_keys), splitSize)
     ]
@@ -175,8 +205,10 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
             "Target-Value": [],
             "Reason-of-Failure": [],
         }
+    count = 0
     for i in range(len(common_keys_splited)):
         logger.info(time.time())
+        # data = {"common_keys_splited":common_keys_splited[i],"src_df_splited":src_df_splited[i],"tgt_df_splited":tgt_df_splited[i],"headers":headers,"key":key,"configData":configData,"logger":logger,"cut_out":cut_out,"count":count}
         chunk_diffs = compareValues(
             common_keys_splited[i],
             src_df_splited[i],
@@ -185,6 +217,8 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
             key,
             configData,
             logger,
+            cut_out,
+            count
         )
         for keys in chunk_diffs.keys():
             if keys in final_value_diffs.keys():
@@ -194,5 +228,10 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger):
         # for key, val in itertools.chain(final_value_diffs.items(), chunk_diffs.items()):
         # final_value_diffs[key] += val
         # final_value_diffs = dict(final_value_diffs)
+        count = len(final_value_diffs["Reason-of-Failure"])
+        if count > int(cut_out):
+            reporter.addRow("Stopping Execution","Mismatch Count is Greater than {}".format(cut_out),status.INFO)
+            break
+        
         logger.info(time.time())
     return final_value_diffs

@@ -44,7 +44,7 @@ class TestcaseReporter:
             if value in self._misc_data[key]:
                 pass
             else:
-                self._misc_data[key] = self._misc_data[key]+ "," +'<br>' + value
+                self._misc_data[key] = self._misc_data[key]+ "," +' ' + value
         else:
             self._misc_data[key] = value
 

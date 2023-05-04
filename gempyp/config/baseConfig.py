@@ -118,21 +118,22 @@ class AbstarctBaseConfig(ABC):
     def update(self):
         """to update the data that is passed by cli"""
         try:
-            if("ENV-VARS" in self._CONFIG['SUITE_DATA']):
-                for key in self._CONFIG['SUITE_DATA'].get('ENV-VARS',None):
-                    os.environ[key.lower()] = self._CONFIG['SUITE_DATA'].get('ENV-VARS',None).get(key,None)
+            if("ENV_VARS" in self._CONFIG['SUITE_DATA']):
+                for key in self._CONFIG['SUITE_DATA'].get('ENV_VARS',None):
+                    os.environ[key.lower()] = self._CONFIG['SUITE_DATA'].get('ENV_VARS',None).get(key,None)
+                    # self._CONFIG['SUITE_DATA']["SUITE_VARS"]["ENV_"+key.upper()]=os.environ.get(key.lower())
         except Exception as error:
             logging.error("Error in updating environment variable - " + str(error))
         try:
             for key in self._CONFIG['SUITE_DATA'].keys():
                 value=self._CONFIG['SUITE_DATA'][key]
+                # if value and ("$[#ENV." in value):
+                #         envValue=value
+                #         value=value.replace("$[#ENV.","").strip("]").lower()
+                #         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
+                #         self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
                 if value and ("$[#ENV." in value):
-                        envValue=value
-                        value=value.replace("$[#ENV.","").strip("]").lower()
-                        self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
-                        self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
-                if value and ("$[#" in value):
-                        value=value.strip("$[#").strip("]").lower()
+                        value=value.strip("$[#ENV.").strip("]").lower()
                         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
         except Exception as error:
             traceback.print_exc()
