@@ -32,32 +32,32 @@ class legacyApiComparison:
                 title = "Comparing status codes of both the responses."
                 description = "Both are Equal"
                 _status = status.PASS
-                legacy_desc = f"<b>LEGACY RESPONSE CODE:</b> {self.legacy_status_code}"
-                current_desc = f"<b>CURRENT RESPONSE CODE:</b> {self.current_status_code}"
+                legacy_desc = f"LEGACY RESPONSE CODE: {self.legacy_status_code}"
+                current_desc = f"CURRENT RESPONSE CODE: {self.current_status_code}"
                 self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
 
                 if compareTypeOfResponses(self.legacy_response_body, self.current_response_body):
                     title = "Comparing type of both the responses."
                     description = "Both responses are of same type"
                     _status = status.PASS
-                    legacy_desc = f"<b>LEGACY RESPONSE TYPE:</b> {type(self.legacy_response_body).__name__}"
-                    current_desc = f"<b>CURRENT RESPONSE TYPE:</b> {type(self.current_response_body).__name__}"
+                    legacy_desc = f"LEGACY RESPONSE TYPE: {type(self.legacy_response_body).__name__}"
+                    current_desc = f"CURRENT RESPONSE TYPE: {type(self.current_response_body).__name__}"
                     self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                    
                     if compareNumberOfKeys(self.legacy_response_keys, self.current_response_keys):
                         title = "Comparing Number of keys in responses"
                         description = "Both have equal number of keys"
                         _status = status.PASS
-                        legacy_desc = f"<b>NUMBER OF KEYS IN LEGACY RESPONSE:</b> {len(self.legacy_response_keys)}"
-                        current_desc = f"<b>NUMBER OF KEYS IN CURRENT RESPONSE:</b> {len(self.current_response_keys)}"
+                        legacy_desc = f"NUMBER OF KEYS IN LEGACY RESPONSE: {len(self.legacy_response_keys)}"
+                        current_desc = f"NUMBER OF KEYS IN CURRENT RESPONSE: {len(self.current_response_keys)}"
                         self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                         
                         if compareKeys(self.legacy_response_keys, self.current_response_keys):
                             title = "Comparing the set of keys in responses"
                             description = "Both responses have same set of keys"
                             _status = status.PASS
-                            legacy_desc = f"<b>LIST OF KEYS IN LEGACY RESPONSE:</b>  {self.legacy_response_keys}"
-                            current_desc = f"<b>LIST OF KEYS IN CURRENT RESPONSE:</b> {self.current_response_keys}"
+                            legacy_desc = f"LIST OF KEYS IN LEGACY RESPONSE:  {self.legacy_response_keys}"
+                            current_desc = f"LIST OF KEYS IN CURRENT RESPONSE: {self.current_response_keys}"
                             self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                             
                             if isinstance(self.current_response_body,list) and isinstance(self.legacy_response_body,list):
@@ -79,8 +79,8 @@ class legacyApiComparison:
                             title = "Comparing the number of keys in responses"
                             description = "Both responses do not have same set of keys"
                             _status = status.FAIL
-                            legacy_desc = f"<b>LIST OF KEYS IN LEGACY RESPONSE:</b> {self.legacy_response_keys}"
-                            current_desc = f"<b>LIST OF KEYS IN CURRENT RESPONSE:</b> {self.current_response_keys}"
+                            legacy_desc = f"LIST OF KEYS IN LEGACY RESPONSE: {self.legacy_response_keys}"
+                            current_desc = f"LIST OF KEYS IN CURRENT RESPONSE: {self.current_response_keys}"
                             self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                             self.reporter.addMisc("REASON OF FAILURE", "Set of keys do not match")
                     
@@ -88,8 +88,8 @@ class legacyApiComparison:
                         title = "Comparing Count of keys in responses"
                         description = "Both do not have equal number of keys."
                         _status = status.FAIL
-                        legacy_desc = f"<b>NUMBER OF KEYS IN LEGACY RESPONSE:</b> {len(self.legacy_response_keys)}"
-                        current_desc = f"<b>NUMBER OF KEYS IN CURRENT RESPONSE:</b> {len(self.current_response_keys)}"
+                        legacy_desc = f"NUMBER OF KEYS IN LEGACY RESPONSE: {len(self.legacy_response_keys)}"
+                        current_desc = f"NUMBER OF KEYS IN CURRENT RESPONSE: {len(self.current_response_keys)}"
                         self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                         self.reporter.addMisc("REASON OF FAILURE", "Key Count MissMatch")
 
@@ -97,8 +97,8 @@ class legacyApiComparison:
                     title = "Comparing type of both the responses."
                     description = "Both responses are not of same type"
                     _status = status.FAIL
-                    legacy_desc = f"<b>LEGACY RESPONSE TYPE:</b> {type(self.legacy_response_body).__name__}"
-                    current_desc = f"<b>CURRENT RESPONSE TYPE:</b> {type(self.current_response_body).__name__}"
+                    legacy_desc = f"LEGACY RESPONSE TYPE: {type(self.legacy_response_body).__name__}"
+                    current_desc = f"CURRENT RESPONSE TYPE: {type(self.current_response_body).__name__}"
                     self.logger.warning("---------- Missmatch in responses status codes. ")
                     self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                     self.reporter.addMisc("REASON OF FAILURE", "Response Type Missmatch")
@@ -107,8 +107,8 @@ class legacyApiComparison:
                 title = "Comparing status codes of both the responses."
                 description = "Both are not Equal"
                 _status = status.FAIL
-                legacy_desc = f"<b>LEGACY RESPONSE CODE:  </b>{self.legacy_status_code}"
-                current_desc = f"<b>CURRENT RESPONSE CODE: </b> {self.current_status_code}"
+                legacy_desc = f"LEGACY RESPONSE CODE:  {self.legacy_status_code}"
+                current_desc = f"CURRENT RESPONSE CODE:  {self.current_status_code}"
                 self.reporter.addRow(title, description, _status, CURRENT_API=current_desc, LEGACY_API=legacy_desc)
                 self.reporter.addMisc("REASON OF FAILURE", "Response status code missmatch")
                 self.logger.warning("---------- Missmatch in responses status codes. ")
@@ -153,33 +153,33 @@ def listComparator(reporter,legacy_key, current_key, legacy_value, current_value
     current_info = ""
     legacy_info = ""
     if legacy_key == current_key:
-        title = f"Comparing | <b>{legacy_key}</b> for Legacy & Current API"
+        title = f"Comparing | {legacy_key} for Legacy & Current API"
         current_info = f"value = {legacy_value}"
         legacy_info = f"Value = {current_value}"
         if len(legacy_value) != len(current_value) and len(legacy_value)>0 and len(current_value)>0:
-            title = "Comparing | record count of <b>{}</b> for legacy and current API".format(legacy_key)
+            title = "Comparing | record count of {} for legacy and current API".format(legacy_key)
             description = "Record count is not equal"
             _status = status.FAIL
             reporter.addRow(title,description,_status,CURRENT_API=len(current_value), LEGACY_API=len(legacy_value))
             reporter.addMisc("REASON OF FAILURE", "Record count not equal")
         elif len(legacy_value) == len(current_value) and len(legacy_value)>0 and len(current_value)>0:
-            title = "Comparing | record count of <b>{}</b> for legacy and current API".format(legacy_key)
+            title = "Comparing | record count of {} for legacy and current API".format(legacy_key)
             description = "Record count is equal"
             _status = status.PASS
             reporter.addRow(title,description,_status,CURRENT_API=len(current_value), LEGACY_API=len(legacy_value))
             if legacy_value == current_value:
-                title = f"Comparing | list of <b>{legacy_key}</b> for Legacy & Current API"
+                title = f"Comparing | list of {legacy_key} for Legacy & Current API"
                 description = "Values are equal"
                 _status = status.PASS
                 reporter.addRow(title,description,_status,CURRENT_API=current_info, LEGACY_API=legacy_info)
             else:
-                title = f"Comparing | list of <b>{legacy_key}</b> for Legacy & Current API"
+                title = f"Comparing | list of {legacy_key} for Legacy & Current API"
                 description = "Values are not equal"
                 _status = status.FAIL
                 reporter.addRow(title,description,_status,CURRENT_API=current_info, LEGACY_API=legacy_info)
                 reporter.addMisc("REASON OF FAILURE", "Mismatches found during Assertion")
         elif len(legacy_value)==0 and len(current_value)==0:
-            title = f"Comparing | list of <b>{legacy_key}</b> for Legacy & Current API"
+            title = f"Comparing | list of {legacy_key} for Legacy & Current API"
             description = "Empty List"
             _status = status.PASS
             reporter.addRow(title,description,_status,CURRENT_API="[ ]", LEGACY_API="[ ]")
@@ -192,7 +192,7 @@ def responseReporter(reporter, legacy_key, current_key, legacy_value, current_va
     current_info = ""
     legacy_info = ""
     if legacy_key == current_key:
-        title = f"Comparing | <b>{legacy_key}</b> for Legacy & Current API"
+        title = f"Comparing | {legacy_key} for Legacy & Current API"
         current_info = f"value = {legacy_value}"
         legacy_info = f"Value = {current_value}"
         if legacy_value == current_value:

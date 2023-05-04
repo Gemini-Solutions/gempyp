@@ -29,6 +29,7 @@ import re
 import json
 import ast
 
+
 class DvRunner(Base):
 
     def __init__(self, data):
@@ -68,7 +69,6 @@ class DvRunner(Base):
                 self.reporter.addRow(
                     "Config File", "Path is not Correct", status.ERR)
                 raise Exception(e)
-
             if 'SOURCE_DB' or 'TARGET_DB' in self.configData:
                 self.dbConnParser()
 
@@ -172,7 +172,8 @@ class DvRunner(Base):
                             self.logger.info("----Parsing the Config File For Source Connections----")
                             self.sourceCred = dict(self.configur.items(
                                 self.configData["SOURCE_CONN"]))
-
+                            self.sourceCred=self.parseConfigDict(self.sourceCred)
+            
             if 'TARGET_DB' in self.configData:
                 if 'TARGET_CONN' in self.configData:
                     is_dict = True
@@ -193,6 +194,8 @@ class DvRunner(Base):
                         else:
                             self.targetCred = dict(self.configur.items(
                                 self.configData["TARGET_CONN"]))
+                            self.targetCred=self.parseConfigDict(self.targetCred)
+
             if self.configur != None:
                 self.reporter.addRow(
                     "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
@@ -228,6 +231,7 @@ class DvRunner(Base):
         """
         For setting variables like testcase name, output folder etc.
         """
+        self.data["config_data"]=self.parseConfig(self.data["config_data"])
         self.default_report_path = os.path.join(os.getcwd(), "pyprest_reports")
 
         self.data["REPORT_LOCATION"] = self.data.get("REPORT_LOCATION", self.default_report_path)
@@ -462,3 +466,23 @@ class DvRunner(Base):
         if len(dup_keys_df['Reason-of-Failure']) > 0:
             self.reporter.addRow(f"Checking for Duplicates Keys in {type}",f"Found Duplicate Keys in {type}",status.FAIL)
         return dup_keys_df, dup_length
+    
+    def parseConfig(self,config):
+        pattern = r"ENV.([a-zA-Z0-9_]+)"
+        for key in config.keys():
+            value=config.get(key)
+            if(type(value)!=logging.Logger):
+                if re.search("mysql.connector.connect",value) or re.search("^{",value):
+                    config[key] = re.sub(pattern, lambda match: f"'{os.environ.get(match.group(1), '')}'", value)
+                else:
+                    if("ENV." in value):
+                        config[key]=os.environ.get(value.replace("ENV.",""))
+        print(config)
+        return config
+    
+    def parseConfigDict(self,conf):
+        for key in conf.keys():
+            if("ENV." in conf.get(key) and os.environ.get(conf.get(key).replace("ENV.",""))):
+                conf[key]=os.environ.get(conf.get(key).replace("ENV.",""))
+        return conf
+                

@@ -64,11 +64,11 @@ class PostAssertion:
             
             
             if self.isLegacyPresent and len(self.all_keys)==0 and self.notCompareAll:
-                self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys for assertion check", status.INFO, CURRENT_API="Keys to execute assertion check in current API are: </br>" + "</br>".join(key_str),LEGACY_API="Keys to execute assertion check in legacy API are: </br>" + "</br>".join(legacy_key_str))
+                self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys for assertion check", status.INFO, CURRENT_API="Keys to execute assertion check in current API are: " + "".join(key_str),LEGACY_API="Keys to execute assertion check in legacy API are: " + "".join(legacy_key_str))
             elif self.isLegacyPresent and len(self.all_keys) > 0 and self.notCompareAll:
                 self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Running Assertion on legacy and current API Responses", status.INFO, CURRENT_API="Assertions for Current API",LEGACY_API="Assertions for Legacy API")
             elif self.notCompareAll:
-                self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: </br>" + "</br>".join(key_str), status.INFO)
+                self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: " + "".join(key_str), status.INFO)
 
             self.logger.info("Post assertion string- " + self.post_assertion_str)
             
