@@ -9,7 +9,7 @@ import logging
 import os
 from gempyp.config import DefaultSettings
 from cryptography.fernet import Fernet
-from gempyp.config.DefaultSettings import encrypt_key
+from gempyp.config.DefaultSettings import encrypt_key, checkUrl
 
 class TestData:
     def __init__(self):
@@ -204,16 +204,18 @@ class TestData:
             if s_run_id:
                 logging.info("************Trying to check If s_run_id is present in DB*****************")
                 # response =  dataUpload.checkingData(s_run_id, params["BRIDGE_TOKEN"], params["USERNAME"])
-                if not dataUpload.checkingData(s_run_id,bridgetoken, username):
-                    logging.info("************s_run_id not present in DB Trying to call Post*****************")
-                    dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken,username)
-                else:
-                    print("s_run_id already present --------------")
-                    dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken, username,mode="PUT")
+                if DefaultSettings.apiSuccess:
+                    if not dataUpload.checkingData(s_run_id,bridgetoken, username):
+                        logging.info("************s_run_id not present in DB Trying to call Post*****************")
+                        dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken,username)
+                    else:
+                        logging.info("---------s_run_id already present --------------")
+                        dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken, username,mode="PUT")
             else:
-                dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken, username)
-                ### first try to rerun the data
-                self.retryUploadSuiteData(bridgetoken,username)
+                if DefaultSettings.apiSuccess:
+                    dataUpload.sendSuiteData((self.toSuiteJson()), bridgetoken, username)
+                    ### first try to rerun the data
+                    self.retryUploadSuiteData(bridgetoken,username)
 
     
     def retryUploadSuiteData(self,bridgetoken,username):
@@ -231,7 +233,7 @@ class TestData:
         if dataUpload.suite_uploaded:
             jewelLink = DefaultSettings.getUrls('jewel-url')
             jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
-        if len(dataUpload.not_uploaded) != 0:
+        if len(dataUpload.not_uploaded) != 0 and dataUpload.suite_uploaded:
             logging.info("------Trying again to Upload Testcase------")
             for testcase in dataUpload.not_uploaded:
                 dataUpload.sendTestcaseData(testcase,bridgetoken, username)
@@ -255,8 +257,8 @@ class TestData:
             unuploaded_dict = {}
             unuploaded_dict["suite_data"] = dataUpload.suite_data
             unuploaded_dict["testcases"] = dataUpload.not_uploaded
-            unuploaded_dict["urls"] = DefaultSettings.urls['data']
-            # unuploaded_dict["base_url"] = base_url
+            # unuploaded_dict["urls"] = DefaultSettings.urls['data']
+            unuploaded_dict["base_url"] = checkUrl(base_url)
             unuploaded_dict["user_name"] = username
             unuploaded_dict["bridge_token"] = bridge_token
             unuploaded_path=self.unuploadedFile(output_folder,unuploaded_dict,"Unuploaded_data.json")

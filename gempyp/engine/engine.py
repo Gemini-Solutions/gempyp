@@ -134,7 +134,7 @@ class Engine:
         self.makeOutputFolder()
         self.start()
 
-        if(self.jewel_user):
+        if(self.jewel_user and DefaultSettings.apiSuccess):
             self.DATA.retryUploadSuiteData(self.bridgetoken,self.username)
             ### Trying to reupload suite data
             # if dataUpload.suite_uploaded == False:
@@ -183,7 +183,7 @@ class Engine:
         # ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         # if dataUpload.suite_uploaded == True:
         unuploaded_path = None
-        if dataUpload.suite_uploaded:
+        if dataUpload.suite_uploaded and DefaultSettings.apiSuccess:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.bridgetoken, self.username, mode="PUT")
 
             if self.skip_jira == 0:
@@ -205,8 +205,8 @@ class Engine:
         if("EMAIL_TO" in self.PARAMS.keys()):
             sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
 
-        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
-        TemplateData().repSummary(self.repJson, output_file_path, jewel, failed_Utestcases, unuploaded_path,self.bridgetoken,self.username,self.jewel_user)
+        self.repJson = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
+        TemplateData().repSummary(self.repJson, jewel, unuploaded_path)
 
     def makeOutputFolder(self):
         """
@@ -375,7 +375,10 @@ class Engine:
             except Exception as err:
                 logging.error(traceback.format_exc())
                 logging.info(err)
-            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.bridgetoken, self.username)
+            if DefaultSettings.apiSuccess:
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.bridgetoken, self.username)
+            else:
+                dataUpload.suite_data.append(self.DATA.toSuiteJson())
             # need to add reason of failure of the suite in misc
 
 
@@ -568,8 +571,10 @@ class Engine:
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
         
-                if(self.jewel_user):
+                if(self.jewel_user and dataUpload.suite_uploaded):
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.bridgetoken, self.username)
+                else:
+                    dataUpload.not_uploaded.append((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)))
         except Exception as e:
             traceback.print_exc()
             logging.error("in update_df: {e}".format(e=e))

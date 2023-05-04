@@ -55,7 +55,6 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
             payload = dataAlter(payload)
         payload = noneRemover(payload)
         response = _sendData(payload, DefaultSettings.getUrls("suite-exe-api"), bridge_token, user_name, mode)
-
         if response and response.status_code in [201, 200]:
             global suite_uploaded
             logging.info("Suite data uploaded successfully")
@@ -87,7 +86,6 @@ def sendTestcaseData(payload, bridge_token, user_name):
     """
     for checking the sendTestCaseData api response
     """
-
     try:
         method = "POST"
         payload = json.loads(payload)
@@ -98,7 +96,6 @@ def sendTestcaseData(payload, bridge_token, user_name):
         payload = json.dumps(payload)
         response = _sendData(payload, DefaultSettings.getUrls("test-exe-api"), bridge_token, user_name, method)
         ### Applying regex to the response
-
         x = re.search("already present",response.text,re.IGNORECASE)
         if response.status_code == 201:
             logging.info("data uploaded successfully")
@@ -182,7 +179,7 @@ def dataAlter(payload):
         # tc_count = sum(list(set(payload.get('testcase_info', {}).values()) - set(['TOTAL'])))
         tc_count = sum(payload.get('testcase_info', {}).values()) - payload.get('testcase_info', {}).get("TOTAL", 0)
     except Exception as e:
-        print(e)
+        traceback.print_exc()
 
     if tc_count > 0:
         payload['expected_testcases'] = tc_count

@@ -120,12 +120,13 @@ class TemplateData:
         # if not len(testcase_data) > 0:   ##TODO
         #     return repJson, None
         ouput_file_path=""
-        if not jewel_user:
-            ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
-            ouput_file_path = ResultFile
-            with open(ResultFile, "w+") as f:
-                f.write(suiteReport)
-        return repJson, ouput_file_path
+        # if not jewel_user:
+        #     ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
+        #     ouput_file_path = ResultFile
+        #     with open(ResultFile, "w+") as f:
+        #         f.write(suiteReport)
+        # return repJson, ouput_file_path
+        return repJson
     
     def makeTestcaseReport(self):
         index_path = os.path.dirname(__file__)
@@ -135,7 +136,7 @@ class TemplateData:
         json_data = self._toJSON()
         return json.loads(json_data)
 
-    def repSummary(self, repJson, output_file_path, jewel_link, failed_testcases, unuploaded_path,bridgetoken,username,jewel_user):
+    def repSummary(self, repJson,jewel_link, unuploaded_path):
         """
         logging some information
         """
