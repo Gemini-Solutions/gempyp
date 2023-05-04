@@ -9,6 +9,9 @@ import snowflake.connector
 import pg8000
 import re
 import time
+import pymongo
+import json
+import ast
 
 
 class Dataframe:
@@ -109,7 +112,6 @@ class Dataframe:
             log = f"----Connecting to {db}DB----"
             self.logger.info(log)
             myDB = self.connectingDB(db, cred)
-            myCursor = myDB.cursor()
         except Exception as e:
             self.reporter.addRow(
                 f"Connection to {db}DB: ", "Exception Occurred", status.ERR)
@@ -122,11 +124,38 @@ class Dataframe:
 
         try:
             self.logger.info(f"----Executing the {db}SQL----")
-            sql = f"{db}_SQL"
-            myCursor.execute(self.configData[sql])
-            self.reporter.addRow(
-                f"Executing {db} SQL", f"{self.configData[sql]}{db} SQL executed Successfull", status.PASS)
-            columns = [i[0] for i in myCursor.description]
+            # checking whether it is mongodb object by checking mongoclient in starting of the object
+            x = re.search("^MongoClient.*", str(myDB))
+            if x:
+                try:
+                    db_name = f'{db}_DB'
+                    db_details = ast.literal_eval(self.configData[db_name])
+                    sql = f'{db}_SQL'
+                    conn = myDB[db_details['database']]
+                    list_of_collections = conn.list_collection_names()
+                    if db_details['collection'] not in list_of_collections:
+                        raise Exception
+                    conn = conn[db_details['collection']]
+                except Exception:
+                    self.reporter.addRow("Finding Database and Collection","Not Found in Source_db or Target_db",status.ERR)
+                    raise Exception("Database and Collection not Found in Source_db or Target_db")
+                try:
+                    query = json.loads(self.configData[sql])
+                except Exception:
+                    self.reporter.addRow("Fetching Query","Not Present in JSON Format",status.ERR)
+                    raise Exception("Mongo Query not Present in JSON Format")
+                results = list(conn.find(query))
+                db_1 = pd.DataFrame(results)
+                columns = list(db_1.columns)
+            else:
+                myCursor = myDB.cursor()
+                sql = f"{db}_SQL"
+                myCursor.execute(self.configData[sql])
+                self.reporter.addRow(
+                    f"Executing {db} SQL", f"{self.configData[sql]}<br>{db} SQL executed Successfull", status.PASS)
+                columns = [i[0] for i in myCursor.description]
+                results = myCursor.fetchall()
+                db_1 = pd.DataFrame(results,columns=columns)
         except Exception as e:
             self.logger.error(str(e))
             # self.reporter.addMisc(
@@ -135,31 +164,45 @@ class Dataframe:
             self.reporter.addRow(
                 f"Executing {db} SQL", "Exception Occurred", status.ERR)
             raise e
-
-        results = myCursor.fetchall()
-        db_1 = pd.DataFrame(results,
-                            columns=columns)
+        
         myDB.close()
         return db_1, columns
 
     def connectingDB(self, dbType, cred):
         
         db = f'{dbType}_DB'
-        if self.configData[db].lower() == 'custom':
+        is_dict = True
+        try:
+            db_details = ast.literal_eval(self.configData[db])
+        except Exception:
+            is_dict = False
+        if is_dict == True:
+            db_type = db_details.get('type')
+        else:
+            db_type = self.configData[db]
+                    
+        if db_type.lower() == 'custom':
             conn = f"{dbType}_CONN"
             db = self.configData[conn]
             myDB = eval(db)
             # this is just to check whether connection is established or not
-            dbCursor = myDB.cursor()
+            x = re.search("^MongoClient.*", str(myDB))
+            if x:
+                myDB.server_info()
+            else:
+                dbCursor = myDB.cursor()
             self.reporter.addRow(
                 f"Connection to {dbType}DB:", f"Connection to {dbType}DB is Successfull", status.PASS)
         else:
             dv = Databases()
             lib, connect = Databases.getConnectionString(
-                dv, self.configData[db])
+                dv, db_type)
             lib = importlib.import_module(lib)
             connection = getattr(lib, connect)
             myDB = connection(**cred)
+            x = re.search("^MongoClient.*", str(myDB))
+            if x:
+                myDB.server_info()
             connDetails = self.getHostDetails(cred)
             self.reporter.addRow(
                 f"Connection to {dbType}DB: {connDetails}", f"Connection to {dbType}DB is Successfull", status.PASS)

@@ -2,6 +2,8 @@ from gempyp.config.xmlConfig import XmlConfig
 import argparse
 from gempyp.engine.engine import Engine
 from gempyp.libs.common import download_common_file
+from gempyp.data_uploader import dataUploader
+import logging
 
 class Gempyp:
     def __init__(self):
@@ -26,6 +28,7 @@ class Gempyp:
         self.S_ID = None
         self.RUN_TYPE = None
         self.RUN_MODE = None
+        self.RE_RUN = None
     
     def argParser(self):
         """Argument parser to help running through CLI"""
@@ -50,6 +53,7 @@ class Gempyp:
         parser.add_argument('-s_id','-s_id',dest='S_ID',type=str, required=False)
         parser.add_argument('-run_type','-run_type',dest='RUN_TYPE',type=str, required=False)
         parser.add_argument('-run_mode','-run_mode',dest='RUN_MODE',type=str, required=False)
+        parser.add_argument('-rerun','-rerun',dest='RE_RUN',type=str, required=False)
 
         args = parser.parse_args()
         return args
@@ -59,15 +63,27 @@ class Gempyp:
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
         s_run_id = vars(self)["S_RUN_ID"]
-        file_path=download_common_file(self.config)
-        config=XmlConfig(file_path,s_run_id)
-        if not self.args:
-            del self.__dict__["args"]
-            config.cli_config = vars(self)
+        # if self.args != None:
+        if self.args.RE_RUN != None:
+                print("Trying to Reupload Data")
+                dataUploader(self.args.RE_RUN,self.args.JEWEL_BRIDGE_TOKEN)
+        elif self.RE_RUN != None:
+                print("Trying to Reupload Data")
+                if self.args.JEWEL_BRIDGE_TOKEN:
+                    dataUploader(self.RE_RUN, self.args.JEWEL_BRIDGE_TOKEN)
+                else:
+                    dataUploader(self.RE_RUN, self.JEWEL_BRIDGE_TOKEN)
+        # if self.args.RE_RUN
         else:
-            config.cli_config = vars(self.args)
-        config.update()
-        Engine(config)
+            file_path=download_common_file(self.config)
+            config=XmlConfig(file_path,s_run_id)
+            if not self.args:
+                del self.__dict__["args"]
+                config.cli_config = vars(self)
+            else:
+                config.cli_config = vars(self.args)
+            config.update()
+            Engine(config)
 
     def parser(self):
         """Calls the parser and handles the case of no cli args"""
