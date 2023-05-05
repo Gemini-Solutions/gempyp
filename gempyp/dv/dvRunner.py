@@ -24,6 +24,7 @@ from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
 from gempyp.dv.dvCompare import df_compare
+from gempyp.dv.dfOperations import dateFormatHandling, columnCompare, skipColumn
 import re
 import json
 import ast
@@ -95,6 +96,10 @@ class DvRunner(Base):
             self.matchKeys(self.source_columns, "SOURCE")
             self.matchKeys(self.target_columns, "TARGET")
 
+            if 'SKIP_COLUMN' in self.configData:
+                self.source_df, self.target_df = skipColumn(self.configData.get('SKIP_COLUMN'),self.source_df,self.target_df,self.keys,self.reporter)
+                self.source_columns = list(self.source_df.columns)
+                self.target_columns = list(self.target_df.columns)
             #calling getDuplicatekeysDf function to get dataframe of duplicate keys 
             source_duplicates_df, src_dup_len = self.getDuplicateKeysDf(self.source_df, "SOURCE")
             target_duplicates_df, tgt_dup_len = self.getDuplicateKeysDf(self.target_df, "TARGET")
@@ -116,11 +121,22 @@ class DvRunner(Base):
                 subset=self.keys, keep='last', inplace=True)
             self.target_df.drop_duplicates(
                 subset=self.keys, keep='last', inplace=True)
+            
+            #calling compare column
+            if "COMPARE_COLUMN" in self.configData:
+                compare_column = self.configData.get("COMPARE_COLUMN",'').split(',')
+                self.source_df, self.target_df = columnCompare(self.source_df, self.target_df, self.keys, compare_column)
             # hadling case insensitivity
             if 'MATCH_CASE' in self.configData:
                 self.matchCase()
+
+            # date format handling
+            self.source_df, self.target_df = dateFormatHandling(self.source_df, self.target_df)
+            
+            #checking column compare
             value_dict, key_dict, keys_length = df_compare(
                 self.source_df, self.target_df, self.keys, self.logger, self.reporter, self.configData)
+            
             self.writeExcel(value_dict, key_dict, keys_length, duplicate_keys_df, dup_keys_length)
             self.reporter.finalizeReport()
             output = writeToReport(self)
@@ -138,7 +154,16 @@ class DvRunner(Base):
         try:
             if 'SOURCE_DB' in self.configData:
                 if 'SOURCE_CONN' in self.configData: 
-                    if self.configData["SOURCE_DB"].lower() == 'custom':
+                    is_dict = True
+                    try:
+                        db_details = ast.literal_eval(self.configData["SOURCE_DB"])
+                    except Exception:
+                        is_dict = False
+                    if is_dict == True:
+                        db_type = db_details.get('type')
+                    else:
+                        db_type = self.configData["SOURCE_DB"]
+                    if db_type.lower() == 'custom':
                         self.sourceCred = self.configData['SOURCE_CONN']
                     else:
                         if re.search("^{.*}$", self.configData["SOURCE_CONN"]):
@@ -151,7 +176,17 @@ class DvRunner(Base):
             
             if 'TARGET_DB' in self.configData:
                 if 'TARGET_CONN' in self.configData:
-                    if self.configData["TARGET_DB"].lower() == 'custom':
+                    is_dict = True
+                    try:
+                        db_details = ast.literal_eval(self.configData["TARGET_DB"])
+                    except Exception:
+                        is_dict = False
+                    if is_dict == True:
+                        db_type = db_details.get('type')
+                    else:
+                        db_type = self.configData["TARGET_DB"]
+                    
+                    if db_type.lower() == 'custom':
                         self.targetCred = self.configData['TARGET_CONN']
                     else:
                         if re.search("^{.*}$", self.configData["TARGET_CONN"]):
@@ -315,7 +350,6 @@ class DvRunner(Base):
             self.logger.info("Running before method")
             obj_ = file_obj
             before_obj = DvObj(
-                object=self.reporter,
                 project=self.project,
                 source_df=self.source_df,
                 target_df=self.target_df,
@@ -373,7 +407,6 @@ class DvRunner(Base):
             self.logger.info("Running After method")
             obj_ = file_obj
             after_obj = DvObj(
-                object=self.reporter,
                 project=self.project,
                 value_df=self.value_df,
                 keys_df=self.keys_df,
