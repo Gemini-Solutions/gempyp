@@ -333,8 +333,8 @@ class Engine:
                 self.unique_id = uuid.uuid4()
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
-        self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
-        self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
+#         self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
+#         self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         suite_details = {
             "s_run_id": self.s_run_id,
