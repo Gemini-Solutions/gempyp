@@ -218,7 +218,8 @@ class Engine:
         logging.info("---------- Making output folders -------------")
         report_folder_name = f"{self.project_name}_{self.project_env}"
         if self.report_name:
-            report_folder_name = report_folder_name + f"_{self.report_name}"
+            report_name = "_".join(self.report_name.split())
+            report_folder_name = report_folder_name + f"_{report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
