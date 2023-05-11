@@ -8,6 +8,7 @@ from gempyp.config.DefaultSettings import encrypt_key, default_baseurl
 import sys
 import re
 import traceback
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 def dataUploader(file_path, bridge_token):
 
     try:
@@ -25,19 +26,33 @@ def dataUploader(file_path, bridge_token):
             data['base_url'] = default_baseurl
         print("Base Url Used:",data['base_url'])
         response = dataUpload._sendData(" ",data['base_url'], data['bridge_token'], data['user_name'],"GET")
-        print("Calling Base Url",response.status_code)
         if response.status_code == 200:
             url_enter_point = response.json()
             data["urls"] = url_enter_point["data"]  
             try:  
                 if 'suite_data' in data:
+                    data['suite_data'][-1] = ast.literal_eval(data['suite_data'][-1])
+                    for i in range(len(data['suite_data'][-1]['meta_data'])):
+                        if 'CONFIG_S3_URL' in data['suite_data'][-1]['meta_data'][i].keys():
+                            xml_path = data['suite_data'][-1]['meta_data'][i]['CONFIG_S3_URL']
+                            index = i
+                            break
                     #trying to upload suite data 
+                    if not re.search("^https://.", xml_path):
+                        try:
+                            xml_s3_url = upload_to_s3(data["urls"]["bucket-file-upload-api"], bridge_token=data['bridge_token'], username=data['user_name'], file=xml_path)[0]["Url"]
+                            print("XML S3 URL", xml_s3_url)
+                            data['suite_data'][-1]['meta_data'][i]['CONFIG_S3_URL'] = xml_s3_url
+                        except Exception:
+                            print('Some Problem Occured while uploading xml file on S3')
+                    data['suite_data'][-1] = json.dumps(data['suite_data'][-1])
                     payload = str(data['suite_data'][-1])
                     method = "POST"
                     if len('suite_data') == 1:
                         method = "PUT" 
                     response = dataUpload._sendData(payload, data['urls']['suite-exe-api'],data['bridge_token'], data['user_name'], method)
                     print("Suite data API Response")
+                    print(response.status_code)
                     if response.status_code == 201 or response.status_code == 200:
                         logging.info('Suite Data is Uploaded Successfully')
                         d = ast.literal_eval(data['suite_data'][0])
@@ -58,6 +73,20 @@ def dataUploader(file_path, bridge_token):
                     testcases_length = len(data['testcases'])
                     while loop_count <= testcases_length:
                         loop_count += 1
+                        data['testcases'][i] = json.loads(data['testcases'][i])
+                        if not re.search("^https://.", data['testcases'][i]['log_file']):
+                            try:
+                                print('Uploading Testcases Log File to S3')
+                                s3_log_file_url = create_s3_link(url=upload_to_s3(data["urls"]["bucket-file-upload-api"], bridge_token=data['bridge_token'], username=data['user_name'], file=data['testcases'][i]['log_file'])[0]["Url"])
+                                data['testcases'][i]['user_defined_data']['LOG_FILE'] = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+                            except Exception:
+                                print('some problem occured while uploading testcase log file')
+                        if data['testcases'][i]['product_type'] == 'GEMPYP-DV':
+                            if not re.search("^https://.", data['testcases'][i]['steps'][-1]["Attachment"][-1]):
+                               print('Uploading DV Result File to S3')
+                               s3_result_file_url = create_s3_link(url=upload_to_s3(data["urls"]["bucket-file-upload-api"], bridge_token=data['bridge_token'], username=data['user_name'], file=data['testcases'][i]['steps'][-1]["Attachment"][-1])[0]["Url"]) 
+                               data['testcases'][i]['steps'][-1]["Attachment"][-1] = s3_result_file_url
+                        data['testcases'][i] = json.dumps(data['testcases'][i])    
                         response = dataUpload._sendData(data['testcases'][i], data['urls']['test-exe-api'],data['bridge_token'], data['user_name'])
                         if response.status_code == 200 or response.status_code == 201:
                             print("Testcase is uploaded successfully")
@@ -79,8 +108,8 @@ def dataUploader(file_path, bridge_token):
                     w.write(data)
                 # data = json.loads(data)
         elif re.search('50[0-9]',str(response.status_code)):
-                logging.info("Their is some problem on server side, Please try again after sometime")
+            print("Their is some problem on server side, Please try again after sometime")
         else:
-                logging.info("Some Error From the Client Side maybe Username or Bridgetoken, Therefore Terminating Execution")
+            print("Some Error From the Client Side maybe Username or Bridgetoken, Therefore Terminating Execution")
     except Exception:
         traceback.print_exc()

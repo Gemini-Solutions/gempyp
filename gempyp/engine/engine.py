@@ -310,8 +310,11 @@ class Engine:
                 self.jewel_run = True
             else:
                 try:
-                    self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
-                    logging.info("--------- url" + str(self.s3_url))
+                    if DefaultSettings.apiSuccess:
+                        self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
+                        logging.info("--------- url" + str(self.s3_url))
+                    else:
+                        self.s3_url = self.PARAMS["config"]
                 except Exception as e:
                     logging.info(e)
         #add suite_vars here 
