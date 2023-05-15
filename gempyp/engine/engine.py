@@ -239,7 +239,6 @@ class Engine:
         os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
         os.makedirs(self.testcase_log_folder)
     def verify(self,value):
-        print(value)
         if(re.search(r'[^a-zA-Z0-9_ ]',value)):
                 logging.info("Some Error From the Client Side. May be s_run_id, project_name or ENV is not in a correct format")
                 sys.exit()
