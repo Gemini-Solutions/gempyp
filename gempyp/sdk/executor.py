@@ -20,6 +20,7 @@ import os
 import pandas as pd
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import *
+from gempyp.engine.engine import Engine
 
 
 class Executor(TestcaseReporter):
@@ -27,7 +28,6 @@ class Executor(TestcaseReporter):
         self.method = kwargs.get("tc_name", self.getMethodName())
         self.log_file = tempfile.gettempdir() + "\logs.log"
         # os.makedirs("testcase_log_folder")
-        print(self.log_file)
         sys.stdout = sys.stderr =  open(self.log_file, 'w')
         logging.basicConfig(filename="logs.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
         # custom_logger = my_custom_logger("logs.log")
@@ -75,6 +75,7 @@ class Executor(TestcaseReporter):
         report_dict["config_data"] = self.getConfigData()
         # creating output json
         output.append(getOutput(report_dict))
+        output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'],output[0]['testcase_dict']['job_name'],output[0]['testcase_dict']['job_runid'] = Engine.set_run_type_mode(self)
         for i in output:
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
             dict_ = {}
@@ -109,7 +110,9 @@ class Executor(TestcaseReporter):
                     f.write(json.dumps(data))
             logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
             dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"])  # instead of output, I need to pass s_run id and  tc_run_id
-            
+            path = __file__
+            path = path.rsplit(os.sep, 1)[0]
+            subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
             # sys.stdout.close()
         
             # os.rename(self.log_file, tmp_dir.rsplit(".", 1)[0] + ".log")
@@ -204,7 +207,7 @@ class Executor(TestcaseReporter):
             "os": platform.system().upper(),
             "meta_data": [],
             "testcase_info": None,
-            "expected_testcases":2,
+            "expected_testcases":1,
             "framework_name": "GEMPYP",
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
