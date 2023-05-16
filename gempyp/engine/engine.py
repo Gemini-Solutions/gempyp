@@ -238,6 +238,12 @@ class Engine:
         self.testcase_log_folder = os.path.join(self.ouput_folder, "logs")
         os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
         os.makedirs(self.testcase_log_folder)
+    def verify(self,value):
+        if(re.search(r'[^a-zA-Z0-9_ ]',value)):
+                logging.info("Some Error From the Client Side. May be s_run_id, project_name or ENV is not in a correct format")
+                sys.exit()
+        else:
+                return value
 
     def setUP(self, config: Type[AbstarctBaseConfig]):
 
@@ -286,9 +292,9 @@ class Engine:
         mail_items={"to":"EMAIL_TO","cc":"EMAIL_CC","bcc":"EMAIL_BCC"}
         self.mail={key:common.parseMails(self.PARAMS.get(value,None)) for key,value in mail_items.items()}
 
-        self.project_name = self.PARAMS["PROJECT_NAME"]
+        self.project_name=self.verify(self.PARAMS["PROJECT_NAME"])
+        self.project_env=self.verify(self.PARAMS["ENVIRONMENT"])
         self.report_name = self.PARAMS.get("REPORT_NAME")
-        self.project_env = self.PARAMS["ENVIRONMENT"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.jewel_run = False
@@ -331,13 +337,13 @@ class Engine:
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
         if "S_RUN_ID" in self.PARAMS:
-            self.s_run_id = self.PARAMS["S_RUN_ID"]
+            self.s_run_id = self.verify(self.PARAMS["S_RUN_ID"])
         else:
             if not self.unique_id:
                 self.unique_id = uuid.uuid4()
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
-        self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
+        # self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
         self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         suite_details = {
@@ -848,4 +854,4 @@ class Engine:
         sorted_dict.update(unsorted_dict)
         return sorted_dict
     
-     
+  

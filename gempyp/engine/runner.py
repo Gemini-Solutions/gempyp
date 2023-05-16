@@ -9,6 +9,7 @@ import getpass
 from gempyp.libs.common import download_common_file, moduleImports
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
+import re
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     result_data = None
@@ -75,6 +76,7 @@ def getOutput(data):
     except Exception:
         traceback.print_exc()
     tc_run_id = f"{data['NAME']}_{unique_id}"
+    tc_run_id=re.sub(r'[^a-zA-Z0-9]', '_',tc_run_id)
     tempdict["tc_run_id"] = tc_run_id
     tempdict["name"] = data["NAME"]
     tempdict["category"] = data["config_data"].get("CATEGORY", None)
