@@ -16,7 +16,7 @@ class Gempyp:
         self.REPORT_NAME = None
         self.MODE = None
         self.ENVIRONMENT = None
-        self.args = None
+        self.args = {}
         self.THREADS = None
         self.JEWEL_BRIDGE_TOKEN = None 
         self.REPORT_LOCATION = None
@@ -63,16 +63,12 @@ class Gempyp:
         This function takes the config and updates the config data in case or cli run and direct(python) run
         """
         s_run_id = vars(self)["S_RUN_ID"]
-        # if self.args != None:
-        if self.args.RE_RUN != None:
+        if self.args.get('RE_RUN',None) != None:
                 print("Trying to Reupload Data")
-                dataUploader(self.args.RE_RUN,self.args.JEWEL_BRIDGE_TOKEN)
+                dataUploader(self.args.get('RE_RUN'),self.args.get('JEWEL_BRIDGE_TOKEN',None))
         elif self.RE_RUN != None:
                 print("Trying to Reupload Data")
-                if self.args.JEWEL_BRIDGE_TOKEN:
-                    dataUploader(self.RE_RUN, self.args.JEWEL_BRIDGE_TOKEN)
-                else:
-                    dataUploader(self.RE_RUN, self.JEWEL_BRIDGE_TOKEN)
+                dataUploader(self.RE_RUN, self.JEWEL_BRIDGE_TOKEN)
         # if self.args.RE_RUN
         else:
             file_path=download_common_file(self.config)
@@ -81,7 +77,7 @@ class Gempyp:
                 del self.__dict__["args"]
                 config.cli_config = vars(self)
             else:
-                config.cli_config = vars(self.args)
+                config.cli_config = self.args
             config.update()
             Engine(config)
 
@@ -90,7 +86,7 @@ class Gempyp:
         args = self.argParser()
         if args.config != None:
             self.config = args.config
-        self.args = args
+        self.args = vars(args)
         self.runner()
 
 def main():

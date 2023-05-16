@@ -292,7 +292,7 @@ class DvRunner(Base):
                 except Exception as e:
                     logging.warn(e)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[excel])
+                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[excelPath])
                 else:
                     self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[s3_url])
 

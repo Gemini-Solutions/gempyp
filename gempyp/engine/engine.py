@@ -218,7 +218,8 @@ class Engine:
         logging.info("---------- Making output folders -------------")
         report_folder_name = f"{self.project_name}_{self.project_env}"
         if self.report_name:
-            report_folder_name = report_folder_name + f"_{self.report_name}"
+            report_name = "_".join(self.report_name.split())
+            report_folder_name = report_folder_name + f"_{report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
@@ -309,8 +310,11 @@ class Engine:
                 self.jewel_run = True
             else:
                 try:
-                    self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
-                    logging.info("--------- url" + str(self.s3_url))
+                    if DefaultSettings.apiSuccess:
+                        self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
+                        logging.info("--------- url" + str(self.s3_url))
+                    else:
+                        self.s3_url = self.PARAMS["config"]
                 except Exception as e:
                     logging.info(e)
         #add suite_vars here 
