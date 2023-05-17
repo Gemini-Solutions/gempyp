@@ -1,0 +1,12 @@
+17-05-2023, 11:32:16 [INFO] - [engine.py > executorFactory() > 62] - Starting gempyp testcase
+17-05-2023, 11:32:16 [ERROR] - [runner.py > testcaseRunner() > 61] - Error occured while running the testcase: Testcase not found
+17-05-2023, 11:32:16 [ERROR] - [engine.py > startSequence() > 448] - Error occured while executing the testcase: TESTCASE_1
+17-05-2023, 11:32:16 [ERROR] - [engine.py > startSequence() > 450] - message: {'testcase': 'TESTCASE_1'}
+17-05-2023, 11:32:18 [INFO] - [engine.py > executorFactory() > 62] - Starting gempyp testcase
+17-05-2023, 11:32:18 [ERROR] - [runner.py > testcaseRunner() > 61] - Error occured while running the testcase: Testcase not found
+17-05-2023, 11:32:18 [ERROR] - [engine.py > startSequence() > 448] - Error occured while executing the testcase: TESTCASE_2
+17-05-2023, 11:32:18 [ERROR] - [engine.py > startSequence() > 450] - message: {'testcase': 'TESTCASE_2'}
+17-05-2023, 11:32:20 [INFO] - [engine.py > executorFactory() > 62] - Starting gempyp testcase
+17-05-2023, 11:32:20 [ERROR] - [runner.py > testcaseRunner() > 61] - Error occured while running the testcase: Testcase not found
+17-05-2023, 11:32:20 [ERROR] - [engine.py > startSequence() > 448] - Error occured while executing the testcase: TESTCASE_3
+17-05-2023, 11:32:20 [ERROR] - [engine.py > startSequence() > 450] - message: {'testcase': 'TESTCASE_3'}

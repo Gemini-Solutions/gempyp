@@ -108,7 +108,7 @@ def dataUploader(file_path, bridge_token):
                     w.write(data)
                 # data = json.loads(data)
         elif re.search('50[0-9]',str(response.status_code)):
-            print("Their is some problem on server side, Please try again after sometime")
+            print("There is some problem on server side, Please try again after sometime")
         else:
             print("Some Error From the Client Side maybe Username or Bridgetoken, Therefore Terminating Execution")
     except Exception:
