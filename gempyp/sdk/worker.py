@@ -35,14 +35,14 @@ def create_report(data, s_run_id):
     json_data = data[s_run_id]
     testcaseData = data["testcases"]
     output_folder = data["REPORT_LOCATION"]
-    repJson, ouput_file_path = TemplateData().makeSuiteReport(json.dumps(json_data), testcaseData, output_folder,jewel)
+    repJson = TemplateData().makeSuiteReport(json.dumps(json_data), testcaseData,output_folder,jewel)
     suite_data = json_data["suits_details"]
     suite_data["misc_data"] = data["misc_data"]
     username = suite_data["initiated_by"]
     del suite_data["testcase_details"]
     del suite_data["testcase_info"]
     dataUpload.sendSuiteData(json.dumps(suite_data), bridgetoken, username, mode="PUT")
-    return ouput_file_path
+    return output_folder
 
 
 if __name__ == "__main__":
@@ -60,6 +60,6 @@ if __name__ == "__main__":
                         current_pid = os.getpid()
                         logging.info(f"Find Gempyp logs at - {s_run_id + '.log'}")
                         logging.info(f"Find Gempyp Report at - {output_file_path}")
-                        os.rename("logs.log",f"{s_run_id}.log")
+                        # os.rename("logs.log",f"{s_run_id}.log")
                         os.kill(current_pid, 19)
                         sys.exit()

@@ -34,6 +34,7 @@ def getEnterPoint(url, bridge_token, user_name):
     except Exception as e:
             traceback.print_exc()
             logging.warning("Error Occurs While Getting the BASE_URLs")
+            sys.exit()
 
 # for sending urls to dataupload file
 def getUrls(apiName):
