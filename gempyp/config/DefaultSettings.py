@@ -2,11 +2,14 @@ import os
 from gempyp.engine import dataUpload
 import traceback
 import logging
+import re
+import sys
 
 # have to discuss about the default location
 DEFAULT_GEMPYP_FOLDER = os.getcwd()
 DEBUG = True
 THREADS = 8
+encrypt_key = b'sEKTykqMLP_iCwlMtiBR_9SQ0v9N1OT3ajVAAaI4AkQ='
 _VERSION = "1.0.0"
 apiSuccess = False
 project_id = "Test_id"
@@ -23,11 +26,15 @@ def getEnterPoint(url, bridge_token, user_name):
             urls["data"]=url_enter_point["data"]
             global apiSuccess
             apiSuccess = True
-        else:
+        elif re.search('50[0-9]',str(response.status_code)):
             logging.warning("Error Occurs While Getting the BASE_URLs")
+        else:
+            logging.info("Some Error From the Client Side, Maybe username or bridgeToken, Therefore terminating execution")
+            sys.exit()
     except Exception as e:
             traceback.print_exc()
             logging.warning("Error Occurs While Getting the BASE_URLs")
+            sys.exit()
 
 # for sending urls to dataupload file
 def getUrls(apiName):

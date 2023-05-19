@@ -6,6 +6,7 @@ from gempyp.libs.enums.status import status
 import logging
 import re
 import json
+import sys
 
 not_uploaded = []
 suite_data = []
@@ -54,7 +55,6 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
             payload = dataAlter(payload)
         payload = noneRemover(payload)
         response = _sendData(payload, DefaultSettings.getUrls("suite-exe-api"), bridge_token, user_name, mode)
-
         if response and response.status_code in [201, 200]:
             global suite_uploaded
             logging.info("Suite data uploaded successfully")
@@ -67,10 +67,17 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
                 suite_data.remove(payload)
         elif response and response.status_code == 200:
             logging.info("Suite Data updated Successfully")
-        else:
+        elif re.search('50[0-9]',str(response.status_code)):
             logging.info("Suite data is not uploaded")
             if payload not in suite_data:
                 suite_data.append(payload)
+        else:
+            logging.info("Some Error From the Client Side, Terminating Execution")
+            sys.exit()
+        # else:
+        #     logging.info("Suite data is not uploaded")
+        #     if payload not in suite_data:
+        #         suite_data.append(payload)
                 
     except Exception as e:
         logging.error(traceback.format_exc())
@@ -79,7 +86,6 @@ def sendTestcaseData(payload, bridge_token, user_name):
     """
     for checking the sendTestCaseData api response
     """
-
     try:
         method = "POST"
         payload = json.loads(payload)
@@ -90,7 +96,6 @@ def sendTestcaseData(payload, bridge_token, user_name):
         payload = json.dumps(payload)
         response = _sendData(payload, DefaultSettings.getUrls("test-exe-api"), bridge_token, user_name, method)
         ### Applying regex to the response
-
         x = re.search("already present",response.text,re.IGNORECASE)
         if response.status_code == 201:
             logging.info("data uploaded successfully")
@@ -101,6 +106,16 @@ def sendTestcaseData(payload, bridge_token, user_name):
             if payload in not_uploaded:
                 not_uploaded.remove(payload)
     ### code for adding unuploaded testcases
+        # elif re.search('50[0-9]',str(response.status_code)):
+        #     if payload not in not_uploaded:
+        #         not_uploaded.append(payload)
+        #         logging.info("Testcase data is not uploaded")
+        #         if x != None:
+        #             global flag
+        #             flag = True
+        # else:
+        #     logging.info("Some Error From the Client Side, Terminating Execution")
+        #     sys.exit()
         else:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)
@@ -164,7 +179,7 @@ def dataAlter(payload):
         # tc_count = sum(list(set(payload.get('testcase_info', {}).values()) - set(['TOTAL'])))
         tc_count = sum(payload.get('testcase_info', {}).values()) - payload.get('testcase_info', {}).get("TOTAL", 0)
     except Exception as e:
-        print(e)
+        traceback.print_exc()
 
     if tc_count > 0:
         payload['expected_testcases'] = tc_count

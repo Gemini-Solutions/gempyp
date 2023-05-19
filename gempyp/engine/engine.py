@@ -28,6 +28,7 @@ from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.libs.common import *
+import re
 
 
 
@@ -134,7 +135,7 @@ class Engine:
         self.makeOutputFolder()
         self.start()
 
-        if(self.jewel_user):
+        if(self.jewel_user and DefaultSettings.apiSuccess):
             self.DATA.retryUploadSuiteData(self.bridgetoken,self.username)
             ### Trying to reupload suite data
             # if dataUpload.suite_uploaded == False:
@@ -142,7 +143,7 @@ class Engine:
             #     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
-        jewel,failed_Utestcases,unuploaded_path=self.DATA.retryUploadTestcases(self.s_run_id,self.bridgetoken,self.username,self.ouput_folder)
+        jewel,failed_Utestcases=self.DATA.retryUploadTestcases(self.s_run_id,self.bridgetoken,self.username,self.ouput_folder)
         # if dataUpload.suite_uploaded == True:
         #     jewelLink = DefaultSettings.getUrls('jewel-url')
         #     self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
@@ -182,7 +183,8 @@ class Engine:
         
         # ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
         # if dataUpload.suite_uploaded == True:
-        if dataUpload.suite_uploaded:
+        unuploaded_path = None
+        if dataUpload.suite_uploaded and DefaultSettings.apiSuccess:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.bridgetoken, self.username, mode="PUT")
 
             if self.skip_jira == 0:
@@ -199,13 +201,13 @@ class Engine:
             # with open(unuploaded_path,'w') as w:
             #     w.write(listToStr)
             #     w.write(listToStr)
-            unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder)
+            unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder,self.username,self.bridgetoken)
             
         if("EMAIL_TO" in self.PARAMS.keys()):
             sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
 
-        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
-        TemplateData().repSummary(self.repJson, output_file_path, jewel, failed_Utestcases, unuploaded_path,self.bridgetoken,self.username,self.jewel_user)
+        self.repJson = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
+        TemplateData().repSummary(self.repJson, jewel, unuploaded_path)
 
     def makeOutputFolder(self):
         """
@@ -216,7 +218,8 @@ class Engine:
         logging.info("---------- Making output folders -------------")
         report_folder_name = f"{self.project_name}_{self.project_env}"
         if self.report_name:
-            report_folder_name = report_folder_name + f"_{self.report_name}"
+            report_name = "_".join(self.report_name.split())
+            report_folder_name = report_folder_name + f"_{report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
         if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
@@ -235,6 +238,12 @@ class Engine:
         self.testcase_log_folder = os.path.join(self.ouput_folder, "logs")
         os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
         os.makedirs(self.testcase_log_folder)
+    def verify(self,value):
+        if(re.search(r'[^a-zA-Z0-9_ ]',value)):
+                logging.info("Some Error From the Client Side. May be s_run_id, project_name or ENV is not in a correct format")
+                sys.exit()
+        else:
+                return value
 
     def setUP(self, config: Type[AbstarctBaseConfig]):
 
@@ -283,9 +292,9 @@ class Engine:
         mail_items={"to":"EMAIL_TO","cc":"EMAIL_CC","bcc":"EMAIL_BCC"}
         self.mail={key:common.parseMails(self.PARAMS.get(value,None)) for key,value in mail_items.items()}
 
-        self.project_name = self.PARAMS["PROJECT_NAME"]
+        self.project_name=self.verify(self.PARAMS["PROJECT_NAME"])
+        self.project_env=self.verify(self.PARAMS["ENVIRONMENT"])
         self.report_name = self.PARAMS.get("REPORT_NAME")
-        self.project_env = self.PARAMS["ENVIRONMENT"]
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.jewel_run = False
@@ -307,8 +316,11 @@ class Engine:
                 self.jewel_run = True
             else:
                 try:
-                    self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
-                    logging.info("--------- url" + str(self.s3_url))
+                    if DefaultSettings.apiSuccess:
+                        self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
+                        logging.info("--------- url" + str(self.s3_url))
+                    else:
+                        self.s3_url = self.PARAMS["config"]
                 except Exception as e:
                     logging.info(e)
         #add suite_vars here 
@@ -325,12 +337,14 @@ class Engine:
         making suiteDetails dictionary and assign it to DATA.suiteDetail 
         """
         if "S_RUN_ID" in self.PARAMS:
-            self.s_run_id = self.PARAMS["S_RUN_ID"]
+            self.s_run_id = self.verify(self.PARAMS["S_RUN_ID"])
         else:
             if not self.unique_id:
                 self.unique_id = uuid.uuid4()
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
+        # self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
+        self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         suite_details = {
             "s_run_id": self.s_run_id,
@@ -374,7 +388,10 @@ class Engine:
             except Exception as err:
                 logging.error(traceback.format_exc())
                 logging.info(err)
-            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.bridgetoken, self.username)
+            if DefaultSettings.apiSuccess:
+                dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.bridgetoken, self.username)
+            else:
+                dataUpload.suite_data.append(self.DATA.toSuiteJson())
             # need to add reason of failure of the suite in misc
 
 
@@ -544,7 +561,7 @@ class Engine:
                 sorted_dict = self.totalOrder(unsorted_dict)
                 output[0]['json_data']['meta_data'][2] = sorted_dict
 
-            output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'] = self.set_run_type_mode()
+            output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'],output[0]['testcase_dict']['job_name'],output[0]['testcase_dict']['job_runid'] = self.set_run_type_mode()
             for i in output:
                 if 'json_data' in i:
                     i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -567,8 +584,10 @@ class Engine:
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
         
-                if(self.jewel_user):
+                if(self.jewel_user and dataUpload.suite_uploaded):
                     dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)), self.bridgetoken, self.username)
+                else:
+                    dataUpload.not_uploaded.append((self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id)))
         except Exception as e:
             traceback.print_exc()
             logging.error("in update_df: {e}".format(e=e))
@@ -577,18 +596,62 @@ class Engine:
         step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}]
          
         return step
+    
+    def raise_exception(self,name):
+        raise ValueError("{} does not exist".format(name))
 
     def set_run_type_mode(self):
-        type, mode = None, None
         try:
-            if self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value) in [i.value for i in RunTypes]:
-                type = self.PARAMS.get('RUN_TYPE', RunTypes.ON_DEMAND.value)
-
-            operating_system = "cli-" + platform.uname().system
-            mode = self.PARAMS.get('RUN_MODE', operating_system.upper())
-        except Exception as e:
-            traceback.print_exc()
-        return type, mode
+            run_type=run_mode=job_name=job_runid=None
+            mappings = {('JEWEL'): { 
+                'run_type': 'Scheduled', 
+                'run_mode': 'JEWEL',
+                'job_name': lambda: os.environ.get('JEWEL_JOB',None), 
+                'job_runid': 'NONE' 
+            },
+            ('SCHEDULER_TOOL'): { 
+            'run_type': 'Scheduled', 
+            'run_mode': lambda: os.environ.get('SCHEDULER_TOOL'), 
+            'job_name': lambda: os.environ.get('SCHEDULER_JOB') if os.environ.get('SCHEDULER_JOB',None) else self.raise_exception("Schedular job"), 
+            'job_runid': lambda: os.environ.get('SCHEDULER_RUNNUM') if os.environ.get('SCHEDULER_RUNNUM',None) else self.raise_exception("Schedular rennum")
+            }, 
+            ('CI_CD_CT_TOOL'): { 
+            'run_type': 'CI-CD-CT', 
+            'run_mode': lambda: os.environ.get('CI_CD_CT_TOOL') if os.environ.get('CI_CD_CT_TOOL',None) else self.raise_exception("CI_CD_CT_TOOL"), 
+            'job_name': lambda: os.environ.get('CI_CD_CT_JOB') if os.environ.get('CI_CD_CT_JOB',None) else self.raise_exception('CI_CD_CT_JOB'), 
+            'job_runid': lambda: os.environ.get('CI_CD_CT_RUNNUM') if os.environ.get('CI_CD_CT_RUNNUM',None) else self.raise_exception('CI_CD_CT_RUNNUM') 
+            }, 
+            ('AUTO_JOB_NAME'): { 
+            'run_type': 'Scheduled', 
+            'run_mode': 'Autosys', 
+            'job_name': lambda: os.environ.get('AUTOSERV') + '.' + os.environ.get('AUTO_JOB_NAME') if os.environ.get('AUTOSERV',None) and os.environ.get('AUTO_JOB_NAME',None) else self.raise_exception("AUTOSERV or AUTO_JOB_NAME"), 
+            'job_runid': lambda: os.environ.get('AUTO_JOBID') if os.environ.get('AUTO_JOBID',None) else self.raise_exception("AUTO_JOBID")
+            }, 
+            ('JENKINS_URL'): { 
+            'run_type': lambda: 'Scheduled' if os.environ.get('BUILD_CAUSE')=='TIMERTRIGGER' else 'CI-CD-CT' if os.environ.get('BUILD_CAUSE')=='SCMTRIGGER'  else 'On Demand', 
+            'run_mode': 'Jenkins', 
+            'job_name': lambda: os.environ.get('JOB_DISPLAY_URL') if os.environ.get('JOB_DISPLAY_URL',None) else self.raise_exception("JOB_DISPLAY_URL"), 
+            'job_runid': lambda: os.environ.get('BUILD_URL') if os.environ.get('BUILD_URL',None) else self.raise_exception("BUILD_URL")}
+            }
+            # Try to match the environment variables to one of the defined mappings 
+            for env_vars, mapping in mappings.items():
+                if (env_vars in os.environ):
+                        # Evaluate the values that require computation (i.e. lambda functions) 
+                        run_type = mapping['run_type']() if callable(mapping['run_type']) else mapping['run_type'] 
+                        run_mode = mapping['run_mode']() if callable(mapping['run_mode']) else mapping['run_mode'] 
+                        job_name = mapping['job_name']() if callable(mapping['job_name']) else mapping['job_name'] 
+                        job_runid = mapping['job_runid']() if callable(mapping['job_runid']) else mapping['job_runid'] 
+                        break 
+                else: 
+                    # If no mapping is found, set default values 
+                    run_type = 'On Demand' 
+                    # run_mode = os.name
+                    run_mode=platform.uname().system
+                    job_name = 'NONE' 
+                    job_runid = 'NONE'
+        except ValueError as e:
+            logging.error(e)
+        return run_type,run_mode,job_name,job_runid
 
     def getErrorTestcase(
         self,
@@ -791,5 +854,4 @@ class Engine:
         sorted_dict.update(unsorted_dict)
         return sorted_dict
     
-     
-    
+  
