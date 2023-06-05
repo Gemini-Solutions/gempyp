@@ -35,9 +35,7 @@ class Executor(TestcaseReporter):
         logging.info(f"-------Executing testcase - {self.getMethodName()}---------")
         self.data = self.getTestcaseData()
         self.reporter = TestcaseReporter(self.data["PROJECT_NAME"], self.data["NAME"])
-       
         
-
         path = __file__
         path = path.rsplit(os.sep, 1)[0]
         self.DATA = TestData()
