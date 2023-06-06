@@ -25,12 +25,10 @@ class DvObj:
             self.keys = kwargs["keys"]
         if "env" in kwargs:
             self.env = kwargs["env"]
-        if "value_df" in kwargs:
-            self.value_df = kwargs["value_df"]
-        if "keys_df" in kwargs:
-            self.keys_df = kwargs["keys_df"]
         if "reporter" in kwargs:
             self.reporter = kwargs["reporter"]
+        if "mismatch_df" in kwargs:
+            self.mismatch_df = kwargs["mismatch_df"]
 
 @property
 def returnObj():

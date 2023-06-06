@@ -83,9 +83,10 @@ def dataUploader(file_path, bridge_token):
                                 print('some problem occured while uploading testcase log file')
                         if data['testcases'][i]['product_type'] == 'GEMPYP-DV':
                             if not re.search("^https://.", data['testcases'][i]['steps'][-1]["Attachment"][-1]):
-                               print('Uploading DV Result File to S3')
-                               s3_result_file_url = create_s3_link(url=upload_to_s3(data["urls"]["bucket-file-upload-api"], bridge_token=data['bridge_token'], username=data['user_name'], file=data['testcases'][i]['steps'][-1]["Attachment"][-1])[0]["Url"]) 
-                               data['testcases'][i]['steps'][-1]["Attachment"][-1] = s3_result_file_url
+                                print('Uploading DV Result File to S3')
+                                s3_result_file_url = create_s3_link(url=upload_to_s3(data["urls"]["bucket-file-upload-api"], bridge_token=data.get('bridge_token',None), username=data.get('user_name',None), file=data['testcases'][i]['steps'][-1]["Attachment"][-1],tag="public")[0]["Url"]) 
+                                s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+                                data['testcases'][i]['steps'][-1]["Attachment"][-1] = s3_result_file_url
                         data['testcases'][i] = json.dumps(data['testcases'][i])    
                         response = dataUpload._sendData(data['testcases'][i], data['urls']['test-exe-api'],data['bridge_token'], data['user_name'])
                         if response.status_code == 200 or response.status_code == 201:

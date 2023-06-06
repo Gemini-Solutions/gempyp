@@ -23,11 +23,12 @@ from gempyp.libs.common import download_common_file,get_reason_of_failure
 from gempyp.engine.runner import getError
 from gempyp.libs import common
 from gempyp.dv.dvDataframe import Dataframe
-from gempyp.dv.dvCompare import df_compare
+# from gempyp.dv.dvCompare import df_compare
 from gempyp.dv.dfOperations import dateFormatHandling, columnCompare, skipColumn
 import re
 import json
 import ast
+from gempyp.dv.dataCompare import df_compare
 
 
 class DvRunner(Base):
@@ -36,6 +37,8 @@ class DvRunner(Base):
 
         self.data = data
         self.configData: Dict = self.data.get("config_data")
+        self.configData['USERNAME'] = self.data["SUITE_VARS"]["username"]
+        self.configData['BRIDGE_TOKEN'] = self.data["SUITE_VARS"]["bridge_token"] 
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys(
         ) else logging
         self.logger.info(
@@ -49,7 +52,9 @@ class DvRunner(Base):
         self.logger.info(
             "--------------------Report object created ------------------------")
         self.reporter = Base(project_name=self.project,
-                             testcase_name=self.tcname)
+                            testcase_name=self.tcname)
+        self.reporter.logger = self.logger
+        self.configData['REPORT_LOCATION'] = self.data.get("REPORT_LOCATION",None)
 
     def dvEngine(self):
 
@@ -88,56 +93,11 @@ class DvRunner(Base):
             
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
-            # for columns mapping
-            if "COLUMN_MAP" in self.configData:
-                self.target_df.rename(columns=eval(
-                    self.configData["COLUMN_MAP"]), inplace=True)
-                self.target_columns = list(self.target_df.columns)
-            self.matchKeys(self.source_columns, "SOURCE")
-            self.matchKeys(self.target_columns, "TARGET")
 
-            if 'SKIP_COLUMN' in self.configData:
-                self.source_df, self.target_df = skipColumn(self.configData.get('SKIP_COLUMN'),self.source_df,self.target_df,self.keys,self.reporter)
-                self.source_columns = list(self.source_df.columns)
-                self.target_columns = list(self.target_df.columns)
-            #calling getDuplicatekeysDf function to get dataframe of duplicate keys 
-            source_duplicates_df, src_dup_len = self.getDuplicateKeysDf(self.source_df, "SOURCE")
-            target_duplicates_df, tgt_dup_len = self.getDuplicateKeysDf(self.target_df, "TARGET")
-            dup_keys_length = src_dup_len + tgt_dup_len
-            duplicate_keys_df = pd.concat([source_duplicates_df , target_duplicates_df ], axis=0, ignore_index=True)
-
-            if self.source_columns == self.target_columns:
-                pass
-            else:
-                self.logger.info(
-                    "--------Same Column not Present in Both Table--------")
-                self.reporter.addRow(
-                    "Same Columns in Table", "Not Found", status.ERR)
-                raise Exception("Same Columns Not Found")
-
-            """deleting duplicates from df and keeping last ones"""
-            self.logger.info("Removing Duplicates Rows")
-            self.source_df.drop_duplicates(
-                subset=self.keys, keep='last', inplace=True)
-            self.target_df.drop_duplicates(
-                subset=self.keys, keep='last', inplace=True)
+            df_compare(
+                self.source_df, self.target_df, self.keys, self.reporter, self.configData)
             
-            #calling compare column
-            if "COMPARE_COLUMN" in self.configData:
-                compare_column = self.configData.get("COMPARE_COLUMN",'').split(',')
-                self.source_df, self.target_df = columnCompare(self.source_df, self.target_df, self.keys, compare_column)
-            # hadling case insensitivity
-            if 'MATCH_CASE' in self.configData:
-                self.matchCase()
-
-            # date format handling
-            self.source_df, self.target_df = dateFormatHandling(self.source_df, self.target_df)
-            
-            #checking column compare
-            value_dict, key_dict, keys_length = df_compare(
-                self.source_df, self.target_df, self.keys, self.logger, self.reporter, self.configData)
-            
-            self.writeExcel(value_dict, key_dict, keys_length, duplicate_keys_df, dup_keys_length)
+            # self.writeExcel(value_dict, key_dict, keys_length, duplicate_keys_df, dup_keys_length)
             self.reporter.finalizeReport()
             output = writeToReport(self)
             return output, None
@@ -206,27 +166,6 @@ class DvRunner(Base):
                 "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise Exception(e)
 
-    def matchKeys(self, columns, db):
-
-        try:
-            self.logger.info(f"Matching Keys in {db} DB")
-            key = []
-            for i in self.keys:
-                if i not in columns:
-                    key.append(i)
-            if len(key) == 0:
-                self.reporter.addRow(
-                    f"Matching Given Keys in {db}", f"Keys are Present in {db}", status.PASS)
-                self.logger.info(f"Given Keys are Present in {db} DB")
-            else:
-                raise (f"Keys are not Present in {db}")
-        except Exception as e:
-            keyString1 = ", ".join(key)
-            self.reporter.addRow(
-                f"Matching Given Keys in {db}", "Keys: " + keyString1 + f" are not Present in {db}DB", status.ERR)
-            self.logger.info("------Given Keys are not present in DB------")
-            raise Exception("Keys not Present in DB")
-
     def setVars(self):
         """
         For setting variables like testcase name, output folder etc.
@@ -243,72 +182,7 @@ class DvRunner(Base):
         self.env = self.data["ENVIRONMENT"]
         self.category = self.data["config_data"].get("CATEGORY", None)
 
-    def writeExcel(self, valDict, keyDict, keys_length, duplicate_keys_df, dup_keys_len):
-
-        try:
-            logging.info("----------in write excel---------")
-            key_check = len(keyDict["Reason-of-Failure"])
-            value_check = len(valDict["Reason-of-Failure"])
-            self.logger.info("In write Excel Function")
-            outputFolder = self.data['REPORT_LOCATION']
-
-            unique_id = uuid.uuid4()
-            excelPath = os.path.join(
-                outputFolder, self.configData['NAME']+str(unique_id)+'.csv')
-            excel = os.path.join(
-                ".", "testcases", self.configData['NAME']+str(unique_id)+'.csv')
-            self.value_df = pd.DataFrame(valDict)
-            self.keys_df = pd.DataFrame(keyDict)
-            if "AFTER_FILE" in self.configData:
-                self.afterMethod()
-            if (key_check + value_check + dup_keys_len) == 0:
-                self.reporter.addRow("Data Validation Report",
-                                    "No MisMatch Value Found", status=status.PASS)
-                self.logger.info("----No MisMatch Value Found----")
-            else:
-                self.logger.info("----Adding Data to Excel----")
-                # with pd.ExcelWriter(excelPath) as writer1:
-                    # if key_check == 0:
-                    #     pass
-                    # else:
-                    #     self.keys_df.to_excel(
-                    #         writer1, sheet_name='key_difference', index=False)
-                    # if value_check == 0:
-                    #     pass
-                    # else:
-                    #     self.value_df.to_excel(
-                    #         writer1, sheet_name='value_difference', index=False)
-                df = pd.concat([self.value_df, self.keys_df, duplicate_keys_df ], axis=0, ignore_index=True)
-                df_columns = set(df.columns)
-                fixed_columns = {"Column-Name","Source-Value","Target-Value","Reason-of-Failure"}
-                diff_columns = df_columns - fixed_columns
-                new_order = list(diff_columns)+["Column-Name","Source-Value","Target-Value","Reason-of-Failure"]
-                df = df[new_order]
-                df.to_csv(excelPath, index=False,header=True)
-                s3_url = None
-                try:
-                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.data["SUITE_VARS"]
-                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
-                except Exception as e:
-                    logging.warn(e)
-                if not s3_url:
-                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[excelPath])
-                else:
-                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[s3_url])
-
-                self.reporter.addMisc("REASON OF FAILURE", str(
-                    f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
-            self.reporter.addMisc("common Keys", str(keys_length['common_keys']))
-            self.reporter.addMisc("Keys Only in Source",
-                                str(keys_length['keys_only_in_src']))
-            self.reporter.addMisc("Keys Only In Target",
-                                str(keys_length['keys_only_in_tgt']))
-            self.reporter.addMisc("Mismatched Cells", str(value_check))
-        except Exception as e:
-            self.reporter.addMisc(
-                    "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
-            self.reporter.addRow("Writing Data into CSV","Exception Occured",status.ERR)
-
+    
     def beforeMethod(self):
         """This function
         -checks for the before file tag
@@ -328,7 +202,7 @@ class DvRunner(Base):
 
             return
         self.reporter.addRow("Searching for Before_File steps",
-                             "Searching for Before File", status.INFO)
+                            "Searching for Before File", status.INFO)
 
         file_name = file_str.split("path=")[1].split(",")[0]
         if "CLASS=" in file_str.upper():
@@ -369,58 +243,6 @@ class DvRunner(Base):
             self.reporter.addRow(
                 "Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
 
-    def afterMethod(self):
-        """This function
-        -checks for the after file tag
-        -stores package, module,class and method
-        -runs after method if found
-        -takes all the data from after method and updates the self object"""
-
-        self.logger.info("CHECKING FOR AFTER FILE___________________________")
-
-        file_str = self.data["config_data"].get("AFTER_FILE", "")
-        if not file_str or file_str == "" or file_str == " ":
-            self.logger.info("AFTER FILE NOT FOUND___________________________")
-            self.reporter.addRow(
-                "Searching for After_File Steps", "No File Path Found", status.INFO)
-            return
-
-        self.reporter.addRow("Searching for After_File",
-                             "Searching for File", status.INFO)
-
-        file_name = file_str.split("path=")[1].split(",")[0]
-        if "CLASS=" in file_str.upper():
-            class_name = file_str.split("class=")[1].split(",")[0]
-        else:
-            class_name = ""
-        if "METHOD=" in file_str.upper():
-            method_name = file_str.split("method=")[1].split(",")[0]
-        else:
-            method_name = "after"
-        self.logger.info("After file path:- " + file_name)
-        self.logger.info("After file class:- " + class_name)
-        self.logger.info("After file mthod:- " + method_name)
-        try:
-            file_path = download_common_file(
-                file_name, self.data.get("SUITE_VARS", None))
-            file_obj = moduleImports(file_path)
-            self.logger.info("Running After method")
-            obj_ = file_obj
-            after_obj = DvObj(
-                project=self.project,
-                value_df=self.value_df,
-                keys_df=self.keys_df,
-                env=self.env,
-                reporter=self.reporter 
-            )
-            if class_name != "":
-                obj_ = getattr(file_obj, class_name)()
-            fin_obj = getattr(obj_, method_name)(after_obj)
-            self.extractAfterObj(fin_obj)
-        except Exception as e:
-            self.reporter.addRow(
-                "Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.ERR)
-
     def extractBeforeObj(self, obj):
         """To ofload the data from pyprest obj helper, assign the values back to self object"""
 
@@ -433,39 +255,6 @@ class DvRunner(Base):
         self.keys = obj.keys
         self.env = obj.env
         self.reporter = obj.reporter
-
-    def extractAfterObj(self, obj):
-
-        self.reporter = obj.object
-        self.project = obj.project
-        self.value_df = obj.value_df
-        self.keys_df = obj.keys_df
-        self.env = obj.env
-        self.reporter = obj.reporter
- 
-    def matchCase(self):
-        try:
-            columns = self.configData['MATCH_CASE'].split(',')
-            for i in columns:
-                self.source_df[i] = self.source_df[i].apply(str.lower)
-                self.target_df[i] = self.target_df[i].apply(str.lower)
-        except Exception as e:
-            self.reporter.addRow("Trying to Match Case",common.get_reason_of_failure(traceback.format_exc(), e), status.ERR)
-            raise e
-        
-    def getDuplicateKeysDf(self, df, type):
-
-        self.logger.info("Checking Dulicates Keys")
-        dup_df = df[df[self.keys].duplicated(keep=False)]
-
-        dup_keys_df = dup_df[self.keys]
-        dup_length = len(dup_keys_df)
-        dup_keys_df.drop_duplicates(
-                keep='last', inplace=True)
-        dup_keys_df['Reason-of-Failure'] = f'Duplicate Key in {type}'
-        if len(dup_keys_df['Reason-of-Failure']) > 0:
-            self.reporter.addRow(f"Checking for Duplicates Keys in {type}",f"Found Duplicate Keys in {type}",status.FAIL)
-        return dup_keys_df, dup_length
     
     def parseConfig(self,config):
         pattern = r"ENV.([a-zA-Z0-9_]+)"
@@ -477,7 +266,6 @@ class DvRunner(Base):
                 else:
                     if("ENV." in value):
                         config[key]=os.environ.get(value.replace("ENV.",""))
-        print(config)
         return config
     
     def parseConfigDict(self,conf):
