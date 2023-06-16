@@ -1,0 +1,18 @@
+import requests
+
+def send_form_data(url, files,headers,form_data=None):
+    response = requests.post(url, data=form_data, files=files,headers=headers,verify=True)
+    return response
+
+# Example usage:
+url = 'https://devapi.geminisolutions.com/atsJobSvc/job'
+files = [
+    ('jdFile', open('C:\\Users\\Tanya.Agarwal\\Downloads\\Linkdln_XYZ(5-6).pdf', 'rb')),
+    ('job', open('C:\\Users\\Tanya.Agarwal\\Downloads\\jobapi.json', 'rb'))
+]
+headers={'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiJhcGk6Ly80ZjY4NWQ3Ni1lMjQzLTRmZjUtOTM2OC03MDQ4Mzc3ZDc3MDkiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9iOTgwNmM3ZC05MjgwLTRlNDQtYWZlYS02ZGMwZmY0OTVjMmYvIiwiaWF0IjoxNjg2NzM1MDIyLCJuYmYiOjE2ODY3MzUwMjIsImV4cCI6MTY4NjczODkyMiwiYWlvIjoiRTJaZ1lMaDVJQ1B1YTlISm9NV1pxaXZ5Q3EzdUFBQT0iLCJhcHBpZCI6IjRmNjg1ZDc2LWUyNDMtNGZmNS05MzY4LTcwNDgzNzdkNzcwOSIsImFwcGlkYWNyIjoiMSIsImlkcCI6Imh0dHBzOi8vc3RzLndpbmRvd3MubmV0L2I5ODA2YzdkLTkyODAtNGU0NC1hZmVhLTZkYzBmZjQ5NWMyZi8iLCJvaWQiOiI1ZjUyYzExMC1mODg0LTRhNjctYjhiMi00YzBiNTZjNmYwNmYiLCJyaCI6IjAuQVhFQWZXeUF1WUNTUkU2djZtM0FfMGxjTDNaZGFFOUQ0dlZQazJod1NEZDlkd21IQUFBLiIsInN1YiI6IjVmNTJjMTEwLWY4ODQtNGE2Ny1iOGIyLTRjMGI1NmM2ZjA2ZiIsInRpZCI6ImI5ODA2YzdkLTkyODAtNGU0NC1hZmVhLTZkYzBmZjQ5NWMyZiIsInV0aSI6IjVxNUs3emJZdkUtQWpNa3Zqb2VJQUEiLCJ2ZXIiOiIxLjAifQ.QXnuAb58ADIxCWDE-arBwEQQjA6TLH6QiLtCVu5PSpFDxl1ULlkNB-4BT5Y4lhNfQV9QjQz0O3Q7FbvolsYKXuMiBzAmxf9_i2KTGtNMAjUJ2-YRrZGVeFiATdlqBTIdLzvdEmVVIgS3gInqhgsvjKr-iF04uRFyoJwRyQ4pFRyyCWk0z83Adcabfrq8_4gq3kvNEFeAMun48a9D9qWKH1wDatrKCvxXcVqXW9ZXIHzEKuIR1_pCP4jDloQPzPBwPB2IaTRncVvLgIbFTK_CSO-1JD4LSAP8T3FUM7yK2CERaCNVh0nSJvCkY083sAuvlu4QcyintXpj44dQZsZZMw', 'X-REMOTE-USER-EMAIL': 'saru.goyal@geminisolutions.com'}
+response = send_form_data(url, files,headers)
+print(response.status_code)
+print(response.text)
+print(response.request.headers)
+ # Assuming the response is in JSON format

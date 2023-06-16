@@ -207,7 +207,7 @@ class Engine:
             sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
 
         self.repJson = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
-        TemplateData().repSummary(self.repJson, jewel, unuploaded_path)
+        TemplateData().repSummary(self.repJson, jewel, unuploaded_path,self.testcase_log_folder,self.complete_logs,self.bridgetoken,self.username,self.suite_log_file)
 
     def makeOutputFolder(self):
         """
@@ -238,8 +238,9 @@ class Engine:
         self.testcase_log_folder = os.path.join(self.ouput_folder, "logs")
         os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
         os.makedirs(self.testcase_log_folder)
+        self.complete_logs = os.path.join(self.testcase_log_folder,self.s_run_id + '.txt')
     def verify(self,value):
-        if(re.search(r'[^a-zA-Z0-9_ ]',value)):
+        if(re.search(r'[^a-zA-Z0-9_ .-]',value)):
                 logging.info("Some Error From the Client Side. May be s_run_id, project_name or ENV is not in a correct format")
                 sys.exit()
         else:
@@ -254,6 +255,7 @@ class Engine:
         """
         
         self.PARAMS = config.getSuiteConfig()
+        self.suite_log_file=config.getLogFilePath()
         self.ENV = os.getenv("appenv", "BETA").upper()
 
         #checking if url is present in file and calling get api
@@ -318,7 +320,7 @@ class Engine:
                 try:
                     if DefaultSettings.apiSuccess:
                         self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
-                        logging.info("--------- url" + str(self.s3_url))
+                        logging.info("S3 Url: " + str(self.s3_url))
                     else:
                         self.s3_url = self.PARAMS["config"]
                 except Exception as e:
@@ -344,7 +346,7 @@ class Engine:
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
         # self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
-        self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
+        # self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         suite_details = {
             "s_run_id": self.s_run_id,

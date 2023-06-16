@@ -16,6 +16,16 @@ class Api:
     def __init__(self):
         pass
 
+    def file_upload(self,json_form_data): 
+        files_data=[]
+        json_form_data_1={}  
+        for key,value in json_form_data.items():
+            files_data_tuple=tuple()
+            if(os.path.exists(json_form_data[key])):
+                files_data_tuple+=(key,json_form_data[key])
+            files_data.append(files_data_tuple)
+        return files_data
+
     def execute(self, request):
         encrypt_key = "Y4irRsiBmyGMBie5gAZ8va3IOHVOYZFxC5L1-jNydZk="
         result = Response()
@@ -25,6 +35,26 @@ class Api:
                 try:
                     if not isinstance(request.body, str):
                         request.body = json.dumps(request.body)
+                except Exception as e:
+                    logging.info("JSON object can not be serialized")
+                    logging.info(str(e))
+            # write code for authentication 
+            # decrypt password
+        else:
+                try:
+                    newFile=[]
+                    newBody={}
+                    for key,value in request.body.items():
+                        newFileTuple=tuple()
+                        if(os.path.isfile(value)):
+                            newFileTuple+=(key,open(value,'rb'))
+                            # newFile[key]=open(value,'rb')
+                            newFile.append(newFileTuple)
+                        else:
+                             newBody[key]=value
+                    request.file=newFile
+                    request.body=newBody
+                    pass
                 except Exception as e:
                     logging.info("JSON object can not be serialized")
                     logging.info(str(e))
@@ -58,7 +88,7 @@ class Api:
                             data=request.body,
                             verify=request.SSLVerify,
                             auth=auth,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     else:
                         
@@ -68,7 +98,7 @@ class Api:
                             files=request.file,
                             data=request.body,
                             verify=request.SSLVerify,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "GET":
@@ -80,7 +110,7 @@ class Api:
                             files=request.file,
                             verify=request.SSLVerify,
                             auth=auth,
-                            timeout=request.timeout // 1000,
+                            timeout=request.timeout,
                         )
                     else:
                         resp = requests.get(
@@ -88,7 +118,7 @@ class Api:
                             headers=request.headers,
                             files=request.file,
                             verify=request.SSLVerify,
-                            timeout=request.timeout // 1000,
+                            timeout=request.timeout,
                         )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "PUT":
@@ -101,7 +131,7 @@ class Api:
                             data=request.body,
                             auth=auth,
                             verify=request.SSLVerify,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     else:
                         resp = requests.put(
@@ -110,7 +140,7 @@ class Api:
                             files=request.file,
                             data=request.body,
                             verify=request.SSLVerify,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "PATCH":
@@ -123,7 +153,7 @@ class Api:
                             data=request.body,
                             verify=request.SSLVerify,
                             auth=auth,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     else:
                         resp = requests.patch(
@@ -132,7 +162,7 @@ class Api:
                             files=request.file,
                             data=request.body,
                             verify=request.SSLVerify,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     end_time = datetime.now()
                 elif str.upper(request.method) == "DELETE":
@@ -145,7 +175,7 @@ class Api:
                             data=request.body,
                             verify=request.SSLVerify,
                             auth=auth,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     else:
                         resp = requests.delete(
@@ -154,7 +184,7 @@ class Api:
                             files=request.file,
                             data=request.body,
                             verify=request.SSLVerify,
-                            timeout=request.timeout // 1000
+                            timeout=request.timeout
                         )
                     end_time = datetime.now()
                 else:

@@ -113,15 +113,40 @@ class Dataframe:
             self.logger.info(log)
             myDB = self.connectingDB(db, cred)
         except Exception as e:
+            print("DB Operations..........................................")
             self.reporter.addRow(
                 f"Connection to {db}DB: ", "Exception Occurred", status.ERR)
             self.logger.error(str(e))
-            
-            # self.reporter.addMisc(
-            #         "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
-
             raise Exception(e)
+        
+        try:
+            db_1, columns = self.executeQuery(db, myDB)
+        except Exception as e:
+            self.logger.error(str(e))
+            self.reporter.addRow(
+                f"Executing {db} SQL", "Exception Occurred", status.ERR)
+            raise e
+        return db_1,columns
+    
+    def fetch_data_with_retries(self, cred, db):
+        retry_limit = 3  # Maximum number of connection retry attempts
+        retry_delay = 10  # Delay between retry attempts in seconds
+        retries = 0
+        while retries < retry_limit:
+            try:
+                return self.dbOperations(cred, db)
+            except Exception as e:
+                print(f"Connection failed: {str(e)}")
+                print("Retrying...")
+                print("fetch_data_with_retries...........................")
+                time.sleep(retry_delay)
+                retries += 1
 
+        print("Maximum number of retries exceeded. Failed to fetch data.")
+        return None, None
+
+    
+    def executeQuery(self,db,myDB):
         try:
             self.logger.info(f"----Executing the {db}SQL----")
             # checking whether it is mongodb object by checking mongoclient in starting of the object
@@ -148,8 +173,12 @@ class Dataframe:
                 db_1 = pd.DataFrame(results)
                 columns = list(db_1.columns)
             else:
+                # try:
                 myCursor = myDB.cursor()
                 sql = f"{db}_SQL"
+                statement_timeout = 0
+                myDB.cursor().execute(f"ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = {statement_timeout}")
+                myDB.cursor().execute(f"alter warehouse COMPUTE_WH set statement_timeout_in_seconds = {statement_timeout}")
                 myCursor.execute(self.configData[sql])
                 self.reporter.addRow(
                     f"Executing {db} SQL", f"{self.configData[sql]}<br>{db} SQL executed Successfull", status.PASS)
