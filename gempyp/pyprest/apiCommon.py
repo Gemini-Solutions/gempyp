@@ -46,7 +46,7 @@ class Api:
                     newBody={}
                     for key,value in request.body.items():
                         newFileTuple=tuple()
-                        if(os.path.isfile(value)):
+                        if(isinstance(value,str) and os.path.isfile(value)):
                             newFileTuple+=(key,open(value,'rb'))
                             # newFile[key]=open(value,'rb')
                             newFile.append(newFileTuple)
