@@ -121,10 +121,10 @@ class TemplateData:
         #     return repJson, None
         ouput_file_path=""
         # if not jewel_user:
-        #     ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
-        #     ouput_file_path = ResultFile
-        #     with open(ResultFile, "w+") as f:
-        #         f.write(suiteReport)
+        ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
+        ouput_file_path = ResultFile
+        with open(ResultFile, "w+") as f:
+            f.write(suiteReport)
         # return repJson, ouput_file_path
         return repJson
     
