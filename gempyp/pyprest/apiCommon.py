@@ -16,15 +16,15 @@ class Api:
     def __init__(self):
         pass
 
-    def file_upload(self,json_form_data): 
-        files_data=[]
-        json_form_data_1={}  
-        for key,value in json_form_data.items():
-            files_data_tuple=tuple()
-            if(os.path.exists(json_form_data[key])):
-                files_data_tuple+=(key,json_form_data[key])
-            files_data.append(files_data_tuple)
-        return files_data
+    def convert_quotes_boolean(self,data):
+        if isinstance(data, bool):
+            return str(data).lower()
+        elif isinstance(data, list):
+            return [self.convert_quotes_boolean(item) for item in data]
+        elif isinstance(data, dict):
+            return {self.convert_quotes_boolean(key): self.convert_quotes_boolean(value) for key, value in data.items()}
+        else:
+            return data
 
     def execute(self, request):
         encrypt_key = "Y4irRsiBmyGMBie5gAZ8va3IOHVOYZFxC5L1-jNydZk="
@@ -51,9 +51,16 @@ class Api:
                             # newFile[key]=open(value,'rb')
                             newFile.append(newFileTuple)
                         else:
-                             newBody[key]=value
+                            if(isinstance(value,dict)):
+                                newBody[key]=str(json.dumps(value))
+                            else:
+                                newBody[key]=value
                     request.file=newFile
                     request.body=newBody
+                    # request.body = self.convert_quotes_boolean(request.body)
+                    print(type(request.body))
+                    print(request.body)
+                    print("__________________________________")
                     pass
                 except Exception as e:
                     logging.info("JSON object can not be serialized")
@@ -100,6 +107,9 @@ class Api:
                             verify=request.SSLVerify,
                             timeout=request.timeout
                         )
+                        print(request.body)
+                        print(resp.text)
+                        print("posttttttttttttttttttttttttttttttttttttttttt")
                     end_time = datetime.now()
                 elif str.upper(request.method) == "GET":
                     start_time = datetime.now()
@@ -142,6 +152,9 @@ class Api:
                             verify=request.SSLVerify,
                             timeout=request.timeout
                         )
+                        print(request.body)
+                        print(resp.text)
+                        print("putttttttttttttttttttttt________________________")
                     end_time = datetime.now()
                 elif str.upper(request.method) == "PATCH":
                     start_time = datetime.now()
