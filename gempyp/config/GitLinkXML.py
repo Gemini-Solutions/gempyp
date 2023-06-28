@@ -8,9 +8,13 @@ from requests.auth import HTTPBasicAuth
 from base64 import b64encode
 
 def fetchFileFromGit(link,branch,username=None,bearer_token=None):  ################ post 1.0.4
+        print("^^^^^^^^^^^^^^^^^^^^^")
+        print(link)
+        print(branch)
         list=link.split("/")
         api = f'https://api.github.com/repos/{list[3]}/{list[4]}/contents/{"/".join(list[7:])}?ref={branch}'
         try:
+            print("$$$$$$$$$$$$$$$$$",api)
             # if(username is not None and token is not None):
             headers=None
             if bearer_token is not None:
@@ -32,6 +36,7 @@ def fetchFileFromGit(link,branch,username=None,bearer_token=None):  ############
             else:
                 file=os.path.join(tempfile.gettempdir(),link.split("/")[-1])
                 logging.info("GIT FILE PATH"+str(file))
+            print(file)
             with open(file, "w+") as f:
                 f.write(response_content.text)
             logging.info("FILE IS DOWNLOADED")
@@ -44,4 +49,4 @@ def basic_auth(username, password):
     return f'Basic {token}'
 
 if __name__ == "__main__":
-    fetchFileFromGit("GIT:https://github.com/Gemini-Solutions/gempyp/blob/dev/tests/configTest/Gempyp_Test_suite.xml:dev:username:token")
+    fetchFileFromGit("GIT:https://github.com/gem-sachinchand/addgitlink/blob/main/lakh1.csv:main:gem-sachinchand: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")

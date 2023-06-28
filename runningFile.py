@@ -4,7 +4,7 @@ from gempyp.gemPyp import Gempyp
 obj = Gempyp()
 
 """Giving the default config file location  and default mail"""
-obj.config = "C:\\Users\\Tanya.Agarwal\\Music\\gempyp\\HealthCheck.xml"
+obj.config = "path//to//config//file"
 
 if __name__ == "__main__":
     obj.runner()
