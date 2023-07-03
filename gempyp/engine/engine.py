@@ -17,6 +17,7 @@ from gempyp.libs.enums.run_types import RunTypes
 from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner
+# from gempyp.engine.newRunner import testcaseRunner
 from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
@@ -40,8 +41,10 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     """
     logging.info("--------- In Executor Factory ----------\n")
     if custom_logger == None:
-        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
-        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility
+        testcase_name = data['config_data'].get('NAME',None)
+        testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
+        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),testcase_name + '_'
+        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility     
         custom_logger = my_custom_logger(log_path)
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
@@ -70,6 +73,7 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     else:
         conn.send([data])
         conn.close()
+
 
 
 class Engine:
@@ -436,8 +440,10 @@ class Engine:
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
+                testcase_name = data['config_data'].get('NAME',None)
+                testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
                 log_path = os.path.join(self.testcase_log_folder,
-                data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
+                testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 conn = None
