@@ -109,6 +109,9 @@ class DvRunner(Base):
             if self.source_columns == self.target_columns:
                 pass
             else:
+                print(self.source_columns)
+                print(self.target_columns)
+                print("___________________________________________")
                 self.logger.info(
                     "--------Same Column not Present in Both Table--------")
                 self.reporter.addRow(

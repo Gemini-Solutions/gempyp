@@ -38,9 +38,11 @@ def create_report(data, s_run_id):
     repJson = TemplateData().makeSuiteReport(json.dumps(json_data), testcaseData,output_folder,jewel)
     suite_data = json_data["suits_details"]
     suite_data["misc_data"] = data["misc_data"]
-    username = suite_data["initiated_by"]
+    username = suite_data["user"]
     del suite_data["testcase_details"]
     del suite_data["testcase_info"]
+    print(suite_data)
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++")
     dataUpload.sendSuiteData(json.dumps(suite_data), bridgetoken, username, mode="PUT")
     return output_folder
 
