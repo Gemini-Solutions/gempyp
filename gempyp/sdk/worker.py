@@ -20,7 +20,6 @@ def pid_running(pid):
 
 def create_report(data, s_run_id):
      # read bridgetoken
-    logging.error("!!!!!!!!!!!!!!here\n{}".format(data))
     try:
         jewel=False
         config_file = configparser.ConfigParser()
@@ -59,8 +58,11 @@ if __name__ == "__main__":
                         output_file_path = create_report(data, s_run_id)
                         # where to get this json data from
                         current_pid = os.getpid()
+                        jewelLink = DefaultSettings.getUrls('jewel-url')
+                        jewel_link = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
                         logging.info(f"Find Gempyp logs at - {s_run_id + '.log'}")
                         logging.info(f"Find Gempyp Report at - {output_file_path}")
+                        logging.info(f"Jewel link of gempyp report - {jewel_link}")
                         # os.rename("logs.log",f"{s_run_id}.log")
                         os.kill(current_pid, 19)
                         sys.exit()
