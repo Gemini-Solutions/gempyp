@@ -20,6 +20,7 @@ def pid_running(pid):
 
 def create_report(data, s_run_id):
      # read bridgetoken
+    logging.error("!!!!!!!!!!!!!!here\n{}".format(data))
     try:
         jewel=False
         config_file = configparser.ConfigParser()
@@ -41,8 +42,6 @@ def create_report(data, s_run_id):
     username = suite_data["user"]
     del suite_data["testcase_details"]
     del suite_data["testcase_info"]
-    print(suite_data)
-    print("++++++++++++++++++++++++++++++++++++++++++++++++++")
     dataUpload.sendSuiteData(json.dumps(suite_data), bridgetoken, username, mode="PUT")
     return output_folder
 

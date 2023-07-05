@@ -45,7 +45,7 @@ class Executor(TestcaseReporter):
         if not os.getenv("PID"):
             self.makeOutputFolder()
             os.environ["PID"] = str(os.getpid())
-            subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
+            subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True, stdout=subprocess.PIPE)
             try:
                 logging.info(f"S_RUN_ID : {self.s_run_id}")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"]) # check with deamon, should insert only once
