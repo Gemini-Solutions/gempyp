@@ -29,7 +29,7 @@ from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.libs.common import *
-import re
+import re,tempfile
 
 
 
@@ -226,16 +226,21 @@ class Engine:
             report_folder_name = report_folder_name + f"_{report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
+        try:
+            if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
+                self.ouput_folder = os.path.join(
+                    self.PARAMS["REPORT_LOCATION"], report_folder_name
+                )
+            else:
+                home = str(Path.home())
+                self.ouput_folder = os.path.join(
+                    home, "gempyp_reports", report_folder_name
+                )
+        except Exception:
+            temp = str(tempfile.gettempdir())
             self.ouput_folder = os.path.join(
-                self.PARAMS["REPORT_LOCATION"], report_folder_name
-            )
-        else:
-            home = str(Path.home())
-            self.ouput_folder = os.path.join(
-                home, "gempyp_reports", report_folder_name
-            )
-
+                    temp, "gempyp_reports", report_folder_name
+                )
         os.makedirs(self.ouput_folder)
         self.testcase_folder = os.path.join(self.ouput_folder, "testcases")
         os.makedirs(self.testcase_folder)
@@ -298,7 +303,7 @@ class Engine:
 
         self.project_name=self.verify(self.PARAMS["PROJECT_NAME"])
         self.project_env=self.verify(self.PARAMS["ENVIRONMENT"])
-        self.report_name = self.PARAMS.get("REPORT_NAME")
+        self.report_name = strValidation(self.PARAMS.get("REPORT_NAME"))
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.jewel_run = False
