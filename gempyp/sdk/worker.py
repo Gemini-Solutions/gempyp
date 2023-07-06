@@ -59,7 +59,9 @@ if __name__ == "__main__":
                         # where to get this json data from
                         current_pid = os.getpid()
                         jewelLink = DefaultSettings.getUrls('jewel-url')
-                        jewel_link = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
+                        if jewelLink is not None:
+                            jewel_link = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
+                            logging.info(f"Jewel link of gempyp report - {jewel_link}")
                         logging.info(f"Find Gempyp logs at - {s_run_id + '.log'}")
                         logging.info(f"Find Gempyp Report at - {output_file_path}")
                         logging.info(f"Jewel link of gempyp report - {jewel_link}")
