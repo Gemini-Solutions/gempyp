@@ -29,6 +29,8 @@ def df_compare(src_df, tgt_df, key, reporter, configData={}):
             tgt_df.rename(columns=eval(
                 configData["COLUMN_MAP"]), inplace=True)
             tgt_columns = list(tgt_df.columns)
+        if type(key)==str:
+            key = key.split(",")
         matchKeys(src_columns, "SOURCE",key,reporter)
         matchKeys(tgt_columns, "TARGET",key,reporter)
 
