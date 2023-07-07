@@ -20,6 +20,7 @@ import os
 import pandas as pd
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import *
+import glob
 from gempyp.engine.engine import Engine
 
 
@@ -55,7 +56,7 @@ class Executor(TestcaseReporter):
                 pass
 
     def __del__(self):
-        self.final()
+            self.final()
 
     def final(self):       
         output = []
@@ -72,8 +73,6 @@ class Executor(TestcaseReporter):
         report_dict["config_data"] = self.getConfigData()
         # creating output json
         output.append(getOutput(report_dict))
-        count = 0
-        print("Here\n{count}\n".format(count=count))
         output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'],output[0]['testcase_dict']['job_name'],output[0]['testcase_dict']['job_runid'] = Engine.set_run_type_mode(self)
         for i in output:
             i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -110,7 +109,6 @@ class Executor(TestcaseReporter):
             # for k in range(count):
             updatedData=json.loads(self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"]))
             logging.info("TC_RUN_ID : "+i["testcase_dict"]["tc_run_id"].upper())
-            print(updatedData)
             dataUpload.sendTestcaseData(json.dumps(updatedData), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"])  # instead of output, I need to pass s_run id and  tc_run_id
             path = __file__
             path = path.rsplit(os.sep, 1)[0]
@@ -119,20 +117,22 @@ class Executor(TestcaseReporter):
         
             # os.rename(self.log_file, tmp_dir.rsplit(".", 1)[0] + ".log")
 
-
     def getTestcaseData(self):
         self.jewel_user=False
         config_file = configparser.ConfigParser()
-        directory_path = os.getcwd()
+        file_path = glob.glob("**/gempyp.conf", recursive=True)
+        # directory_path = os.getcwd()
 
-        if not os.path.exists(directory_path + os.sep + "gempyp.conf"):
+        # if not os.path.exists(directory_path + os.sep + "gempyp.conf"):
+        if not file_path:
             print("Config file is missing. Aborting  gempyp report......")
             sys.exit()
-        config_file.read("gempyp.conf")
+        # config_file.read("gempyp.conf")
+        config_file.read(file_path)
         data = {}
-        self.projectName = data["PROJECT_NAME"] = config_file['ReportSetting']["project_name"]
-        self.testcaseName = data["NAME"] = self.method
+        self.projectName = data["PROJECT_NAME"] =config_file['ReportSetting']["project_name"]
         self.env = data["ENVIRONMENT"] = config_file['ReportSetting'].get("environment", "PROD")
+        self.testcaseName = data["NAME"] = self.method
         data["JEWEL_USER"] = config_file['ReportSetting'].get("jewel_user", getpass.getuser())
         data["JEWEL_BRIDGE_TOKEN"] = config_file['ReportSetting'].get("jewel_bridge_token", None)
         data["REPORT_LOCATION"] = config_file['ReportSetting'].get("report_location", None)
