@@ -47,8 +47,8 @@ class Api:
                     for key,value in request.body.items():
                         newFileTuple=tuple()
                         if(isinstance(value,str) and os.path.isfile(value)):
-                            newFileTuple+=(key,open(value,'rb'))
-                            # newFile[key]=open(value,'rb')
+                            name = value.split('\\')[-1]
+                            newFileTuple+=(name,open(value,'rb'))                            
                             newFile.append(newFileTuple)
                         else:
                             if(isinstance(value,dict)):
@@ -58,11 +58,10 @@ class Api:
                     request.file=newFile
                     request.body=newBody
                     # request.body = self.convert_quotes_boolean(request.body)
-                    print(type(request.body))
-                    print(request.body)
                     print("__________________________________")
                     pass
                 except Exception as e:
+                    traceback.print_exc()
                     logging.info("JSON object can not be serialized")
                     logging.info(str(e))
             # write code for authentication 
@@ -76,6 +75,7 @@ class Api:
                 logging.info("Error occured while creating the auth object- " + str(e))
                 auth = None
         try:
+
                 start_time = end_time = datetime.now()
                 obj = Response()
                 if (
@@ -98,7 +98,6 @@ class Api:
                             timeout=request.timeout
                         )
                     else:
-                        
                         resp = requests.post(
                             request.api,
                             headers=request.headers,
