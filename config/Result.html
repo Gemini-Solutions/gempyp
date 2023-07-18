@@ -1,0 +1,538 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+  <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+    <style>
+        .nav-pills .nav-link.active{
+            background-color: #375A64;
+        }
+        table{
+          font-size:13px !important;
+      }
+      .passTest{
+          color: green !important
+      }
+      .failTest{
+          color: red !important
+      }
+      .warnTest{
+          color: yellowgreen !important
+      }
+      a{
+          color: white !important
+      }
+      .head{
+    background-color:#375A64;
+    color: white;
+}
+.statusColorPass{
+    background-color:green !important;
+    color: white !important;
+}
+.statusColorInfo{
+    background-color:grey !important;
+}
+.statusColorFail{
+    background-color:red !important;
+    color: white !important;
+}
+    </style>
+    <body onload="constructPage()">
+        <div class="container-fluid">
+            <div class="mt-3 text-center">
+        <div class="card" style="border: 1px groove black;">
+            <h4 class="my-4"><b>GEMINI QA AUTOMATED TEST EXECUTION REPORT</b></h4>
+            <h5 id="subheading" style="color: grey;">Gemini Report<b>
+                <span id="subHead"></span>
+                <span>(Automation Testing)</span>
+                </b>
+            </h5>
+            <div class="ml-3 mt-3">
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item mr-1" role="presentation">
+                  <button class="btn nav-link active" id="pills-overview-tab" data-toggle="pill" data-target="#pills-overview" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Overview</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="btn nav-link" id="pills-testcase-tab" data-toggle="pill" data-target="#pills-testcase" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Testcase Details</button>
+                </li>
+                
+              </ul>
+            </div>
+              <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active overview" id="pills-overview" role="tabpanel" aria-labelledby="pills-overview-tab">
+
+
+                </div>
+                <div class="tab-pane fade" id="pills-testcase" role="tabpanel" aria-labelledby="pills-testcase-tab">
+                    <div class="col-sm-12 col-md-12 col-lg-12 mt-4 container-fluid">
+                        <div class="d-flex justify-content-center" style="align-items: flex-end;">
+                            <div class="col-sm-3 col-md-3 col-lg-3">
+                                <label for="name">Search Tc Name</label>
+                    <input class="form-control search-key" type="text" size="20" id="name" placeholder="Search Tc name" style="width:100%">
+
+                </div>
+                <div class="col-sm-2 col-md-2 col-lg-2">
+                    <label for="status">Status</label>
+                    <select class="custom-select search-key" id="status"></select>
+                </div>
+                    <button class="btn btn-sm btn-secondary" id="clear" onclick="myFunction()" style="display: inline-block;">Clear Filter</button>
+                <!-- </div> -->
+                </div>
+                </div>
+              </div> 
+</div>   
+</div>
+</div>
+    </body>
+    <script>
+        var obj = '{"suits_details": {"s_run_id": "TEST_PROJECT_BETA_D6396137-EE91-4E64-9BD1-4C82D96DF455", "s_start_time": 1642423063768.786, "s_end_time": 1642423063794.419, "status": "FAIL", "project_name": "test_project", "run_type": "ON DEMAND", "s_report_type": null, "user": "sa.taneja", "env": "beta", "machine": "GSG1TG-GI0167", "initiated_by": "sa.taneja", "run_mode": "LINUX_CLI", "testcase_details": [{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase1", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja", "machine": "GSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase2", "category": "sample1", "log_file": null, "status": "PASS", "user": "sa.taneja1", "machine": "MSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM", "ignore": false},{"tc_run_id": "sample_testcase1_c89968cf-49ae-46f1-8ecf-cacd0e340673", "start_time": 1642423063794.2852, "end_time": 1642423063794.419, "name": "sample_testcase3", "category": "sample", "log_file": null, "status": "FAIL", "user": "sa.taneja2", "machine": "KSG1TG-GI0167", "result_file": "/home/sa.taneja/Gemini/sample_project/pygem_reports/test_project_beta_2022_Jan_17_1807/testcases/sample_testcase1.html", "product_type": "PYGEM2", "ignore": false}], "Testcase_Info": {"FAIL": 1, "TOTAL": 1}}}';
+        obj = JSON.parse(obj);
+        obj.suits_details.testcase_details=changeFormat(obj.suits_details.testcase_details);
+        console.log(obj)
+        var excludeHeader=["tc_run_id","steps","execution_metadata","result_file","ignore"];
+var sortType="";
+var lastsortHeader="";
+        var exeHeaders={
+            "STATUS":"status",
+            "PROJECT NAME":"project_name",
+            "REPORT TYPE":"report_type",
+            "ENV":"env",
+            "START_TIME":"s_start_time",
+            "END_TIME":"s_end_time",
+            "DURATION":"duration",
+        };
+        var infraHeaders={
+            "EXECUTED BY":"user",
+            "EXECUTED ON":"machine",
+            "RUN_TYPE":"run_type",
+            "RUN_MODE":"run_mode"
+        };
+        var options=getOptions(obj.suits_details.testcase_details);
+        for(var i = 0; i < options.length; i++) {
+    var opt = options[i];
+    var el = document.createElement("option");
+    el.textContent = opt;
+    el.value = opt;
+    $('#status').append(el);
+}
+
+
+function changeFormat(value){
+for (var i = 0; i < value.length; i++) {
+var keys=Object.keys(value[i]);
+for(var j = 0; j < keys.length; j++) {
+    if(typeof(value[i][keys[j]])!="object"){
+        value[i][keys[j]]={
+            value:value[i][keys[j]],
+            sortValue:value[i][keys[j]]
+        }
+    }
+}
+}
+return value;
+}
+function constructPage(){
+
+ var exeTable=getExecutionDetailsTable(obj.suits_details);
+ var row=$('<div/>').addClass("row");
+ $('#pills-overview').append(exeTable);
+ var cardDetails=getCardDetails(obj.suits_details.Testcase_Info);
+//  $('#pills-overview').append(cardDetails);
+var infraTable=getInfraDetailsTable(obj.suits_details);
+row.append(cardDetails).append(infraTable);
+$('#pills-overview').append(row);
+
+
+var testcaseDetailsTable=getTestcaseDetailsTable(obj.suits_details.testcase_details);
+$('#pills-testcase').append(testcaseDetailsTable);
+
+}
+
+function getTestcaseDetailsTable(list)
+{
+    var div=$('<div/>').addClass('col-sm-12 col-md-12 col-lg-12 mt-4 container-fluid');
+
+    var cols = [];
+             
+            for (var i = 0; i < list.length; i++) {
+                for (var k in list[i]) {
+                    if (cols.indexOf(k) === -1) {
+                        // Push all keys to the array
+                        if(!excludeHeader.includes(k)){
+                        cols.push(k);
+                        }
+                    }
+                }
+            }
+            cols.push("DURATION");
+        
+            // Create a table element
+            var table = document.createElement("table");
+            table.id="tab"
+             table.className="table table-bordered table-hover table-responsive-lg text-center";
+            // Create table row tr element of a table
+            var tr = table.insertRow(-1);
+             
+            for (var i = 0; i < cols.length; i++) {
+               
+                // Create the table header th element
+                var theader = document.createElement("th");
+                theader.className="head";
+                theader.innerHTML = cols[i];
+                theader.id=cols[i]+"_tc";
+                 theader.addEventListener("click",getsort);
+                // Append columnName to the table row
+                tr.appendChild(theader);
+                 
+            }
+             
+            // Adding the data to the table
+            for (var i = 0; i < list.length; i++) {
+                 
+                // Create a new row
+          if(list[i]["ignore"]!==true){
+                trow = table.insertRow(-1);
+                for (var j = 0; j < cols.length; j++) {
+                    var cell = trow.insertCell(-1);
+                     var att = document.createAttribute("data-input");
+                     if(cols[j].includes(" ")){
+                         var v=cols[j].replace(" ","_");
+                 att.value = v;
+               }else{
+                     att.value = cols[j];
+               }
+                     cell.setAttributeNode(att);
+                        
+                     
+                     if(cols[j]==='status'){
+                        // cell.innerHTML = list[i][cols[j]];
+                        var link=document.createElement("a");
+                        link.href=list[i]["result_file"]['value'];
+                        link.target="_blank";
+                        link.innerHTML=list[i][cols[j]]['value'];
+                        cell.appendChild(link);
+                        if(list[i][cols[j]]['value']==='PASS'){
+                        cell.className="statusColorPass";
+                        }else if(list[i][cols[j]]['value']==='FAIL'){
+                            cell.className="statusColorFail";
+                        }
+                        else{
+                            cell.className="statusColorInfo";
+                        }
+                    }
+                    else if(cols[j].toUpperCase().includes('TIME')){
+                            cell.innerHTML =changeTime(list[i][cols[j]]['value']);
+                        }
+                        else if(cols[j].toUpperCase().includes('DURATION')){
+                            cell.innerHTML =getDuration(list[i]['start_time']['value'],list[i]['end_time']['value']);
+                        } else if(cols[j].toUpperCase().includes('LOG_FILE')){
+                            if(!list[i][cols[j]]){
+                                cell.innerHTML ='None';
+                            }else{
+                            var link=document.createElement('a');
+                            link.href=list[i][cols[j]]['value'];
+                            link.target="_blank";
+                            link.innerHTML =list[i][cols[j]]['value'];
+                            cell.appendChild(link);
+                            }
+                        }
+                    else{
+                    cell.innerHTML = list[i][cols[j]]['value'];
+                    }
+                }
+            }
+            }
+             
+div.append(table);
+return div;
+
+}
+
+
+
+function getExecutionDetailsTable(data){
+    var div=$('<div/>').addClass('col-sm-12 col-md-12 col-lg-12 mt-4');
+    var exeHeading= $('<h6/>').html('Execution Details').css('float','left').css('font-weight','bold');
+    $(div).append(exeHeading);
+    var table=$('<table/>').addClass('table table-bordered table-hover');
+    var cols = Headers(exeHeaders);
+    var headers = $('<tr>');
+    var content=$('<tr/>') ;
+    for (var colIndex = 0; colIndex < cols.length; colIndex++)
+    {
+        
+           var val = data[cols[colIndex]];
+            headers.append($('<th/>').html(cols[colIndex])).addClass('text-center').css('color','white').css('background-color','#375A64');
+    
+               $(table).append(headers);
+       }
+       for (var colIndex = 0; colIndex < cols.length; colIndex++)
+    {
+           var val = data[exeHeaders[cols[colIndex]]];
+           if(val===undefined){
+               val='None';
+           }
+           if(cols[colIndex].toUpperCase().includes('TIME')){
+val=changeTime(data[exeHeaders[cols[colIndex]]]);
+           }
+           if(cols[colIndex].toUpperCase().includes('DURATION')){
+               val=getDuration(data[exeHeaders['START_TIME']],data[exeHeaders['END_TIME']]);
+            
+           }
+           content.append($('<td/>').html(val)).addClass('text-center');
+    
+               $(table).append(content);
+       }
+       
+    div.append(table);
+    return div;
+}
+function getInfraDetailsTable(data){
+    var div=$('<div/>').addClass('col-sm-4 col-md-4 col-lg-4 mt-4').css('float', 'right');
+    var infraHeading= $('<h6/>').html('Infra Details').css('float','left').css('font-weight','bold');
+    $(div).append(infraHeading);
+    var table=$('<table/>').addClass('table table-bordered table-hover');
+    var cols = Headers(infraHeaders); 
+       for (var colIndex = 0; colIndex < cols.length; colIndex++)
+       {
+        var row = $('<tr>');
+            var val = data[infraHeaders[cols[colIndex]]];
+            if(val===undefined){
+               val='';
+           }
+            row.append($('<th/>').html(cols[colIndex]).addClass('text-center').css('color','white').css('background-color','#375A64'));
+            row.append($('<td/>').html(val));
+        
+               $(table).append(row);
+       }    
+       
+    div.append(table);
+    return div; 
+}
+
+function getCardDetails(data){
+    var cards=Object.keys(data);
+    var dummy_card=new Set();
+    dummy_card.add('TOTAL');
+    dummy_card.add('PASS');
+    dummy_card.add('FAIL');
+cards.forEach(ele=>{
+    dummy_card.add(ele);
+})
+    cards=Array.from(dummy_card)
+   
+    var cardValues=Object.values(data);
+    var div=$('<div/>').addClass('col-sm-8 col-md-8 col-lg-8 mt-4');
+    var flex=$('<div/>').addClass('d-flex flex-wrap justify-content-center')
+    for(var i=0;i<cards.length;i++){
+        var card=$('<div/>').addClass('card mx-2 mt-2').css('height','10rem').css('width','12rem').css('border-radius','1rem').css('background-color','#f0f2f1');
+        if(cards[i]==='PASS'){
+            card.addClass('passTest')
+        }else if(cards[i]==='FAIL'){
+card.addClass('failTest')
+        }
+        else if(cards[i]==='WARN'){
+card.addClass('warnTest');
+        }
+        else{
+
+        }
+        var cardBody=$('<div/>').addClass('card-body mt-4');
+        var cardTitle=$('<h5/>').addClass('card-title')
+        if(data[cards[i]]){
+        cardTitle.html(data[cards[i]]);
+        }else{
+cardTitle.html(0);
+        }
+        var cardText=$('<h5/>').addClass('card-text').html(cards[i]);
+        cardBody.append(cardTitle).append(cardText);
+        card.append(cardBody);
+      
+        flex.append(card);
+    }
+div.append(flex);
+    return div;
+}
+
+
+function changeTime(val){
+    var data =new Date(val);
+    return data.toLocaleString();
+}
+
+
+function getDuration(start,end){
+var startTime=new Date(start).getTime();
+var endTime=new Date(end).getTime();
+var dur=(endTime-startTime)/1000;
+if(dur<60){
+    return dur+" sec(s)"
+}
+else if(dur>=60 && dur<3600){
+    var ans=Math.floor(dur/60)+" min ";
+    if(Math.floor(dur%60)!==0){
+ ans=ans+ Math.floor(dur%60)+" sec(s)";
+    } 
+    return ans
+}else if(dur>=60 && dur<86400){
+    var ans=Math.floor(dur/3600)+ " hour ";
+    if(Math.floor((dur%3600)/60)!==0){
+        ans=ans+Math.floor((dur%3600)/60)+" min";
+    }
+    if(Math.floor((dur%3600)%60)!==0){
+    ans=ans+ Math.floor((dur%3600)%60)+" sec(s)";
+    }
+    return ans;
+}
+
+}
+
+function getOptions(val){
+var options=new Set();
+options.add('All');
+for(var i=0;i<val.length; i++){
+    options.add(val[i]["status"]['value']);
+}
+return Array.from(options);
+}
+
+
+
+function getsort(val){
+    console.log(obj);
+    if(lastsortHeader===""){
+    lastsortHeader=val.target.innerText;
+    sortType="asc";
+    }else if(val.target.innerText===lastsortHeader){
+        if(sortType==="asc"){
+            sortType="desc";
+        }
+        else{
+            sortType="asc";
+        }
+        lastsortHeader=val.target.innerText;
+
+    }else{
+        sortType="asc";
+        lastsortHeader=val.target.innerText;
+
+    }
+    var tab=[...obj.suits_details.testcase_details];
+    if(sortType==="asc"){
+        for(var i =0;i<tab.length;i++){
+        for(var j= i+1;j<tab.length;j++){
+         
+            if(tab[i][val.target.innerText]['sortValue']>tab[j][val.target.innerText]['sortValue']){
+                var swap = tab[i];
+                tab[i] = tab[j];
+                tab[j] = swap;
+            }
+        }
+    }
+}else{
+    for(var i =0;i<tab.length;i++){
+        for(var j= i+1;j<tab.length;j++){
+            
+            if(tab[i][val.target.innerText]['sortValue']<tab[j][val.target.innerText]['sortValue']){
+                var swap = tab[i];
+                tab[i] = tab[j];
+                tab[j] = swap;
+            }
+        }
+    } 
+}
+obj.suits_details.testcase_details=tab;
+console.log(obj);
+$('#pills-testcase').children("div")[1].remove();
+var testcaseDetailsTable=getTestcaseDetailsTable(tab);
+$('#pills-testcase').append(testcaseDetailsTable);
+myFunction();
+var icon=$('<i/>').addClass('fa').css('font-size','18px');
+if(sortType==="asc"){
+    icon.addClass("fa-angle-up ml-1").css('vertical-align', 'middle');
+}
+if(sortType==="desc"){
+    icon.addClass("fa-angle-down ml-1").css('vertical-align', 'middle');
+}
+var targetId="#"+lastsortHeader+"_tc";
+$(targetId).append(icon);
+
+var $filterableRows = $('#tab').find('tbody').find('tr').not(':first');
+// console.log($filterableRows);
+}
+function Headers(list) {
+            var columns = [];
+           row=list
+                for (var k in row) {
+                    if ($.inArray(k, columns) == -1) {
+                        columns.push(k);
+                    }
+                }
+                return columns;
+        }   
+
+
+
+        var eventList = ["change", "load","click"];
+        for(event of eventList){
+        window.addEventListener(event, function () {
+          
+            var $filterableRows = $('#tab').find('tbody').find('tr').not(':first'),
+		$inputs = $('.search-key');
+$inputs.live('input', function() {
+    console.log('working',$filterableRows);
+getTestcaseDetailsTable(obj.suits_details.testcase_details);
+	$filterableRows.hide().filter(function() {
+  	return $(this).find('td').filter(function() {
+      var tdText = $(this).text().toLowerCase(),
+      		inputValue = $('#' + $(this).data('input')).val();
+             
+              if(inputValue ==='All'){
+                  inputValue ="";
+              }
+              if(inputValue===undefined){
+                  inputValue ="";
+              }
+              else{
+                  inputValue = inputValue.toLowerCase();
+              }
+            //   console.log(tdText);
+    	return tdText.indexOf(inputValue) != -1;
+  
+    }).length == $(this).find('td').length;
+  }).show();
+
+});
+        });
+    }
+
+
+
+function myFunction(){
+   var inputs=$('.search-key');
+   for(var i=0;i<inputs.length;i++){
+       if(inputs[i].id==='status'){
+           inputs[i].value='All';
+       }else{
+       inputs[i].value='';
+       }
+   }
+
+
+    var $filterableRows = $('#tab tbody tr');
+   $filterableRows.show()
+}
+    </script>
+</html>

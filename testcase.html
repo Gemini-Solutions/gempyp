@@ -1,0 +1,315 @@
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+  <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+
+  </script>
+  <style>
+      table{
+          font-size:13px !important
+      }
+      .table-fit {
+    width: 1px;
+}
+.filterHead{
+   border-radius: 1rem;
+}
+.head{
+    background-color:#375A64;
+    color: white;
+}
+.statusColorPass{
+    background-color:green !important;
+    color: white !important;
+}
+.statusColorInfo{
+    background-color:grey !important;
+}
+  </style>
+  <body onload="constructTables()"> 
+ 
+        <div class="container-fluid">
+          <div class="mt-3 text-center">
+              <div class="card" style="border: 1px groove black;">
+         <h4 class="my-4"><b>GEMINI QA AUTOMATED TEST EXECUTION REPORT</b></h4>
+         <h5 id="subheading" style="color: grey;"><b>
+             <span id="subHead"></span>
+             <span>(Automation Testing)</span>
+             </b>
+         </h5>
+         <div class="d-flex flex-wrap justify-content-around" id="tableRow">
+</div>
+<div class="d-flex flex-wrap justify-content-evenly" id="filters">
+</div>
+<div class="d-flex flex-wrap justify-content-evenly" id="lowerTable">
+</div>
+          </div>
+        </div>
+
+        </body>
+        <script>
+var obj = '::DATA::';
+obj = JSON.parse(obj)
+console.log(obj)
+document.getElementById("subHead").innerText=obj.Header;
+function constructTables(){
+for(var i=0;i<obj.metaData.length;i++){
+    var div=$('<div/>').addClass('col-sm-4 col-md-4 col-lg-4 mt-4');
+  var tables=  constructTable(obj.metaData[i]).addClass('table table-bordered table-hover');
+  div.append(tables);
+    $("#tableRow").append(div);
+}
+// var FilterTable=$('<table/>');
+ var rows=createFilters(obj.FilterNames);
+//  FilterTable.append(rows).addClass('table-borderless table-sm').css('size','8px');
+ var divFiter=$('<div/>').addClass('col-sm-12 col-md-12 col-lg-12 mt-4 mainFilt');
+ divFiter.append(rows);
+$("#filters").append(divFiter);
+
+
+ var mainTable=createLowerTable(obj.steps);
+ var divLower=$('<div/>').addClass('col-sm-12 col-md-12 col-lg-12 mt-4 main');
+ divLower.append(mainTable);
+ $("#lowerTable").append(divLower);
+}
+
+function createLowerTable(list){
+var cols = [];
+             
+            for (var i = 0; i < list.length; i++) {
+                for (var k in list[i]) {
+                    if (cols.indexOf(k) === -1) {
+                         
+                        // Push all keys to the array
+                        cols.push(k);
+                    }
+                }
+            }
+            // var table=$('<table/>');
+            // var row = $(table[0].insertRow(-1));
+            // for (var i = 0; i < cols.length; i++) {
+                 
+            //     // Create the table header th element
+            //     var headerCell = $("<th />");
+            // headerCell.html(customers[0][i]);
+            // row.append(headerCell);
+            // }
+
+
+
+            // Create a table element
+            var table = document.createElement("table");
+            table.id="tab"
+             table.className="table table-bordered table-hover text-center";
+            // Create table row tr element of a table
+            var tr = table.insertRow(-1);
+             
+            for (var i = 0; i < cols.length; i++) {
+                 
+                // Create the table header th element
+                var theader = document.createElement("th");
+                theader.className="head";
+                theader.innerHTML = cols[i];
+                 
+                // Append columnName to the table row
+                tr.appendChild(theader);
+            }
+             
+            // Adding the data to the table
+            for (var i = 0; i < list.length; i++) {
+                 
+                // Create a new row
+                trow = table.insertRow(-1);
+                for (var j = 0; j < cols.length; j++) {
+                    var cell = trow.insertCell(-1);
+                     var att = document.createAttribute("data-input");
+                     if(cols[j].includes(" ")){
+                         var v=cols[j].replace(" ","_");
+                 att.value = v;
+               }else{
+                     att.value = cols[j];
+               }
+                     cell.setAttributeNode(att);
+
+                    if(typeof(list[i][cols[j]])==='object'){
+                        var a=document.createElement("a");
+                        a.href=list[i][cols[j]]['href'];
+                        a.target="_blank";
+                        a.innerHTML=list[i][cols[j]]['LinkName'];
+                        cell.appendChild(a);
+                    } else if(cols[j]==='STATUS'){
+                        cell.innerHTML = list[i][cols[j]];
+                        if(list[i][cols[j]]==='PASS'){
+                        cell.className="statusColorPass";
+                        }
+                        else{
+                            cell.className="statusColorInfo";
+                        }
+                    }
+                    else if(cols[j]==='TIME'){
+                            cell.innerHTML =convertIntoDateTime(list[i][cols[j]]);
+                        }
+                    else{
+                    cell.innerHTML = list[i][cols[j]];
+                    }
+                }
+            }
+             
+return table;
+}
+function createFilters(value){
+
+    var cols = Headers(value); 
+var checkLength=cols.length;
+var FilterTable=$('<table/>').css('border-collapse', 'separate').css('border-spacing','0px 10px');
+var row = $('<tr/>').css('word-wrap','normal');
+    for (var i=0;i<cols.length;i++){
+           var val = value[cols[i]];
+           if (val == null) val = ""; 
+            row.append($('<th/>').html(cols[i]).addClass('filterHead text-center py-2').css('color','white').css('background-color','#375A64').css('min-width','90px')); 
+            if(val==='Input'){
+                var input = $('<input>').attr('size',20).attr('type','text').attr('value','').addClass('form-control search-key');
+               if(cols[i].includes(" ")){
+                 cols[i]=  cols[i].replace(" ","_");
+                
+               }
+                input.attr('id',cols[i]);
+            row.append($('<td/>').append(input).addClass('form-control input'));
+            }else if(val=='Dropdown'){
+                var Dropdown = $('<select/>').addClass('custom-select search-key').css('width','100%').css('color','black !important');
+                Dropdown.attr('id',cols[i]);
+                var options=obj.FilterValues[cols[i]]
+                for(var j=0;j<options.length;j++){
+                    Dropdown.append($('<option>',{text:options[j]}).attr('value',options[j]).addClass('form-control'));
+                }
+                row.append($('<td/>').append(Dropdown));
+            }
+              if((i+1)%4==0 && i!=0){
+                
+                  FilterTable.append(row);
+                 var row = $('<tr/>').css('word-wrap','normal');
+
+              }
+       }
+       
+    
+    //    var searchButton=$('<button/>').addClass('btn btn-secondary btn-sm').html('Filter');
+ var clearButton=$('<button/>').addClass('btn btn-secondary btn-sm').html('Clear Filter');
+ clearButton.attr('id','clear');
+ $(document).ready(function(){
+ clearButton.click(function(){
+     myFunction();
+ });
+});
+//  row.append($('<td/>').append(searchButton));
+ row.append($('<td/>').append(clearButton));
+     
+FilterTable.append(row).addClass('table-borderless table-sm');
+return FilterTable;
+    }
+
+function constructTable(value) {
+var cols = Headers(value); 
+         var rows=$('<table>');
+       for (var colIndex = 0; colIndex < cols.length; colIndex++)
+       {
+        var row = $('<tr>');
+           var val = value[cols[colIndex]];
+           if (val == null) val = ""; 
+            row.append($('<th/>').html(cols[colIndex]).css('color','white').css('background-color','#375A64')); 
+            if(typeof(val)==='object'){
+                row.append($('<td/>').html(changeDate(val)));
+            }else{
+            row.append($('<td/>').html(val));
+            }
+               $(rows).append(row);
+       }
+     return rows;    
+     
+    
+}
+   function Headers(list) {
+            var columns = [];
+           row=list
+                for (var k in row) {
+                    if ($.inArray(k, columns) == -1) {
+                        columns.push(k);
+                    }
+                }
+                return columns;
+        }    
+        function convertIntoDateTime(value){
+ var date = new Date(value);
+ return date.toLocaleString();
+        }   
+        var eventList = ["change", "load"];
+        for(event of eventList){
+        window.addEventListener(event, function () {
+            var $filterableRows = $('#tab').find('tbody').find('tr').not(':first'),
+		$inputs = $('.search-key');
+
+$inputs.live('input', function() {
+
+	$filterableRows.hide().filter(function() {
+  	return $(this).find('td').filter(function() {
+      var tdText = $(this).text().toLowerCase(),
+      		inputValue = $('#' + $(this).data('input')).val();
+              if(inputValue ==='All'){
+                  inputValue ="";
+              }
+              if(inputValue===undefined){
+                  inputValue ="";
+              }
+              else{
+                  inputValue = inputValue.toLowerCase();
+              }
+    	return tdText.indexOf(inputValue) != -1;
+    
+    }).length == $(this).find('td').length;
+  }).show();
+
+});
+        });
+    }
+function myFunction(){
+   var inputs=$('.search-key');
+   for(var i=0;i<inputs.length;i++){
+       inputs[i];
+       if(inputs[i].id==='STATUS'){
+           inputs[i].value='All';
+       }else{
+       inputs[i].value='';
+       }
+   }
+
+
+    var $filterableRows = $('#tab tbody tr');
+   $filterableRows.show()
+}
+function changeDate(val){
+    console.log(val);
+    var temp=val.type.toLowerCase();
+    var d= new Date(val.value);
+    if(temp==='date'){
+        
+        return d.toLocaleDateString();
+    }else if(temp==='time'){
+        return d.toLocaleTimeString();
+    }else if(temp==='datetime'){
+return d.toLocaleString();
+    }
+}
+ </script>
+
+</html>
