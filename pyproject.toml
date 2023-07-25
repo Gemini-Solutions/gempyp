@@ -54,3 +54,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 gempyp = "gempyp.gemPyp:main"
+
+[tool.poetry.plugins."pytest11"]
+"gempyp" = "gempyp.gempyp_plugin"
