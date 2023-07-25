@@ -20,24 +20,23 @@ import os
 import pandas as pd
 from gempyp.libs.enums.status import status
 from gempyp.libs.common import *
+import glob
 from gempyp.engine.engine import Engine
 
 
 class Executor(TestcaseReporter):
     def __init__(self, **kwargs):
-        self.method = kwargs.get("tc_name", self.getMethodName())
+        self.method = kwargs.get("tc_name")
         self.log_file = tempfile.gettempdir() + "\logs.log"
         # os.makedirs("testcase_log_folder")
-        sys.stdout = sys.stderr =  open(self.log_file, 'w')
+        # sys.stdout = sys.stderr =  open(self.log_file, 'w')
         logging.basicConfig(filename="logs.log", filemode='w', format='%(name)s - %(levelname)s - %(message)s',level=logging.DEBUG)
         # custom_logger = my_custom_logger("logs.log")
-        logging.info("inside constructor here--------------------")
+        logging.info("--------inside constructor here-----------")
         logging.info(f"-------Executing testcase - {self.getMethodName()}---------")
         self.data = self.getTestcaseData()
         self.reporter = TestcaseReporter(self.data["PROJECT_NAME"], self.data["NAME"])
-       
         
-
         path = __file__
         path = path.rsplit(os.sep, 1)[0]
         self.DATA = TestData()
@@ -47,7 +46,7 @@ class Executor(TestcaseReporter):
         if not os.getenv("PID"):
             self.makeOutputFolder()
             os.environ["PID"] = str(os.getpid())
-            subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
+            subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True, stdout=subprocess.PIPE)
             try:
                 logging.info(f"S_RUN_ID : {self.s_run_id}")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"]) # check with deamon, should insert only once
@@ -57,11 +56,10 @@ class Executor(TestcaseReporter):
                 pass
 
     def __del__(self):
-        self.final()
+            self.final()
 
     def final(self):       
         output = []
-        
         # destructor of reporter object called
         
         self.reporter.finalizeReport()
@@ -83,11 +81,11 @@ class Executor(TestcaseReporter):
             dict_["REPORT_LOCATION"] = os.getenv("REPORT_LOCATION")
             dict_["misc_data"] = {}
             tmp_dir = os.path.join(tempfile.gettempdir(), self.s_run_id + ".txt")
-            
 
             self.DATA.testcase_details = self.DATA.testcase_details.append(
                 i["testcase_dict"], ignore_index=True
             )
+            logging.info("\n\n ++++++++++++++++++++++++ {} \n\n----------------------".format(output))    
             # self.DATA.testcaseDetails = pd.concat([self.DATA.testcaseDetails, pd.DataFrame(list(i["testcase_dict"].items()))])
             self.updateTestcaseMiscData(i["misc"], tc_run_id=i["testcase_dict"].get("tc_run_id"))
             suite_data = self.DATA.getJSONData()
@@ -108,30 +106,33 @@ class Executor(TestcaseReporter):
                     data["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.seek(0)
                     f.write(json.dumps(data))
+            # for k in range(count):
+            updatedData=json.loads(self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"]))
             logging.info("TC_RUN_ID : "+i["testcase_dict"]["tc_run_id"].upper())
-            dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"])  # instead of output, I need to pass s_run id and  tc_run_id
+            dataUpload.sendTestcaseData(json.dumps(updatedData), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"])  # instead of output, I need to pass s_run id and  tc_run_id
             path = __file__
             path = path.rsplit(os.sep, 1)[0]
-            subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
+            # subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
             # sys.stdout.close()
         
             # os.rename(self.log_file, tmp_dir.rsplit(".", 1)[0] + ".log")
 
-            
-
     def getTestcaseData(self):
         self.jewel_user=False
         config_file = configparser.ConfigParser()
-        directory_path = os.getcwd()
+        file_path = glob.glob("**/gempyp.conf", recursive=True)
+        # directory_path = os.getcwd()
 
-        if not os.path.exists(directory_path + os.sep + "gempyp.conf"):
+        # if not os.path.exists(directory_path + os.sep + "gempyp.conf"):
+        if not file_path:
             print("Config file is missing. Aborting  gempyp report......")
             sys.exit()
-        config_file.read("gempyp.conf")
+        # config_file.read("gempyp.conf")
+        config_file.read(file_path)
         data = {}
-        self.projectName = data["PROJECT_NAME"] = config_file['ReportSetting']["project_name"]
-        self.testcaseName = data["NAME"] = self.method
+        self.projectName = data["PROJECT_NAME"] =config_file['ReportSetting']["project_name"]
         self.env = data["ENVIRONMENT"] = config_file['ReportSetting'].get("environment", "PROD")
+        self.testcaseName = data["NAME"] = self.method
         data["JEWEL_USER"] = config_file['ReportSetting'].get("jewel_user", getpass.getuser())
         data["JEWEL_BRIDGE_TOKEN"] = config_file['ReportSetting'].get("jewel_bridge_token", None)
         data["REPORT_LOCATION"] = config_file['ReportSetting'].get("report_location", None)
@@ -202,7 +203,7 @@ class Executor(TestcaseReporter):
             "user": self.data["JEWEL_USER"],
             "env": self.data["ENVIRONMENT"],
             "machine": self.data["MACHINE"],
-            "initiated_by": self.data["JEWEL_USER"],
+            # "initiated_by": self.data["JEWEL_USER"],
             "run_mode": run_mode,
             "os": platform.system().upper(),
             "meta_data": [],
@@ -296,3 +297,8 @@ class Executor(TestcaseReporter):
         current_data["suits_details"]["testcase_info"] = statusDict
 
         return current_data
+    
+    def delete_env_variables_with_string(string):
+        for key in os.environ.keys():
+            if string in key:
+                del os.environ[key]

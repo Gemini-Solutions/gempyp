@@ -8,6 +8,7 @@ from gempyp.engine import dataUpload
 from gempyp.reporter.reportGenerator import TemplateData
 import logging
 from gempyp.libs.common import *
+import glob
 
 
 def pid_running(pid):
@@ -23,7 +24,9 @@ def create_report(data, s_run_id):
     try:
         jewel=False
         config_file = configparser.ConfigParser()
-        config_file.read("gempyp.conf")
+        file_path = glob.glob("**/gempyp.conf", recursive=True)
+        # config_file.read("gempyp.conf")
+        config_file.read(file_path)
         bridgetoken = config_file['ReportSetting'].get("jewel_bridge_token", None)
         username=config_file['ReportSetting'].get("jewel_user", None)
         if username and bridgetoken:
@@ -31,6 +34,7 @@ def create_report(data, s_run_id):
     except Exception as e:
         bridgetoken = None
     data = json.loads(data)
+    logging.info("-------------------{}-----------------".format(data))
     runBaseUrls(jewel,config_file['ReportSetting'].get("enter_point", None),username,bridgetoken)
     json_data = data[s_run_id]
     testcaseData = data["testcases"]
@@ -38,7 +42,8 @@ def create_report(data, s_run_id):
     repJson = TemplateData().makeSuiteReport(json.dumps(json_data), testcaseData,output_folder,jewel)
     suite_data = json_data["suits_details"]
     suite_data["misc_data"] = data["misc_data"]
-    username = suite_data["initiated_by"]
+    username = suite_data["user"]
+    # jewel_link=f"{data['urls']['jewel-url']}/#/autolytics/execution-report?s_run_id={s_run_id}"
     del suite_data["testcase_details"]
     del suite_data["testcase_info"]
     dataUpload.sendSuiteData(json.dumps(suite_data), bridgetoken, username, mode="PUT")
@@ -58,6 +63,10 @@ if __name__ == "__main__":
                         output_file_path = create_report(data, s_run_id)
                         # where to get this json data from
                         current_pid = os.getpid()
+                        jewelLink = DefaultSettings.getUrls('jewel-url')
+                        if jewelLink is not None:
+                            jewel_link = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
+                            logging.info(f"Jewel link of gempyp report - {jewel_link}")
                         logging.info(f"Find Gempyp logs at - {s_run_id + '.log'}")
                         logging.info(f"Find Gempyp Report at - {output_file_path}")
                         # os.rename("logs.log",f"{s_run_id}.log")
