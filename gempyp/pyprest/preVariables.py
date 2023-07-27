@@ -49,10 +49,8 @@ class PreVariables:
                         key = key.replace(".", "_")
                     if "SUITE." in str(each_item[0].strip(" ")):
                         key = "SUITE_" + each_item[0].strip(" ").strip("set $[#SUITE.").strip("]").upper()
-                        
-                        self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1].strip())
-
-                    self.pyprest_obj.variables[scope][key] = self.getFunctionValues(each_item[1].strip())
+                        self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1].strip().replace(" ",""))
+                    self.pyprest_obj.variables[scope][key] = self.getFunctionValues(each_item[1].strip().replace(" ",""))
 
                     
             self.pyprest_obj.logger.info(f"Setting PRE VARIABLES: -------- {str(self.pyprest_obj.variables)}")

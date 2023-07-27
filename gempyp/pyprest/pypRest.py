@@ -393,8 +393,6 @@ class PypRest(Base):
         self.loop=self.data["config_data"].get("LOOP",None)
         if(self.loop is not None):
             self.loopList=self.parseLoop(self.loop)
-            print(self.loopList)
-            print("###############################")
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):

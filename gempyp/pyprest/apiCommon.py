@@ -16,16 +16,6 @@ class Api:
     def __init__(self):
         pass
 
-    def convert_quotes_boolean(self,data):
-        if isinstance(data, bool):
-            return str(data).lower()
-        elif isinstance(data, list):
-            return [self.convert_quotes_boolean(item) for item in data]
-        elif isinstance(data, dict):
-            return {self.convert_quotes_boolean(key): self.convert_quotes_boolean(value) for key, value in data.items()}
-        else:
-            return data
-
     def execute(self, request):
         encrypt_key = "Y4irRsiBmyGMBie5gAZ8va3IOHVOYZFxC5L1-jNydZk="
         result = Response()
@@ -38,8 +28,6 @@ class Api:
                 except Exception as e:
                     logging.info("JSON object can not be serialized")
                     logging.info(str(e))
-            # write code for authentication 
-            # decrypt password
         else:
                 try:
                     newFile=[]
@@ -48,7 +36,6 @@ class Api:
                         newFileTuple=tuple()
                         if(isinstance(value,str) and os.path.isfile(value)):
                             newFileTuple+=(key,open(value,'rb'))
-                            # newFile[key]=open(value,'rb')
                             newFile.append(newFileTuple)
                         else:
                             if(isinstance(value,dict)):
@@ -57,16 +44,10 @@ class Api:
                                 newBody[key]=value
                     request.file=newFile
                     request.body=newBody
-                    # request.body = self.convert_quotes_boolean(request.body)
-                    print(type(request.body))
-                    print(request.body)
-                    print("__________________________________")
                     pass
                 except Exception as e:
                     logging.info("JSON object can not be serialized")
                     logging.info(str(e))
-            # write code for authentication 
-            # decrypt password
         auth = None
         try:
                 if request.auth.upper() == "PASSWORD":
@@ -78,130 +59,7 @@ class Api:
         try:
                 start_time = end_time = datetime.now()
                 obj = Response()
-                if (
-                    request.api == ""
-                    or request.method == ""
-                    or request.api is None
-                    or request.method is None
-                ):
-                    raise Exception("Api and method are can not be empty or NULL")
-                elif str.upper(request.method) == "POST":
-                    start_time = datetime.now()
-                    if request.auth.upper() == "PASSWORD":
-                        resp = requests.post(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            verify=request.SSLVerify,
-                            auth=auth,
-                            timeout=request.timeout
-                        )
-                    else:
-                        
-                        resp = requests.post(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            verify=request.SSLVerify,
-                            timeout=request.timeout
-                        )
-                        print(request.body)
-                        print(resp.text)
-                        print("posttttttttttttttttttttttttttttttttttttttttt")
-                    end_time = datetime.now()
-                elif str.upper(request.method) == "GET":
-                    start_time = datetime.now()
-                    if request.auth.upper() == "PASSWORD": 
-                        resp = requests.get(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            verify=request.SSLVerify,
-                            auth=auth,
-                            timeout=request.timeout,
-                        )
-                    else:
-                        resp = requests.get(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            verify=request.SSLVerify,
-                            timeout=request.timeout,
-                        )
-                    end_time = datetime.now()
-                elif str.upper(request.method) == "PUT":
-                    start_time = datetime.now()
-                    if request.auth.upper() == "PASSWORD": 
-                        resp = requests.put(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            auth=auth,
-                            verify=request.SSLVerify,
-                            timeout=request.timeout
-                        )
-                    else:
-                        resp = requests.put(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            verify=request.SSLVerify,
-                            timeout=request.timeout
-                        )
-                        print(request.body)
-                        print(resp.text)
-                        print("putttttttttttttttttttttt________________________")
-                    end_time = datetime.now()
-                elif str.upper(request.method) == "PATCH":
-                    start_time = datetime.now()
-                    if request.auth.upper() == "PASSWORD": 
-                        resp = requests.patch(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            verify=request.SSLVerify,
-                            auth=auth,
-                            timeout=request.timeout
-                        )
-                    else:
-                        resp = requests.patch(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            verify=request.SSLVerify,
-                            timeout=request.timeout
-                        )
-                    end_time = datetime.now()
-                elif str.upper(request.method) == "DELETE":
-                    start_time = datetime.now()
-                    if request.auth.upper() == "PASSWORD":
-                        resp = requests.delete(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            verify=request.SSLVerify,
-                            auth=auth,
-                            timeout=request.timeout
-                        )
-                    else:
-                        resp = requests.delete(
-                            request.api,
-                            headers=request.headers,
-                            files=request.file,
-                            data=request.body,
-                            verify=request.SSLVerify,
-                            timeout=request.timeout
-                        )
-                    end_time = datetime.now()
-                else:
-                    raise Exception("invalid method")
+                resp, start_time, end_time = self.make_request(request)
 
                 obj.status_code = resp.status_code
                 obj.response_body = resp.text
@@ -233,7 +91,48 @@ class Api:
         
         return result
 
-                
+    def make_request(self,request):
+        METHODS = {
+            "POST": requests.post,
+            "GET": requests.get,
+            "PUT": requests.put,
+            "PATCH": requests.patch,
+            "DELETE": requests.delete,
+        }
+        if not request.api or not request.method:
+            raise Exception("Api and method cannot be empty or NULL")
+
+        # Convert method to uppercase for consistency
+        method = request.method.upper()
+
+        if method not in METHODS:
+            raise Exception("Invalid method")
+
+        # Define headers, files, data, and authentication based on the request
+        auth = None
+        if request.auth and request.auth.upper() == "PASSWORD":
+            auth = (request.username, request.password)
+
+        headers = request.headers
+        files = request.file
+        data = request.body
+        verify = request.SSLVerify
+        timeout = request.timeout
+
+        # Make the request and calculate the time taken
+        start_time = datetime.now()
+        resp = METHODS[method](
+            request.api,
+            headers=headers,
+            files=files,
+            data=data,
+            verify=verify,
+            auth=auth,
+            timeout=timeout
+        )
+        end_time = datetime.now()
+
+        return resp, start_time, end_time             
 
 
 
@@ -264,6 +163,8 @@ class Api:
             traceback.print_exc()
             logging.info(e)
         return dec_pass
+
+         
 
 
 class Request:
