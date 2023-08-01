@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gempyp"
-version = "1.0.60"
+version = "1.0.70b7"
 description = "An ecosystem of libraries useful for software development"
 authors = ["Gemini Solutions-QA"]
 license = "MIT"
@@ -54,3 +54,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 gempyp = "gempyp.gemPyp:main"
+
+[tool.poetry.plugins."pytest11"]
+"gempyp" = "gempyp.gempyp_plugin"

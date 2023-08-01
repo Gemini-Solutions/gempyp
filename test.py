@@ -1,5 +1,6 @@
 from testFunction import TestFunction
 import pytest
+from gempyp.common import common
 
 def test_string_assertion():
     assert ("loud noises".upper() == "LOUD NOISES")
@@ -7,7 +8,7 @@ def test_string_assertion():
 def test_list_assertion():
     assert (list(reversed([1, 2, 3, 4])) == [4, 3, 2, 1])
 
-
+@pytest.mark.webtest
 def test_loop_assertion():
     assert (37 in {
         num
@@ -23,6 +24,7 @@ def setup_data():
 def test_fixture_marker(setup_data):
     assert (sum(setup_data) > 15)
 
+@pytest.mark.slow
 @pytest.mark.parametrize("num1, num2, expected_sum", [(2, 3, 5), (1,1,2), (2,0,0)])
 def test_integer_parametrize_marker(num1, num2, expected_sum):
     assert (num1 + num2 != expected_sum)
@@ -31,12 +33,19 @@ def test_integer_parametrize_marker(num1, num2, expected_sum):
 def test_string_parametrize_marker(string, expected_length):
     assert (len(string) == expected_length)
 
+@pytest.mark.slow
 def test_ternary_operator_assertion():
     assert (True if 8+1==9 else False)
 
+@pytest.mark.slow
 def test_function_testcase():
     assert (TestFunction.balance==101)
 
-@pytest.mark.webtest
-def test_custom_Marker():
-    assert 9+1==8
+# @pytest.mark.webtest
+# def test_custom_Marker():
+#     assert 9+1==8
+
+# def testcase_3():
+#     """Testcase details"""
+#     # common.reporter.addRow("Description","Testcase details",common.status.INFO)
+#     assert 9+1==10
