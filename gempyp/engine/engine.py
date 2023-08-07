@@ -16,8 +16,8 @@ from gempyp.libs.enums.status import status
 from gempyp.libs.enums.run_types import RunTypes
 from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
-from gempyp.engine.runner import testcaseRunner
-# from gempyp.engine.newRunner import testcaseRunner
+# from gempyp.engine.runner import testcaseRunner
+from gempyp.engine.newRunner import testcaseRunner
 from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
