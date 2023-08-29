@@ -6,7 +6,7 @@ import time
 import json
 import logging
 import getpass
-from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link,uploadToS3
 from gempyp.config import DefaultSettings
 
 
@@ -66,7 +66,8 @@ def writeToReport(pyprest_obj):
 
     # getting the log file ( the custom gempyp logger)
     try:
-        s3_log_file_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=pyprest_obj.data.get("SUITE_VARS", {}).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", {}).get("username",None), file=pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public")[0]["Url"])
+        # s3_log_file_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=pyprest_obj.data.get("SUITE_VARS", {}).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", {}).get("username",None), file=pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public")[0]["Url"])
+        s3_log_file_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=pyprest_obj.data.get("SUITE_VARS", {}).get("bridge_token",None), username=pyprest_obj.data.get("SUITE_VARS", {}).get("username",None), file=pyprest_obj.data.get("LOG_PATH", "N.A"),tag="public",folder="logs")[0]
         s3_log_file_url = f'<a target=_blank href="{s3_log_file_url}">view</a>'
     except Exception:
         s3_log_file_url=None

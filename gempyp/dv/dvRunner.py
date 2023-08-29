@@ -1,5 +1,5 @@
 import uuid
-from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.libs.gem_s3_common import uploadToS3, create_s3_link
 from gempyp.config import DefaultSettings
 import mysql.connector
 import os
@@ -35,6 +35,7 @@ class DvRunner(Base):
     def __init__(self, data):
 
         self.data = data
+        print(data)
         self.configData: Dict = self.data.get("config_data")
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys(
         ) else logging
@@ -49,7 +50,7 @@ class DvRunner(Base):
         self.logger.info(
             "--------------------Report object created ------------------------")
         self.reporter = Base(project_name=self.project,
-                             testcase_name=self.tcname)
+                            testcase_name=self.tcname)
 
     def dvEngine(self):
 
@@ -285,11 +286,15 @@ class DvRunner(Base):
                 new_order = list(diff_columns)+["Column-Name","Source-Value","Target-Value","Reason-of-Failure"]
                 df = df[new_order]
                 df.to_csv(excelPath, index=False,header=True)
+                print(excelPath)
                 s3_url = None
                 try:
-                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.data["SUITE_VARS"]
-                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
+                    # s3_url = create_s3_link(url=uploadToS3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.data["SUITE_VARS"]
+                    #                         ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
+                    s3_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=self.data["SUITE_VARS"]
+                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"),folder="DV")[0]
                 except Exception as e:
+                    print(traceback.print_exc())
                     logging.warn(e)
                 if not s3_url:
                     self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[excelPath])
