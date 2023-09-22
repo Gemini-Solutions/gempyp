@@ -289,33 +289,35 @@ class DvRunner(Base):
                 print(excelPath)
                 s3_url = None
                 try:
-                    s3_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=self.data["SUITE_VARS"]
+                    # s3_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=self.data["SUITE_VARS"]
+                    #                         ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"),folder="DV")[0]
+                    s3_url = uploadToS3(DefaultSettings.urls["data"].get("pre-signed"), bridge_token=self.data["SUITE_VARS"]
                                             ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"),folder="DV")[0]
                     # s3_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=self.data["SUITE_VARS"]
                     #                         ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"),folder="DV")[0]
                 except Exception as e:
                     print(traceback.print_exc())
                     logging.warn(e)
-                # if not s3_url:
-                #     self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=['<a href='+excelPath+'>Download Result File</a>'])
-                # else:
-                #     self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:"+'<a href='+s3_url+'>Download Result File</a>', status=status.FAIL)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report",f"""
-                    Matched Keys: {keys_length['common_keys']}<br>
-                    Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                    Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                    Mismatched Cells: {value_check}<br>
-                    Duplicate Keys: {dup_keys_len}<br>
-                    DV Result File:""",Attachment=["<a href={excelPath}>Result File</a>"], status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}", status=status.FAIL,Attachment=[excelPath])
                 else:
-                    self.reporter.addRow("Data Validation Report",f"""
-                    Matched Keys: {keys_length['common_keys']}<br>
-                    Keys only in Source: {keys_length['keys_only_in_src']}<br>
-                    Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
-                    Mismatched Cells: {value_check}<br>
-                    Duplicate Keys: {dup_keys_len}<br>
-                    DV Result File:""",Attachment=["<a href={s3_url}>Result File</a>"], status= status.FAIL )
+                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}",status=status.FAIL,Attachment=[s3_url])
+                # if not s3_url:
+                #     self.reporter.addRow("Data Validation Report",f"""
+                #     Matched Keys: {keys_length['common_keys']}<br>
+                #     Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                #     Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                #     Mismatched Cells: {value_check}<br>
+                #     Duplicate Keys: {dup_keys_len}<br>
+                #     DV Result File:""",Attachment=[f"<a href={excelPath}>Result File</a>"], status= status.FAIL )
+                # else:
+                #     self.reporter.addRow("Data Validation Report",f"""
+                #     Matched Keys: {keys_length['common_keys']}<br>
+                #     Keys only in Source: {keys_length['keys_only_in_src']}<br>
+                #     Keys only in Target: {keys_length['keys_only_in_tgt']}<br>
+                #     Mismatched Cells: {value_check}<br>
+                #     Duplicate Keys: {dup_keys_len}<br>
+                #     DV Result File:""",Attachment=[f"<a href={s3_url}>Result File</a>"], status= status.FAIL )
 
                 self.reporter.addMisc("REASON OF FAILURE", str(
                     f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
