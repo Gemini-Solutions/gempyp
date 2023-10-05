@@ -60,7 +60,7 @@ def writeToReport(dv_obj):
     # getting the log file ( the custom gempyp logger)
     try:
         # s3_log_file_url = create_s3_link(url=uploadToS3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=dv_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=dv_obj.data.get("SUITE_VARS", None).get("username",None), file=dv_obj.configData.get("log_path", dv_obj.configData.get("LOG_PATH","N.A")),tag="public")[0]["Url"])
-        s3_log_file_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=dv_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=dv_obj.data.get("SUITE_VARS", None).get("username",None), file=dv_obj.configData.get("log_path", dv_obj.configData.get("LOG_PATH","N.A")),tag="public",folder="logs")[0]
+        s3_log_file_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=dv_obj.data.get("SUITE_VARS", None).get("bridge_token",None), username=dv_obj.data.get("SUITE_VARS", None).get("username",None), file=dv_obj.configData.get("log_path", dv_obj.configData.get("LOG_PATH","N.A")),tag="public",folder="logs",s_run_id=dv_obj.data.get("S_RUN_ID"))[0]
         s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
     except Exception:
         s3_log_file_url=None

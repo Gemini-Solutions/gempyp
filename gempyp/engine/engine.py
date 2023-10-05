@@ -266,7 +266,9 @@ class Engine:
         self.total_runable_testcase = config.total_yflag_testcase
 
         self.machine = platform.node()
-
+        # creating job_name variable to set job name from suite tags reason:- facing issue on lambda side 
+        self.job_name = self.PARAMS.get("JEWEL_JOB",None)
+        
         self.user = self.PARAMS.get("JEWEL_USER", getpass.getuser())
         self.username=self.PARAMS.get("JEWEL_USER", None)
         self.bridgetoken=self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
@@ -370,7 +372,7 @@ class Engine:
     def start(self):
 
         """
-         check the mode and start the testcases accordingly e.g.optimize,parallel
+        check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
@@ -425,7 +427,7 @@ class Engine:
             self.DATA.suite_detail.at[0, "meta_data"].append({"S_ID": self.PARAMS["S_ID"]})
         else:
             self.DATA.suite_detail.at[0, "meta_data"].append({"CONFIG_S3_URL": self.s3_url})
-       
+    
 
     def startSequence(self):
         """
@@ -488,7 +490,7 @@ class Engine:
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
-       
+
                 if len(pool_list) == 0:
                     continue
                 
@@ -593,8 +595,8 @@ class Engine:
             logging.error("in update_df: {e}".format(e=e))
     
     def build_err_step_case(self):
-        step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}]
-         
+        step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}] 
+
         return step
     
     def raise_exception(self,name):
@@ -605,7 +607,7 @@ class Engine:
             run_type=run_mode=job_name=job_runid=None
             mappings = {('JEWEL'): { 
                 'run_type': 'Scheduled', 
-                'run_mode': 'JEWEL',
+                'run_mode': 'JEWEL_SCHEDULER',
                 'job_name': lambda: os.environ.get('JEWEL_JOB',None), 
                 'job_runid': 'NONE' 
             },
@@ -636,12 +638,18 @@ class Engine:
             # Try to match the environment variables to one of the defined mappings 
             for env_vars, mapping in mappings.items():
                 if (env_vars in os.environ):
-                        # Evaluate the values that require computation (i.e. lambda functions) 
-                        run_type = mapping['run_type']() if callable(mapping['run_type']) else mapping['run_type'] 
-                        run_mode = mapping['run_mode']() if callable(mapping['run_mode']) else mapping['run_mode'] 
-                        job_name = mapping['job_name']() if callable(mapping['job_name']) else mapping['job_name'] 
-                        job_runid = mapping['job_runid']() if callable(mapping['job_runid']) else mapping['job_runid'] 
-                        break 
+                    # Evaluate the values that require computation (i.e. lambda functions) 
+                    run_type = mapping['run_type']() if callable(mapping['run_type']) else mapping['run_type'] 
+                    run_mode = mapping['run_mode']() if callable(mapping['run_mode']) else mapping['run_mode'] 
+                    job_name = mapping['job_name']() if callable(mapping['job_name']) else mapping['job_name'] 
+                    job_runid = mapping['job_runid']() if callable(mapping['job_runid']) else mapping['job_runid'] 
+                    break 
+                elif self.job_name:
+                    run_type = "Scheduled" 
+                    # run_mode = os.name
+                    run_mode="JEWEL_SCHEDULER"
+                    job_name = self.job_name 
+                    job_runid = 'NONE'
                 else: 
                     # If no mapping is found, set default values 
                     run_type = 'On Demand' 
@@ -685,7 +693,7 @@ class Engine:
         s3_log_file_url = log_path
         if self.jewel_user:
             try:
-                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="public")[0]["Url"]) 
+                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="public",s_run_id=self.s_run_id)[0]["Url"]) 
                 s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
             except Exception as e:
                 logging.info(e)
@@ -802,7 +810,7 @@ class Engine:
                     result.append(testcases[key])
             yield result
 
-   
+
 
     def isDependencyPassed(self, testcase: Dict) -> bool:
         """
@@ -815,28 +823,28 @@ class Engine:
         listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
-                    dep_split = list(dep.split(":"))
-                    if len(dep_split) == 1:
-                        # NAME to name, to_list()
-                        if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
-                            return False
+            dep_split = list(dep.split(":"))
+            if len(dep_split) == 1:
+                # NAME to name, to_list()
+                if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
+                    return False
 
-                    else:
-                        if dep_split[0].upper() == "P":
-                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                                return False
-                            # way to parsing the df    
-                            if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
-                                return False
+            else:
+                if dep_split[0].upper() == "P":
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                        return False
+                    # way to parsing the df    
+                    if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
+                        return False
 
-                        if dep_split[0].upper() == "F":
-                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                                return False
-                            if (
-                                (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
-                                != status.FAIL.name
-                            ):
-                                return False
+                if dep_split[0].upper() == "F":
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                        return False
+                    if (
+                        (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
+                        != status.FAIL.name
+                    ):
+                        return False
 
         return True
 
@@ -854,4 +862,3 @@ class Engine:
         sorted_dict.update(unsorted_dict)
         return sorted_dict
     
-  

@@ -35,7 +35,6 @@ class DvRunner(Base):
     def __init__(self, data):
 
         self.data = data
-        print(data)
         self.configData: Dict = self.data.get("config_data")
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys(
         ) else logging
@@ -292,7 +291,7 @@ class DvRunner(Base):
                     # s3_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=self.data["SUITE_VARS"]
                     #                         ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"),folder="DV")[0]
                     s3_url = uploadToS3(DefaultSettings.urls["data"].get("pre-signed"), bridge_token=self.data["SUITE_VARS"]
-                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"),folder="DV")[0]
+                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"))[0]
                     # s3_url = uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=self.data["SUITE_VARS"]
                     #                         ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"),folder="DV")[0]
                 except Exception as e:
@@ -351,7 +350,7 @@ class DvRunner(Base):
 
             return
         self.reporter.addRow("Searching for Before_File steps",
-                             "Searching for Before File", status.INFO)
+                            "Searching for Before File", status.INFO)
 
         file_name = file_str.split("path=")[1].split(",")[0]
         if "CLASS=" in file_str.upper():
@@ -409,7 +408,7 @@ class DvRunner(Base):
             return
 
         self.reporter.addRow("Searching for After_File",
-                             "Searching for File", status.INFO)
+                            "Searching for File", status.INFO)
 
         file_name = file_str.split("path=")[1].split(",")[0]
         if "CLASS=" in file_str.upper():
