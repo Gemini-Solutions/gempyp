@@ -86,7 +86,7 @@ class AbstarctBaseConfig(ABC):
             #     continue
 
             # filtered_dict[key] = value
-            type_list = ["data validator","dv","datavalidator","dvalidator","pyprest","gempyp","PYPREST","GEMPYP"]
+            type_list = ["data validator","dv","datavalidator","dvalidator","pyprest","gempyp","prest","gpyp","pr","gp]
             if value.get("RUN_FLAG", "Y").upper() == "Y" and value.get("TYPE").lower() in type_list:
                 if self.filter_category(value):
                     continue
