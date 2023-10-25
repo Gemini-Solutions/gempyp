@@ -289,7 +289,7 @@ class DvRunner(Base):
                 s3_url = None
                 try:
                     s3_url = uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=self.data["SUITE_VARS"]
-                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"))[0]
+                                            ["bridge_token"], tag="protected", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"))[0]
                 except Exception as e:
                     print(traceback.print_exc())
                     logging.warn(e)

@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
 import getpass
 from gempyp.libs.common import download_common_file, moduleImports
-from gempyp.libs.gem_s3_common import uploadToS3, create_s3_link,uploadToS3
+from gempyp.libs.gem_s3_common import uploadToS3, create_s3_link
 from gempyp.config import DefaultSettings
 import re
 
@@ -105,7 +105,7 @@ def getOutput(data):
     tempdict["log_file"] = log_file
     try:
         # s3_log_file_url= create_s3_link(url=uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", data["config_data"].get("LOG_PATH", "N.A")),tag="public")[0]["Url"])
-        s3_log_file_url= uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", data["config_data"].get("LOG_PATH", "N.A")),tag="public",s_run_id=data["TESTCASEMETADATA"].get("S_RUN_ID"))[0]
+        s3_log_file_url= uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", data["config_data"].get("LOG_PATH", "N.A")),tag="protected",s_run_id=data["TESTCASEMETADATA"].get("S_RUN_ID"))[0]
         # s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
     except Exception:
         s3_log_file_url = None

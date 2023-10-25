@@ -27,7 +27,7 @@ import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
-from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link, uploadToS3
 from gempyp.libs.common import *
 import re,tempfile
 
@@ -704,8 +704,8 @@ class Engine:
         s3_log_file_url = log_path
         if self.jewel_user:
             try:
-                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="public",s_run_id=self.s_run_id)[0]["Url"]) 
-                s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+                s3_log_file_url= uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="protected",folder="logs",s_run_id=self.s_run_id)[0]
+                # s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
             except Exception as e:
                 logging.info(e)
         testcase_dict["log_file"] = log_path

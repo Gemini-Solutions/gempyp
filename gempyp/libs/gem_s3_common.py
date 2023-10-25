@@ -99,8 +99,6 @@ def uploadToS3(api=None, tag=None, file=None, data=None, s_run_id=None, folder=N
     body["files"] = filename 
     body = json.dumps(body)
     response = requests.post(api, data=body, headers=headers)
-    print(response.status_code)
-    print(response.text)
     try:
 
         if response.status_code == 200:
