@@ -40,7 +40,7 @@ def skipColumn(skip_column,src_df,tgt_df,key,reporter):
                         flag = True
                         break
                 if flag:
-                    reporter.addRow("Column Given for Skip are Present in Keys Tag","Aborting Skip Columns",status.INFO)
+                    reporter.addRow("Columns given for skip are present in keys tag","Aborting skip columns",status.INFO)
                     return src_df,tgt_df
                 else:
                     # for i in skip_column:
@@ -52,5 +52,5 @@ def skipColumn(skip_column,src_df,tgt_df,key,reporter):
                     # headers = list(set(headers)-set(skip_column))
                     return src_df,tgt_df
             except Exception as e:
-                reporter.addRow("While Skipping Columns",get_reason_of_failure(traceback.format_exc(), e),status.FAIL)
+                reporter.addRow("While skipping columns",get_reason_of_failure(traceback.format_exc(), e),status.FAIL)
                 return src_df, tgt_df

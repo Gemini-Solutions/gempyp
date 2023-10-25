@@ -75,7 +75,7 @@ class AbstractSimpleTestcase(ABC):
                     n=n+1
             except Exception as e:
                 reporter.addRow("Executing poll n wait", f"Some error occurred while executing the poll and wait- {str(e)}", status.ERR)
-      
+
 
     def RUN(self, cls, testcase_settings: Dict, **kwargs) -> List:
         """
