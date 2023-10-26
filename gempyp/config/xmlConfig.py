@@ -54,10 +54,11 @@ class XmlConfig(AbstarctBaseConfig):
         suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
         LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
         # LoggingConfig(suiteLogsLoc)
-        logging.info("------suite logs------"+ str(suiteLogsLoc))
+        logging.info("suite logs : "+ str(suiteLogsLoc))
         self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)
         self._CONFIG["SUITE_DATA"]['LOG_DIR'] = self.log_dir
         self._CONFIG["SUITE_DATA"]['UNIQUE_ID'] = self.unique_id
+        return suiteLogsLoc
 
     def _getSuiteData(self, data) -> Dict:
 
@@ -66,7 +67,7 @@ class XmlConfig(AbstarctBaseConfig):
         suite_dict = xmlToDict(suite_data)
         suite_dict={key.replace('-','_'):value for key,value in suite_dict.items()}
         suite_dict["SUITE_VARS"] = {}
-        logging.info("--------suite_dict--------\n {suite_dict} \n----------".format(suite_dict=suite_dict))
+        logging.info("suite_dict: \n {suite_dict} \n".format(suite_dict=suite_dict))
         # do your validations here
 
         return suite_dict
