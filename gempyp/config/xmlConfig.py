@@ -1,4 +1,5 @@
 import tempfile
+import traceback
 from typing import Dict
 import lxml.etree as et
 import logging
@@ -23,7 +24,7 @@ class XmlConfig(AbstarctBaseConfig):
         parser = et.XMLParser(target=et.TreeBuilder(), comment_handler=lambda *args: None)
         tree = et.parse(xml_file, parser=parser)
         return tree
-       
+
 
     def parse(self, filePath):
 
@@ -36,16 +37,20 @@ class XmlConfig(AbstarctBaseConfig):
         # data = et.parse(filePath)
         parser = CustomXMLParser(remove_comments=True)
         data = etree.parse(filePath, parser=parser)
-        
-        
-        self._CONFIG["SUITE_DATA"] = self._getSuiteData(data)        
-
+        self._CONFIG["SUITE_DATA"] = self._getSuiteData(data) 
+        #code for replacing variable from external properties file
+        try:
+            external_file_variables = self.read_variable_from_file(self._CONFIG["SUITE_DATA"]["PROPERTIES_FILE"])
+            if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE"):
+                    self._CONFIG["SUITE_DATA"] = self.replace_variables_from_file(external_file_variables,self._CONFIG["SUITE_DATA"])
+        except Exception as e:
+                print(traceback.print_exc())
         self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
         self.unique_id = str(uuid.uuid4())
         if self.s_run_id != None:
-             self.unique_id = self.s_run_id
+            self.unique_id = self.s_run_id
         elif "S_RUN_ID" in self._CONFIG["SUITE_DATA"]:
             self.unique_id = self._CONFIG["SUITE_DATA"]["S_RUN_ID"]
         os.environ['unique_id'] = self.unique_id
@@ -56,6 +61,8 @@ class XmlConfig(AbstarctBaseConfig):
         # LoggingConfig(suiteLogsLoc)
         logging.info("suite logs : "+ str(suiteLogsLoc))
         self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)
+        if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE"):
+            self.replace_variables_for_testcase(external_file_variables, self._CONFIG["TESTCASE_DATA"])
         self._CONFIG["SUITE_DATA"]['LOG_DIR'] = self.log_dir
         self._CONFIG["SUITE_DATA"]['UNIQUE_ID'] = self.unique_id
         return suiteLogsLoc
@@ -98,3 +105,60 @@ class XmlConfig(AbstarctBaseConfig):
         f1=open(filePath1,"w")
         f1.write(content)
         return filePath1
+    
+    def replace_substring(self,original_string, start_index, end_index, replacement):
+        # Construct the modified string by concatenating the substring before and after the replacement
+        modified_string = original_string[:start_index] + replacement + original_string[end_index + 1:]
+        return modified_string
+
+    def find_end_index_array(self,ch,string1)->list:
+        """
+        return list of indexes
+        """
+        pos= []
+        for i in range(len(string1)):
+            if ch == string1[i]:
+                pos.append(i)
+        return pos
+    
+    def read_variable_from_file(self, file_path)->Dict:
+        print("Reading external file")
+        files = file_path.split(',')
+        final_variable_dict = {}
+        for file in files:
+            with open(file) as f:
+                l = [line.split("=") for line in f.readlines()]
+                d = {key.strip(): value.strip() for key, value in l}
+            final_variable_dict = {**final_variable_dict, **d}
+        return {key: (int(value) if value.isdigit() else float(value)) if value.replace('.', '', 1).isdigit() else value for key, value in final_variable_dict.items()}
+        
+    
+    def replace_variables_from_file(self,variable_dict, suite_dict):
+        print("In variable replacement")
+        values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#" in val]
+        for i in values_with_variables:
+            string = i[1]
+            start_index = string.index("$[#")
+            end_index = self.find_end_index_array("]",string)
+            closest_value = min([i for i in end_index if i-start_index > 0])
+            variable_name = string[start_index+3:closest_value]
+            variable_value = variable_dict.get(variable_name,None)
+            if variable_value == None:
+                print(f"Value for variable {variable_name} not found")
+            if variable_value:
+                after_replace = self.replace_substring(string, start_index,closest_value,variable_value)
+                suite_dict[i[0]]= after_replace
+            else:
+                print("not able to find the value")
+        return suite_dict
+
+
+    def replace_variables_for_testcase(self,variable_dict,testcase_dict):
+        try:
+            for key,value in testcase_dict.items():
+                self._CONFIG["TESTCASE_DATA"][key] = self.replace_variables_from_file(variable_dict,value)
+        except Exception as e:
+            print(traceback.print_exc())
+
+
+
