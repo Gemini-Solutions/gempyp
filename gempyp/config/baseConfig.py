@@ -156,4 +156,3 @@ class AbstarctBaseConfig(ABC):
         except Exception as error:
             logging.error("error occurs in update" + str(error))
         
-        

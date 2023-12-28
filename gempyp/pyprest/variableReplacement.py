@@ -125,4 +125,4 @@ class VariableReplacement:
         if DefaultSettings.backup_data is None:
             DefaultSettings.backup_data =copy.deepcopy(self.pyprest_obj.__dict__["data"])
         self.updateDataDictionary(self.pyprest_obj.__dict__)
-        
+           

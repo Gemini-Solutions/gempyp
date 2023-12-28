@@ -80,3 +80,4 @@ class PreVariables:
                 return "Null"
         else:
             return var_name.strip(" ")
+        
