@@ -200,6 +200,8 @@ class PypRest(Base):
         # get file
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
 
+        self.formData=self.data["config_data"].get("REQUEST_FILE", None)
+
         # get pre variables, not mandatory
         # self.pre_variables = self.data["config_data"].get("PRE_VARIABLES", "")
 
@@ -216,6 +218,7 @@ class PypRest(Base):
         self.username = self.data["config_data"].get("USERNAME", self.data.get("USER", None))
 
         self.password = self.data["config_data"].get("PASSWORD", None)
+        self.timeout=int(self.data["config_data"].get("TIMEOUT", 1000))
 
         #get values of mandatory keys of legacy apis
         # if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
@@ -248,12 +251,11 @@ class PypRest(Base):
                 self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
         try:
             self.body = json.loads(str(self.body))
-            
         except Exception as e:
             self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
             self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
         try:
-            self.headers=json.loads(str(self.headers))
+            self.headers=json.loads(self.headers)
         except Exception as e:
             self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}Headers - " + str(self.headers), status.FAIL)
             self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
@@ -286,6 +288,12 @@ class PypRest(Base):
             self.req_obj.method = self.method
             self.req_obj.body = self.body
             self.req_obj.headers = self.headers
+            self.req_obj.timeout=self.timeout
+            # if(self.file is not None):
+            #     self.file=json.loads(self.file)
+            #     if(len(self.file)>0):
+            #         for item in self.file:
+            #             self.req_obj.file = self.file_upload(item)
             if(self.file is not None):
                 self.req_obj.file = self.file_upload(json.loads(self.file))
             if self.auth_type == "NTLM":
@@ -301,8 +309,7 @@ class PypRest(Base):
             self.legacy_req.method = self.legacy_method
             self.legacy_req.headers = self.legacy_headers
             self.legacy_req.body = self.legacy_body  
-            print(self.legacy_file)
-            print("##############################")
+            self.legacy_req.timeout=self.legacy_timeout
             if(self.legacy_file is not None):
                 self.legacy_req.file=self.file_upload(json.loads(self.legacy_file))
         # calling the before method after creating the request object.
@@ -399,14 +406,10 @@ class PypRest(Base):
         self.loop=self.data["config_data"].get("LOOP",None)
         if(self.loop is not None):
             self.loopList=self.parseLoop(self.loop)
-            print(self.loopList)
-            print("###############################")
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
         if self.legacy_req is not None and self.legacy_req.api is not None:
-            print(self.legacy_req.api)
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             self.logger.info(f"{self.legacy_req.__dict__}")
             self.logger.info(f"{self.req_obj.__dict__}")
             

@@ -12,13 +12,16 @@ class AbstarctBaseConfig(ABC):
         self.total_yflag_testcase =0
         
         try:
-            self.parse(*args, **kwargs)
+            self.log_file=self.parse(*args, **kwargs)
             # filter removed from here because we need to apply filter after updating data with cli input(if given)
             # self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
             traceback.print_exc()
             logging.error("failed to parse the config: {e}".format(e=e))
+    
+    def getLogFilePath(self):
+        return self.log_file
 
     def getSuiteConfig(self) -> Dict:
         # logging.info("^^^^^^^^^^^^^ \n {suite_data} \n^^^^^^^^^".format(suite_data=self._CONFIG["SUITE_DATA"]))

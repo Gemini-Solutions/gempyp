@@ -72,7 +72,7 @@ class XmlConfig(AbstarctBaseConfig):
         suite_dict = xmlToDict(suite_data)
         suite_dict={key.replace('-','_'):value for key,value in suite_dict.items()}
         suite_dict["SUITE_VARS"] = {}
-        logging.info("--------suite_dict--------\n {suite_dict} \n----------".format(suite_dict=suite_dict))
+        logging.info("suite_dict: \n {suite_dict} \n".format(suite_dict=suite_dict))
         # do your validations here
 
         return suite_dict
