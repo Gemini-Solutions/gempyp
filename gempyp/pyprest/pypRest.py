@@ -73,12 +73,29 @@ class PypRest(Base):
             return None, error_dict
     
     def run(self):
-        self.getVals()
         # execute and format result
-        self.execRequest()
-        self.postProcess()
-        MiscVariables(self).miscVariables()
-        self.poll_wait()
+        pre_variables_str = self.data["config_data"].get("PRE_VARIABLES", "")
+        self.pre_variables_list = []
+
+        assignments = [assignment.strip() for assignment in pre_variables_str.split(';') if assignment.strip()]
+
+        for assignment in assignments:
+            variable, values = assignment.split('=')
+            values = [value.strip() for value in values.split(',')]
+            if(len(values)>1):
+                for value in values:
+                    self.pre_variables_list.append(pre_variables_str.replace(assignment,f"{variable}={value}"))
+        
+    
+        for variables in self.pre_variables_list:
+        # execute and format result
+            self.pre_variables=variables
+            self.getVals()
+            self.execRequest()
+            self.postProcess()
+            MiscVariables(self).miscVariables()
+            self.poll_wait()
+            self.data=DefaultSettings.backup_data
         self.logger.info("--------------------Execution Completed ------------------------")
         self.reporter.finalizeReport()
 
@@ -184,7 +201,7 @@ class PypRest(Base):
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
 
         # get pre variables, not mandatory
-        self.pre_variables = self.data["config_data"].get("PRE_VARIABLES", "")
+        # self.pre_variables = self.data["config_data"].get("PRE_VARIABLES", "")
 
         self.key_check = self.data["config_data"].get("KEY_CHECK", None)
 
@@ -202,16 +219,15 @@ class PypRest(Base):
 
         #get values of mandatory keys of legacy apis
         # if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
-        self.legacy_api = self.data["config_data"].get("LEGACY_API",None)
-        self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
-        self.legacy_headers = self.data["config_data"].get("LEGACY_HEADERS", {})
-        self.legacy_body = self.data["config_data"].get("LEGACY_BODY", {})
-        self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
-        self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
-        self.legacy_file=self.data["config_data"].get("LEGACY_REQUEST_FILE", None)
+        if self.isLegacyPresent:
+            self.legacy_api = self.data["config_data"].get("LEGACY_API",None)
+            self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
+            self.legacy_headers = self.data["config_data"].get("LEGACY_HEADERS", {})
+            self.legacy_body = self.data["config_data"].get("LEGACY_BODY", {})
+            self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
+            self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
+            self.legacy_file=self.data["config_data"].get("LEGACY_REQUEST_FILE", None)
         #setting variables and variable replacement
-        print(self.variables)
-        print("###############################")
         
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
@@ -219,16 +235,17 @@ class PypRest(Base):
             self.pollnwait=json.loads(self.pollnwait)
         except:
             pass
-        try:
-            self.legacy_body=json.loads(str(self.legacy_body))
-        except Exception as e:
-            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-        try:
-            self.legacy_headers=json.loads(str(self.legacy_headers))
-        except Exception as e:
-            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        if self.isLegacyPresent:
+            try:
+                self.legacy_body=json.loads(str(self.legacy_body))
+            except Exception as e:
+                self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+            try:
+                self.legacy_headers=json.loads(str(self.legacy_headers))
+            except Exception as e:
+                self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
         try:
             self.body = json.loads(str(self.body))
             
@@ -454,7 +471,8 @@ class PypRest(Base):
                                  )
                 self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
-                raise Exception("abort")
+                if(len(self.pre_variables_list)<=1):
+                    raise Exception("abort")
                 # raise Exception("abort")       
         else:
             body = self.res_obj.response_body
@@ -479,7 +497,8 @@ class PypRest(Base):
                                  status.FAIL)
                 self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes did not match, aborting testcase.....")
-                raise Exception("abort")
+                if(len(self.pre_variables_list)<=1):
+                    raise Exception("abort")
 
     def postProcess(self):
         """To be run after API request is sent.

@@ -74,7 +74,7 @@ class Gempyp:
             file_path=download_common_file(self.config)
             config=XmlConfig(file_path,s_run_id)
             if not self.args:
-                del self.__dict__["args"]
+                # del self.__dict__["args"]
                 config.cli_config = vars(self)
             else:
                 config.cli_config = self.args

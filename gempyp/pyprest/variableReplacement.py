@@ -3,6 +3,8 @@ import logging as logger
 from inspect import getmembers, isfunction
 from gempyp.pyprest.predefinedFunctions import PredefinedFunctions as prefunc
 import os
+from gempyp.config import DefaultSettings
+import copy
 
 
 class VariableReplacement:
@@ -75,8 +77,8 @@ class VariableReplacement:
                 varValue = self.local_pre_variables[varName]
                 # suite_variables
                 # varValue = self.local_pre_variables[varName]
-            if "ENV.".casefold() in varName.casefold() and os.environ.get(varName.strip("$[#ENV.").strip("]")):
-                varValue = os.environ.get(varName.strip("$[#ENV.").strip("]"))
+            if "ENV.".casefold() in varName.casefold() and os.environ.get(varName.replace("ENV.","")):
+                varValue = os.environ.get(varName.replace("ENV.",""))
         except:
             return "null"
         str_val = var_name.replace("$[#"+varName+"]", str(varValue))
@@ -118,6 +120,9 @@ class VariableReplacement:
             
         return data
 
+    
     def variableReplacement(self):
+        if DefaultSettings.backup_data is None:
+            DefaultSettings.backup_data =copy.deepcopy(self.pyprest_obj.__dict__["data"])
         self.updateDataDictionary(self.pyprest_obj.__dict__)
         
