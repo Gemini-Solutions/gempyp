@@ -28,6 +28,7 @@ from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.libs.common import *
+import pkg_resources
 from gempyp.config.DefaultSettings import _VERSION
 import re
 
@@ -360,7 +361,7 @@ class Engine:
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
-            "framework_version":_VERSION,
+            "framework_version":pkg_resources.get_distribution("gempyp").version,
             "os": platform.system().upper()+" "+platform.version().split(".")[0],
             "meta_data": [],
             "expected_testcases": self.total_runable_testcase,
