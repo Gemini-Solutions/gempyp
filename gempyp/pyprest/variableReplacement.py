@@ -65,7 +65,7 @@ class VariableReplacement:
        
        
     def getVariableValues(self, var_name):
-        varName = var_name.strip("$[#]")
+        varName = var_name.strip("$[#]").replace(" ","")
         try:
             # if "SUITE.".casefold() or "ENV.".casefold() in varName.casefold()
             if "SUITE.".casefold() in varName.casefold():  # ############ post 1.0.4

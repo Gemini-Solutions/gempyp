@@ -32,26 +32,26 @@ class PostVariables:
                 # checking for syntax
                 if "SET" in each_item[0].upper() and '$[#' in each_item[0]:
                     # key = each_item[0].strip("set $[#").strip("Set $[#").strip("SET $[#").strip("]")
-                    key = each_item[0].split("#")[1].strip("]")
+                    key = each_item[0].split("#")[1].replace("]","")
 
                     # find suite variables
                     if "SUITE." in key.upper():
                         scope = "suite"
                         key = key.replace(".", "_")     
                     if "SUITE." in str(each_item[0].strip(" ")):
-                        key = "SUITE_" + each_item[0].strip(" ").strip("set $[#SUITE.").strip("]").upper()
+                        key = "SUITE_" + each_item[0].strip(" ").replace("set $[#SUITE.","").replace("]","").upper()
                         
-                        self.pyprest_obj.variables["suite"][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1])
+                        self.pyprest_obj.variables["suite"][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1].strip())
         
 
                     
                     # check for postdefined functions and response variables
                     if "$[#" in each_item[1].strip(" "):    
                         # check for predefined function
-                        self.pyprest_obj.variables[scope][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1])
+                        self.pyprest_obj.variables[scope][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1].strip())
                         
                         # if not found in predefined functions, check in response
-                        response_key = each_item[1].strip("$[#").strip("]")
+                        response_key = each_item[1].strip().strip("$[#").strip("]")
                         # find key in response  
                         # call keycheck
                         response_key_partition = response_key.split(".")
@@ -62,10 +62,10 @@ class PostVariables:
                         # if result is not "FOUND" then can't set value
                         if result.upper() != "FOUND":
                             self.logger.info("====== Key Not Found in response =======")
-                            self.logger.info("'" + each_item[1] + "' is not found")
+                            self.logger.info("'" + each_item[1].strip() + "' is not found")
 
                             # check predefined functions
-                            self.pyprest_obj.variables[scope][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1])
+                            self.pyprest_obj.variables[scope][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1].strip())
                         else:
                             new_list = utils.fetchValueOfKey(response_json, response_key_partition, result)
                             self.pyprest_obj.variables[scope][key] = new_list[response_key]

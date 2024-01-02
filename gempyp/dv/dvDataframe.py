@@ -37,7 +37,7 @@ class Dataframe:
                 return source_df, source_columns
             except Exception as e:
                 reporter.addRow(
-                    "Parsing Source File Path", "Exception Occurred", status.ERR)
+                    "Parsing source file path", "Exception occurred", status.ERR)
                 reporter.addMisc(
                     "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
                 raise Exception(e)
@@ -46,10 +46,10 @@ class Dataframe:
             if sourceCred == None:
                 # reporter.addMisc(
                     # "REASON OF FAILURE", "Source_DB or Source Connection tag not found")
-                reporter.addRow("Getting Source Connection Details",
-                                "Recheck Source_DB Tag and Source Connection Tag", status.ERR)
+                reporter.addRow("Getting source connection details",
+                                "Recheck source_DB tag and source connection tag", status.ERR)
                 raise Exception(
-                    "Source_DB Tag or Source Connection Tag NOT FOUND")
+                    "Source_db tag or source connection tag not found")
             else:
                 source_df, source_columns = self.dbOperations(
                     sourceCred, "SOURCE")
@@ -73,7 +73,7 @@ class Dataframe:
                 return target_df, target_columns
             except Exception as e:
                 reporter.addRow(
-                    "Parsing Target File Path", "Exception Occurred", status.FAIL)
+                    "Parsing target file path", "Exception occurred", status.FAIL)
                 # reporter.addMisc(
                 #     "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
                 raise Exception(e)
@@ -82,10 +82,10 @@ class Dataframe:
             if targetCred == None:
                 # reporter.addMisc(
                 #     "REASON OF FAILURE", "Target_DB or Target Connection tag not found")
-                reporter.addRow("Getting Target Connection Details",
-                                "Recheck for Target_DB or Target Connection Tag", status.ERR)
+                reporter.addRow("Getting target connection details",
+                                "Recheck for target_db or target connection tag", status.ERR)
                 raise Exception(
-                    "Target_DB or Target Connection Tag Not Found")
+                    "Target_db or target connection tag not found")
             else:
                 target_df, target_columns = self.dbOperations(
                     targetCred, "TARGET")
@@ -102,7 +102,7 @@ class Dataframe:
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
             columns = df.columns.values.tolist()
             self.reporter.addRow(
-                f"Parsing {db} File", "Parsing File is Successfull", status.PASS)
+                f"Parsing {db} file", "Parsing file is successful", status.PASS)
             return df, columns
         except Exception as e:
             raise Exception(f"Could not read file, {e}")
@@ -113,15 +113,40 @@ class Dataframe:
             self.logger.info(log)
             myDB = self.connectingDB(db, cred)
         except Exception as e:
+            print("DB Operations..........................................")
             self.reporter.addRow(
-                f"Connection to {db}DB: ", "Exception Occurred", status.ERR)
+                f"Connection to {db}db: ", "Exception occurred", status.ERR)
             self.logger.error(str(e))
-            
-            # self.reporter.addMisc(
-            #         "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
-
             raise Exception(e)
+        
+        try:
+            db_1, columns = self.executeQuery(db, myDB)
+        except Exception as e:
+            self.logger.error(str(e))
+            self.reporter.addRow(
+                f"Executing {db} SQL", "Exception Occurred", status.ERR)
+            raise e
+        return db_1,columns
+    
+    def fetch_data_with_retries(self, cred, db):
+        retry_limit = 3  # Maximum number of connection retry attempts
+        retry_delay = 10  # Delay between retry attempts in seconds
+        retries = 0
+        while retries < retry_limit:
+            try:
+                return self.dbOperations(cred, db)
+            except Exception as e:
+                print(f"Connection failed: {str(e)}")
+                print("Retrying...")
+                print("fetch_data_with_retries...........................")
+                time.sleep(retry_delay)
+                retries += 1
 
+        print("Maximum number of retries exceeded. Failed to fetch data.")
+        return None, None
+
+    
+    def executeQuery(self,db,myDB):
         try:
             self.logger.info(f"----Executing the {db}SQL----")
             # checking whether it is mongodb object by checking mongoclient in starting of the object
@@ -137,22 +162,26 @@ class Dataframe:
                         raise Exception
                     conn = conn[db_details['collection']]
                 except Exception:
-                    self.reporter.addRow("Finding Database and Collection","Not Found in Source_db or Target_db",status.ERR)
-                    raise Exception("Database and Collection not Found in Source_db or Target_db")
+                    self.reporter.addRow("Finding database and collection","Not found in source_db or target_db",status.ERR)
+                    raise Exception("Database and collection not found in source_db or target_db")
                 try:
                     query = json.loads(self.configData[sql])
                 except Exception:
-                    self.reporter.addRow("Fetching Query","Not Present in JSON Format",status.ERR)
-                    raise Exception("Mongo Query not Present in JSON Format")
+                    self.reporter.addRow("Fetching query","Not present in json format",status.ERR)
+                    raise Exception("Mongo query not present in json format")
                 results = list(conn.find(query))
                 db_1 = pd.DataFrame(results)
                 columns = list(db_1.columns)
             else:
+                # try:
                 myCursor = myDB.cursor()
                 sql = f"{db}_SQL"
+                statement_timeout = 0
+                myDB.cursor().execute(f"ALTER SESSION SET STATEMENT_TIMEOUT_IN_SECONDS = {statement_timeout}")
+                myDB.cursor().execute(f"alter warehouse COMPUTE_WH set statement_timeout_in_seconds = {statement_timeout}")
                 myCursor.execute(self.configData[sql])
                 self.reporter.addRow(
-                    f"Executing {db} SQL", f"{self.configData[sql]}<br>{db} SQL executed Successfull", status.PASS)
+                    f"Executing {db} sql", f"{self.configData[sql]}<br>{db} sql executed successfull", status.PASS)
                 columns = [i[0] for i in myCursor.description]
                 results = myCursor.fetchall()
                 db_1 = pd.DataFrame(results,columns=columns)
@@ -162,7 +191,7 @@ class Dataframe:
             #         "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
 
             self.reporter.addRow(
-                f"Executing {db} SQL", "Exception Occurred", status.ERR)
+                f"Executing {db} sql", "Exception occurred", status.ERR)
             raise e
         
         myDB.close()
@@ -192,7 +221,7 @@ class Dataframe:
             else:
                 dbCursor = myDB.cursor()
             self.reporter.addRow(
-                f"Connection to {dbType}DB:", f"Connection to {dbType}DB is Successfull", status.PASS)
+                f"Connection to {dbType}db:", f"Connection to {dbType}db is successfull", status.PASS)
         else:
             dv = Databases()
             lib, connect = Databases.getConnectionString(
@@ -205,7 +234,7 @@ class Dataframe:
                 myDB.server_info()
             connDetails = self.getHostDetails(cred)
             self.reporter.addRow(
-                f"Connection to {dbType}DB: {connDetails}", f"Connection to {dbType}DB is Successfull", status.PASS)
+                f"Connection to {dbType}db: {connDetails}", f"Connection to {dbType}db is successful", status.PASS)
         return myDB
 
     def getHostDetails(self, details):
