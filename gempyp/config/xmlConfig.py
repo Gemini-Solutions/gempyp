@@ -64,6 +64,7 @@ class XmlConfig(AbstarctBaseConfig):
                 self._CONFIG["TESTCASE_DATA"].update(current_testcase_data)
             self._CONFIG["SUITE_DATA"]['LOG_DIR'] = self.log_dir
             self._CONFIG["SUITE_DATA"]['UNIQUE_ID'] = self.unique_id
+            return suiteLogsLoc
 
     def _getSuiteData(self, data) -> Dict:
 
