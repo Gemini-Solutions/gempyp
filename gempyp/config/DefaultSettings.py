@@ -26,11 +26,11 @@ def getEnterPoint(url, bridge_token, user_name):
             urls["data"]=url_enter_point["data"]
             global apiSuccess
             apiSuccess = True
-        # elif re.search('50[0-9]',str(response.status_code)):
-        #     logging.warning("Error Occurs While Getting the BASE_URLs")
-        # else:
-        #     logging.info("Some Error From the Client Side, Maybe username or bridgeToken, Therefore terminating execution")
-        #     sys.exit()
+        elif re.search('50[0-9]',str(response.status_code)):
+            logging.warning("Error Occurs While Getting the BASE_URLs")
+        else:
+            logging.info("Some Error From the Client Side, Maybe username or bridgeToken, Therefore terminating execution")
+            sys.exit()
     except Exception as e:
             traceback.print_exc()
             logging.warning("Error Occurs While Getting the BASE_URLs")
