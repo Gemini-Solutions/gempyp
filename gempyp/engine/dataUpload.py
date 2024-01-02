@@ -71,9 +71,9 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
             logging.info("Suite data is not uploaded")
             if payload not in suite_data:
                 suite_data.append(payload)
-        else:
-            logging.info("Some Error From the Client Side, Terminating Execution")
-            sys.exit()
+        # else:
+        #     logging.info("Some Error From the Client Side, Terminating Execution")
+        #     sys.exit()
         else:
             logging.info("Suite data is not uploaded")
             if payload not in suite_data:

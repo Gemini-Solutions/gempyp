@@ -154,28 +154,32 @@ def moduleImports(file_name):
             traceback.print_exc()
             return e
 
-def download_common_file(file_name,headers=None):
+def download_common_file(file_names,headers=None):
      try:
-        if file_name and (file_name.__contains__('S3:')):
-            logging.info("File is from S3")
-            response=download_from_s3(api=file_name.replace("S3:",""),username=headers.get("username",None),bridge_token=headers.get("bridge_token",None))
-            if(response.status_code==200):
-                file_name = os.path.join(file_name.split(":")[-1])
-                with open(file_name, "w+") as fp:
-                    fp.seek(0)
-                    fp.write(response.text)
-                    fp.truncate()
-            else:
-                logging.info(response.status_code)
-                logging.info(response.text)
-        elif file_name and (file_name.__contains__('GIT')):
-            logging.info("File is from GIT")
-            list_url=file_name.split(":")
-            if(len(list_url)>=5):
-                file_name=fetchFileFromGit(list_url[2],list_url[3],username=list_url[-2],bearer_token=list_url[-1])
-            else:
-                file_name=fetchFileFromGit(list_url[2],list_url[3])
-        return file_name
+        file_paths=[]
+        file_names=file_names.split(",")
+        for file_name in file_names: 
+            if file_name and (file_name.__contains__('S3:')):
+                logging.info("File is from S3")
+                response=download_from_s3(api=file_name.replace("S3:",""),username=headers.get("username",None),bridge_token=headers.get("bridge_token",None))
+                if(response.status_code==200):
+                    file_name = os.path.join(file_name.split(":")[-1])
+                    with open(file_name, "w+") as fp:
+                        fp.seek(0)
+                        fp.write(response.text)
+                        fp.truncate()
+                else:
+                    logging.info(response.status_code)
+                    logging.info(response.text)
+            elif file_name and (file_name.__contains__('GIT')):
+                logging.info("File is from GIT")
+                list_url=file_name.split(":")
+                if(len(list_url)>=5):
+                    file_name=fetchFileFromGit(list_url[2],list_url[3],username=list_url[-2],bearer_token=list_url[-1])
+                else:
+                    file_name=fetchFileFromGit(list_url[2],list_url[3])
+            file_paths.append(file_name)
+        return file_paths
      except Exception as e:
         traceback.print_exc()
         return e

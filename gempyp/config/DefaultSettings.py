@@ -7,10 +7,10 @@ import sys
 
 # have to discuss about the default location
 DEFAULT_GEMPYP_FOLDER = os.getcwd()
+backup_data=None
 DEBUG = True
 THREADS = 8
 encrypt_key = b'sEKTykqMLP_iCwlMtiBR_9SQ0v9N1OT3ajVAAaI4AkQ='
-_VERSION = "1.0.0"
 apiSuccess = False
 project_id = "Test_id"
 default_baseurl="https://apis.gemecosystem.com"
