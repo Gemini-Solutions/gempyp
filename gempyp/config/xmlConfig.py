@@ -144,7 +144,7 @@ class XmlConfig(AbstarctBaseConfig):
         values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#" in val]
         for i in values_with_variables:
             string = i[1]
-            if "data." in string:
+            if any(keyword in string for keyword in ["response.", "SUITE."]):
                 continue
             start_index = string.index("$[#")
             end_index = self.find_end_index_array("]",string)
