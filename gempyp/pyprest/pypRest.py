@@ -223,7 +223,10 @@ class PypRest(Base):
         #get values of mandatory keys of legacy apis
         # if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
         if self.isLegacyPresent:
-            self.legacy_api = self.data["config_data"].get("LEGACY_API",None)
+            if self.env not in self.data.keys():
+                self.legacy_api = self.data["config_data"].get("LEGACY_API",None)
+            else:
+                self.legacy_api = self.data.get(self.env, "PROD").strip(" ")+ self.data["config_data"].get("LEGACY_API",None)
             self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
             self.legacy_headers = self.data["config_data"].get("LEGACY_HEADERS", {})
             self.legacy_body = self.data["config_data"].get("LEGACY_BODY", {})
