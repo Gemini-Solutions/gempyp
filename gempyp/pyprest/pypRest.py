@@ -73,7 +73,6 @@ class PypRest(Base):
             return None, error_dict
     
     def run(self):
-        # execute and format result
         pre_variables_str = self.data["config_data"].get("PRE_VARIABLES", "")
         self.pre_variables_list = []
 
@@ -85,10 +84,18 @@ class PypRest(Base):
             if(len(values)>1):
                 for value in values:
                     self.pre_variables_list.append(pre_variables_str.replace(assignment,f"{variable}={value}"))
-        
-    
+        if(len(self.pre_variables_list)<1):
+            self.pre_variables_list.append(pre_variables_str)
+
         for variables in self.pre_variables_list:
         # execute and format result
+            self.pre_variables=variables
+            self.getVals()
+            self.execRequest()
+            self.postProcess()
+            MiscVariables(self).miscVariables()
+            self.poll_wait()
+            self.data=DefaultSettings.backup_data
             self.pre_variables=variables
             self.getVals()
             self.execRequest()
@@ -230,6 +237,7 @@ class PypRest(Base):
             self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
             self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
             self.legacy_file=self.data["config_data"].get("LEGACY_REQUEST_FILE", None)
+            self.legacy_timeout=int(self.data["config_data"].get("LEGACY_TIMEOUT", 1000))
         #setting variables and variable replacement
         
         PreVariables(self).preVariable()
@@ -239,26 +247,31 @@ class PypRest(Base):
         except:
             pass
         if self.isLegacyPresent:
-            try:
-                self.legacy_body=json.loads(str(self.legacy_body))
-            except Exception as e:
-                self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-            try:
-                self.legacy_headers=json.loads(str(self.legacy_headers))
-            except Exception as e:
-                self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-                self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-        try:
-            self.body = json.loads(str(self.body))
-        except Exception as e:
-            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-        try:
-            self.headers=json.loads(self.headers)
-        except Exception as e:
-            self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}Headers - " + str(self.headers), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+            self.legacy_body=json.loads(str(self.legacy_body))
+            self.legacy_headers=json.loads(str(self.legacy_headers))
+        self.body = json.loads(str(self.body))
+        self.headers=json.loads(str(self.headers))
+        # try:
+        #     self.legacy_body=json.loads(str(self.legacy_body))
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        # try:
+        #     self.legacy_headers=json.loads(str(self.legacy_headers))
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        # try:
+        #     self.body = json.loads(str(self.body))
+            
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        # try:
+        #     self.headers=json.loads(self.headers)
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}Headers - " + str(self.headers), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
     def file_upload(self,json_form_data): 
         files_data=[]
@@ -403,9 +416,9 @@ class PypRest(Base):
         self.env = self.data["ENVIRONMENT"]
         self.variables = {}
         self.category = self.data["config_data"].get("CATEGORY", None)
-        self.loop=self.data["config_data"].get("LOOP",None)
-        if(self.loop is not None):
-            self.loopList=self.parseLoop(self.loop)
+        # self.loop=self.data["config_data"].get("LOOP",None)
+        # if(self.loop is not None):
+        #     self.loopList=self.parseLoop(self.loop)
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
@@ -720,21 +733,20 @@ class PypRest(Base):
                 fp.write(file_name)
             return file_path
 
-    def parseLoop(self,loop: Union[str, typing.TextIO]):
-        try:
-                if hasattr(loop, "read"):
-                    loops = loop.read()
+    # def parseLoop(self,loop: Union[str, typing.TextIO]):
+    #     try:
+    #             if hasattr(loop, "read"):
+    #                 loops = loop.read()
 
-                elif os.path.isfile(loop):
-                    file = open(loop, "r")
-                    loops = file.read()
-                    file.close()
-                loops = loop.strip().split(",")
-                return loops
-        except Exception as e:
-            logging.error("Error while parsing the loops")
-            logging.error(f"Error : {e}")
-            logging.error(f"traceback: {traceback.format_exc()}")
-            return None
-        
+    #             elif os.path.isfile(loop):
+    #                 file = open(loop, "r")
+    #                 loops = file.read()
+    #                 file.close()
+    #             loops = loop.strip().split(",")
+    #             return loops
+    #     except Exception as e:
+    #         logging.error("Error while parsing the loops")
+    #         logging.error(f"Error : {e}")
+    #         logging.error(f"traceback: {traceback.format_exc()}")
+    #         return None
 

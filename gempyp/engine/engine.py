@@ -28,7 +28,6 @@ from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.libs.common import *
-from gempyp.config.DefaultSettings import _VERSION
 import re
 
 
@@ -41,8 +40,10 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     """
     logging.info("--------- In Executor Factory ----------\n")
     if custom_logger == None:
-        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),data['config_data'].get('NAME') + '_'
-        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility
+        testcase_name = data['config_data'].get('NAME',None)
+        testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
+        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),testcase_name + '_'
+        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility   
         custom_logger = my_custom_logger(log_path)
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
@@ -355,6 +356,12 @@ class Engine:
         # If package is not installed, try to get version from setup.py
         if version is None:
             version = self.get_version_from_setup()
+        package_name = "gempyp"
+        version = self.get_version_from_pkg_resources(package_name)
+
+        # If package is not installed, try to get version from setup.py
+        if version is None:
+            version = self.get_version_from_setup()
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
@@ -405,7 +412,7 @@ class Engine:
     def start(self):
 
         """
-         check the mode and start the testcases accordingly e.g.optimize,parallel
+        check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
@@ -460,7 +467,7 @@ class Engine:
             self.DATA.suite_detail.at[0, "meta_data"].append({"S_ID": self.PARAMS["S_ID"]})
         else:
             self.DATA.suite_detail.at[0, "meta_data"].append({"CONFIG_S3_URL": self.s3_url})
-       
+
 
     def startSequence(self):
         """
@@ -471,8 +478,10 @@ class Engine:
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 data = self.getTestcaseData(testcase['NAME'])
+                testcase_name = data['config_data'].get('NAME',None)
+                testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
                 log_path = os.path.join(self.testcase_log_folder,
-                data['config_data'].get('NAME')+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
+                testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 conn = None
@@ -523,7 +532,7 @@ class Engine:
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
-       
+
                 if len(pool_list) == 0:
                     continue
                 

@@ -67,17 +67,17 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
                 suite_data.remove(payload)
         elif response and response.status_code == 200:
             logging.info("Suite Data updated Successfully")
-        # elif re.search('50[0-9]',str(response.status_code)):
-        #     logging.info("Suite data is not uploaded")
-        #     if payload not in suite_data:
-        #         suite_data.append(payload)
+        elif re.search('50[0-9]',str(response.status_code)):
+            logging.info("Suite data is not uploaded")
+            if payload not in suite_data:
+                suite_data.append(payload)
         # else:
         #     logging.info("Some Error From the Client Side, Terminating Execution")
         #     sys.exit()
-        # else:
-        #     logging.info("Suite data is not uploaded")
-        #     if payload not in suite_data:
-        #         suite_data.append(payload)
+        else:
+            logging.info("Suite data is not uploaded")
+            if payload not in suite_data:
+                suite_data.append(payload)
                 
     except Exception as e:
         logging.error(traceback.format_exc())
@@ -161,7 +161,7 @@ def dataAlter(payload):
     # changing start time
     payload['s_start_time'] = respon['data']['s_start_time']
     payload['testcase_info'] = {} if payload['testcase_info'] == "-" else payload['testcase_info']
-    if respon['data']['testcase_info']:
+    if respon['data'].get('testcase_info',None):
         # adding the testcase analytics of both run
         payload['testcase_info'] = {i: payload['testcase_info'].get(i, 0) + respon['data']['testcase_info'].get(i, 0)
         for i in set(payload['testcase_info']).union(respon['data']['testcase_info'])}

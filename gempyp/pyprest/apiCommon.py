@@ -37,7 +37,6 @@ class Api:
                         if(isinstance(value,str) and os.path.isfile(value)):
                             name = value.split('/')[-1]
                             newFileTuple+=(key,(name,open(value,'rb')))
-                            # newFileTuple=newFileTuple1+(header_dict.get("CONTENT-TYPE", ""),)                    
                             newFile.append(newFileTuple)
                         else:
                             if(isinstance(value,dict)):

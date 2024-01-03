@@ -11,7 +11,6 @@ backup_data=None
 DEBUG = True
 THREADS = 8
 encrypt_key = b'sEKTykqMLP_iCwlMtiBR_9SQ0v9N1OT3ajVAAaI4AkQ='
-_VERSION = "1.0.0"
 apiSuccess = False
 project_id = "Test_id"
 default_baseurl="https://apis.gemecosystem.com"
@@ -27,11 +26,11 @@ def getEnterPoint(url, bridge_token, user_name):
             urls["data"]=url_enter_point["data"]
             global apiSuccess
             apiSuccess = True
-        # elif re.search('50[0-9]',str(response.status_code)):
-        #     logging.warning("Error Occurs While Getting the BASE_URLs")
-        # else:
-        #     logging.info("Some Error From the Client Side, Maybe username or bridgeToken, Therefore terminating execution")
-        #     sys.exit()
+        elif re.search('50[0-9]',str(response.status_code)):
+            logging.warning("Error Occurs While Getting the BASE_URLs")
+        else:
+            logging.info("Some Error From the Client Side, Maybe username or bridgeToken, Therefore terminating execution")
+            sys.exit()
     except Exception as e:
             traceback.print_exc()
             logging.warning("Error Occurs While Getting the BASE_URLs")

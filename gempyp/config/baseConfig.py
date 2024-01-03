@@ -135,9 +135,9 @@ class AbstarctBaseConfig(ABC):
                 #         value=value.replace("$[#ENV.","").strip("]").lower()
                 #         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
                 #         self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
-                if value and ("ENV." in value):
+                if value and ("ENV." in value) and value in os.environ:
                     self._CONFIG['SUITE_DATA'][key]=os.environ.get(value.replace("ENV.",""))
-                if key and ("ENV." in key):
+                if key and ("ENV." in key) and key in os.environ:
                     self._CONFIG['SUITE_DATA'][os.environ.get(key.replace("ENV.","")).upper()]=self._CONFIG['SUITE_DATA'].pop(key)
         except Exception as error:
             traceback.print_exc()
