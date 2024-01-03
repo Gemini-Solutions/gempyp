@@ -40,12 +40,13 @@ class XmlConfig(AbstarctBaseConfig):
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data) 
         #code for replacing variable from external properties file
         external_file_variables = None
-        try:
-            external_file_variables = self.read_variable_from_file(self._CONFIG["SUITE_DATA"]["PROPERTIES_FILE"])
-            if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE"):
-                    self._CONFIG["SUITE_DATA"] = self.replace_variables_from_file(external_file_variables,self._CONFIG["SUITE_DATA"])
-        except Exception as e:
-                logging.info(traceback.print_exc())
+        if "PROPERTIES_FILE" in self._CONFIG["SUITE_DATA"]:
+            try:
+                external_file_variables = self.read_variable_from_file(self._CONFIG["SUITE_DATA"]["PROPERTIES_FILE"])
+                if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE"):
+                        self._CONFIG["SUITE_DATA"] = self.replace_variables_from_file(external_file_variables,self._CONFIG["SUITE_DATA"])
+            except Exception as e:
+                    logging.info(traceback.print_exc())
         self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
@@ -123,7 +124,7 @@ class XmlConfig(AbstarctBaseConfig):
         return pos
     
     def read_variable_from_file(self, file_path)->Dict:
-        logging.info("Reading external file")
+        print("Reading external file")
         files = file_path.split(',')
         final_variable_dict = {}
         for file in files:
@@ -133,13 +134,13 @@ class XmlConfig(AbstarctBaseConfig):
                     d = {key.strip(): value.strip() for key, value in l}
                 final_variable_dict = {**final_variable_dict, **d}
             else:
-                logging.info(f"File given in external files not found:{file}")
+                print(f"File given in external files not found:{file}")
                 sys.exit()
         return {key: (int(value) if value.isdigit() else float(value)) if value.replace('.', '', 1).isdigit() else value for key, value in final_variable_dict.items()}
         
     
     def replace_variables_from_file(self,variable_dict, suite_dict):
-        logging.info("In variable replacement")
+        print("In variable replacement")
         values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#" in val]
         for i in values_with_variables:
             string = i[1]
@@ -151,7 +152,8 @@ class XmlConfig(AbstarctBaseConfig):
             variable_name = string[start_index+3:closest_value]
             variable_value = variable_dict.get(variable_name,None)
             if variable_value == None:
-                logging.info(f"Value for variable {variable_name} not found")
+                print(f"Value for variable '{variable_name}' not found")
+                sys.exit()
             if variable_value:
                 after_replace = self.replace_substring(string, start_index,closest_value,variable_value)
                 suite_dict[i[0]]= after_replace

@@ -13,7 +13,7 @@ encrypt_key = b'sEKTykqMLP_iCwlMtiBR_9SQ0v9N1OT3ajVAAaI4AkQ='
 _VERSION = "1.0.0"
 apiSuccess = False
 project_id = "Test_id"
-default_baseurl="https://apis.gemecosystem.com"
+default_baseurl="https://apis.gemecosystem.com/gemEcosystemDashboard/v1"
 urls = {"data":{} }
 # for getting urls using url tag from config file
 def getEnterPoint(url, bridge_token, user_name):
