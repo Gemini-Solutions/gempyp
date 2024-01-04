@@ -89,7 +89,8 @@ class AbstarctBaseConfig(ABC):
             #     continue
 
             # filtered_dict[key] = value
-            if value.get("RUN_FLAG", "Y").upper() == "Y":
+            type_list = ["data validator","dv","datavalidator","dvalidator","pyprest","gempyp","prest","gpyp","pr","gp"]
+            if value.get("RUN_FLAG", "Y").upper() == "Y" and value.get("TYPE").lower() in type_list:
                 if self.filter_category(value):
                     continue
                 self.total_yflag_testcase += 1
@@ -97,6 +98,8 @@ class AbstarctBaseConfig(ABC):
                 if "SUBTESTCASES" in value.keys():
                     testcases=value.get("SUBTESTCASES").upper().split(",")
                     testcases.append(key)
+            elif value.get("TYPE").lower() not in type_list:
+                logging.warning("Type of {} testcase is not right".format(value.get("NAME").upper()))
             if(len(testcases)>0):
                 for i in range(len(testcases)):
                     if(testcases[i] in testcase_data.keys()):
