@@ -145,6 +145,7 @@ class PypRest(Base):
             
             self.variables["local"] = {}
             self.variables["suite"] = self.data["SUITE_VARS"]
+            self.variables["GLOBAL_VARIABLES"] = self.data["GLOBAL_VARIABLES"]
             self.parent_data = self.data["config_data"]
             for i in range(len(self.list_subtestcases)):
                 self.reporter.addRow("Subtestcase",f'Subtestcase Name: {self.list_subtestcases[i]["NAME"]}',status.INFO)
@@ -239,7 +240,6 @@ class PypRest(Base):
             self.legacy_file=self.data["config_data"].get("LEGACY_REQUEST_FILE", None)
             self.legacy_timeout=int(self.data["config_data"].get("LEGACY_TIMEOUT", 1000))
         #setting variables and variable replacement
-        
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
         try:
@@ -275,7 +275,6 @@ class PypRest(Base):
 
     def file_upload(self,json_form_data): 
         files_data=[]
-        json_form_data_1={}  
         for key,value in json_form_data.items():
             files_data_tuple=tuple()
             if(os.path.exists(json_form_data[key])):
@@ -749,4 +748,3 @@ class PypRest(Base):
     #         logging.error(f"Error : {e}")
     #         logging.error(f"traceback: {traceback.format_exc()}")
     #         return None
-

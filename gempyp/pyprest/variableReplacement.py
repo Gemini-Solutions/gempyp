@@ -15,10 +15,10 @@ class VariableReplacement:
                 self.local_pre_variables = self.pyprest_obj.variables.get("local")
             if self.pyprest_obj.variables.get("suite") is not None:
                 self.suite_pre_variables = self.pyprest_obj.variables.get("suite")
- 
+                
+        self.global_variables = self.pyprest_obj.data.get("config_data")
         functions_list = [x[0] for x in getmembers(prefunc, isfunction)]
         self.functions_dict = {each.lower():each for each in functions_list}
-            
         self.pyprest_obj.logger.info("**************  INSIDE VARIABLE REPLACEMENT  **************")
 
 
@@ -69,6 +69,8 @@ class VariableReplacement:
     def getVariableValues(self, var_name):
         varName = var_name.strip("$[#]").replace(" ","")
         try:
+            if "GLOBAL.".casefold() in varName.casefold() and "$[#" not in self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"][varName.replace(".", "_").upper()]:
+                 varValue = self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"][varName.replace(".", "_").upper()]
             # if "SUITE.".casefold() or "ENV.".casefold() in varName.casefold()
             if "SUITE.".casefold() in varName.casefold():  # ############ post 1.0.4
                 varValue = self.suite_pre_variables[varName.replace(".", "_").upper()]
@@ -103,10 +105,13 @@ class VariableReplacement:
 
     def updateDataDictionary(self, data):
         for k,v in data.copy().items():
+            if k == "GLOBAL_VARIABLES" and k == "GLOBAL_VARS":
+                logger.info("global var")
+                continue
             if isinstance(v,dict):
                 data[k] = self.updateDataDictionary(v)
             elif isinstance(v,str):
-                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and  k is not None:
+                if k!="PRE_VARIABLES" and k!="pre_variables" and k!="POST_VARIABLES" and k!="post_variables"  and k != "report_misc" and k !="REPORT_MISC" and k is not None:
                     var_list = self.checkAndGetVariables(data[k])
                     for var in var_list:
                         var_name = var
