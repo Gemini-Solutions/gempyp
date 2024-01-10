@@ -47,6 +47,8 @@ class XmlConfig(AbstarctBaseConfig):
                         self._CONFIG["SUITE_DATA"] = self.replace_variables_from_file(external_file_variables,self._CONFIG["SUITE_DATA"])
             except Exception as e:
                     logging.info(traceback.print_exc())
+                    print("Some error ocurred during variable replacement. Please check variables from external file")
+                    sys.exit()
         self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
@@ -141,24 +143,22 @@ class XmlConfig(AbstarctBaseConfig):
     
     def replace_variables_from_file(self,variable_dict, suite_dict):
         print("In variable replacement")
-        values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#" in val]
+        values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#EXTERNAL." in val]
         for i in values_with_variables:
             string = i[1]
-            if any(keyword in string for keyword in ["response.", "SUITE.", "ENV."]):
-                continue
-            start_index = string.index("$[#")
-            end_index = self.find_end_index_array("]",string)
-            closest_value = min([i for i in end_index if i-start_index > 0])
-            variable_name = string[start_index+3:closest_value]
-            variable_value = variable_dict.get(variable_name,None)
-            if variable_value == None:
-                print(f"Value for variable '{variable_name}' not found")
-                sys.exit()
-            if variable_value:
-                after_replace = self.replace_substring(string, start_index,closest_value,variable_value)
-                suite_dict[i[0]]= after_replace
-            else:
-                logging.info("not able to find the value")
+            start_indexes = [i for i in range(len(string)) if string.startswith("$[#EXTERNAL.", i)]
+            for start_index in start_indexes:
+                start_index = string.index("$[#EXTERNAL.")
+                end_index = self.find_end_index_array("]",string)
+                closest_value = min([i for i in end_index if i-start_index > 0])
+                variable_name = string[start_index+12:closest_value]
+                variable_value = variable_dict.get(variable_name,None)
+                if variable_value == None:
+                    print(f"Value for variable '{variable_name}' not found")
+                    sys.exit()
+                if variable_value:
+                    string = self.replace_substring(string, start_index,closest_value,variable_value)
+            suite_dict[i[0]]= string
         return suite_dict
 
 
