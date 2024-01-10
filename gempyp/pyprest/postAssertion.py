@@ -89,9 +89,9 @@ class PostAssertion:
                     self.logger.info("====== Key Not Found in response =======")
                     self.logger.info("'" + each_assert + "' is not found")
                     if "legacy" in each_assert:
-                        legacy_result=f"Key {each_assert} is not found in the response"
+                        legacy_result+=f"{each_assert} NOT FOUND"+" "
                     else:
-                        current_result=f"Key {each_assert} is not found in the response"
+                        current_result+=f"{each_assert} NOT FOUND"+" "
                 else:
                     key_val_dict = utils.fetchValueOfKey(response_json, key_part_list, result, key_val_dict)
             if self.isLegacyPresent:
