@@ -441,23 +441,40 @@ class Engine:
 
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
-                data = self.getTestcaseData(testcase['NAME'])
-                testcase_name = data['config_data'].get('NAME',None)
-                testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
-                log_path = os.path.join(self.testcase_log_folder,
-                testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
-                custom_logger = my_custom_logger(log_path)
-                data['config_data']['log_path'] = log_path
-                conn = None
-                output, error = executorFactory(data,conn, custom_logger)
+                passedDependency = self.isDependencyPassed(testcase)
+                if passedDependency == 'true':
+                    data = self.getTestcaseData(testcase['NAME'])
+                    testcase_name = data['config_data'].get('NAME',None)
+                    testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
+                    log_path = os.path.join(self.testcase_log_folder,
+                    testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
+                    custom_logger = my_custom_logger(log_path)
+                    data['config_data']['log_path'] = log_path
+                    conn = None
+                    output, error = executorFactory(data,conn, custom_logger)
+                    self.update_df(output, error)
+                elif passedDependency=='err':
+                    product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
 
-                if error:
-                    custom_logger.error(
-                        f"Error occured while executing the testcase: {error['testcase']}"
-                    )
-                    custom_logger.error(f"message: {error['message']}")
-                self.update_df(output, error)
+                    dependency_error = {
+                        "message": "dependency failed",
+                        "testcase": testcase["NAME"],
+                        "category": testcase.get("CATEGORY", None),
+                        "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                        "status": status.ERR.name
+                    }
+                    self.update_df(None, dependency_error)
+                elif passedDependency == 'fail':
+                    product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
 
+                    dependency_error = {
+                        "message": "dependency failed",
+                        "testcase": testcase["NAME"],
+                        "category": testcase.get("CATEGORY", None),
+                        "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                        "status": status.FAIL.name
+                    }
+                    self.update_df(None, dependency_error)
 
 
     def startParallel(self):
@@ -483,15 +500,31 @@ class Engine:
                 pool_list = []
                 for testcase in testcases:
                     # only append testcases whose dependency are passed otherwise just update the databasee
-                    if self.isDependencyPassed(testcase):
+                    passedDependency = self.isDependencyPassed(testcase)
+                    if passedDependency == 'true':
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
-                    else:
+                    elif passedDependency=='err':
+                        product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
 
                         dependency_error = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
-                            "product_type": testcase.get("product_type", None),
+                            "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                            "status": status.ERR.name
+                        }
+                        # handle dependency error in json_data(update_df)
+                        # update the testcase in the database with failed dependency
+                        self.update_df(None, dependency_error)
+                    elif passedDependency == 'fail':
+                        product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
+
+                        dependency_error = {
+                            "message": "dependency failed",
+                            "testcase": testcase["NAME"],
+                            "category": testcase.get("CATEGORY", None),
+                            "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                            "status": status.FAIL.name
                         }
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
@@ -562,6 +595,7 @@ class Engine:
                     error.get("category"),
                     error.get("product_type"),
                     error.get('log_path', None),
+                    error.get('status',status.ERR)
                 )
                 output = [output]
             if 'json_data' in output[0]:
@@ -602,7 +636,7 @@ class Engine:
     
     def build_err_step_case(self):
         step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}]
-         
+
         return step
     
     def raise_exception(self,name):
@@ -668,6 +702,7 @@ class Engine:
         category: str = None,
         product_type: str = None,
         log_path: str = None,
+        status: str = None
     ) -> Dict:
         """
         store the data of failed testcase and return it as a dict to update_df
@@ -683,7 +718,7 @@ class Engine:
 
         tc_run_id = tc_run_id.upper()
         testcase_dict["tc_run_id"] = tc_run_id
-        testcase_dict["status"] = status.ERR.name
+        testcase_dict["status"] = status
         testcase_dict["start_time"] = datetime.now(timezone.utc)
         testcase_dict["end_time"] = datetime.now(timezone.utc)
         testcase_dict["name"] = testcase_name
@@ -810,7 +845,6 @@ class Engine:
                     result.append(testcases[key])
             yield result
 
-   
 
     def isDependencyPassed(self, testcase: Dict) -> bool:
         """
@@ -823,30 +857,30 @@ class Engine:
         listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
-                    dep_split = list(dep.split(":"))
-                    if len(dep_split) == 1:
-                        # NAME to name, to_list()
-                        if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
-                            return False
+            dep_split = list(dep.split(":"))
+            if len(dep_split) == 1:
+                # NAME to name, to_list()
+                if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
+                    return 'err'
 
-                    else:
-                        if dep_split[0].upper() == "P":
-                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                                return False
-                            # way to parsing the df    
-                            if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
-                                return False
+            else:
+                if dep_split[0].upper() == "P":
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                        return 'err'
+                    # way to parsing the df    
+                    if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
+                        return 'fail'
 
-                        if dep_split[0].upper() == "F":
-                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                                return False
-                            if (
-                                (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
-                                != status.FAIL.name
-                            ):
-                                return False
+                if dep_split[0].upper() == "F":
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                        return 'err'
+                    if (
+                        (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
+                        != status.FAIL.name
+                    ):
+                        return 'fail'
 
-        return True
+        return 'true'
 
     ### Function for sending total, pass, fail in order
     def totalOrder(self, unsorted_dict):
@@ -861,5 +895,4 @@ class Engine:
                 sorted_dict[key] = 0
         sorted_dict.update(unsorted_dict)
         return sorted_dict
-    
-  
+
