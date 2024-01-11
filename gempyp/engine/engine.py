@@ -964,9 +964,7 @@ class Engine:
         for testcase in priority_list:
             if ("GLOBAL_VARS" in updated_testcase_data.get(testcase).keys()):
                 sorted_testcase_dict[testcase] = updated_testcase_data[testcase]
-                logging.info("testcasename {d}".format(d=testcase))
             else:
-                logging.info("In else for testcase {t}".format(t=testcase))
                 unpriority_list.append(testcase)
         for testcase in unpriority_list:
             sorted_testcase_dict[testcase] = updated_testcase_data[testcase]            
@@ -1003,7 +1001,7 @@ class Engine:
                     # global_var = value.replace("$[#", "").replace(" ", "").replace(".", "_").replace("]", "")
                     var_name = (value[value.find("$"): value.find("]")]).replace("$[#", "").replace("]", "").replace(".", "_")
                     var_value = global_variables_dict.get(var_name.upper())
-                    if "$[#" in var_value:
+                    if var_value is None or "$[#" in var_value:
                         continue
                     final_param_value = value[:value.find("$")] + var_value + value[value.find("]") + 1 :]
                     testcase_val[param] = final_param_value
@@ -1018,17 +1016,12 @@ class Engine:
     
     def replace_vars_in_testcase(self, testcase_config_data, global_variables):
         for key, val in testcase_config_data.items():
-            if (key.upper() == "EXPECTED_STATUS_CODE"):
-                logging.info(val)
             if val is not None and "SET$[#GLOBAL.".casefold() not in val.replace(" ", "").casefold() and "$[#GLOBAL.".casefold() in val.strip(" ").casefold():
-                logging.info(val)
                 if val.find("$") != -1 and val.find("[") != -1:
                     temp_var = val[val.find("$"): val.find("]")]
                     global_var_name = temp_var.replace(" ","").replace("$[#","").replace("]", "").replace(".", "_")
-                    logging.info(global_var_name)
                     if global_variables.get(global_var_name.upper(), None) is not None : #and "$[#" not in global_variables.get(global_var_name.upper())
                         new_val_to_key = val[:val.find("$")] + str(global_variables.get(global_var_name.upper())) + val[val.find("]") + 1:]
                         testcase_config_data[key] = new_val_to_key
-        logging.info(testcase_config_data)
         return testcase_config_data            
                         
