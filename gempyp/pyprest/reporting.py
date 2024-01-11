@@ -77,6 +77,7 @@ def writeToReport(pyprest_obj):
     singleTestcase["misc"] = result.get("MISC")
     singleTestcase["json_data"] = pyprest_obj.json_data
     singleTestcase["suite_variables"] = pyprest_obj.variables.get("suite", {})
+    singleTestcase["GLOBAL_VARIABLES"] = pyprest_obj.__dict__["data"].get("GLOBAL_VARIABLES", {})
     singleTestcase["misc"]["log_file"]= s3_log_file_url
     output.append(singleTestcase)
  

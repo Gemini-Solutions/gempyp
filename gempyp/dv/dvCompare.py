@@ -65,7 +65,7 @@ def df_compare(src_df, tgt_df, key, logger, reporter, configData):
         return value_dict, diff_keys_dict, keys_length
     except Exception as e:
         traceback.print_exc()
-        reporter.addRow("Comparing Data", "Error Occured", status.ERR)
+        reporter.addRow("Comparing data", "Error occurred", status.ERR)
         reporter.addMisc(
             "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e)
         )
@@ -221,7 +221,7 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger, 
         # final_value_diffs = dict(final_value_diffs)
         count = len(final_value_diffs["Reason-of-Failure"])
         if count > int(cut_out):
-            reporter.addRow("Stopping Execution","Mismatch Count is Greater than {}".format(cut_out),status.INFO)
+            reporter.addRow("Stopping execution","Mismatch count is greater than {}".format(cut_out),status.INFO)
             break
         
         logger.info(time.time())
