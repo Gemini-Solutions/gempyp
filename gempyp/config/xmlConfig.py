@@ -146,7 +146,7 @@ class XmlConfig(AbstarctBaseConfig):
     
     def replace_variables_from_file(self, variable_dict, suite_dict):
         logging.info("-- In external variable replacement--")
-        values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#EXTERNAL.".casefold() in val.casefold()]
+        values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#EXTERNAL." in val]
         for i in values_with_variables:
             string = i[1]
             start_indexes = [i for i in range(len(string)) if string.startswith("$[#EXTERNAL.", i)]
