@@ -22,6 +22,10 @@ class PostVariables:
     def postVariables(self):
         self.logger.info("************** INSIDE POST VARIABLES  **************")
         post_variables_str = self.pyprest_obj.post_variables
+        global_variables = self.pyprest_obj.data.get("GLOBAL_VARIABLES")
+        testcase_global_vars = self.pyprest_obj.data.get("config_data")
+        if testcase_global_vars.get("GLOBAL_VARS", None) is not None:
+            post_variables_str += ";" + testcase_global_vars.get("GLOBAL_VARS")
         if post_variables_str:
 
             # separate by ;
@@ -42,9 +46,10 @@ class PostVariables:
                         key = "SUITE_" + each_item[0].strip(" ").replace("set $[#SUITE.","").replace("]","").upper()
                         
                         self.pyprest_obj.variables["suite"][key] = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1].strip())
-        
-
-                    
+                    if "GLOBAL." in str(each_item[0].strip(" ")):
+                        scope = "GLOBAL_VARIABLES"
+                        key = "GLOBAL_" + each_item[0].strip(" ").replace("set $[#GLOBAL.","").replace("]","").upper()
+                        val = PreVariables(self.pyprest_obj).getFunctionValues(each_item[1].strip())
                     # check for postdefined functions and response variables
                     if "$[#" in each_item[1].strip(" "):    
                         # check for predefined function
@@ -69,6 +74,17 @@ class PostVariables:
                         else:
                             new_list = utils.fetchValueOfKey(response_json, response_key_partition, result)
                             self.pyprest_obj.variables[scope][key] = new_list[response_key]
+                            self.logger.info(self.pyprest_obj.variables[scope][key])
+                            if (scope.casefold() == "GLOBAL_VARIABLES".casefold()):
+                                self.logger.info("Updating the global variable -- {var}".format(var=key))
+                                self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"][key] = new_list[response_key]
+                                global_variables[key] = new_list[response_key]
+                                self.logger.info(self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"][key])
+                                if self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"].get("UPDATED_GLOBAL_VARS", None) is None:
+                                    self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"] = list()
+                                    self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"].append(key)
+                                else:
+                                    self.pyprest_obj.__dict__["data"]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"].append(key)
 
                     # key not found in response, checking pre variables and pre variables
                     if "$[#" in each_item[1].strip(" "):

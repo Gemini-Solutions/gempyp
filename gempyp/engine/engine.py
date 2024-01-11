@@ -44,7 +44,9 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
         testcase_name = data['config_data'].get('NAME',None)
         testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),testcase_name + '_'
-        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility   
+        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility  
+        if len(log_path) > 240:
+            log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'), str(uuid.uuid4()) +'.txt')
         custom_logger = my_custom_logger(log_path)
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
@@ -83,6 +85,8 @@ class Engine:
         """
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
+        sorted_config = self.sortTestcase(getattr(params_config, "_CONFIG"))
+        setattr(params_config, "_CONFIG", sorted_config)
         self.run(params_config)
         
 
@@ -302,6 +306,7 @@ class Engine:
         self.report_name = self.PARAMS.get("REPORT_NAME")
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
+        self.user_global_variables = self.PARAMS.get("GLOBAL_VARIABLES", {})
         self.jewel_run = False
         self.jewel_user = False
         self.s3_url = ""
@@ -396,6 +401,8 @@ class Engine:
             print(f"An error occurred while reading setup.py: {e}")
 
         return None
+    
+    
 
     def start(self):
 
@@ -462,7 +469,6 @@ class Engine:
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
-
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
                 passedDependency = self.isDependencyPassed(testcase)
@@ -472,10 +478,17 @@ class Engine:
                     testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
                     log_path = os.path.join(self.testcase_log_folder,
                     testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
+                    if len(log_path) > 240:
+                        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'), str(uuid.uuid4()) +'.txt')
                     custom_logger = my_custom_logger(log_path)
                     data['config_data']['log_path'] = log_path
                     conn = None
                     output, error = executorFactory(data,conn, custom_logger)
+                    if output is not None and output[0]["GLOBAL_VARIABLES"].get("UPDATED_GLOBAL_VARS", None) is not None:
+                        key_list = output[0]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"]
+                        for key in key_list:
+                            logging.info(" Updating global variables values after testcase execution -- {k}".format(k=key))
+                            self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
                     self.update_df(output, error)
                 elif passedDependency=='err':
                     product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
@@ -596,6 +609,13 @@ class Engine:
                                     f"Error occured while executing the testcase: {error['testcase']}"
                                 )
                                 logging.error(f"message: {error['message']}")
+                            
+                            if output is not None and output[0]["GLOBAL_VARIABLES"].get("UPDATED_GLOBAL_VARS", None) is not None:
+                                key_list = output[0]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"]
+                                for key in key_list:
+                                    logging.info(" Updating global variables values after testcase execution -- {k}".format(k=key))
+                                    self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
+                                
                             self.update_df(output, error)
 
                     for process in processes:
@@ -819,6 +839,9 @@ class Engine:
         data["SUITE_VARS"] = self.user_suite_variables
         data["INVOKE_USER"] = self.invoke_user
         data["USER"] = self.user
+        data['GLOBAL_VARIABLES'] = self.user_global_variables
+        updated_config_data = self.replace_vars_in_testcase(data["config_data"], self.user_global_variables)
+        data["config_data"] = updated_config_data
         return data
 
     
@@ -919,4 +942,93 @@ class Engine:
                 sorted_dict[key] = 0
         sorted_dict.update(unsorted_dict)
         return sorted_dict
-
+    
+    def sortTestcase(self, all_config_data: Type[Dict]):
+        priority_list = list()
+        unpriority_list = list()
+        global_vars = list()
+        sorted_testcase_dict = dict()
+        suite_data = all_config_data["SUITE_DATA"]
+        testcase_data = all_config_data["TESTCASE_DATA"]
+        for testcase, each_testcase_data in testcase_data.items():
+            if(each_testcase_data.get("GLOBAL_VARS", None) is not None):
+                priority_list.append(testcase)
+                vars = each_testcase_data["GLOBAL_VARS"]
+                vars_list = vars.split(";")
+                for v in vars_list:
+                    global_vars.append(v)
+            else:
+                unpriority_list.append(testcase)
+        global_variables_dict = self.fetchGlobalVariableDetails(global_vars)   
+        updated_testcase_data = self.update_testcase_values(testcase_data, global_variables_dict)
+        for testcase in priority_list:
+            if ("GLOBAL_VARS" in updated_testcase_data.get(testcase).keys()):
+                sorted_testcase_dict[testcase] = updated_testcase_data[testcase]
+                logging.info("testcasename {d}".format(d=testcase))
+            else:
+                logging.info("In else for testcase {t}".format(t=testcase))
+                unpriority_list.append(testcase)
+        for testcase in unpriority_list:
+            sorted_testcase_dict[testcase] = updated_testcase_data[testcase]            
+        suite_data["GLOBAL_VARIABLES"] = global_variables_dict
+        all_config_data["TESTCASE_DATA"] = sorted_testcase_dict
+        return all_config_data
+        
+    def fetchGlobalVariableDetails(self, global_vars: type[list]):
+        self.update_global_value = list()
+        filtered_global_var = dict()
+        for var in global_vars:
+            if "SET" in var.upper() and '$[#' in var:
+                variable_name = (var.split("=")[0]).replace(".", "_").replace("set".casefold(), "").replace("$[#","").replace("]","").replace(" ","")
+                value = var.split("=")[1]
+                filtered_global_var[variable_name.upper()] = value
+                if '$[#' in value:
+                    self.update_global_value.append(variable_name)
+        return filtered_global_var 
+    
+    def update_testcase_values(self, testcase_data, global_variables_dict):
+        ### optimize testcase data, if global variable has constant data then it is global_vars tag is removed from testcase
+        for _, testcase_val in testcase_data.items():
+            condition = list()
+            flag = False
+            for param, value in testcase_val.items():
+                if param.casefold() == "GLOBAL_VARS".casefold():
+                    flag = True
+                    global_var_list = value.split(";")
+                    for global_vars in global_var_list:
+                        if "$[#" in global_vars.split("=")[1].strip(" "):
+                            condition.append(global_vars)
+                
+                if "$[#GLOBAL." in value.replace(" ", "") and "SET$[#GLOBAL.".casefold() not in value.replace(" ", ""):
+                    # global_var = value.replace("$[#", "").replace(" ", "").replace(".", "_").replace("]", "")
+                    var_name = (value[value.find("$"): value.find("]")]).replace("$[#", "").replace("]", "").replace(".", "_")
+                    var_value = global_variables_dict.get(var_name.upper())
+                    if "$[#" in var_value:
+                        continue
+                    final_param_value = value[:value.find("$")] + var_value + value[value.find("]") + 1 :]
+                    testcase_val[param] = final_param_value
+            if flag == True and len(condition) == 0:
+                del testcase_val["GLOBAL_VARS"]
+                flag = False
+            elif flag == True:
+                condition_str = ";".join(condition)
+                testcase_val["GLOBAL_VARS"] = condition_str
+                
+        return testcase_data
+    
+    def replace_vars_in_testcase(self, testcase_config_data, global_variables):
+        for key, val in testcase_config_data.items():
+            if (key.upper() == "EXPECTED_STATUS_CODE"):
+                logging.info(val)
+            if val is not None and "SET$[#GLOBAL.".casefold() not in val.replace(" ", "").casefold() and "$[#GLOBAL.".casefold() in val.strip(" ").casefold():
+                logging.info(val)
+                if val.find("$") != -1 and val.find("[") != -1:
+                    temp_var = val[val.find("$"): val.find("]")]
+                    global_var_name = temp_var.replace(" ","").replace("$[#","").replace("]", "").replace(".", "_")
+                    logging.info(global_var_name)
+                    if global_variables.get(global_var_name.upper(), None) is not None : #and "$[#" not in global_variables.get(global_var_name.upper())
+                        new_val_to_key = val[:val.find("$")] + str(global_variables.get(global_var_name.upper())) + val[val.find("]") + 1:]
+                        testcase_config_data[key] = new_val_to_key
+        logging.info(testcase_config_data)
+        return testcase_config_data            
+                        
