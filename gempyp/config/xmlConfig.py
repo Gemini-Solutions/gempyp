@@ -9,7 +9,6 @@ from gempyp.libs.logConfig import LoggingConfig
 import sys, os
 import warnings
 import uuid
-import json
 from gempyp.config.customParser import CustomXMLParser
 from lxml import etree
 class XmlConfig(AbstarctBaseConfig):
@@ -40,7 +39,7 @@ class XmlConfig(AbstarctBaseConfig):
         self._CONFIG["SUITE_DATA"] = self._getSuiteData(data) 
         #code for replacing variable from external properties file
         external_file_variables = None
-        if "PROPERTIES_FILE" in self._CONFIG["SUITE_DATA"]:
+        if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE", None) is not None:
             try:
                 external_file_variables = self.read_variable_from_file(self._CONFIG["SUITE_DATA"]["PROPERTIES_FILE"])
                 if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE"):
@@ -141,9 +140,9 @@ class XmlConfig(AbstarctBaseConfig):
         return {key: (int(value) if value.isdigit() else float(value)) if value.replace('.', '', 1).isdigit() else value for key, value in final_variable_dict.items()}
         
     
-    def replace_variables_from_file(self,variable_dict, suite_dict):
-        print("In variable replacement")
-        values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#EXTERNAL." in val]
+    def replace_variables_from_file(self, variable_dict, suite_dict):
+        logging.info("-- In external variable replacement--")
+        values_with_variables = [[key,val] for key, val in suite_dict.items() if "$[#EXTERNAL.".casefold() in val.casefold()]
         for i in values_with_variables:
             string = i[1]
             start_indexes = [i for i in range(len(string)) if string.startswith("$[#EXTERNAL.", i)]
@@ -154,7 +153,7 @@ class XmlConfig(AbstarctBaseConfig):
                 variable_name = string[start_index+12:closest_value]
                 variable_value = variable_dict.get(variable_name,None)
                 if variable_value == None:
-                    print(f"Value for variable '{variable_name}' not found")
+                    logging.error("Value for variable {var} not found".format(var=variable_name))
                     sys.exit()
                 if variable_value:
                     string = self.replace_substring(string, start_index,closest_value,variable_value)
