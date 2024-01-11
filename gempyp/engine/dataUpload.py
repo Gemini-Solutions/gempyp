@@ -67,17 +67,17 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
                 suite_data.remove(payload)
         elif response and response.status_code == 200:
             logging.info("Suite Data updated Successfully")
-        # elif re.search('50[0-9]',str(response.status_code)):
-        #     logging.info("Suite data is not uploaded")
-        #     if payload not in suite_data:
-        #         suite_data.append(payload)
+        elif re.search('50[0-9]',str(response.status_code)):
+            logging.info("Suite data is not uploaded")
+            if payload not in suite_data:
+                suite_data.append(payload)
         # else:
         #     logging.info("Some Error From the Client Side, Terminating Execution")
         #     sys.exit()
-        # else:
-        #     logging.info("Suite data is not uploaded")
-        #     if payload not in suite_data:
-        #         suite_data.append(payload)
+        else:
+            logging.info("Suite data is not uploaded")
+            if payload not in suite_data:
+                suite_data.append(payload)
                 
     except Exception as e:
         logging.error(traceback.format_exc())

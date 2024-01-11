@@ -131,16 +131,16 @@ class AbstarctBaseConfig(ABC):
         except Exception as error:
             logging.error("Error in updating environment variable - " + str(error))
         try:
-            for key in self._CONFIG['SUITE_DATA'].keys():
-                value=self._CONFIG['SUITE_DATA'][key]
-                # if value and ("$[#ENV." in value):
-                #         envValue=value
-                #         value=value.replace("$[#ENV.","").strip("]").lower()
-                #         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
-                #         self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
-                if value and ("$[#ENV." in value):
-                        value=value.strip("$[#ENV.").strip("]").lower()
-                        self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
+            keys_to_update = list(self._CONFIG['SUITE_DATA'].keys())
+
+            for key in keys_to_update:
+                value = self._CONFIG['SUITE_DATA'][key]
+                if value and ("ENV." in value) and value.replace("ENV.","").upper() in os.environ:
+                    new_value=os.environ.get(value.replace("ENV.","").upper())
+                    self._CONFIG['SUITE_DATA'][key]=new_value
+                if key and ("ENV." in key) and key.replace("ENV.", "").upper() in os.environ:
+                    new_key = os.environ.get(key.replace("ENV.", "").upper()).upper()
+                    self._CONFIG['SUITE_DATA'][new_key] = self._CONFIG['SUITE_DATA'].pop(key)
         except Exception as error:
             traceback.print_exc()
             logging.error("error occurs in finding environment variable - " + str(error))
