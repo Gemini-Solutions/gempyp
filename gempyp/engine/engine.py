@@ -43,7 +43,9 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
         testcase_name = data['config_data'].get('NAME',None)
         testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),testcase_name + '_'
-        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility   
+        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility  
+        if len(log_path) > 240:
+            log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'), str(uuid.uuid4()) +'.txt')
         custom_logger = my_custom_logger(log_path)
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
@@ -484,6 +486,8 @@ class Engine:
                 testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
                 log_path = os.path.join(self.testcase_log_folder,
                 testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
+                if len(log_path) > 240:
+                    log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'), str(uuid.uuid4()) +'.txt')
                 custom_logger = my_custom_logger(log_path)
                 data['config_data']['log_path'] = log_path
                 conn = None
@@ -494,7 +498,7 @@ class Engine:
                         f"Error occured while executing the testcase: {error['testcase']}"
                     )
                     custom_logger.error(f"message: {error['message']}")
-                if output is not None and output[0].get("GLOBAL_VARIABLES", None) is not None:
+                if output is not None and output[0]["GLOBAL_VARIABLES"].get("UPDATED_GLOBAL_VARS", None) is not None:
                     key_list = output[0]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"]
                     for key in key_list:
                         logging.info(" Updating global variables values after testcase execution -- {k}".format(k=key))

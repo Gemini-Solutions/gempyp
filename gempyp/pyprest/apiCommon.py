@@ -125,7 +125,8 @@ class Api:
 
         # Make the request and calculate the time taken
         start_time = datetime.now()
-        resp = METHODS[method](
+        try:
+            resp = METHODS[method](
             request.api,
             headers=headers,
             files=files,
@@ -134,9 +135,14 @@ class Api:
             auth=auth,
             timeout=timeout
         )
-        end_time = datetime.now()
-
-        return resp, start_time, end_time             
+            end_time = datetime.now()
+            return resp, start_time, end_time   
+        except Exception as e:
+            end_time = datetime.now()
+            logging.info("Error while making {http_method} to the {api}".format(http_method=method, api=request.api))
+            traceback.format_exception_only()
+            return resp, start_time, end_time   
+                  
 
 
 
@@ -180,14 +186,14 @@ class Request:
         self.file = ""
         self.SSLVerify = False
         self.credentials = {}
-        self.timeout = 30000
+        self.timeout = 330000
         self.auth = ""
         self.expected_code_list = []
         self.retries = 0
 
 
 class Response:
-    def __init__(self, body="", code=0, response_time=0, headers={}):
+    def __init__(self, body="", code=504, response_time=0, headers={}):
         self.response_body = body
         self.status_code = code
         self.response_time = response_time
