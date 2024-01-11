@@ -28,8 +28,8 @@ from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.libs.common import *
-from gempyp.config.DefaultSettings import _VERSION
 import re
+from importlib.metadata import version
 
 
 
@@ -351,6 +351,15 @@ class Engine:
         # self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
         # self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
+        package_name = "gempyp"
+        try:
+            version1 = version(package_name)
+        except Exception:
+            version1=None
+
+        # If package is not installed, try to get version from setup.py
+        if version1 is None:
+            version1 = self.get_version_from_setup()
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
@@ -362,7 +371,7 @@ class Engine:
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
-            "framework_version":_VERSION,
+            "framework_version":version1,
             "os": platform.system().upper()+" "+platform.version().split(".")[0],
             "meta_data": [],
             "expected_testcases": self.total_runable_testcase,
@@ -372,6 +381,21 @@ class Engine:
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
         )
+        
+    def get_version_from_setup(self):
+        try:
+            with open('setup.py', 'r') as setup_file:
+                content = setup_file.read()
+                # Extract version using regular expression
+                match = re.search(r"version=['\"](.*?)['\"]", content)
+                if match:
+                    return match.group(1)
+        except FileNotFoundError:
+            pass  # Handle the case when setup.py is not found
+        except Exception as e:
+            print(f"An error occurred while reading setup.py: {e}")
+
+        return None
 
     def start(self):
 

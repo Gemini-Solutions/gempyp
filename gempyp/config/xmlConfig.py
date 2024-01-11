@@ -26,46 +26,53 @@ class XmlConfig(AbstarctBaseConfig):
         return tree
 
 
-    def parse(self, filePath):
-
-        logging.info("-------- Xml file path: {filePath} ----------".format(filePath=filePath))
-        path_list = filePath.split(os.sep)[0:-1]
-        newfilePath = os.sep.join(path_list)
-        sys.path.append({"XMLConfigDir":newfilePath})
-        logging.info("-------- Started the Xml parsing in XmlConfig ---------")
-        filePath=self.handleSpecialSymbols(filePath)
-        # data = et.parse(filePath)
-        parser = CustomXMLParser(remove_comments=True)
-        data = etree.parse(filePath, parser=parser)
-        self._CONFIG["SUITE_DATA"] = self._getSuiteData(data) 
-        #code for replacing variable from external properties file
-        external_file_variables = None
-        try:
-            external_file_variables = self.read_variable_from_file(self._CONFIG["SUITE_DATA"]["PROPERTIES_FILE"])
-            if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE"):
-                    self._CONFIG["SUITE_DATA"] = self.replace_variables_from_file(external_file_variables,self._CONFIG["SUITE_DATA"])
-        except Exception as e:
-                logging.info(traceback.print_exc())
-        self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
-        self.unique_id = str(uuid.uuid4())
-        if self.s_run_id != None:
-            self.unique_id = self.s_run_id
-        elif "S_RUN_ID" in self._CONFIG["SUITE_DATA"]:
-            self.unique_id = self._CONFIG["SUITE_DATA"]["S_RUN_ID"]
-        os.environ['unique_id'] = self.unique_id
-        os.environ['log_dir'] = self.log_dir
-        warnings.filterwarnings('ignore')
-        suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
-        LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
-        # LoggingConfig(suiteLogsLoc)
-        logging.info("suite logs : "+ str(suiteLogsLoc))
-        self._CONFIG["TESTCASE_DATA"] = self._getTestCaseData(data)
-        if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE") and external_file_variables:
-            self.replace_variables_for_testcase(external_file_variables, self._CONFIG["TESTCASE_DATA"])
-        self._CONFIG["SUITE_DATA"]['LOG_DIR'] = self.log_dir
-        self._CONFIG["SUITE_DATA"]['UNIQUE_ID'] = self.unique_id
+    def parse(self, file_paths):
+        for filePath in file_paths:
+            logging.info("-------- Xml file path: {filePath} ----------".format(filePath=filePath))
+            path_list = filePath.split(os.sep)[0:-1]
+            newfilePath = os.sep.join(path_list)
+            sys.path.append({"XMLConfigDir":newfilePath})
+            logging.info("-------- Started the Xml parsing in XmlConfig ---------")
+            filePath=self.handleSpecialSymbols(filePath)
+            # data = et.parse(filePath)
+            parser = CustomXMLParser(remove_comments=True)
+            data = etree.parse(filePath, parser=parser)
+            if "SUITE_DATA" not in self._CONFIG:
+                self._CONFIG["SUITE_DATA"] = self._getSuiteData(data) 
+            #code for replacing variable from external properties file
+            external_file_variables = None
+            if "PROPERTIES_FILES" in self._CONFIG["SUITE_DATA"]:
+                try:
+                    external_file_variables = self.read_variable_from_file(self._CONFIG["SUITE_DATA"]["PROPERTIES_FILE"])
+                    if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE"):
+                            self._CONFIG["SUITE_DATA"] = self.replace_variables_from_file(external_file_variables,self._CONFIG["SUITE_DATA"])
+                except Exception as e:
+                        logging.info(traceback.print_exc())
+            self.log_dir = str(os.path.join(tempfile.gettempdir(), 'logs'))
+            if not os.path.exists(self.log_dir):
+                os.makedirs(self.log_dir)
+            self.unique_id = str(uuid.uuid4())
+            if self.s_run_id != None:
+                self.unique_id = self.s_run_id
+            elif "S_RUN_ID" in self._CONFIG["SUITE_DATA"]:
+                self.unique_id = self._CONFIG["SUITE_DATA"]["S_RUN_ID"]
+            os.environ['unique_id'] = self.unique_id
+            os.environ['log_dir'] = self.log_dir
+            warnings.filterwarnings('ignore')
+            suiteLogsLoc = str(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
+            LoggingConfig(os.path.join(self.log_dir, 'Suite_' + self.unique_id + '.txt'))  ## replacing log with txt for UI compatibility
+            # LoggingConfig(suiteLogsLoc)
+            logging.info("suite logs : "+ str(suiteLogsLoc))
+            current_testcase_data = self._getTestCaseData(data)
+            if "TESTCASE_DATA" not in self._CONFIG:
+                self._CONFIG["TESTCASE_DATA"] = current_testcase_data
+            else:
+            #     # Append the testcase data to the existing data
+                self._CONFIG["TESTCASE_DATA"].update(current_testcase_data)
+            if self._CONFIG["SUITE_DATA"].get("PROPERTIES_FILE") and external_file_variables:
+                self.replace_variables_for_testcase(external_file_variables, self._CONFIG["TESTCASE_DATA"])
+            self._CONFIG["SUITE_DATA"]['LOG_DIR'] = self.log_dir
+            self._CONFIG["SUITE_DATA"]['UNIQUE_ID'] = self.unique_id
         return suiteLogsLoc
 
     def _getSuiteData(self, data) -> Dict:
