@@ -29,6 +29,7 @@ class PreVariables:
             self.pyprest_obj.variables["local"] = {}
             # self.pyprest_obj.variables["suite"] = {}
             self.pyprest_obj.variables["suite"] = self.pyprest_obj.data.get("SUITE_VARS",{})
+            self.pyprest_obj.variables["GLOBAL_VARIABLES"] = self.pyprest_obj.data.get("GLOBAL_VARIABLES", {})
         # print("self. suite vars in pre vars: ",self.pyprest_obj.data. )
         if self.pyprest_obj.pre_variables:
             self.pyprest_obj.logger.info("************** INSIDE PRE VARIABLES  **************")
@@ -40,20 +41,22 @@ class PreVariables:
             for each in variable_list:
                 scope = 'local'
                 each_item = each.split("=")
-                if "SET" in each_item[0].upper() and '$[#' in each_item[0]:
+                if "SET" in each_item[0].upper() and '$[#' in each_item[0] and "GLOBAL" not in str(each_item[0]).upper():
                     # key = each_item[0].strip("set $[#").strip("Set $[#").strip("SET $[#").strip("]")
-                    key = each_item[0].split("#")[1].strip("]")
+                    key = each_item[0].split("#")[1].replace("]","")
                     # find suite variables
                     if "SUITE." in key.upper():
                         scope = "suite"
                         key = key.replace(".", "_")
                     if "SUITE." in str(each_item[0].strip(" ")):
-                        key = "SUITE_" + each_item[0].strip(" ").strip("set $[#SUITE.").strip("]").upper()
-                        
+                        key = "SUITE_" + each_item[0].strip(" ").replace("set $[#SUITE.","").replace("]","").upper()
                         self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1])
 
                     self.pyprest_obj.variables[scope][key] = self.getFunctionValues(each_item[1])
-
+                    key = "SUITE_" + each_item[0].strip(" ").strip("set $[#SUITE.").strip("]").upper()
+                    self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1].strip().replace(" ",""))
+                    self.pyprest_obj.variables[scope][key] = self.getFunctionValues(each_item[1].strip().replace(" ",""))
+                
                     
             self.pyprest_obj.logger.info(f"Setting PRE VARIABLES: -------- {str(self.pyprest_obj.variables)}")
 
