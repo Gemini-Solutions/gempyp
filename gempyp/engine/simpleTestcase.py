@@ -96,7 +96,7 @@ class AbstractSimpleTestcase(ABC):
             self.logger.error(traceback.format_exc())
             info, error = traceback.format_exception(etype, value, tb)[-2:]
             reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
-            reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.ERR)
+            reports.addRow("Exception Occured", str(error) + ' at ' + str(info), status.ERR)
 
 
         if isinstance(reports, TestcaseReporter):
