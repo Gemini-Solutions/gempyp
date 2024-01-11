@@ -96,13 +96,6 @@ class PypRest(Base):
             MiscVariables(self).miscVariables()
             self.poll_wait()
             self.data=DefaultSettings.backup_data
-            self.pre_variables=variables
-            self.getVals()
-            self.execRequest()
-            self.postProcess()
-            MiscVariables(self).miscVariables()
-            self.poll_wait()
-            self.data=DefaultSettings.backup_data
         self.logger.info("--------------------Execution Completed ------------------------")
         self.reporter.finalizeReport()
 
