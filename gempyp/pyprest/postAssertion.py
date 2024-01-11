@@ -76,6 +76,8 @@ class PostAssertion:
             
             list_of_all_keys = [*list(set(key_str)) , *list(set(legacy_key_str))]
             key_val_dict = {}        
+            legacy_result=""
+            current_result=""       
             for each_assert in list_of_all_keys:
                 key_part_list = each_assert.split(".") 
                 if "legacy" in each_assert:
@@ -86,14 +88,18 @@ class PostAssertion:
                 if result.upper() != "FOUND":
                     self.logger.info("====== Key Not Found in response =======")
                     self.logger.info("'" + each_assert + "' is not found")
-                    if self.isLegacyPresent:
-                        self.pyprest_obj.reporter.addRow("Executing post assertion on current API ", f"Checking presence of key {each_assert} in response", status.FAIL, CURRENT_API=f"Key {each_assert} is not found in the response",LEGACY_API="-")
-                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
-                    else:    
-                        self.pyprest_obj.reporter.addRow(f"Checking presence of key {each_assert} in response", f"Key {each_assert} is not found in the response", status.FAIL)
-                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
+                    if "legacy" in each_assert:
+                        legacy_result+=f"{each_assert} NOT FOUND"+" "
+                    else:
+                        current_result+=f"{each_assert} NOT FOUND"+" "
                 else:
                     key_val_dict = utils.fetchValueOfKey(response_json, key_part_list, result, key_val_dict)
+            if self.isLegacyPresent:
+                        self.pyprest_obj.reporter.addRow("Executing post assertion on legacy/current API ", f"Checking presence of key in response", status.FAIL, CURRENT_API=current_result,LEGACY_API=legacy_result)
+                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
+            else:    
+                        self.pyprest_obj.reporter.addRow(f"Checking presence of key in response", current_result, status.FAIL)
+                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
             self.postAssertionFunc(key_val_dict, assertion_list)
 
     def getAssertionDict(self, string_list):     
