@@ -29,7 +29,8 @@ from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.libs.common import *
-import re,tempfile
+import re
+from importlib.metadata import version
 
 
 
@@ -44,7 +45,9 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
         testcase_name = data['config_data'].get('NAME',None)
         testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
         log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'),testcase_name + '_'
-        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility     
+        + os.environ.get('unique_id') + '.txt')  ### replacing log with txt for UI compatibility  
+        if len(log_path) > 240:
+            log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'), str(uuid.uuid4()) +'.txt')
         custom_logger = my_custom_logger(log_path)
         LoggingConfig(log_path)
     data['config_data']['LOGGER'] = custom_logger
@@ -84,6 +87,8 @@ class Engine:
         """
         # logging.basicConfig()
         # logging.root.setLevel(logging.DEBUG)
+        sorted_config = self.sortTestcase(getattr(params_config, "_CONFIG"))
+        setattr(params_config, "_CONFIG", sorted_config)
         self.run(params_config)
         
 
@@ -211,7 +216,7 @@ class Engine:
             sendMail(self.s_run_id,self.mail,self.bridgetoken, self.username)
 
         self.repJson = TemplateData().makeSuiteReport(self.DATA.getJSONData(), self.testcase_data, self.ouput_folder,self.jewel_user)
-        TemplateData().repSummary(self.repJson, jewel, unuploaded_path)
+        TemplateData().repSummary(self.repJson, jewel, unuploaded_path,self.testcase_log_folder,self.complete_logs,self.bridgetoken,self.username,self.suite_log_file)
 
     def makeOutputFolder(self):
         """
@@ -247,8 +252,9 @@ class Engine:
         self.testcase_log_folder = os.path.join(self.ouput_folder, "logs")
         os.environ['TESTCASE_LOG_FOLDER'] = self.testcase_log_folder
         os.makedirs(self.testcase_log_folder)
+        self.complete_logs = os.path.join(self.testcase_log_folder,self.s_run_id + '.txt')
     def verify(self,value):
-        if(re.search(r'[^a-zA-Z0-9_ ]',value)):
+        if(re.search(r'[^a-zA-Z0-9_ .-]',value)):
                 logging.info("Some Error From the Client Side. May be s_run_id, project_name or ENV is not in a correct format")
                 sys.exit()
         else:
@@ -263,6 +269,7 @@ class Engine:
         """
         
         self.PARAMS = config.getSuiteConfig()
+        self.suite_log_file=config.getLogFilePath()
         self.ENV = os.getenv("appenv", "BETA").upper()
 
         #checking if url is present in file and calling get api
@@ -306,6 +313,7 @@ class Engine:
         self.report_name = strValidation(self.PARAMS.get("REPORT_NAME"))
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
+        self.user_global_variables = self.PARAMS.get("GLOBAL_VARIABLES", {})
         self.jewel_run = False
         self.jewel_user = False
         self.s3_url = ""
@@ -327,7 +335,7 @@ class Engine:
                 try:
                     if DefaultSettings.apiSuccess:
                         self.s3_url = upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=self.PARAMS["config"])[0]["Url"]
-                        logging.info("--------- url" + str(self.s3_url))
+                        logging.info("S3 Url: " + str(self.s3_url))
                     else:
                         self.s3_url = self.PARAMS["config"]
                 except Exception as e:
@@ -353,8 +361,17 @@ class Engine:
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
         # self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
-        self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
+        # self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
+        package_name = "gempyp"
+        try:
+            version1 = version(package_name)
+        except Exception:
+            version1=None
+
+        # If package is not installed, try to get version from setup.py
+        if version1 is None:
+            version1 = self.get_version_from_setup()
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
@@ -366,7 +383,8 @@ class Engine:
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
-            "os": platform.system().upper(),
+            "framework_version":version1,
+            "os": platform.system().upper()+" "+platform.version().split(".")[0],
             "meta_data": [],
             "expected_testcases": self.total_runable_testcase,
             "testcase_info": None,
@@ -375,11 +393,28 @@ class Engine:
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
         )
+        
+    def get_version_from_setup(self):
+        try:
+            with open('setup.py', 'r') as setup_file:
+                content = setup_file.read()
+                # Extract version using regular expression
+                match = re.search(r"version=['\"](.*?)['\"]", content)
+                if match:
+                    return match.group(1)
+        except FileNotFoundError:
+            pass  # Handle the case when setup.py is not found
+        except Exception as e:
+            print(f"An error occurred while reading setup.py: {e}")
+
+        return None
+    
+    
 
     def start(self):
 
         """
-         check the mode and start the testcases accordingly e.g.optimize,parallel
+        check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
             if self.PARAMS["MODE"].upper() == "SEQUENCE":
@@ -434,33 +469,56 @@ class Engine:
             self.DATA.suite_detail.at[0, "meta_data"].append({"S_ID": self.PARAMS["S_ID"]})
         else:
             self.DATA.suite_detail.at[0, "meta_data"].append({"CONFIG_S3_URL": self.s3_url})
-       
+
 
     def startSequence(self):
         """
         start calling executoryFactory() for each testcase one by one according to their dependency
         at last of each testcase calls the update_df() 
         """
-
         for testcases in self.getDependency(self.CONFIG.getTestcaseConfig()):
             for testcase in testcases:
-                data = self.getTestcaseData(testcase['NAME'])
-                testcase_name = data['config_data'].get('NAME',None)
-                testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
-                log_path = os.path.join(self.testcase_log_folder,
-                testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
-                custom_logger = my_custom_logger(log_path)
-                data['config_data']['log_path'] = log_path
-                conn = None
-                output, error = executorFactory(data,conn, custom_logger)
+                passedDependency = self.isDependencyPassed(testcase)
+                if passedDependency == 'true':
+                    data = self.getTestcaseData(testcase['NAME'])
+                    testcase_name = data['config_data'].get('NAME',None)
+                    testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
+                    log_path = os.path.join(self.testcase_log_folder,
+                    testcase_name+'_'+self.CONFIG.getSuiteConfig()['UNIQUE_ID'] + '.txt')  # ## replacing log with txt for UI compatibility
+                    if len(log_path) > 240:
+                        log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'), str(uuid.uuid4()) +'.txt')
+                    custom_logger = my_custom_logger(log_path)
+                    data['config_data']['log_path'] = log_path
+                    conn = None
+                    output, error = executorFactory(data,conn, custom_logger)
+                    if output is not None and output[0]["GLOBAL_VARIABLES"].get("UPDATED_GLOBAL_VARS", None) is not None:
+                        key_list = output[0]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"]
+                        for key in key_list:
+                            logging.info(" Updating global variables values after testcase execution -- {k}".format(k=key))
+                            self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
+                    self.update_df(output, error)
+                elif passedDependency=='err':
+                    product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
 
-                if error:
-                    custom_logger.error(
-                        f"Error occured while executing the testcase: {error['testcase']}"
-                    )
-                    custom_logger.error(f"message: {error['message']}")
-                self.update_df(output, error)
+                    dependency_error = {
+                        "message": "dependency failed",
+                        "testcase": testcase["NAME"],
+                        "category": testcase.get("CATEGORY", None),
+                        "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                        "status": status.ERR.name
+                    }
+                    self.update_df(None, dependency_error)
+                elif passedDependency == 'fail':
+                    product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
 
+                    dependency_error = {
+                        "message": "dependency failed",
+                        "testcase": testcase["NAME"],
+                        "category": testcase.get("CATEGORY", None),
+                        "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                        "status": status.FAIL.name
+                    }
+                    self.update_df(None, dependency_error)
 
 
     def startParallel(self):
@@ -486,20 +544,36 @@ class Engine:
                 pool_list = []
                 for testcase in testcases:
                     # only append testcases whose dependency are passed otherwise just update the databasee
-                    if self.isDependencyPassed(testcase):
+                    passedDependency = self.isDependencyPassed(testcase)
+                    if passedDependency == 'true':
                         pool_list.append(self.getTestcaseData(testcase.get("NAME")))
-                    else:
+                    elif passedDependency=='err':
+                        product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
 
                         dependency_error = {
                             "message": "dependency failed",
                             "testcase": testcase["NAME"],
                             "category": testcase.get("CATEGORY", None),
-                            "product_type": testcase.get("product_type", None),
+                            "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                            "status": status.ERR.name
                         }
                         # handle dependency error in json_data(update_df)
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
-       
+                    elif passedDependency == 'fail':
+                        product_type = {'dv':"GEMPYP-DV","pyprest":"GEMPYP-PR","gempyp":"GEMPYP"}
+
+                        dependency_error = {
+                            "message": "dependency failed",
+                            "testcase": testcase["NAME"],
+                            "category": testcase.get("CATEGORY", None),
+                            "product_type": product_type.get(testcase.get("TYPE", None),testcase.get("TYPE", None)),
+                            "status": status.FAIL.name
+                        }
+                        # handle dependency error in json_data(update_df)
+                        # update the testcase in the database with failed dependency
+                        self.update_df(None, dependency_error)
+
                 if len(pool_list) == 0:
                     continue
                 
@@ -542,6 +616,13 @@ class Engine:
                                     f"Error occured while executing the testcase: {error['testcase']}"
                                 )
                                 logging.error(f"message: {error['message']}")
+                            
+                            if output is not None and output[0]["GLOBAL_VARIABLES"].get("UPDATED_GLOBAL_VARS", None) is not None:
+                                key_list = output[0]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"]
+                                for key in key_list:
+                                    logging.info(" Updating global variables values after testcase execution -- {k}".format(k=key))
+                                    self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
+                                
                             self.update_df(output, error)
 
                     for process in processes:
@@ -565,6 +646,7 @@ class Engine:
                     error.get("category"),
                     error.get("product_type"),
                     error.get('log_path', None),
+                    error.get('status',status.ERR)
                 )
                 output = [output]
             if 'json_data' in output[0]:
@@ -605,7 +687,7 @@ class Engine:
     
     def build_err_step_case(self):
         step = [{'Step Name': 'Starting Test', 'Step Description': 'Either the testcase is inappropriate or some error occured while executing the test. Please recheck', 'status': 'ERR'}]
-         
+
         return step
     
     def raise_exception(self,name):
@@ -671,6 +753,7 @@ class Engine:
         category: str = None,
         product_type: str = None,
         log_path: str = None,
+        status: str = None
     ) -> Dict:
         """
         store the data of failed testcase and return it as a dict to update_df
@@ -686,7 +769,7 @@ class Engine:
 
         tc_run_id = tc_run_id.upper()
         testcase_dict["tc_run_id"] = tc_run_id
-        testcase_dict["status"] = status.ERR.name
+        testcase_dict["status"] = status
         testcase_dict["start_time"] = datetime.now(timezone.utc)
         testcase_dict["end_time"] = datetime.now(timezone.utc)
         testcase_dict["name"] = testcase_name
@@ -763,6 +846,9 @@ class Engine:
         data["SUITE_VARS"] = self.user_suite_variables
         data["INVOKE_USER"] = self.invoke_user
         data["USER"] = self.user
+        data['GLOBAL_VARIABLES'] = self.user_global_variables
+        updated_config_data = self.replace_vars_in_testcase(data["config_data"], self.user_global_variables)
+        data["config_data"] = updated_config_data
         return data
 
     
@@ -813,7 +899,6 @@ class Engine:
                     result.append(testcases[key])
             yield result
 
-   
 
     def isDependencyPassed(self, testcase: Dict) -> bool:
         """
@@ -826,30 +911,30 @@ class Engine:
         listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
-                    dep_split = list(dep.split(":"))
-                    if len(dep_split) == 1:
-                        # NAME to name, to_list()
-                        if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
-                            return False
+            dep_split = list(dep.split(":"))
+            if len(dep_split) == 1:
+                # NAME to name, to_list()
+                if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
+                    return 'err'
 
-                    else:
-                        if dep_split[0].upper() == "P":
-                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                                return False
-                            # way to parsing the df    
-                            if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
-                                return False
+            else:
+                if dep_split[0].upper() == "P":
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                        return 'err'
+                    # way to parsing the df    
+                    if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
+                        return 'fail'
 
-                        if dep_split[0].upper() == "F":
-                            if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
-                                return False
-                            if (
-                                (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
-                                != status.FAIL.name
-                            ):
-                                return False
+                if dep_split[0].upper() == "F":
+                    if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
+                        return 'err'
+                    if (
+                        (self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0])
+                        != status.FAIL.name
+                    ):
+                        return 'fail'
 
-        return True
+        return 'true'
 
     ### Function for sending total, pass, fail in order
     def totalOrder(self, unsorted_dict):
@@ -865,4 +950,85 @@ class Engine:
         sorted_dict.update(unsorted_dict)
         return sorted_dict
     
-  
+    def sortTestcase(self, all_config_data: Type[Dict]):
+        priority_list = list()
+        unpriority_list = list()
+        global_vars = list()
+        sorted_testcase_dict = dict()
+        suite_data = all_config_data["SUITE_DATA"]
+        testcase_data = all_config_data["TESTCASE_DATA"]
+        for testcase, each_testcase_data in testcase_data.items():
+            if(each_testcase_data.get("GLOBAL_VARS", None) is not None):
+                priority_list.append(testcase)
+                vars = each_testcase_data["GLOBAL_VARS"]
+                vars_list = vars.split(";")
+                for v in vars_list:
+                    global_vars.append(v)
+            else:
+                unpriority_list.append(testcase)
+        global_variables_dict = self.fetchGlobalVariableDetails(global_vars)   
+        updated_testcase_data = self.update_testcase_values(testcase_data, global_variables_dict)
+        for testcase in priority_list:
+            if ("GLOBAL_VARS" in updated_testcase_data.get(testcase).keys()):
+                sorted_testcase_dict[testcase] = updated_testcase_data[testcase]
+            else:
+                unpriority_list.append(testcase)
+        for testcase in unpriority_list:
+            sorted_testcase_dict[testcase] = updated_testcase_data[testcase]            
+        suite_data["GLOBAL_VARIABLES"] = global_variables_dict
+        all_config_data["TESTCASE_DATA"] = sorted_testcase_dict
+        return all_config_data
+        
+    def fetchGlobalVariableDetails(self, global_vars: type[list]):
+        self.update_global_value = list()
+        filtered_global_var = dict()
+        for var in global_vars:
+            if "SET" in var.upper() and '$[#' in var:
+                variable_name = (var.split("=")[0]).replace(".", "_").replace("set".casefold(), "").replace("$[#","").replace("]","").replace(" ","")
+                value = var.split("=")[1]
+                filtered_global_var[variable_name.upper()] = value
+                if '$[#' in value:
+                    self.update_global_value.append(variable_name)
+        return filtered_global_var 
+    
+    def update_testcase_values(self, testcase_data, global_variables_dict):
+        ### optimize testcase data, if global variable has constant data then it is global_vars tag is removed from testcase
+        for _, testcase_val in testcase_data.items():
+            condition = list()
+            flag = False
+            for param, value in testcase_val.items():
+                if param.casefold() == "GLOBAL_VARS".casefold():
+                    flag = True
+                    global_var_list = value.split(";")
+                    for global_vars in global_var_list:
+                        if "$[#" in global_vars.split("=")[1].strip(" "):
+                            condition.append(global_vars)
+                
+                if "$[#GLOBAL." in value.replace(" ", "") and "SET$[#GLOBAL.".casefold() not in value.replace(" ", ""):
+                    # global_var = value.replace("$[#", "").replace(" ", "").replace(".", "_").replace("]", "")
+                    var_name = (value[value.find("$"): value.find("]")]).replace("$[#", "").replace("]", "").replace(".", "_")
+                    var_value = global_variables_dict.get(var_name.upper())
+                    if var_value is None or "$[#" in var_value:
+                        continue
+                    final_param_value = value[:value.find("$")] + var_value + value[value.find("]") + 1 :]
+                    testcase_val[param] = final_param_value
+            if flag == True and len(condition) == 0:
+                del testcase_val["GLOBAL_VARS"]
+                flag = False
+            elif flag == True:
+                condition_str = ";".join(condition)
+                testcase_val["GLOBAL_VARS"] = condition_str
+                
+        return testcase_data
+    
+    def replace_vars_in_testcase(self, testcase_config_data, global_variables):
+        for key, val in testcase_config_data.items():
+            if val is not None and "SET$[#GLOBAL.".casefold() not in val.replace(" ", "").casefold() and "$[#GLOBAL.".casefold() in val.strip(" ").casefold():
+                if val.find("$") != -1 and val.find("[") != -1:
+                    temp_var = val[val.find("$"): val.find("]")]
+                    global_var_name = temp_var.replace(" ","").replace("$[#","").replace("]", "").replace(".", "_")
+                    if global_variables.get(global_var_name.upper(), None) is not None : #and "$[#" not in global_variables.get(global_var_name.upper())
+                        new_val_to_key = val[:val.find("$")] + str(global_variables.get(global_var_name.upper())) + val[val.find("]") + 1:]
+                        testcase_config_data[key] = new_val_to_key
+        return testcase_config_data            
+                        

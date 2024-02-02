@@ -67,7 +67,7 @@ class DvRunner(Base):
                         self.configur = None
             except Exception as e:
                 self.reporter.addRow(
-                    "Config File", "Path is not Correct", status.ERR)
+                    "Config file", "Path is not correct", status.ERR)
                 raise Exception(e)
             if 'SOURCE_DB' or 'TARGET_DB' in self.configData:
                 self.dbConnParser()
@@ -77,8 +77,8 @@ class DvRunner(Base):
                 self.reporter.addMisc("KEYS", ", ".join(self.keys))
             else:
                 self.reporter.addRow(
-                    "Checking Keys", "User Given Keys Tag not Found", status.ERR)
-                raise Exception("User Given Keys not Found")
+                    "Checking keys", "User given keys tag not found", status.ERR)
+                raise Exception("User given keys not found")
 
             obj = Dataframe()
             self.source_df, self.source_columns = Dataframe.getSourceDataFrame(
@@ -112,7 +112,7 @@ class DvRunner(Base):
                 self.logger.info(
                     "--------Same Column not Present in Both Table--------")
                 self.reporter.addRow(
-                    "Same Columns in Table", "Not Found", status.ERR)
+                    "Same columns in table", "Not found", status.ERR)
                 raise Exception("Same Columns Not Found")
 
             """deleting duplicates from df and keeping last ones"""
@@ -198,10 +198,10 @@ class DvRunner(Base):
 
             if self.configur != None:
                 self.reporter.addRow(
-                    "Parsing DB Conf", "Parsing of DB config is Successfull", status.PASS)
+                    "Parsing db conf", "Parsing of db config is successful", status.PASS)
         except Exception as e:
             self.reporter.addRow(
-                "Parsing DB Conf", "Exception Occurred", status.ERR)
+                "Parsing db conf", "Exception occurred", status.ERR)
             self.reporter.addMisc(
                 "REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
             raise Exception(e)
@@ -216,14 +216,14 @@ class DvRunner(Base):
                     key.append(i)
             if len(key) == 0:
                 self.reporter.addRow(
-                    f"Matching Given Keys in {db}", f"Keys are Present in {db}", status.PASS)
+                    f"Matching given keys in {db}", f"Keys are present in {db}", status.PASS)
                 self.logger.info(f"Given Keys are Present in {db} DB")
             else:
                 raise (f"Keys are not Present in {db}")
         except Exception as e:
             keyString1 = ", ".join(key)
             self.reporter.addRow(
-                f"Matching Given Keys in {db}", "Keys: " + keyString1 + f" are not Present in {db}DB", status.ERR)
+                f"Matching given keys in {db}", "Keys: " + keyString1 + f" are not present in {db}db", status.ERR)
             self.logger.info("------Given Keys are not present in DB------")
             raise Exception("Keys not Present in DB")
 
@@ -262,8 +262,8 @@ class DvRunner(Base):
             if "AFTER_FILE" in self.configData:
                 self.afterMethod()
             if (key_check + value_check + dup_keys_len) == 0:
-                self.reporter.addRow("Data Validation Report",
-                                    "No MisMatch Value Found", status=status.PASS)
+                self.reporter.addRow("Data validation report",
+                                    "No misMatch value found", status=status.PASS)
                 self.logger.info("----No MisMatch Value Found----")
             else:
                 self.logger.info("----Adding Data to Excel----")
@@ -292,9 +292,9 @@ class DvRunner(Base):
                 except Exception as e:
                     logging.warn(e)
                 if not s3_url:
-                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[excelPath])
+                    self.reporter.addRow("Data validation report", f"Matched keys: {keys_length['common_keys']}, Keys only in source: {keys_length['keys_only_in_src']}, Keys only in target: {keys_length['keys_only_in_tgt']}, Mismatched cells: {value_check}, Duplicate keys: {dup_keys_len}, DV result file:", status=status.FAIL,Attachment=[excelPath])
                 else:
-                    self.reporter.addRow("Data Validation Report", f"Matched Keys: {keys_length['common_keys']}, Keys only in Source: {keys_length['keys_only_in_src']}, Keys only in Target: {keys_length['keys_only_in_tgt']}, Mismatched Cells: {value_check}, Duplicate Keys: {dup_keys_len}, DV Result File:", status=status.FAIL,Attachment=[s3_url])
+                    self.reporter.addRow("Data Validation Report", f"Matched keys: {keys_length['common_keys']}, Keys only in source: {keys_length['keys_only_in_src']}, Keys only in target: {keys_length['keys_only_in_tgt']}, Mismatched cells: {value_check}, Duplicate keys: {dup_keys_len}, DV result file:", status=status.FAIL,Attachment=[s3_url])
 
                 self.reporter.addMisc("REASON OF FAILURE", str(
                     f"Mismatched Keys: {key_check},Mismatched Cells: {value_check}"))
@@ -307,7 +307,7 @@ class DvRunner(Base):
         except Exception as e:
             self.reporter.addMisc(
                     "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
-            self.reporter.addRow("Writing Data into CSV","Exception Occured",status.ERR)
+            self.reporter.addRow("Writing data into csv","Exception occured",status.ERR)
 
     def beforeMethod(self):
         """This function
@@ -324,11 +324,11 @@ class DvRunner(Base):
             self.logger.info(
                 "BEFORE FILE NOT FOUND___________________________")
             self.reporter.addRow(
-                "Searching for Before_File steps", "No Before File steps found", status.INFO)
+                "Searching for before file steps", "No before file steps found", status.INFO)
 
             return
-        self.reporter.addRow("Searching for Before_File steps",
-                             "Searching for Before File", status.INFO)
+        self.reporter.addRow("Searching for before file steps",
+                            "Searching for before file", status.INFO)
 
         file_name = file_str.split("path=")[1].split(",")[0]
         if "CLASS=" in file_str.upper():
@@ -367,7 +367,7 @@ class DvRunner(Base):
         except Exception as e:
             self.logger.info(traceback.format_exc())
             self.reporter.addRow(
-                "Executing Before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
+                "Executing before method", f"Some error occurred while searching for before method- {str(e)}", status.ERR)
 
     def afterMethod(self):
         """This function
@@ -382,11 +382,11 @@ class DvRunner(Base):
         if not file_str or file_str == "" or file_str == " ":
             self.logger.info("AFTER FILE NOT FOUND___________________________")
             self.reporter.addRow(
-                "Searching for After_File Steps", "No File Path Found", status.INFO)
+                "Searching for after file steps", "No file path found", status.INFO)
             return
 
-        self.reporter.addRow("Searching for After_File",
-                             "Searching for File", status.INFO)
+        self.reporter.addRow("Searching for after file",
+                            "Searching for file", status.INFO)
 
         file_name = file_str.split("path=")[1].split(",")[0]
         if "CLASS=" in file_str.upper():
@@ -419,7 +419,7 @@ class DvRunner(Base):
             self.extractAfterObj(fin_obj)
         except Exception as e:
             self.reporter.addRow(
-                "Executing After method", f"Some error occurred while searching for after method- {str(e)}", status.ERR)
+                "Executing after method", f"Some error occurred while searching for after method- {str(e)}", status.ERR)
 
     def extractBeforeObj(self, obj):
         """To ofload the data from pyprest obj helper, assign the values back to self object"""
@@ -442,7 +442,7 @@ class DvRunner(Base):
         self.keys_df = obj.keys_df
         self.env = obj.env
         self.reporter = obj.reporter
- 
+
     def matchCase(self):
         try:
             columns = self.configData['MATCH_CASE'].split(',')
@@ -450,7 +450,7 @@ class DvRunner(Base):
                 self.source_df[i] = self.source_df[i].apply(str.lower)
                 self.target_df[i] = self.target_df[i].apply(str.lower)
         except Exception as e:
-            self.reporter.addRow("Trying to Match Case",common.get_reason_of_failure(traceback.format_exc(), e), status.ERR)
+            self.reporter.addRow("Trying to match case",common.get_reason_of_failure(traceback.format_exc(), e), status.ERR)
             raise e
         
     def getDuplicateKeysDf(self, df, type):
@@ -464,7 +464,7 @@ class DvRunner(Base):
                 keep='last', inplace=True)
         dup_keys_df['Reason-of-Failure'] = f'Duplicate Key in {type}'
         if len(dup_keys_df['Reason-of-Failure']) > 0:
-            self.reporter.addRow(f"Checking for Duplicates Keys in {type}",f"Found Duplicate Keys in {type}",status.FAIL)
+            self.reporter.addRow(f"Checking for duplicates keys in {type}",f"Found duplicate keys in {type}",status.FAIL)
         return dup_keys_df, dup_length
     
     def parseConfig(self,config):

@@ -121,10 +121,10 @@ class TemplateData:
         #     return repJson, None
         ouput_file_path=""
         # if not jewel_user:
-        #     ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
-        #     ouput_file_path = ResultFile
-        #     with open(ResultFile, "w+") as f:
-        #         f.write(suiteReport)
+        ResultFile = os.path.join(ouput_folder, "Result_{}.html".format(date))
+        ouput_file_path = ResultFile
+        with open(ResultFile, "w+") as f:
+            f.write(suiteReport)
         # return repJson, ouput_file_path
         return repJson
     
@@ -135,8 +135,31 @@ class TemplateData:
             Result_data = f.read()
         json_data = self._toJSON()
         return json.loads(json_data)
+    
+    def createLogFile(self,folder_path,output_file,suite_log_file):
+        with open(output_file, 'a') as outfile:
+            with open(suite_log_file, 'r') as infile:
+                        # Read the contents of the file
+                    file_contents = infile.read()
+                    outfile.write(file_contents)
+                    outfile.write('\n')
+            # Iterate over all files in the folder
+            for file_name in os.listdir(folder_path):
+                if file_name.endswith('.txt'):
+                    file_path = os.path.join(folder_path, file_name)
+                    
+                    # Open each file in the folder
+                    with open(file_path, 'r') as infile:
+                        # Read the contents of the file
+                        file_contents = infile.read()
+                        
+                        # Append the contents to the output file
+                        outfile.write(file_contents)
+                        outfile.write('\n')  # Add a newline after each file (optional)
+        return output_file
 
-    def repSummary(self, repJson,jewel_link, unuploaded_path):
+
+    def repSummary(self, repJson,jewel_link, unuploaded_path,folder_path,output_file,bridgeToken,username,suite_log):
         """
         logging some information
         """
@@ -150,6 +173,12 @@ class TemplateData:
                 if key in status_dict.keys():
                     log_str += f"{status_dict[key.lower()]} Testcases: {val} | "
             logging.info(log_str.strip(" | "))
+            output_file=self.createLogFile(folder_path,output_file,suite_log)
+            s3_log_file_url=None
+            try:
+                s3_log_file_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=bridgeToken, username=username, file=output_file,tag="public")[0]["Url"])
+            except Exception as e:
+                logging.warn(str(e))
 
             if unuploaded_path != None:
                 logging.info(f"Unuploaded Data File Path:{unuploaded_path}")

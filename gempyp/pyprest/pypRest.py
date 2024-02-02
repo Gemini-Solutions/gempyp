@@ -73,12 +73,29 @@ class PypRest(Base):
             return None, error_dict
     
     def run(self):
-        self.getVals()
+        pre_variables_str = self.data["config_data"].get("PRE_VARIABLES", "")
+        self.pre_variables_list = []
+
+        assignments = [assignment.strip() for assignment in pre_variables_str.split(';') if assignment.strip()]
+
+        for assignment in assignments:
+            variable, values = assignment.split('=')
+            values = [value.strip() for value in values.split(',')]
+            if(len(values)>1):
+                for value in values:
+                    self.pre_variables_list.append(pre_variables_str.replace(assignment,f"{variable}={value}"))
+        if(len(self.pre_variables_list)<1):
+            self.pre_variables_list.append(pre_variables_str)
+
+        for variables in self.pre_variables_list:
         # execute and format result
-        self.execRequest()
-        self.postProcess()
-        MiscVariables(self).miscVariables()
-        self.poll_wait()
+            self.pre_variables=variables
+            self.getVals()
+            self.execRequest()
+            self.postProcess()
+            MiscVariables(self).miscVariables()
+            self.poll_wait()
+            self.data=DefaultSettings.backup_data
         self.logger.info("--------------------Execution Completed ------------------------")
         self.reporter.finalizeReport()
 
@@ -121,6 +138,7 @@ class PypRest(Base):
             
             self.variables["local"] = {}
             self.variables["suite"] = self.data["SUITE_VARS"]
+            self.variables["GLOBAL_VARIABLES"] = self.data["GLOBAL_VARIABLES"]
             self.parent_data = self.data["config_data"]
             for i in range(len(self.list_subtestcases)):
                 self.reporter.addRow("Subtestcase",f'Subtestcase Name: {self.list_subtestcases[i]["NAME"]}',status.INFO)
@@ -183,8 +201,10 @@ class PypRest(Base):
         # get file
         self.file = self.data["config_data"].get("REQUEST_FILE", None)
 
+        self.formData=self.data["config_data"].get("REQUEST_FILE", None)
+
         # get pre variables, not mandatory
-        self.pre_variables = self.data["config_data"].get("PRE_VARIABLES", "")
+        # self.pre_variables = self.data["config_data"].get("PRE_VARIABLES", "")
 
         self.key_check = self.data["config_data"].get("KEY_CHECK", None)
 
@@ -199,51 +219,58 @@ class PypRest(Base):
         self.username = self.data["config_data"].get("USERNAME", self.data.get("USER", None))
 
         self.password = self.data["config_data"].get("PASSWORD", None)
+        self.timeout=int(self.data["config_data"].get("TIMEOUT", 330000))
 
         #get values of mandatory keys of legacy apis
         # if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
-        self.legacy_api = self.data["config_data"].get("LEGACY_API",None)
-        self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
-        self.legacy_headers = self.data["config_data"].get("LEGACY_HEADERS", {})
-        self.legacy_body = self.data["config_data"].get("LEGACY_BODY", {})
-        self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
-        self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
-        self.legacy_file=self.data["config_data"].get("LEGACY_REQUEST_FILE", None)
+        if self.isLegacyPresent:
+            if self.env not in self.data.keys():
+                self.legacy_api = self.data["config_data"].get("LEGACY_API",None)
+            else:
+                self.legacy_api = self.data.get(self.env, "PROD").strip(" ")+ self.data["config_data"].get("LEGACY_API",None)
+            self.legacy_method = self.data["config_data"].get("LEGACY_METHOD", "GET")
+            self.legacy_headers = self.data["config_data"].get("LEGACY_HEADERS", {})
+            self.legacy_body = self.data["config_data"].get("LEGACY_BODY", {})
+            self.legacy_exp_status_code = self.getExpectedStatusCode("LEGACY_EXPECTED_STATUS_CODE")
+            self.legacy_auth_type = self.data["config_data"].get("LEGACY_AUTHENTICATION", "")
+            self.legacy_file=self.data["config_data"].get("LEGACY_REQUEST_FILE", None)
+            self.legacy_timeout=int(self.data["config_data"].get("LEGACY_TIMEOUT", 330000))
         #setting variables and variable replacement
-        print(self.variables)
-        print("###############################")
-        
         PreVariables(self).preVariable()
         VarReplacement(self).variableReplacement()
         try:
             self.pollnwait=json.loads(self.pollnwait)
         except:
             pass
-        try:
+        if self.isLegacyPresent:
             self.legacy_body=json.loads(str(self.legacy_body))
-        except Exception as e:
-            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-        try:
             self.legacy_headers=json.loads(str(self.legacy_headers))
-        except Exception as e:
-            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-        try:
-            self.body = json.loads(str(self.body))
+        self.body = json.loads(str(self.body))
+        self.headers=json.loads(str(self.headers))
+        # try:
+        #     self.legacy_body=json.loads(str(self.legacy_body))
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        # try:
+        #     self.legacy_headers=json.loads(str(self.legacy_headers))
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        # try:
+        #     self.body = json.loads(str(self.body))
             
-        except Exception as e:
-            self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
-        try:
-            self.headers=json.loads(str(self.headers))
-        except Exception as e:
-            self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}Headers - " + str(self.headers), status.FAIL)
-            self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Body", f"Exception occured while parsing body - {str(e)}Body - " + str(self.body), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
+        # try:
+        #     self.headers=json.loads(self.headers)
+        # except Exception as e:
+        #     self.reporter.addRow("Loading Headers", f"Exception occured while parsing headers - {str(e)}Headers - " + str(self.headers), status.FAIL)
+        #     self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), e))
 
     def file_upload(self,json_form_data): 
         files_data=[]
-        json_form_data_1={}  
         for key,value in json_form_data.items():
             files_data_tuple=tuple()
             if(os.path.exists(json_form_data[key])):
@@ -269,6 +296,12 @@ class PypRest(Base):
             self.req_obj.method = self.method
             self.req_obj.body = self.body
             self.req_obj.headers = self.headers
+            self.req_obj.timeout=self.timeout
+            # if(self.file is not None):
+            #     self.file=json.loads(self.file)
+            #     if(len(self.file)>0):
+            #         for item in self.file:
+            #             self.req_obj.file = self.file_upload(item)
             if(self.file is not None):
                 self.req_obj.file = self.file_upload(json.loads(self.file))
             if self.auth_type == "NTLM":
@@ -284,8 +317,7 @@ class PypRest(Base):
             self.legacy_req.method = self.legacy_method
             self.legacy_req.headers = self.legacy_headers
             self.legacy_req.body = self.legacy_body  
-            print(self.legacy_file)
-            print("##############################")
+            self.legacy_req.timeout=self.legacy_timeout
             if(self.legacy_file is not None):
                 self.legacy_req.file=self.file_upload(json.loads(self.legacy_file))
         # calling the before method after creating the request object.
@@ -379,17 +411,13 @@ class PypRest(Base):
         self.env = self.data["ENVIRONMENT"]
         self.variables = {}
         self.category = self.data["config_data"].get("CATEGORY", None)
-        self.loop=self.data["config_data"].get("LOOP",None)
-        if(self.loop is not None):
-            self.loopList=self.parseLoop(self.loop)
-            print(self.loopList)
-            print("###############################")
+        # self.loop=self.data["config_data"].get("LOOP",None)
+        # if(self.loop is not None):
+        #     self.loopList=self.parseLoop(self.loop)
         # self.product_type = self.data["PRODUCT_TYPE"]
 
     def logRequest(self):
         if self.legacy_req is not None and self.legacy_req.api is not None:
-            print(self.legacy_req.api)
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             self.logger.info(f"{self.legacy_req.__dict__}")
             self.logger.info(f"{self.req_obj.__dict__}")
             
@@ -399,21 +427,21 @@ class PypRest(Base):
                 
             self.reporter.addRow("Executing the rest endpoint","Execution of base api and legacy api simultaneously",
                             status.INFO ,
-                            CURRENT_API= f"URL: {self.req_obj.api}" 
-                             + f"METHOD: {self.req_obj.method}" 
-                             + f"REQUEST HEADERS: {self.req_obj.headers}" 
+                            CURRENT_API= f"URL: {self.req_obj.api} <br> " 
+                             + f"METHOD: {self.req_obj.method} <br> " 
+                             + f"REQUEST HEADERS: {self.req_obj.headers} <br> " 
                              + current_request_body
-                            ,LEGACY_API=f"URL: {self.legacy_req.api}" 
-                             + f"METHOD: {self.legacy_req.method}" 
-                             + f"REQUEST HEADERS: {self.legacy_req.headers}" 
+                            ,LEGACY_API=f"URL: {self.legacy_req.api} <br> " 
+                             + f"METHOD: {self.legacy_req.method} <br> " 
+                             + f"REQUEST HEADERS: {self.legacy_req.headers} <br> " 
                              + legacy_request_body
             )
         else:
             body_str = f"REQUEST BODY: {self.req_obj.body}" if self.req_obj.method.upper() != "GET" else ""
             self.reporter.addRow("Executing the REST Endpoint", 
-                             f"URL: {self.req_obj.api}" 
-                             + f"METHOD: {self.req_obj.method}" 
-                             + f"REQUEST HEADERS: {self.req_obj.headers}" 
+                             f"URL: {self.req_obj.api} <br> " 
+                             + f"METHOD: {self.req_obj.method} <br> " 
+                             + f"REQUEST HEADERS: {self.req_obj.headers} <br> " 
                              + body_str, 
                              status.PASS)
 
@@ -429,32 +457,33 @@ class PypRest(Base):
             #         legacy_response_body = f"<a href={self.legacy_res.api} target = '_blank'>Click here</a>"            
             self.reporter.addRow("Details of the REST endpoint execution","Execution of Current and Legacy API simultaneously",
                             status.INFO ,
-                            CURRENT_API= f"CURRENT RESPONSE CODE: {self.res_obj.status_code}" 
-                             + f"CURRENT RESPONSE HEADERS: {self.res_obj.response_headers}" 
-                             + f"CURRENT RESPONSE BODY:{current_response_body}",
-                            LEGACY_API=f"LEGACY STATUS CODE: {self.legacy_res.status_code}" 
-                             + f"LEGACY RESPONSE HEADERS: {self.legacy_res.response_headers}" 
-                             + f"LEGACY RESPONSE BODY: {legacy_response_body}"
+                            CURRENT_API= f"CURRENT RESPONSE CODE: {self.res_obj.status_code} <br> " 
+                             + f"CURRENT RESPONSE HEADERS: {self.res_obj.response_headers} <br> " 
+                             + f"CURRENT RESPONSE BODY:{current_response_body} <br> ",
+                            LEGACY_API=f"LEGACY STATUS CODE: {self.legacy_res.status_code} <br> " 
+                             + f"LEGACY RESPONSE HEADERS: {self.legacy_res.response_headers} <br> " 
+                             + f"LEGACY RESPONSE BODY: {legacy_response_body} <br> "
                              )
             if (self.legacy_res.status_code in self.legacy_exp_status_code) and (self.res_obj.status_code in self.exp_status_code) :
                 self.reporter.addRow("Validating Response Code with Expected Status Codes", "Both status codes are matching with expected status codes",
                                 status.PASS,
-                                 CURRENT_API= f"EXPECTED CURRENT RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
-                                 + f"ACTUAL CURRENT RESPONSE CODE: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"EXPECTED LEGACY RESPONSE CODE: {str(self.legacy_exp_status_code).strip('[]')}" 
-                                 + f"ACTUAL LEGACY RESPONSE CODE: {str(self.legacy_res.status_code)}"
+                                 CURRENT_API= f"EXPECTED CURRENT RESPONSE CODE: {str(self.exp_status_code).strip('[]')} <br> " 
+                                 + f"ACTUAL CURRENT RESPONSE CODE: {str(self.res_obj.status_code)} <br> ", 
+                                 LEGACY_API= f"EXPECTED LEGACY RESPONSE CODE: {str(self.legacy_exp_status_code).strip('[]')} <br> " 
+                                 + f"ACTUAL LEGACY RESPONSE CODE: {str(self.legacy_res.status_code)} <br> "
                                  )
             else:
                 self.reporter.addRow("Validating Response Code with Expected Status Codes of both APIs", "Both status codes are not matching with expected status codes",
                                 status.FAIL,
-                                 CURRENT_API= f"EXPECTED CURRENT RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
-                                 + f"ACTUAL CURRENT RESPONSE CODE: {str(self.res_obj.status_code)}", 
-                                 LEGACY_API= f"EXPECTED LEGACY RESPONSE CODE: {str(self.legacy_exp_status_code).strip('[]')}" 
-                                 + f"ACTUAL LEGACY RESPONSE CODE: {str(self.legacy_res.status_code)}"
+                                 CURRENT_API= f"EXPECTED CURRENT RESPONSE CODE: {str(self.exp_status_code).strip('[]')} <br> " 
+                                 + f"ACTUAL CURRENT RESPONSE CODE: {str(self.res_obj.status_code)} <br> ", 
+                                 LEGACY_API= f"EXPECTED LEGACY RESPONSE CODE: {str(self.legacy_exp_status_code).strip('[]')} <br> " 
+                                 + f"ACTUAL LEGACY RESPONSE CODE: {str(self.legacy_res.status_code)} <br> "
                                  )
                 self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes of both apis did not match, aborting testcase.....")
-                raise Exception("abort")
+                if(len(self.pre_variables_list)<=1):
+                    raise Exception("abort")
                 # raise Exception("abort")       
         else:
             body = self.res_obj.response_body
@@ -463,23 +492,24 @@ class PypRest(Base):
             #         body = f"<a href={self.req_obj.api} target = '_blank'>Click here</a>"
         
             self.reporter.addRow("Details of Request Execution", 
-                                 f"RESPONSE CODE: {self.res_obj.status_code}" 
-                                 + f"RESPONSE HEADERS: {self.res_obj.response_headers}" 
-                                 + f"RESPONSE BODY: {str(body)}", 
+                                 f"RESPONSE CODE: {self.res_obj.status_code} <br> " 
+                                 + f"RESPONSE HEADERS: {self.res_obj.response_headers} <br> " 
+                                 + f"RESPONSE BODY: {str(body)} <br> ", 
                                  status.INFO)
             if self.res_obj.status_code in self.exp_status_code:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"EXPECTED RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
-                                 + f"ACTUAL RESPONSE CODE: {str(self.res_obj.status_code)}", 
+                                 f"EXPECTED RESPONSE CODE: {str(self.exp_status_code).strip('[]')} <br> " 
+                                 + f"ACTUAL RESPONSE CODE: {str(self.res_obj.status_code)} <br> ", 
                                  status.PASS)
             else:
                 self.reporter.addRow("Validating Response Code", 
-                                 f"EXPECTED RESPONSE CODE: {str(self.exp_status_code).strip('[]')}" 
-                                 + f"ACTUAL RESPONSE CODE: {str(self.res_obj.status_code)}", 
+                                 f"EXPECTED RESPONSE CODE: {str(self.exp_status_code).strip('[]')} <br> " 
+                                 + f"ACTUAL RESPONSE CODE: {str(self.res_obj.status_code)} <br> ", 
                                  status.FAIL)
                 self.reporter.addMisc("REASON OF FAILURE", "Response code is not as expected")
                 self.logger.info("status codes did not match, aborting testcase.....")
-                raise Exception("abort")
+                if(len(self.pre_variables_list)<=1):
+                    raise Exception("abort")
 
     def postProcess(self):
         """To be run after API request is sent.
@@ -698,20 +728,19 @@ class PypRest(Base):
                 fp.write(file_name)
             return file_path
 
-    def parseLoop(self,loop: Union[str, typing.TextIO]):
-        try:
-                if hasattr(loop, "read"):
-                    loops = loop.read()
+    # def parseLoop(self,loop: Union[str, typing.TextIO]):
+    #     try:
+    #             if hasattr(loop, "read"):
+    #                 loops = loop.read()
 
-                elif os.path.isfile(loop):
-                    file = open(loop, "r")
-                    loops = file.read()
-                    file.close()
-                loops = loop.strip().split(",")
-                return loops
-        except Exception as e:
-            logging.error("Error while parsing the loops")
-            logging.error(f"Error : {e}")
-            logging.error(f"traceback: {traceback.format_exc()}")
-            return None
-
+    #             elif os.path.isfile(loop):
+    #                 file = open(loop, "r")
+    #                 loops = file.read()
+    #                 file.close()
+    #             loops = loop.strip().split(",")
+    #             return loops
+    #     except Exception as e:
+    #         logging.error("Error while parsing the loops")
+    #         logging.error(f"Error : {e}")
+    #         logging.error(f"traceback: {traceback.format_exc()}")
+    #         return None

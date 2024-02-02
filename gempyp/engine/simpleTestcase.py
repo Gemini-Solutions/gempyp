@@ -75,7 +75,7 @@ class AbstractSimpleTestcase(ABC):
                     n=n+1
             except Exception as e:
                 reporter.addRow("Executing poll n wait", f"Some error occurred while executing the poll and wait- {str(e)}", status.ERR)
-      
+
 
     def RUN(self, cls, testcase_settings: Dict, **kwargs) -> List:
         """
@@ -96,7 +96,7 @@ class AbstractSimpleTestcase(ABC):
             self.logger.error(traceback.format_exc())
             info, error = traceback.format_exception(etype, value, tb)[-2:]
             reports = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
-            reports.addRow("Exception Occured", str(error) + 'at' + str(info), status.ERR)
+            reports.addRow("Exception Occured", str(error) + ' at ' + str(info), status.ERR)
 
 
         if isinstance(reports, TestcaseReporter):
