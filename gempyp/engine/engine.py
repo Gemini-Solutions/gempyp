@@ -201,9 +201,9 @@ class Engine:
         self.bridgetoken=self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
         self.base_url=self.PARAMS.get("ENTER_POINT",None)
         self.autoKill = self.PARAMS.get("AUTO_KILL",'y')
-        if self.autoKill not in ['yes','no','y','n']:
+        if self.autoKill.lower() not in ['y','n']:
             self.autoKill = 'y'
-            logging.info("Auto kill value given by user is not accurate, keeping it as yes")
+            logging.info("Auto kill value given by user is not accurate, keeping it as Y")
         self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
 
@@ -294,7 +294,7 @@ class Engine:
             "expected_testcases": self.total_runable_testcase,
             "testcase_info": None,
             "framework_name": "GEMPYP",
-            "autoKill": "y"
+            "autoKill": self.autoKill.lower()
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
