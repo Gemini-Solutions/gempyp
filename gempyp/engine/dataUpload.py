@@ -55,6 +55,9 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
             payload = dataAlter(payload)
         payload = noneRemover(payload)
         response = _sendData(payload, DefaultSettings.getUrls("suite-exe-api"), bridge_token, user_name, mode)
+        response_message = json.loads(response.text)["message"]
+        if "New executions not allowed. Either enable AutoKill" in response_message:
+            autoKill = True
         if response and response.status_code in [201, 200]:
             global suite_uploaded
             logging.info("Suite data uploaded successfully")
@@ -67,6 +70,9 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
                 suite_data.remove(payload)
         elif response and response.status_code == 200:
             logging.info("Suite Data updated Successfully")
+        elif response.status_code and autoKill:
+            logging.info("New executions not allowed. Either enable AutoKill or abort any previous incomplete executions before new suite runs.")
+            sys.exit()
         elif re.search('50[0-9]',str(response.status_code)):
             logging.info("Suite data is not uploaded")
             if payload not in suite_data:
