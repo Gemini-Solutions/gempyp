@@ -75,9 +75,7 @@ class PostAssertion:
             
             
             list_of_all_keys = [*list(set(key_str)) , *list(set(legacy_key_str))]
-            key_val_dict = {}        
-            legacy_result=""
-            current_result=""       
+            key_val_dict = {}              
             for each_assert in list_of_all_keys:
                 key_part_list = each_assert.split(".") 
                 if "legacy" in each_assert:
@@ -88,18 +86,14 @@ class PostAssertion:
                 if result.upper() != "FOUND":
                     self.logger.info("====== Key Not Found in response =======")
                     self.logger.info("'" + each_assert + "' is not found")
-                    if "legacy" in each_assert:
-                        legacy_result+=f"{each_assert} NOT FOUND"+" "
-                    else:
-                        current_result+=f"{each_assert} NOT FOUND"+" "
+                    if self.isLegacyPresent and "legacy" in each_assert:
+                        self.pyprest_obj.reporter.addRow("Executing post assertion on current API ", f"Checking presence of key {each_assert} in response", status.FAIL, CURRENT_API="-",LEGACY_API=f"Key {each_assert} is not found in the response")
+                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
+                    else:    
+                        self.pyprest_obj.reporter.addRow(f"Checking presence of key {each_assert} in response", f"Key {each_assert} is not found in the response", status.FAIL)
+                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
                 else:
                     key_val_dict = utils.fetchValueOfKey(response_json, key_part_list, result, key_val_dict)
-            if self.isLegacyPresent:
-                        self.pyprest_obj.reporter.addRow("Executing post assertion on legacy/current API ", f"Checking presence of key in response", status.FAIL, CURRENT_API=current_result,LEGACY_API=legacy_result)
-                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
-            else:    
-                        self.pyprest_obj.reporter.addRow(f"Checking presence of key in response", current_result, status.FAIL)
-                        self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Some keys are missing in Response")
             self.postAssertionFunc(key_val_dict, assertion_list)
 
     def getAssertionDict(self, string_list):     
@@ -170,9 +164,9 @@ class PostAssertion:
                     cf.compare_notto_resp(self.pyprest_obj.reporter,key, value, key_val_dict, key_val_dict_legacy, result_legacy,tolerance)
                 elif operator == "to" :
                     cf.compareToResp(self.pyprest_obj.reporter,key,value,key_val_dict,key_val_dict_legacy, result_legacy, tolerance)
-            elif (value.split(".")[-1] not in self.all_keys) and ('legacy' in key and self.isLegacyPresent and len(key_val_dict_legacy)==0):
+            elif (key.split(".")[-1] not in self.all_keys) and ('legacy' in key and self.isLegacyPresent and len(key_val_dict_legacy)==0):
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance,self.isLegacyPresent, True)
-            elif (value.split(".")[-1]) not in self.legacy_all_keys and 'legacy' not in key and self.isLegacyPresent and len(key_val_dict_legacy)>0:
+            elif (key.split(".")[-1]) not in self.legacy_all_keys and 'legacy' not in key and self.isLegacyPresent and len(key_val_dict_legacy)==0:
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance, self.isLegacyPresent)
             elif not self.isLegacyPresent:
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance)
