@@ -56,6 +56,7 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
         payload = noneRemover(payload)
         response = _sendData(payload, DefaultSettings.getUrls("suite-exe-api"), bridge_token, user_name, mode)
         response_message = json.loads(response.text)["message"]
+        autoKill = False
         if "New executions not allowed. Either enable AutoKill" in response_message:
             autoKill = True
         if response and response.status_code in [201, 200]:
@@ -84,7 +85,7 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
             logging.info("Suite data is not uploaded")
             if payload not in suite_data:
                 suite_data.append(payload)
-                
+        return response.status_code
     except Exception as e:
         logging.error(traceback.format_exc())
 
@@ -129,7 +130,7 @@ def sendTestcaseData(payload, bridge_token, user_name):
                 if x != None:
                     global flag
                     flag = True
-
+        return response.status_code
     except Exception as e:
         logging.error(traceback.format_exc())
 
