@@ -107,7 +107,7 @@ class PypRest(Base):
             try:
                 poll=self.pollnwait.get("poll",None)
                 wait=self.pollnwait.get("wait",None)
-                n=0
+                n=1
                 while(n<poll):
                     self.reporter.addRow("Poll n wait", f'Current Poll: {n}', status.INFO) 
                     self.execRequest()
