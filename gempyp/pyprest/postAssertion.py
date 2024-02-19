@@ -164,9 +164,9 @@ class PostAssertion:
                     cf.compare_notto_resp(self.pyprest_obj.reporter,key, value, key_val_dict, key_val_dict_legacy, result_legacy,tolerance)
                 elif operator == "to" :
                     cf.compareToResp(self.pyprest_obj.reporter,key,value,key_val_dict,key_val_dict_legacy, result_legacy, tolerance)
-            elif (key.split(".")[-1] not in self.all_keys) and ('legacy' in key and self.isLegacyPresent and len(key_val_dict_legacy)==0):
+            elif (value.split(".")[-1] not in self.all_keys) and ('legacy' in key and self.isLegacyPresent and len(key_val_dict_legacy)==0):
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance,self.isLegacyPresent, True)
-            elif (key.split(".")[-1]) not in self.legacy_all_keys and 'legacy' not in key and self.isLegacyPresent and len(key_val_dict_legacy)==0:
+            elif (value.split(".")[-1]) not in self.legacy_all_keys and 'legacy' not in key and self.isLegacyPresent and len(key_val_dict_legacy)==0:
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance, self.isLegacyPresent)
             elif not self.isLegacyPresent:
                 self.pyprest_obj.reporter = utils.compare(self.pyprest_obj.reporter, key, operator, value, key_val_dict, tolerance)
