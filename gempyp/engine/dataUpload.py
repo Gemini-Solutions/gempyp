@@ -123,6 +123,9 @@ def sendTestcaseData(payload, bridge_token, user_name):
         # else:
         #     logging.info("Some Error From the Client Side, Terminating Execution")
         #     sys.exit()
+        elif response.status_code == 412:
+            logging.info("Suite is killed on Jewel")
+            return response.status_code
         else:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)
@@ -130,7 +133,6 @@ def sendTestcaseData(payload, bridge_token, user_name):
                 if x != None:
                     global flag
                     flag = True
-        return response.status_code
     except Exception as e:
         logging.error(traceback.format_exc())
 

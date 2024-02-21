@@ -544,8 +544,7 @@ class Engine:
                                     self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
 
                             response = self.update_df(output, error)
-                            if response:
-                                break
+                    
 
                     for process in processes:
                         process.join()
@@ -599,15 +598,15 @@ class Engine:
                 self.updateTestcaseMiscData(
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
-
                 if (self.jewel_user and dataUpload.suite_uploaded):
                     response = dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get(
                         "tc_run_id").upper(), self.s_run_id)), self.bridgetoken, self.username)
-                    return True if response == "412" else False
+                    return True if response == 412 else False
 
                 else:
                     dataUpload.not_uploaded.append((self.DATA.totestcaseJson(
                         testcase_dict.get("tc_run_id").upper(), self.s_run_id)))
+
         except Exception as e:
             traceback.print_exc()
             logging.error("in update_df: {e}".format(e=e))
