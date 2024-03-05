@@ -75,14 +75,16 @@ class PypRest(Base):
     def run(self):
         pre_variables_str = self.data["config_data"].get("PRE_VARIABLES", "")
         self.pre_variables_list = []
-
+        loop_value=[]
+ 
         assignments = [assignment.strip() for assignment in pre_variables_str.split(';') if assignment.strip()]
-
         for assignment in assignments:
             variable, values = assignment.split('=')
-            values = [value.strip() for value in values.split(',')]
-            if(len(values)>1):
-                for value in values:
+            if("$[#loop(" in values):
+                values=values.replace("$[#loop(","").replace(")]","")
+                loop_value = [value.strip() for value in values.split(',')]
+            if(len(loop_value)>1):
+                for value in loop_value:
                     self.pre_variables_list.append(pre_variables_str.replace(assignment,f"{variable}={value}"))
         if(len(self.pre_variables_list)<1):
             self.pre_variables_list.append(pre_variables_str)
@@ -105,7 +107,7 @@ class PypRest(Base):
             try:
                 poll=self.pollnwait.get("poll",None)
                 wait=self.pollnwait.get("wait",None)
-                n=0
+                n=1
                 while(n<poll):
                     self.reporter.addRow("Poll n wait", f'Current Poll: {n}', status.INFO) 
                     self.execRequest()
@@ -145,7 +147,7 @@ class PypRest(Base):
                 log_path = self.data["config_data"].get("log_path", None)
                 self.data["config_data"]=self.list_subtestcases[i]
                 self.data["config_data"]["log_path"] = log_path
-                
+                self.pre_variables = self.data["config_data"].get("PRE_VARIABLES", "")
                 self.getVals()
 
                 requestObj=api.Request()
