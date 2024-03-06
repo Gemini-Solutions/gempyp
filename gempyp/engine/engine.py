@@ -962,7 +962,7 @@ class Engine:
 
     def replace_vars_in_testcase(self, testcase_config_data, global_variables):
         for key, val in testcase_config_data.items():
-            if val is not None and "SET$[#GLOBAL.".casefold() not in val.replace(" ", "").casefold() and "$[#GLOBAL.".casefold() in val.strip(" ").casefold():
+            if type(val) is str and val is not None and "SET$[#GLOBAL.".casefold() not in val.replace(" ", "").casefold() and "$[#GLOBAL.".casefold() in val.strip(" ").casefold():
                 if val.find("$") != -1 and val.find("[") != -1:
                     temp_var = val[val.find("$"): val.find("]")]
                     global_var_name = temp_var.replace(" ", "").replace(
@@ -972,4 +972,5 @@ class Engine:
                         new_val_to_key = val[:val.find(
                             "$")] + str(global_variables.get(global_var_name.upper())) + val[val.find("]") + 1:]
                         testcase_config_data[key] = new_val_to_key
-        return testcase_config_data
+        return testcase_config_data            
+                        

@@ -477,7 +477,6 @@ class DvRunner(Base):
                 else:
                     if("ENV." in value):
                         config[key]=os.environ.get(value.replace("ENV.",""))
-        print(config)
         return config
     
     def parseConfigDict(self,conf):
