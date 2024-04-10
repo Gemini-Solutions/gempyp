@@ -221,7 +221,10 @@ class PypRest(Base):
         self.username = self.data["config_data"].get("USERNAME", self.data.get("USER", None))
 
         self.password = self.data["config_data"].get("PASSWORD", None)
-        self.timeout=int(self.data["config_data"].get("TIMEOUT", 330000))
+        if(self.data.get("timeout") is not None):
+            self.timeout=int(self.data.get("timeout"))
+        else:
+            self.timeout=int(self.data["config_data"].get("TIMEOUT", 330000))
 
         #get values of mandatory keys of legacy apis
         # if self.isLegacyPresent and len(["LEGACY_API", "LEGACY_METHOD", "LEGACY_HEADERS", "LEGACY_BODY"] - self.data["config_data"].keys()) == 0:
