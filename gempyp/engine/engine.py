@@ -280,6 +280,7 @@ class Engine:
         self.username=self.PARAMS.get("JEWEL_USER", None)
         self.bridgetoken=self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
         self.base_url=self.PARAMS.get("ENTER_POINT",None)
+        self.timeout=self.PARAMS.get("TIMEOUT",None)
         self.invoke_user = os.getenv("INVOKEUSER", self.user)  # INVOKEUSER can be set as environment variable from anywhere.
         self.current_dir = os.getcwd()
 
@@ -381,7 +382,7 @@ class Engine:
             "meta_data": [],
             "expected_testcases": self.total_runable_testcase,
             "testcase_info": None,
-            "framework_name": "GEMPYP",
+            "framework_name": "GEMPYP"
         }
         self.DATA.suite_detail = self.DATA.suite_detail.append(
             suite_details, ignore_index=True
@@ -840,6 +841,8 @@ class Engine:
         data["INVOKE_USER"] = self.invoke_user
         data["USER"] = self.user
         data['GLOBAL_VARIABLES'] = self.user_global_variables
+        if(self.timeout):
+            data["timeout"]=int(self.timeout)
         updated_config_data = self.replace_vars_in_testcase(data["config_data"], self.user_global_variables)
         data["config_data"] = updated_config_data
         return data
@@ -1025,3 +1028,4 @@ class Engine:
                         testcase_config_data[key] = new_val_to_key
         return testcase_config_data            
                         
+
