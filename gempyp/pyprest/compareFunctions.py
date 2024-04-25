@@ -16,7 +16,7 @@ def compareTo(obj, key, value, key_val_dict, tolerance=0.1, isLegacyPresent = Fa
         exp_value = str(value.strip('"').strip("'"))
     else:
         actual_value = str(actual_value).lower()
-        exp_value = value.strip('"').strip("'").lower()
+        exp_value = value.strip('"').lower()
         if actual_value == value:
             exp_value = value 
         
