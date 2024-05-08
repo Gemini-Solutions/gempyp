@@ -55,6 +55,10 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
             payload = dataAlter(payload)
         payload = noneRemover(payload)
         response = _sendData(payload, DefaultSettings.getUrls("suite-exe-api"), bridge_token, user_name, mode)
+        response_message = json.loads(response.text)["message"]
+        autoKill = False
+        if "New executions not allowed. Either enable AutoKill" in response_message:
+            autoKill = True
         if response and response.status_code in [201, 200]:
             global suite_uploaded
             logging.info("Suite data uploaded successfully")
@@ -67,18 +71,21 @@ def sendSuiteData(payload, bridge_token, user_name, mode="POST"):
                 suite_data.remove(payload)
         elif response and response.status_code == 200:
             logging.info("Suite Data updated Successfully")
+        elif response.status_code and autoKill:
+            logging.info("New executions not allowed. Either enable AutoKill or abort any previous incomplete executions before new suite runs.")
+            sys.exit()
         elif re.search('50[0-9]',str(response.status_code)):
             logging.info("Suite data is not uploaded")
             if payload not in suite_data:
                 suite_data.append(payload)
-        else:
-            logging.info("Some Error From the Client Side, Terminating Execution")
-            sys.exit()
         # else:
-        #     logging.info("Suite data is not uploaded")
-        #     if payload not in suite_data:
-        #         suite_data.append(payload)
-                
+        #     logging.info("Some Error From the Client Side, Terminating Execution")
+        #     sys.exit()
+        else:
+            logging.info("Suite data is not uploaded")
+            if payload not in suite_data:
+                suite_data.append(payload)
+        return response.status_code
     except Exception as e:
         logging.error(traceback.format_exc())
 
@@ -116,6 +123,9 @@ def sendTestcaseData(payload, bridge_token, user_name):
         # else:
         #     logging.info("Some Error From the Client Side, Terminating Execution")
         #     sys.exit()
+        elif response.status_code == 412:
+            logging.info("Suite is killed on Jewel")
+            return response.status_code
         else:
             if payload not in not_uploaded:
                 not_uploaded.append(payload)
@@ -123,7 +133,6 @@ def sendTestcaseData(payload, bridge_token, user_name):
                 if x != None:
                     global flag
                     flag = True
-
     except Exception as e:
         logging.error(traceback.format_exc())
 
@@ -161,7 +170,7 @@ def dataAlter(payload):
     # changing start time
     payload['s_start_time'] = respon['data']['s_start_time']
     payload['testcase_info'] = {} if payload['testcase_info'] == "-" else payload['testcase_info']
-    if respon['data']['testcase_info']:
+    if respon['data'].get('testcase_info',None):
         # adding the testcase analytics of both run
         payload['testcase_info'] = {i: payload['testcase_info'].get(i, 0) + respon['data']['testcase_info'].get(i, 0)
         for i in set(payload['testcase_info']).union(respon['data']['testcase_info'])}

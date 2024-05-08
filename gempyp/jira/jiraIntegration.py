@@ -55,7 +55,7 @@ def jiraIntegration(s_run_id, email, access_token, project_id, env, workflow, ti
         logging.info("----------- Requesting JIRA API ------------")
         jira_id = createJira(jira_body, bridge_token, user_name)
         if jira_id:
-            logging.info(f"----------- Jira Id - {jira_id} ------------")
+            logging.info(f"Jira Id - {jira_id}")
         return jira_id
     except Exception as e:
         traceback.print_exc()

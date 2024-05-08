@@ -108,6 +108,7 @@ def getOutput(data):
         s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
     except Exception:
          s3_log_file_url = None
+    tempdict["log_file"] = data['config_data'].get("log_path","N.A")
     singleTestcase = {}
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = data.get("MISC")
