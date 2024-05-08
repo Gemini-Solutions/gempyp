@@ -231,6 +231,7 @@ def runBaseUrls(jewel_user,base_url,username,bridgetoken):
                 DefaultSettings.getEnterPoint(base_url ,bridgetoken,username)
             if not base_url:
                 DefaultSettings.getEnterPoint(DefaultSettings.default_baseurl ,bridgetoken, username)
+                logging.info("Base_url not found in suite data. Fetching default base_url")
 
 
 def sendMail(s_run_id,mails,bridge_token,username):
