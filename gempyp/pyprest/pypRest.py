@@ -76,7 +76,7 @@ class PypRest(Base):
         pre_variables_str = self.data["config_data"].get("PRE_VARIABLES", "")
         self.pre_variables_list = []
         loop_value=[]
- 
+
         assignments = [assignment.strip() for assignment in pre_variables_str.split(';') if assignment.strip()]
         for assignment in assignments:
             variable, values = assignment.split('=')

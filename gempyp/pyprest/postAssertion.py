@@ -60,7 +60,7 @@ class PostAssertion:
                     key_str.append(list(each.keys())[0])
             key_str = list(set(key_str))
             if len(legacy_key_str)>0:
-                 legacy_key_str = list(set(legacy_key_str))
+                legacy_key_str = list(set(legacy_key_str))
             
             
             if self.isLegacyPresent and len(self.all_keys)==0 and self.notCompareAll:
@@ -71,9 +71,7 @@ class PostAssertion:
                 self.pyprest_obj.reporter.addRow("Executing Post Assertion check", "Keys to execute assetion check are: " + "".join(key_str), status.INFO)
 
             self.logger.info("Post assertion string- " + self.post_assertion_str)
-            
-            
-            
+        
             list_of_all_keys = [*list(set(key_str)) , *list(set(legacy_key_str))]
             key_val_dict = {}              
             for each_assert in list_of_all_keys:
