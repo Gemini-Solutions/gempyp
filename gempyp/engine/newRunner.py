@@ -4,16 +4,19 @@ import os
 import traceback
 import uuid
 from typing import Dict, List, Tuple
-from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
+# from gempyp.engine.simpleTestcase import AbstractSimpleTestcase
+from gempyp.engine.newSimpleTestcase import AbstractSimpleTestcase
 import getpass
 from gempyp.libs.common import download_common_file, moduleImports
-from gempyp.libs.gem_s3_common import uploadToS3, create_s3_link
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
 from gempyp.config import DefaultSettings
 import re
+
 
 def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     result_data = None
     """
+    testcase_meta ---------> Dictionary
     actually imports the testcase files and call the run method 
     set the json data that is required to update in db
     """
@@ -24,27 +27,31 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     logger = config_data.get("LOGGER")
     testcase_meta.pop("config_data")
     try:
-        file_name = config_data.get("PATH")
-        file_path = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
-        dynamic_testcase = moduleImports(file_path)
+        # file_name = config_data.get("PATH")
+        # file_path = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
+        # dynamic_testcase = moduleImports(file_path)
+        # print("##############")
+        # print(dynamic_testcase)
         try:
             # TODO update the config_data to contain some default values
             # GEMPYPFOLDER
-            all_classes = inspect.getmembers(dynamic_testcase, inspect.isclass)
-            for name, cls in all_classes:
-                # currently running only one class easily extensible to run multiple classes
-                # from single file
-                if (
-                    issubclass(cls, AbstractSimpleTestcase)
-                    and name != "AbstractSimpleTestcase"
-                ):
+            # all_classes = inspect.getmembers(dynamic_testcase, inspect.isclass)
+            # for name, cls in all_classes:
+                
+            #     # currently running only one class easily extensible to run multiple classes
+            #     # from single file
+            #     if (
+            #         issubclass(cls, AbstractSimpleTestcase)
+            #         and name != "AbstractSimpleTestcase"
+            #     ):
 
-                    logging.info("------- In subclass check --------")
-                    result_data = cls().RUN(cls, config_data, **testcase_meta)
+            #         logging.info("------- In subclass check --------")
+            #         result_data = AbstractSimpleTestcase().RUN(cls, config_data, **testcase_meta)
 
 
-                    break
-            # testcase has successfully ran
+            #         break
+            result_data = AbstractSimpleTestcase().RUN(config_data, **testcase_meta)
+            # # testcase has successfully ran
             # make the output Dict
             output = []
             if result_data:
@@ -60,7 +67,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
         except Exception as e:
             logger.error("Error occured while running the testcase: {e}".format(e=e))
             return None, getError(e, config_data)
- 
+
     except Exception as e:
         logger.error("Some Error occured while making the testcase: {e}".format(e=e))
         return None, getError(e, config_data)
@@ -104,11 +111,11 @@ def getOutput(data):
         log_file = None
     tempdict["log_file"] = log_file
     try:
-        # s3_log_file_url= create_s3_link(url=uploadToS3(DefaultSettings.urls["data"].get("s3preSigned","https://betaapi.gemecosystem.com/gemEcosystemS3/s3/v1/generatePreSigned"), bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", data["config_data"].get("LOG_PATH", "N.A")),tag="public")[0]["Url"])
-        s3_log_file_url= uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", data["config_data"].get("LOG_PATH", "N.A")),tag="protected",s_run_id=data["TESTCASEMETADATA"].get("S_RUN_ID"))[0]
-        # s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+        s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("bridge_token",None), username=data.get("TESTCASEMETADATA").get("SUITE_VARS", None).get("username",None), file=data["config_data"].get("log_path", data["config_data"].get("LOG_PATH", "N.A")),tag="public")[0]["Url"])
+        s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
     except Exception:
         s3_log_file_url = None
+    tempdict["log_file"] = data['config_data'].get("log_path","N.A")
     singleTestcase = {}
     singleTestcase["testcase_dict"] = tempdict
     singleTestcase["misc"] = data.get("MISC")

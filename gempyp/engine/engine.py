@@ -16,7 +16,8 @@ from gempyp.libs.enums.status import status
 from gempyp.libs.enums.run_types import RunTypes
 from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
-from gempyp.engine.runner import testcaseRunner
+# from gempyp.engine.runner import testcaseRunner
+from gempyp.engine.newRunner import testcaseRunner
 from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
@@ -26,7 +27,7 @@ import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
-from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link, uploadToS3
 from gempyp.libs.common import *
 import re
 from importlib.metadata import version
@@ -75,6 +76,7 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     else:
         conn.send([data])
         conn.close()
+
 
 
 class Engine:
@@ -229,16 +231,21 @@ class Engine:
             report_folder_name = report_folder_name + f"_{report_name}"
         date = datetime.now().strftime("%Y_%b_%d_%H%M%S_%f")
         report_folder_name = report_folder_name + f"_{date}"
-        if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
+        try:
+            if "REPORT_LOCATION" in self.PARAMS and self.PARAMS["REPORT_LOCATION"]:
+                self.ouput_folder = os.path.join(
+                    self.PARAMS["REPORT_LOCATION"], report_folder_name
+                )
+            else:
+                home = str(Path.home())
+                self.ouput_folder = os.path.join(
+                    home, "gempyp_reports", report_folder_name
+                )
+        except Exception:
+            temp = str(tempfile.gettempdir())
             self.ouput_folder = os.path.join(
-                self.PARAMS["REPORT_LOCATION"], report_folder_name
-            )
-        else:
-            home = str(Path.home())
-            self.ouput_folder = os.path.join(
-                home, "gempyp_reports", report_folder_name
-            )
-
+                    temp, "gempyp_reports", report_folder_name
+                )
         os.makedirs(self.ouput_folder)
         self.testcase_folder = os.path.join(self.ouput_folder, "testcases")
         os.makedirs(self.testcase_folder)
@@ -275,7 +282,9 @@ class Engine:
         self.total_runable_testcase = config.total_yflag_testcase
 
         self.machine = platform.node()
-
+        # creating job_name variable to set job name from suite tags reason:- facing issue on lambda side 
+        self.job_name = self.PARAMS.get("JEWEL_JOB",None)
+        
         self.user = self.PARAMS.get("JEWEL_USER", getpass.getuser())
         self.username=self.PARAMS.get("JEWEL_USER", None)
         self.bridgetoken=self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
@@ -303,7 +312,7 @@ class Engine:
 
         self.project_name=self.verify(self.PARAMS["PROJECT_NAME"])
         self.project_env=self.verify(self.PARAMS["ENVIRONMENT"])
-        self.report_name = self.PARAMS.get("REPORT_NAME")
+        self.report_name = strValidation(self.PARAMS.get("REPORT_NAME"))
         self.unique_id = self.PARAMS["UNIQUE_ID"]
         self.user_suite_variables = self.PARAMS.get("SUITE_VARS", {})
         self.user_global_variables = self.PARAMS.get("GLOBAL_VARIABLES", {})
@@ -407,6 +416,7 @@ class Engine:
     def start(self):
 
         """
+        check the mode and start the testcases accordingly e.g.optimize,parallel
         check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
@@ -567,6 +577,7 @@ class Engine:
                         # update the testcase in the database with failed dependency
                         self.update_df(None, dependency_error)
 
+
                 if len(pool_list) == 0:
                     continue
                 
@@ -691,7 +702,7 @@ class Engine:
             run_type=run_mode=job_name=job_runid=None
             mappings = {('JEWEL'): { 
                 'run_type': 'Scheduled', 
-                'run_mode': 'JEWEL',
+                'run_mode': 'JEWEL_SCHEDULER',
                 'job_name': lambda: os.environ.get('JEWEL_JOB',None), 
                 'job_runid': 'NONE' 
             },
@@ -722,12 +733,18 @@ class Engine:
             # Try to match the environment variables to one of the defined mappings 
             for env_vars, mapping in mappings.items():
                 if (env_vars in os.environ):
-                        # Evaluate the values that require computation (i.e. lambda functions) 
-                        run_type = mapping['run_type']() if callable(mapping['run_type']) else mapping['run_type'] 
-                        run_mode = mapping['run_mode']() if callable(mapping['run_mode']) else mapping['run_mode'] 
-                        job_name = mapping['job_name']() if callable(mapping['job_name']) else mapping['job_name'] 
-                        job_runid = mapping['job_runid']() if callable(mapping['job_runid']) else mapping['job_runid'] 
-                        break 
+                    # Evaluate the values that require computation (i.e. lambda functions) 
+                    run_type = mapping['run_type']() if callable(mapping['run_type']) else mapping['run_type'] 
+                    run_mode = mapping['run_mode']() if callable(mapping['run_mode']) else mapping['run_mode'] 
+                    job_name = mapping['job_name']() if callable(mapping['job_name']) else mapping['job_name'] 
+                    job_runid = mapping['job_runid']() if callable(mapping['job_runid']) else mapping['job_runid'] 
+                    break 
+                elif self.job_name:
+                    run_type = "Scheduled" 
+                    # run_mode = os.name
+                    run_mode="JEWEL_SCHEDULER"
+                    job_name = self.job_name 
+                    job_runid = 'NONE'
                 else: 
                     # If no mapping is found, set default values 
                     run_type = 'On Demand' 
@@ -772,8 +789,8 @@ class Engine:
         s3_log_file_url = log_path
         if self.jewel_user:
             try:
-                s3_log_file_url= create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="public")[0]["Url"]) 
-                s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+                s3_log_file_url= uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="protected",folder="logs",s_run_id=self.s_run_id)[0]
+                # s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
             except Exception as e:
                 logging.info(e)
         testcase_dict["log_file"] = log_path

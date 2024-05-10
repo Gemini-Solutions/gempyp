@@ -251,4 +251,5 @@ def sendMail(s_run_id,mails,bridge_token,username):
     except Exception as e:
         traceback.print_exc()
 
-        
+def strValidation(string):
+    return re.sub('[^A-Za-z0-9.-]+', '', string)
