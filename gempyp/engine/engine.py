@@ -16,8 +16,7 @@ from gempyp.libs.enums.status import status
 from gempyp.libs.enums.run_types import RunTypes
 from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
-# from gempyp.engine.runner import testcaseRunner
-from gempyp.engine.newRunner import testcaseRunner
+from gempyp.engine.runner import testcaseRunner
 from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
@@ -118,80 +117,16 @@ class Engine:
         #     sys.exit() 
         runBaseUrls(self.jewel_user,self.base_url,self.username,self.bridgetoken)  ### retrying to run Base Urls
         self.DATA.validateSrunidInDB(self.jewel_user,self.s_run_id,self.username,self.bridgetoken)
-        # if self.jewel_user:
-        #     #trying rerun of base url api in case of api failure
-        #     # if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
-        #     #     logging.info("Retrying to call Api for getting urls")
-        #     #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-
-        #     # code for checking s_run_id present in db 
-        #     if "RUN_ID" in self.PARAMS:
-        #         logging.info("************Trying to check If s_run_id is present in DB*****************")
-        #         response =  dataUpload.checkingData(self.s_run_id, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        #         if response == "failed":
-        #             logging.info("************s_run_id not present in DB Trying to call Post*****************")
-        #             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        #         else:
-        #             print("s_run_id already present --------------")
-        #             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"],mode="PUT")
-        #     else:
-        #         dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        #         ### first try to rerun the data
-        #         if dataUpload.suite_uploaded == False:
-        #             logging.info("------Retrying to Upload Suite Data------")
-        #             dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
             
         self.makeOutputFolder()
         self.start()
 
         if(self.jewel_user and DefaultSettings.apiSuccess):
             self.DATA.retryUploadSuiteData(self.bridgetoken,self.username)
-            ### Trying to reupload suite data
-            # if dataUpload.suite_uploaded == False:
-            #     logging.info("------Retrying to Upload Suite Data------")
-            #     dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
         ### checking if suite data is uploaded if true than retrying to upload testcase otherwise storing them in json file
         jewel,failed_Utestcases=self.DATA.retryUploadTestcases(self.s_run_id,self.bridgetoken,self.username,self.ouput_folder)
-        # if dataUpload.suite_uploaded == True:
-        #     jewelLink = DefaultSettings.getUrls('jewel-url')
-        #     self.jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
-        #     if len(dataUpload.not_uploaded) != 0:
-        #         logging.info("------Trying again to Upload Testcase------")
-        #         for testcase in dataUpload.not_uploaded:
-        #             dataUpload.sendTestcaseData(testcase, self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
-        #     self.failed_Utestcases = len(dataUpload.not_uploaded) 
-        #     ### Creating file for unuploaded testcases
-        #     if len(dataUpload.not_uploaded) != 0:
-        #         if dataUpload.flag == True:
-        #             logging.warning("Testcase may be present with same tc_run_id in database")
-        #         self.unuploaded_path=self.unuploadedFile(dataUpload.not_uploaded,"Unploaded_testCases.json")
-                # listToStr = ',\n'.join(map(str, dataUpload.not_uploaded))
-                # unuploaded_path = os.path.join(self.ouput_folder, "Unploaded_testCases.json")
-                # with open(unuploaded_path,'w') as w:
-                #     w.write(listToStr)
         self.updateSuiteData()
-        # suite_status = self.DATA.suite_detail.to_dict(orient="records")[0]["status"]
-        # testcase_info = self.DATA.suite_detail.to_dict(orient="records")[0]["testcase_info"]
-
-        
-        # skip_jira = 0
-        # try:
-        #     jira_email = self.PARAMS.get("JIRA_EMAIL", None)
-        #     jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
-        #     jira_project_id = self.PARAMS.get("JIRA_PROJECT_ID", None)
-        #     jira_workflow = self.PARAMS.get("JIRA_WORKFLOW", None)
-        #     jira_title = self.PARAMS.get("JIRA_TITLE", None)  # adding title  ######################### post 1.0.4
-        #     if jira_access_token is None and jira_email is None:
-        #         skip_jira = 1
-        # except Exception as e:
-        #     pass
-
-    
-
-        
-        # ### checking if suite post/get request is successful to call put request otherwise writing suite data in a file
-        # if dataUpload.suite_uploaded == True:
         unuploaded_path = None
         if dataUpload.suite_uploaded and DefaultSettings.apiSuccess:
             dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.bridgetoken, self.username, mode="PUT")
@@ -200,16 +135,7 @@ class Engine:
                 jira_id = jiraIntegration(self.s_run_id, self.jira_email, self.jira_access_token, self.jira_project_id, self.project_env, self.jira_workflow, self.jira_title, self.bridgetoken, self.username, self.report_name)  # adding title  ######################### post 1.0.4
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append({"Jira_id": jira_id})
-            # # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
-            # if not self.PARAMS.get("BASE_URL", None):
-            #     logging.warning("Maybe username or bridgetoken is missing or wrong thus data is not uploaded in db.")
-            # dataUpload.suite_data.append(self.DATA.toSuiteJson())
-            # listToStr = ',\n'.join(map(str, dataUpload.suite_data))
-            # unuploaded_path = os.path.join(self.ouput_folder, "Unuploaded_suiteData.json")
-            # with open(unuploaded_path,'w') as w:
-            #     w.write(listToStr)
-            #     w.write(listToStr)
             unuploaded_path=self.DATA.WriteSuiteFile(self.base_url,self.ouput_folder,self.username,self.bridgetoken)
             
         if("EMAIL_TO" in self.PARAMS.keys()):
@@ -273,8 +199,6 @@ class Engine:
         self.ENV = os.getenv("appenv", "BETA").upper()
 
         #checking if url is present in file and calling get api
-        # if self.PARAMS.get("BASE_URL", None):
-        #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"] )
         self.CONFIG = config
 
         self.testcase_data = {}
@@ -327,9 +251,6 @@ class Engine:
         runBaseUrls(self.jewel_user,self.base_url,self.username,self.bridgetoken)  ### Run base Urls
         if self.jewel_user:
             # trying first run of base url api in case of api failure
-            # if self.PARAMS.get("BASE_URL", None) and DefaultSettings.apiSuccess == False:
-            #     logging.info("Trying to call Api for getting urls")
-            #     DefaultSettings.getEnterPoint(self.PARAMS["BASE_URL"] ,self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"])
 
             if self.PARAMS.get("S_ID", None):
                 self.jewel_run = True
@@ -342,14 +263,6 @@ class Engine:
                         self.s3_url = self.PARAMS["config"]
                 except Exception as e:
                     logging.info(e)
-        #add suite_vars here 
-
-    # def parseMails(self):
-    #     """
-    #     to get the mail from the configData
-    #     """
-    #     if("MAIL" in self.PARAMS.keys()):
-    #         self.mail = common.parseMails(self.PARAMS["MAIL"])
 
     def makeSuiteDetails(self):
         """
@@ -362,8 +275,6 @@ class Engine:
                 self.unique_id = uuid.uuid4()
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
-        # self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
-        # self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         package_name = "gempyp"
         try:
@@ -805,12 +716,6 @@ class Engine:
         misc["REASON OF FAILURE"] = message
         result["misc"] = misc
         result["misc"]["log_file"] = s3_log_file_url
-        # self.reporter = Base(project_name=self.project_name, testcase_name=testcase_name)
-        # result["json_data"] = self.reporter.template_data.makeTestcaseReport()
-        # all_status = result["json_data"]["meta_data"][2]
-        # total = 0
-        # for key in all_status:
-        #     total += all_status[key]
         # result["json_data"]["meta_data"][2]["TOTAL"] = total   # we can not get dummy data because here testcase does not exist
         return result
 
