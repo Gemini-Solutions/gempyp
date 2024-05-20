@@ -144,7 +144,9 @@ def _sendData(payload, url, bridge_token, user_name, method="POST"):
         data=payload,
         headers=_getHeaders(bridge_token, user_name),
     )
+    logging.info(f"Response text: {response.text}")
     logging.info(f"status: {response.status_code}")
+    logging.info(f"Payload: {payload}")
     return response
 
 def noneRemover(payload):
