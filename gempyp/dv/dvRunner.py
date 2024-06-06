@@ -1,5 +1,5 @@
 import uuid
-from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.libs.gem_s3_common import uploadToS3, create_s3_link
 from gempyp.config import DefaultSettings
 import mysql.connector
 import os
@@ -49,7 +49,7 @@ class DvRunner(Base):
         self.logger.info(
             "--------------------Report object created ------------------------")
         self.reporter = Base(project_name=self.project,
-                             testcase_name=self.tcname)
+                            testcase_name=self.tcname)
 
     def dvEngine(self):
 
@@ -285,11 +285,13 @@ class DvRunner(Base):
                 new_order = list(diff_columns)+["Column-Name","Source-Value","Target-Value","Reason-of-Failure"]
                 df = df[new_order]
                 df.to_csv(excelPath, index=False,header=True)
+                print(excelPath)
                 s3_url = None
                 try:
-                    s3_url = create_s3_link(url=upload_to_s3(DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.data["SUITE_VARS"]
-                                            ["bridge_token"], tag="public", username=self.data["SUITE_VARS"]["username"], file=excelPath)[0]["Url"])
+                    s3_url = uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=self.data["SUITE_VARS"]
+                                            ["bridge_token"], tag="protected", username=self.data["SUITE_VARS"]["username"], file=excelPath,s_run_id=self.data.get("S_RUN_ID"))[0]
                 except Exception as e:
+                    print(traceback.print_exc())
                     logging.warn(e)
                 if not s3_url:
                     self.reporter.addRow("Data validation report", f"Matched keys: {keys_length['common_keys']}, Keys only in source: {keys_length['keys_only_in_src']}, Keys only in target: {keys_length['keys_only_in_tgt']}, Mismatched cells: {value_check}, Duplicate keys: {dup_keys_len}, DV result file:", status=status.FAIL,Attachment=[excelPath])
