@@ -3,6 +3,7 @@ import glob, configparser, os, uuid, platform, tempfile, json, logging
 from gempyp.libs.enums.status import status
 from gempyp.engine.testData import TestData
 from gempyp.engine.runner import getOutput
+from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
 from gempyp.engine import dataUpload
 from gempyp.libs.common import *
 from datetime import datetime, timezone
@@ -17,6 +18,13 @@ class Common:
 
     @classmethod
     def get_instance(self):
+        testcase_name = "UI_Automation"
+        # testcase_name = re.sub('[^A-Za-z0-9]+', '_', testcase_name)
+        log_path = "ui_automation.txt"
+        # if len(log_path) > 240:
+        #     log_path = os.path.join(os.environ.get('TESTCASE_LOG_FOLDER'), str(uuid.uuid4()) +'.txt')
+        self.logging = my_custom_logger(log_path)
+        LoggingConfig(log_path)
         if self.instance is None:
             self.instance = Common()
         return self.instance
@@ -27,38 +35,42 @@ class Common:
             this function will help to create suitedetails that will be used in sendSuiteData API
             plugin_data will be dictionary that holds the data from the hooks (in behave we are using it mainly for expectedTestcase count)
             this function is mainly picking data from .ini file(currently pytest.ini from root directory)
-            """            
-            path = glob.glob(os.path.join('**','pytest.ini'),recursive=True)
-            config = configparser.ConfigParser()
-            config.read(path)
-            self.dataFromIni = dict(config.items('pytest'))
-            self.s_run_id = self.dataFromIni.get("project-name") + "_" + self.dataFromIni.get("environment","beta") + "_" + str(uuid.uuid4())
-            self.dataFromIni['s-run-id'] = self.s_run_id
-            run_mode = "LINUX_CLI"
-            if os.name == 'nt':
-                run_mode = "WINDOWS"
-            Suite_details = {
-                "s_run_id": self.dataFromIni["s-run-id"],
-                "s_start_time": datetime.now(timezone.utc),
-                "s_end_time": None,
-                "s_id": self.dataFromIni.get("S_ID", "test_id"),
-                "status": status.EXE.name,
-                "project_name": self.dataFromIni.get("project-name",""),
-                "report_name": self.dataFromIni.get("report-name","smoke_test"),
-                "run_type": "ON DEMAND",
-                "user": self.dataFromIni.get('jewel-user',None),
-                "env": self.dataFromIni.get("environment","beta"),
-                "machine": self.dataFromIni.get("machine",platform.node()),
-                "run_mode": run_mode,
-                "os": platform.system().upper(),
-                "meta_data": [],
-                "testcase_info": None,
-                "expected_testcases":plugin_data.get('expected-testcases',1),
-                "framework_name": "GEMPYP",
-            }
-            self.DATA.suite_detail = self.DATA.suite_detail.append(
-                Suite_details, ignore_index=True
-            )
+            """          
+
+            try:  
+                path = glob.glob(os.path.join('**','pytest.ini'),recursive=True)
+                config = configparser.ConfigParser()
+                config.read(path)
+                self.dataFromIni = dict(config.items('pytest'))
+                self.s_run_id = self.dataFromIni.get("project-name") + "_" + self.dataFromIni.get("environment","beta") + "_" + str(uuid.uuid4())
+                self.dataFromIni['s-run-id'] = self.s_run_id
+                run_mode = "LINUX_CLI"
+                if os.name == 'nt':
+                    run_mode = "WINDOWS"
+                Suite_details = {
+                    "s_run_id": self.dataFromIni["s-run-id"],
+                    "s_start_time": datetime.now(timezone.utc),
+                    "s_end_time": None,
+                    "s_id": self.dataFromIni.get("S_ID", "test_id"),
+                    "status": status.EXE.name,
+                    "project_name": self.dataFromIni.get("project-name",""),
+                    "report_name": self.dataFromIni.get("report-name","smoke_test"),
+                    "run_type": "ON DEMAND",
+                    "user": self.dataFromIni.get('jewel-user',None),
+                    "env": self.dataFromIni.get("environment","beta"),
+                    "machine": self.dataFromIni.get("machine",platform.node()),
+                    "run_mode": run_mode,
+                    "os": platform.system().upper(),
+                    "meta_data": [],
+                    "testcase_info": None,
+                    "expected_testcases":plugin_data.get('expected-testcases',1),
+                    "framework_name": "GEMPYP",
+                }
+                self.DATA.suite_detail = self.DATA.suite_detail.append(
+                    Suite_details, ignore_index=True
+                )
+            except Exception:
+                traceback.print_exc()
 
 
     def getTestcaseData(self, testcaseData:dict)->None:
@@ -66,37 +78,42 @@ class Common:
             this function is mainly to create testcase data 
             in this function we sending testcaseName key
             """
-            self.jewel_user=False
-            # global reporter
-            self.reporter = TestcaseReporter(self.dataFromIni.get("project-name",""), testcaseData.get("testcaseName","Demo Test"))
-            # reporter = TestcaseReporter(self.dataFromIni.get("project-name",""), testcaseData.get("testcaseName","Demo Test"))
-            self.reporter.Status = status
-            # reporter.Status = status
-            projectName = self.dataFromIni.get("project-name","")
-            env = self.dataFromIni.get("environment","beta")
-            testcaseName = testcaseData.get("testcaseName","Demo Test")
-            self.data["JEWEL_USER"] = self.dataFromIni.get('jewel-user',None)
-            self.data["JEWEL_BRIDGE_TOKEN"] = self.dataFromIni.get("jewel-bridge-token")
-            self.data["REPORT_LOCATION"] = self.dataFromIni.get("report-location")
-            self.data["MACHINE"] = self.dataFromIni.get("machine",platform.node())
-            self.data["MAIL_TO"] = self.dataFromIni.get("mail-to")
-            self.data["MAIL_CC"] = self.dataFromIni.get("mail-cc")
-            self.data["MAIL_BCC"] = self.dataFromIni.get("mail-bcc")
-            self.data["ENTER_POINT"] = self.dataFromIni.get("enter-point")
-            if self.data["JEWEL_USER"] and self.data["JEWEL_BRIDGE_TOKEN"]:
-                self.jewel_user=True
-            report_type = self.data["REPORT_NAME"] = self.dataFromIni.get("report-name","Smoke Test")
-            if not self.dataFromIni.get("s-run-id"):
-                self.data["s_run_id"] = self.s_run_id
-                os.environ["s_run_id"] = self.s_run_id
-            else:
-                self.s_run_id = self.data["s_run_id"] = self.dataFromIni.get("s-run-id")
-            
+            try:
+                self.jewel_user=False
+                # global reporter
+                self.reporter = TestcaseReporter(self.dataFromIni.get("project-name",""), testcaseData.get("testcaseName","Demo Test"))
+                # reporter = TestcaseReporter(self.dataFromIni.get("project-name",""), testcaseData.get("testcaseName","Demo Test"))
+                self.reporter.Status = status
+                # reporter.Status = status
+                projectName = self.dataFromIni.get("project-name","")
+                env = self.dataFromIni.get("environment","beta")
+                testcaseName = testcaseData.get("testcaseName","Demo Test")
+                self.data["JEWEL_USER"] = self.dataFromIni.get('jewel-user',None)
+                self.data["JEWEL_BRIDGE_TOKEN"] = self.dataFromIni.get("jewel-bridge-token")
+                self.data["REPORT_LOCATION"] = self.dataFromIni.get("report-location")
+                self.data["MACHINE"] = self.dataFromIni.get("machine",platform.node())
+                self.data["MAIL_TO"] = self.dataFromIni.get("mail-to")
+                self.data["MAIL_CC"] = self.dataFromIni.get("mail-cc")
+                self.data["MAIL_BCC"] = self.dataFromIni.get("mail-bcc")
+                self.data["ENTER_POINT"] = self.dataFromIni.get("enter-point")
+                if self.data["JEWEL_USER"] and self.data["JEWEL_BRIDGE_TOKEN"]:
+                    self.jewel_user=True
+                report_type = self.data["REPORT_NAME"] = self.dataFromIni.get("report-name","Smoke Test")
+                if not self.dataFromIni.get("s-run-id"):
+                    self.data["s_run_id"] = self.s_run_id
+                    os.environ["s_run_id"] = self.s_run_id
+                else:
+                    self.s_run_id = self.data["s_run_id"] = self.dataFromIni.get("s-run-id")
+            except Exception:
+                traceback.print_exc()
 
     def sendSuiteData(self):
-        """this function is for calling first post api for suite data"""
-        runBaseUrls(True,self.dataFromIni.get("enter-point"),self.dataFromIni.get("jewel-user"),self.dataFromIni.get("jewel-bridge-token"))
-        dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.dataFromIni.get("jewel-bridge-token"), self.dataFromIni.get("jewel-user")) # check with deamon, should insert only once
+        try:
+            """this function is for calling first post api for suite data"""
+            runBaseUrls(True,self.dataFromIni.get("enter-point"),self.dataFromIni.get("jewel-user"),self.dataFromIni.get("jewel-bridge-token"))
+            dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.dataFromIni.get("jewel-bridge-token"), self.dataFromIni.get("jewel-user")) # check with deamon, should insert only once
+        except Exception:
+                traceback.print_exc()
 
 
     def send_testcase_data(self):
@@ -148,6 +165,7 @@ class Common:
             traceback.print_exc()
 
     def getMetaData(self):
+        try:
             data = {
                 'PROJECT_NAME': self.dataFromIni.get("project-name",""), 
                 'ENVIRONMENT': self.dataFromIni.get("environment",""), 
@@ -158,13 +176,20 @@ class Common:
                 'SUITE_VARS': self.dataFromIni.get("suite-vars", {}),
                 'INVOKE_USER': os.getenv("INVOKEUSER", self.data["JEWEL_USER"])}
             return data
+        except Exception:
+            traceback.print_exc()
 
 
     def getConfigData(self):
+        try:
             data = {'NAME': self.dataFromIni["project-name"], 'CATEGORY': 'External','LOGGER': ""}
             return data
+        except Exception:
+            traceback.print_exc()
 
     def updateTestcaseMiscData(self, misc, tc_run_id):
+            
+        try:
             """
             updates the misc data for the testcases
             """
@@ -182,9 +207,12 @@ class Common:
             self.DATA.misc_details = self.DATA.misc_details.append(
                 miscList, ignore_index=True
             )
+        except Exception:
+            traceback.print_exc()
 
 
     def updateSuiteData(self, current_data, old_data=None):
+        try:
             """
             updates the suiteData after all the runs have been executed
             """
@@ -222,9 +250,12 @@ class Common:
             current_data["suits_details"]["testcase_info"] = statusDict
 
             return current_data
+        except Exception:
+            traceback.print_exc()
     
     def createReport(self):
-            
+        
+        try:    
             json_data = self._dict[self.s_run_id]
             jewel= self.jewel_user
             bridgetoken=self.dataFromIni.get("jewel-bridge-token")
@@ -234,12 +265,17 @@ class Common:
             username = suite_data["user"]
             del suite_data["testcase_details"]
             del suite_data["testcase_info"]
-            dataUpload.sendSuiteData(json.dumps(suite_data), bridgetoken, username, mode="PUT")
-            jewelLink = DefaultSettings.getUrls('jewel-url')
-            if jewelLink is not None:
-                jewel_link = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
-                print(f"Jewel link of gempyp report - {jewel_link}")
-
+            response_code = dataUpload.sendSuiteData(json.dumps(suite_data), bridgetoken, username, mode="PUT")
+            if response_code in [200,201]:
+                jewelLink = DefaultSettings.getUrls('jewel-url')
+                if jewelLink is not None:
+                    # jewel_link = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}&p_id={DefaultSettings.project_id}'
+                    jewel_link = f'{jewelLink}/#/autolytics/execution-report?s_run_id={self.s_run_id}'
+                    logging.info(f"Jewel link of gempyp report - {jewel_link}")
+            else:
+                logging.info("Some error occurred while uploading data")
+        except Exception:
+            traceback.print_exc()
     
 
 common = Common.get_instance()
