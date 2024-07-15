@@ -4,7 +4,7 @@ from gempyp.engine import dataUpload
 import os
 import logging
 from cryptography.fernet import Fernet
-from gempyp.config.DefaultSettings import encrypt_key, default_baseurl
+from gempyp.config.DefaultSettings import encrypt_key, default_baseurl, checkUrl
 import sys
 import re
 import traceback
@@ -23,7 +23,7 @@ def dataUploader(file_path, bridge_token):
         if bridge_token:
             data['bridge_token'] = bridge_token
         if not data['base_url']:
-            data['base_url'] = default_baseurl
+            data['base_url'] = checkUrl(default_baseurl)
         print("Base Url Used:",data['base_url'])
         response = dataUpload._sendData(" ",data['base_url'], data['bridge_token'], data['user_name'],"GET")
         if response.status_code == 200:
