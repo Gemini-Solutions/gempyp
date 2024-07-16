@@ -31,7 +31,7 @@ class PypRest(Base):
         self.logger = data["config_data"]["LOGGER"] if "LOGGER" in data["config_data"].keys() else logging
         self.logger.info("---------------------Inside REST FRAMEWORK------------------------")
         self.logger.info(f"-------Executing testcase - \"{self.data['config_data']['NAME']}\"---------")
-        self.isLegacyPresent = self.isLegacyPresent()
+        self.isLegacyPresent  = self.isLegacyPresent()  #return boolean
         if data.get("default_urls", None):
             DefaultSettings.urls.update(data.get("default_urls"))   # only for optimized mode, urls not shared between processes
         # set vars
@@ -76,7 +76,7 @@ class PypRest(Base):
         pre_variables_str = self.data["config_data"].get("PRE_VARIABLES", "")
         self.pre_variables_list = []
         loop_value=[]
- 
+
         assignments = [assignment.strip() for assignment in pre_variables_str.split(';') if assignment.strip()]
         for assignment in assignments:
             variable, values = assignment.split('=')
@@ -121,18 +121,22 @@ class PypRest(Base):
     
 
     def validateConf(self):
+        """
+            checking the necessary keys here  
+        """
         mandate = ["API", "METHOD"]
         self.list_subtestcases=[]
         self.request_obj=[]
         self.response_obj=[]
-        if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0:
+        if len(set(mandate) - set([i.upper() for i in self.data["config_data"].keys()])) > 0: ### why we have applied this complex logic here??
+            ### why we have applied this complex logic here?? 
             # update REASON OF FAILURE in misc
             # self.reporter.addMisc("REASON OF FAILURE", common.get_reason_of_failure(traceback.format_exc(), "Mandatory keys Mising"))
             # self.reporter.addRow("Initiating Test steps", f'Error Occurred- Mandatory keys are missing', status.FAIL)
             raise Exception("mandatory keys missing")
-     
+
         
-        if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()):
+        if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()): ###here we do not need to check for y flag because we are already sending y testcase
             # self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
 
             self.list_subtestcases = self.data["config_data"]["SUBTESTCASES_DATA"]
@@ -160,7 +164,7 @@ class PypRest(Base):
                     requestObj.credentials = {"username": self.username, "password": self.password}
                     requestObj.auth = "PASSWORD"
                 self.request_obj.append(requestObj)
-              
+        
                 self.execRequest()
                 
                 self.postProcess()
@@ -668,7 +672,7 @@ class PypRest(Base):
         self.legacy_file=obj.legacy_request_file
         self.env = obj.env
 
-    def getExpectedStatusCode(self,exp_status_code_param):
+    def getExpectedStatusCode(self,exp_status_code_param:str)->List:
         code_list = []
         # self.data["config_data"].get("EXPECTED_STATUS_CODE", 200)
         exp_status_code_string = self.data["config_data"].get(f"{exp_status_code_param}",str(200))
