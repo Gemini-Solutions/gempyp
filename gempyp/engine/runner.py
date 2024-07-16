@@ -24,7 +24,7 @@ def testcaseRunner(testcase_meta: Dict) -> Tuple[List, Dict]:
     logger = config_data.get("LOGGER")
     testcase_meta.pop("config_data")
     try:
-        file_name = config_data.get("PATH")
+        file_name = config_data.get("PATH").strip()
         file_path = download_common_file(file_name,testcase_meta.get("SUITE_VARS",None))
         dynamic_testcase = moduleImports(file_path[0])
         try:
@@ -113,6 +113,7 @@ def getOutput(data):
     singleTestcase["misc"] = data.get("MISC")
     singleTestcase["json_data"] = data.get("json_data")
     singleTestcase["misc"]["log_file"] = s3_log_file_url
+    singleTestcase["GLOBAL_VARIABLES"]={} 
     return singleTestcase
 
 def getError(error, config_data: Dict) -> Dict:
