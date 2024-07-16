@@ -859,7 +859,8 @@ class Engine:
         adj_list={}
         for key,value in testcases.items():
 
-            adj_list[key]=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
+            dependencies=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))       
+            adj_list[key] = list(map(lambda i: i.strip(), dependencies))
 
         for key, value in adj_list.items():
             new_list = []
@@ -908,11 +909,14 @@ class Engine:
         listOfTestcases=list(set(list(testcase.get("DEPENDENCY", "").upper().split(","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
-            dep_split = list(dep.split(":"))
+            dep_split = list(map(lambda i: i.strip(), list(dep.split(":"))))
+
             if len(dep_split) == 1:
                 # NAME to name, to_list()
                 if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
                     return 'err'
+                if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[0]]['status'].iloc[0]) != status.PASS.name):
+                        return 'fail'
 
             else:
                 if dep_split[0].upper() == "P":
@@ -922,7 +926,7 @@ class Engine:
                     if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
                         return 'fail'
 
-                if dep_split[0].upper() == "F":
+                elif dep_split[0].upper() == "F":
                     if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
                         return 'err'
                     if (
@@ -930,6 +934,10 @@ class Engine:
                         != status.FAIL.name
                     ):
                         return 'fail'
+                
+                else:
+                    logging.error("Wrong Dependency flag. Should be either P/F but {} was found in testcase {}".format(dep_split[0].upper(), testcase.get("NAME")))
+                    return 'err'
 
         return 'true'
 
