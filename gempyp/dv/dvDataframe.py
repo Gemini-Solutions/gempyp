@@ -97,6 +97,7 @@ class Dataframe:
 
     def csvFileReader(self, path, delimiter, db):
         try:
+            path=path[0]
             self.logger.info(f"Reading data from {db} CSV File")
             df = pd.read_csv(path, delimiter)
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]

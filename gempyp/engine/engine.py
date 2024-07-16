@@ -295,6 +295,10 @@ class Engine:
         # If package is not installed, try to get version from setup.py
         if version1 is None:
             version1 = self.get_version_from_setup()
+        if(platform.system().upper()=="WINDOWS"):
+            osName=platform.system().upper()+" "+platform.version().split(".")[0]
+        else:
+            osName=platform.system().upper()
         suite_details = {
             "s_run_id": self.s_run_id,
             "s_start_time": self.start_time,
@@ -306,8 +310,8 @@ class Engine:
             "user": self.user,
             "env": self.project_env,
             "machine": self.machine,
-            "framework_version": version1,
-            "os": platform.system().upper()+" "+platform.version().split(".")[0],
+            "framework_version":version1,
+            "os": osName,
             "meta_data": [],
             "expected_testcases": self.total_runable_testcase,
             "testcase_info": None,

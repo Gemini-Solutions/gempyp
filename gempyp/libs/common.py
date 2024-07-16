@@ -135,7 +135,7 @@ def moduleImports(file_name):
             try:
                 dynamicTestcase = importlib.import_module(script_name) 
             except Exception:
-                logging.info("when absolute and module import both failed")
+                logging.info("when absolute and module import both failed. Trying relative path....")
                 try:
                     for each in sys.path:
                         if isinstance(each,dict) and each is not None:
