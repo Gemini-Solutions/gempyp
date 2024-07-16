@@ -60,9 +60,15 @@ def executorFactory(data: Dict,conn= None, custom_logger=None ) -> Tuple[List, D
     }
     _type = data.get("config_data").get("TYPE","GEMPYP") if data.get("config_data").get("TYPE", None) else "GEMPYP"
     dv = ["data validator","dv","datavalidator","dvalidator"]
+    pyprest = ["pyprest","prest","pr"]
+    gempyp = ["gempyp","gpyp","gp"]
     if _type in dv:
         _type = "dv"
-
+    elif _type in pyprest:
+        _type = "pyprest"
+    elif _type in gempyp:
+        _type = "gempyp"
+    
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
 
