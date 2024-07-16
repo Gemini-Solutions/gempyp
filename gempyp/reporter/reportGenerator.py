@@ -79,12 +79,12 @@ class TemplateData:
         """
         kwargs_list_comm =  dict(j for i in self.kwargs_list for j in i.items())
         lis = kwargs_list_comm.keys()
-        for i in self.REPORTDATA["steps"]:
-            for j in lis:
-                if j in i:
-                    continue
-                else:
-                    i.update({j:"-"})
+        # for i in self.REPORTDATA["steps"]:
+        #     for j in lis:
+        #         if j in i:
+        #             continue
+        #         else:
+        #             i.update({j:"-"})
 
         try:
             result_data = json.dumps(self.REPORTDATA, cls=dateTimeEncoder)
