@@ -1,7 +1,7 @@
 import json
 import requests
 import logging
-import os
+import os, re
 import sys
 import traceback
 # import urllib
@@ -65,7 +65,76 @@ def upload_to_s3(api=None, tag=None, file=None, data=None, s_run_id=None, folder
             file_info = data["data"]
 
             return file_info
+        
 
+
+def uploadToS3(api=None, tag=None, file=None, data=None, s_run_id=None, folder=None, username=None, bearer_token=None, bridge_token=None):
+
+    print("*****************we are in upload to s3 function***************")
+    
+    """need to be make correct just dummy code"""
+    logging.info("In Upload section")
+    if bearer_token is not None:
+        headers = {"Authorization": "Bearer {}".format(bearer_token)}
+    elif bridge_token is not None:
+        if username is None:
+            logging.ERROR("------ Please pass username along with Bridge token -----")
+            sys.exit()
+        headers = {"bridgeToken": bridge_token, "username": username, "Content-Type": "application/json"}
+    body = {}
+    if folder is not None:
+        body["folder"] = folder
+    if s_run_id is not None:
+        body["s_run_id"] = s_run_id
+
+    if type(file) == str:
+        file = file.split(',')
+    elif type(file) == list:
+        pass
+    else:
+        logging.error("file data is inaccurate")
+    filename = []
+    for each in file:
+        filename.append(os.path.basename(each))
+    body["files"] = filename 
+    body = json.dumps(body)
+    response = requests.post(api, data=body, headers=headers)
+    try:
+
+        if response.status_code == 200:
+            responseData = json.loads(response.text)
+            resultData = responseData["data"]
+            finalResult = []
+            for each in file:
+                filename = os.path.basename(each)
+                j = None
+                for i in range(len(resultData)):
+                    j = i
+                    files = []
+                    if resultData[i].get(filename,None):
+                        if not os.path.isfile(each):
+                            logging.error("Path of file invalid - " + str(each))
+                            continue
+                        try:
+                            files.append(("file", (os.path.basename(each),open(each, "rb"),'text/csv')))
+                        except Exception:
+                            print(traceback.print_exc())
+                        api = resultData[i].get(os.path.basename(each),None)
+                        response = requests.put(api, files=files, headers=headers)
+                        if response.status_code == 200: ## this logic is needed to be modified currently support only one file at a time
+                            # url = {}
+                            # url["url"] = resultData[i].get("Url",None)
+                            finalResult.append(resultData[i].get("Url",None))
+                            # finalResult.append(url)
+                        
+                if j :
+                    resultData.pop([j])
+            return finalResult
+        else:
+            logging.warn("Some Error Ocurred While Uploading File to S3")
+    except Exception:
+            print(traceback.print_exc())
+        
 def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, id=None):
     logging.info("In Download section")
     if bearer_token is not None:
@@ -92,7 +161,6 @@ def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, i
 
 def create_s3_link(**kwargs):
     """ creating s3 link to be viewed on file viewer on jewel UI"""
-
     s3_viewer = DefaultSettings.getUrls('file-viewer')
     if kwargs.get("url", None):
         params = "url=" + kwargs.get("url")

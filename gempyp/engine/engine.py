@@ -17,7 +17,6 @@ from gempyp.libs.enums.run_types import RunTypes
 from gempyp.reporter.reportGenerator import TemplateData
 from gempyp.libs import common
 from gempyp.engine.runner import testcaseRunner
-# from gempyp.engine.newRunner import testcaseRunner
 from gempyp.config import DefaultSettings
 import logging
 from gempyp.libs.logConfig import my_custom_logger, LoggingConfig
@@ -27,7 +26,7 @@ import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
 from multiprocessing import Process, Pipe
-from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link
+from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link, uploadToS3
 from gempyp.libs.common import *
 import re
 from importlib.metadata import version
@@ -200,6 +199,8 @@ class Engine:
         self.PARAMS = config.getSuiteConfig()
         self.suite_log_file = config.getLogFilePath()
         self.ENV = os.getenv("appenv", "BETA").upper()
+
+        #checking if url is present in file and calling get api
         self.CONFIG = config
 
         self.testcase_data = {}
@@ -207,7 +208,9 @@ class Engine:
         self.total_runable_testcase = config.total_yflag_testcase
 
         self.machine = platform.node()
-
+        # creating job_name variable to set job name from suite tags reason:- facing issue on lambda side 
+        self.job_name = self.PARAMS.get("JEWEL_JOB",None)
+        
         self.user = self.PARAMS.get("JEWEL_USER", getpass.getuser())
         self.username = self.PARAMS.get("JEWEL_USER", None)
         self.bridgetoken = self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
@@ -258,6 +261,7 @@ class Engine:
         runBaseUrls(self.jewel_user, self.base_url, self.username,
                     self.bridgetoken)  # Run base Urls
         if self.jewel_user:
+            # trying first run of base url api in case of api failure
 
             if self.PARAMS.get("S_ID", None):
                 self.jewel_run = True
@@ -283,8 +287,6 @@ class Engine:
                 self.unique_id = uuid.uuid4()
             self.s_run_id = f"{self.project_name}_{self.project_env}_{self.unique_id}"
             self.s_run_id = self.s_run_id.upper()
-        # self.s_run_id = re.sub(r'[^\w\s]', '',self.s_run_id)
-        # self.s_run_id=re.sub(r'\s+', '_',self.s_run_id)
         logging.info("S_RUN_ID: {}".format(self.s_run_id))
         package_name = "gempyp"
         try:
@@ -339,6 +341,7 @@ class Engine:
 
     def start(self):
         """
+        check the mode and start the testcases accordingly e.g.optimize,parallel
         check the mode and start the testcases accordingly e.g.optimize,parallel
         """
         try:
@@ -493,6 +496,7 @@ class Engine:
                         dependency_error["status"] = status.FAIL.name
                         self.update_df(None, dependency_error)
 
+
                 if len(pool_list) == 0:
                     continue
 
@@ -626,12 +630,12 @@ class Engine:
 
     def set_run_type_mode(self):
         try:
-            run_type = run_mode = job_name = job_runid = None
-            mappings = {('JEWEL'): {
-                'run_type': 'Scheduled',
-                'run_mode': 'JEWEL',
-                'job_name': lambda: os.environ.get('JEWEL_JOB', None),
-                'job_runid': 'NONE'
+            run_type=run_mode=job_name=job_runid=None
+            mappings = {('JEWEL'): { 
+                'run_type': 'Scheduled', 
+                'run_mode': 'JEWEL_SCHEDULER',
+                'job_name': lambda: os.environ.get('JEWEL_JOB',None), 
+                'job_runid': 'NONE' 
             },
                 ('SCHEDULER_TOOL'): {
                 'run_type': 'Scheduled',
@@ -715,9 +719,8 @@ class Engine:
         s3_log_file_url = log_path
         if self.jewel_user:
             try:
-                s3_log_file_url = create_s3_link(url=upload_to_s3(
-                    DefaultSettings.urls["data"]["bucket-file-upload-api"], bridge_token=self.bridgetoken, username=self.username, file=log_path, tag="public")[0]["Url"])
-                s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
+                s3_log_file_url= uploadToS3(DefaultSettings.urls["data"].get("pre-signed",None), bridge_token=self.bridgetoken, username=self.username, file=log_path,tag="protected",folder="logs",s_run_id=self.s_run_id)[0]
+                # s3_log_file_url = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
             except Exception as e:
                 logging.info(e)
         testcase_dict["log_file"] = log_path
@@ -732,12 +735,6 @@ class Engine:
         misc["REASON OF FAILURE"] = message
         result["misc"] = misc
         result["misc"]["log_file"] = s3_log_file_url
-        # self.reporter = Base(project_name=self.project_name, testcase_name=testcase_name)
-        # result["json_data"] = self.reporter.template_data.makeTestcaseReport()
-        # all_status = result["json_data"]["meta_data"][2]
-        # total = 0
-        # for key in all_status:
-        #     total += all_status[key]
         # result["json_data"]["meta_data"][2]["TOTAL"] = total   # we can not get dummy data because here testcase does not exist
         return result
 

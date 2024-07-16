@@ -45,11 +45,13 @@ class PreVariables:
                 if "SET" in each_item[0].upper() and '$[#' in each_item[0] and "GLOBAL" not in str(each_item[0]).upper():
                     # key = each_item[0].strip("set $[#").strip("Set $[#").strip("SET $[#").strip("]")
                     key = each_item[0].split("#")[1].replace("]","")
+                    key = each_item[0].split("#")[1].replace("]","")
                     # find suite variables
                     if "SUITE." in key.upper():
                         scope = "suite"
                         key = key.replace(".", "_")
                     if "SUITE." in str(each_item[0].strip(" ")):
+                        key = "SUITE_" + each_item[0].strip(" ").replace("set $[#SUITE.","").replace("]","").upper()
                         key = "SUITE_" + each_item[0].strip(" ").replace("set $[#SUITE.","").replace("]","").upper()
                         self.pyprest_obj.variables["suite"][key] = self.getFunctionValues(each_item[1])
 

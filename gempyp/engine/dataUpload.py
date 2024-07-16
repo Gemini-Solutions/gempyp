@@ -96,6 +96,7 @@ def sendTestcaseData(payload, bridge_token, user_name):
     try:
         method = "POST"
         payload = json.loads(payload)
+        payload = attachmentRemover(payload)
         tc_run_id = payload["tc_run_id"]
         if tc_run_id[:-37] in list_of_testcase:
         #checking whether testcase present in previous run 
@@ -223,3 +224,11 @@ def getTestcase(payload, method, bridge_token, user_name):
             method = "PUT"
     return payload, method
 
+def attachmentRemover(payload):
+    data = payload.get("steps")
+    for i in range(len(data)):
+        for key,value in dict(data[i]).items():
+            if value == "-":
+                del data[i][key]
+    payload['steps'] = data
+    return payload
