@@ -91,7 +91,7 @@ class AbstarctBaseConfig(ABC):
             # filtered_dict[key] = value
             type_list = ["data validator","dv","datavalidator","dvalidator","pyprest","gempyp","prest","gpyp","pr","gp"]
             if value.get("RUN_FLAG") is None:
-                logging.warn("No Run Flag is specified for {} testcase".format(value.get("NAME").upper()))
+                logging.error("No Run Flag is specified for {} testcase".format(value.get("NAME").upper()))
             elif value.get("RUN_FLAG").upper().strip() == "Y" and value.get("TYPE").lower().strip() in type_list:
                 if self.filter_category(value):
                     continue
