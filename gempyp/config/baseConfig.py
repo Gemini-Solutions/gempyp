@@ -101,8 +101,6 @@ class AbstarctBaseConfig(ABC):
                     testcases.append(key)
             elif value.get("TYPE").lower().strip() not in type_list:
                 logging.warning("Type of {} testcase is not right".format(value.get("NAME").upper()))
-            elif value.get("TYPE").lower() not in type_list:
-                logging.warning("Type of {} testcase is not right".format(value.get("NAME").upper()))
             if(len(testcases)>0):
                 for i in range(len(testcases)):
                     if(testcases[i] in testcase_data.keys()):
