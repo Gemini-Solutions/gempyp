@@ -7,13 +7,13 @@ import sys
 
 # have to discuss about the default location
 DEFAULT_GEMPYP_FOLDER = os.getcwd()
+backup_data=None
 DEBUG = True
 THREADS = 8
 encrypt_key = b'sEKTykqMLP_iCwlMtiBR_9SQ0v9N1OT3ajVAAaI4AkQ='
-_VERSION = "1.0.0"
 apiSuccess = False
 project_id = "Test_id"
-default_baseurl="https://apis.gemecosystem.com"
+default_baseurl="https://apis.gemecosystem.com/gemEcosystemDashboard/v1"
 urls = {"data":{} }
 # for getting urls using url tag from config file
 def getEnterPoint(url, bridge_token, user_name):
@@ -28,12 +28,18 @@ def getEnterPoint(url, bridge_token, user_name):
             apiSuccess = True
         elif re.search('50[0-9]',str(response.status_code)):
             logging.warning("Error Occurs While Getting the BASE_URLs")
+            logging.warning("Response status code: "+response.status_code)
+            logging.warning("Response: "+response.text)
         else:
             logging.info("Some Error From the Client Side, Maybe username or bridgeToken, Therefore terminating execution")
+            logging.warning("Response status code: "+response.status_code)
+            logging.warning("Response: "+response.text)
             sys.exit()
     except Exception as e:
             traceback.print_exc()
             logging.warning("Error Occurs While Getting the BASE_URLs")
+            logging.warning("Response status code: "+response.status_code)
+            logging.warning("Response: "+response.text)
             sys.exit()
 
 # for sending urls to dataupload file
@@ -53,3 +59,4 @@ def checkUrl(url):
         logging.warning("Error Occurs While handling the BASE_URLs")
 
 count = 0
+

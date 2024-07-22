@@ -4,11 +4,11 @@ coloredlogs==15.0.1
 cryptography==38.0.1
 humanfriendly==10.0
 idna==3.4
-lxml==4.9.0
+# lxml==4.9.0
 mysql-connector-python==8.0.30
 ntlm-auth==1.5.0
-numpy==1.19.5
-pandas==1.1.5
+# numpy==1.19.5
+# pandas==1.1.5
 pycparser==2.21
 pyreadline==2.1
 pyreadline3==3.4.1
@@ -23,3 +23,6 @@ pg8000==1.26.0
 snowflake-connector-python==3.0.1
 pytest==6.2.5
 pymongo==4.3.3
+pandas==1.5.3
+numpy==1.24.4
+lxml==5.1.0

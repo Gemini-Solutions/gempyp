@@ -12,13 +12,16 @@ class AbstarctBaseConfig(ABC):
         self.total_yflag_testcase =0
         
         try:
-            self.parse(*args, **kwargs)
+            self.log_file=self.parse(*args, **kwargs)
             # filter removed from here because we need to apply filter after updating data with cli input(if given)
             # self.update()
             logging.info("----------- Xml parsing completed ------------")
         except Exception as e:
             traceback.print_exc()
             logging.error("failed to parse the config: {e}".format(e=e))
+    
+    def getLogFilePath(self):
+        return self.log_file
 
     def getSuiteConfig(self) -> Dict:
         # logging.info("^^^^^^^^^^^^^ \n {suite_data} \n^^^^^^^^^".format(suite_data=self._CONFIG["SUITE_DATA"]))
@@ -86,7 +89,8 @@ class AbstarctBaseConfig(ABC):
             #     continue
 
             # filtered_dict[key] = value
-            if value.get("RUN_FLAG", "Y").upper() == "Y":
+            type_list = ["data validator","dv","datavalidator","dvalidator","pyprest","gempyp","prest","gpyp","pr","gp"]
+            if value.get("RUN_FLAG", "Y").upper() == "Y" and value.get("TYPE").lower() in type_list:
                 if self.filter_category(value):
                     continue
                 self.total_yflag_testcase += 1
@@ -94,6 +98,10 @@ class AbstarctBaseConfig(ABC):
                 if "SUBTESTCASES" in value.keys():
                     testcases=value.get("SUBTESTCASES").upper().split(",")
                     testcases.append(key)
+            elif value.get("TYPE").lower() not in type_list:
+                logging.warning("Type of {} testcase is not right".format(value.get("NAME").upper()))
+            elif value.get("TYPE").lower() not in type_list:
+                logging.warning("Type of {} testcase is not right".format(value.get("NAME").upper()))
             if(len(testcases)>0):
                 for i in range(len(testcases)):
                     if(testcases[i] in testcase_data.keys()):
@@ -125,16 +133,16 @@ class AbstarctBaseConfig(ABC):
         except Exception as error:
             logging.error("Error in updating environment variable - " + str(error))
         try:
-            for key in self._CONFIG['SUITE_DATA'].keys():
-                value=self._CONFIG['SUITE_DATA'][key]
-                # if value and ("$[#ENV." in value):
-                #         envValue=value
-                #         value=value.replace("$[#ENV.","").strip("]").lower()
-                #         self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
-                #         self._CONFIG['SUITE_DATA']["SUITE_VARS"][envValue.strip("$[#").strip("]").replace(".","_").upper()]=os.environ.get(value)
-                if value and ("$[#ENV." in value):
-                        value=value.strip("$[#ENV.").strip("]").lower()
-                        self._CONFIG['SUITE_DATA'][key]=os.environ.get(value)
+            keys_to_update = list(self._CONFIG['SUITE_DATA'].keys())
+
+            for key in keys_to_update:
+                value = self._CONFIG['SUITE_DATA'][key]
+                if value and ("ENV." in value) and value.replace("ENV.","").upper() in os.environ:
+                    new_value=os.environ.get(value.replace("ENV.","").upper())
+                    self._CONFIG['SUITE_DATA'][key]=new_value
+                if key and ("ENV." in key) and key.replace("ENV.", "").upper() in os.environ:
+                    new_key = os.environ.get(key.replace("ENV.", "").upper()).upper()
+                    self._CONFIG['SUITE_DATA'][new_key] = self._CONFIG['SUITE_DATA'].pop(key)
         except Exception as error:
             traceback.print_exc()
             logging.error("error occurs in finding environment variable - " + str(error))
@@ -151,5 +159,4 @@ class AbstarctBaseConfig(ABC):
                         self._CONFIG['SUITE_DATA'][element] = self.cli_config[element]
         except Exception as error:
             logging.error("error occurs in update" + str(error))
-        
         

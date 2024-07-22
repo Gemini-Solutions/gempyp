@@ -49,7 +49,7 @@ class Executor(TestcaseReporter):
             os.environ["PID"] = str(os.getpid())
             subprocess.Popen([sys.executable, os.path.join(path, "worker.py")], shell=True)
             try:
-                logging.info(f"---------------S_RUN_ID-------------{self.s_run_id}")
+                logging.info(f"S_RUN_ID : {self.s_run_id}")
                 dataUpload.sendSuiteData((self.DATA.toSuiteJson()), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"]) # check with deamon, should insert only once
                   # logging not working
             except Exception as e:
@@ -108,7 +108,7 @@ class Executor(TestcaseReporter):
                     data["testcases"][i["testcase_dict"].get("tc_run_id")] = i["json_data"]
                     f.seek(0)
                     f.write(json.dumps(data))
-            logging.info("---------------TC_RUN_ID-----------------"+i["testcase_dict"]["tc_run_id"].upper())
+            logging.info("TC_RUN_ID : "+i["testcase_dict"]["tc_run_id"].upper())
             dataUpload.sendTestcaseData((self.DATA.totestcaseJson(i["testcase_dict"]["tc_run_id"].upper(), self.data["S_RUN_ID"])), self.data["JEWEL_BRIDGE_TOKEN"], self.data["JEWEL_USER"])  # instead of output, I need to pass s_run id and  tc_run_id
             path = __file__
             path = path.rsplit(os.sep, 1)[0]
