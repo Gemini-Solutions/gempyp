@@ -10,21 +10,19 @@ def createAzureTicket(body, bridge_token, user_name):
     create_azure_api = DefaultSettings.urls["data"]["azure-api"]
 
     try:
-        logging.info("Body : "+body)
-        logging.info("url : "+ create_azure_api)
 
-        azure_res = dataUpload._sendData(body, url=create_azure_api, bridge_token=bridge_token, user_name=user_name)
-        if azure_res.status_code == 201 or azure_res.status_code == 200:
-            azure_json = json.loads(azure_res.text)
-            logging.info(azure_json)
+        azure_res = dataUpload._sendData(body, url="http://localhost:8003/gemEcosystemJira/v1/azure", bridge_token=bridge_token, user_name=user_name)
+        azure_json = json.loads(azure_res.text)
+        logging.info(azure_json)
 
-            try:
-                return azure_json.get("data", None).get("key", None)
-            except:
-                logging.info("No need to create azure")            
-                return None
-        else:
-            logging.info("Azure API Response - " + str(azure_res.text))
+        if(azure_json.get("operation").upper() == "FAILURE"):
+            logging.warn(azure_json.get("message"))
+        try:
+            return azure_json.get("data", None).get("key", None)
+        except:
+            logging.info("No need to create azure")            
+            return None
+        
     except Exception as e:
         traceback.format_exc()
         logging.info(e)
@@ -47,16 +45,18 @@ def azureIntegration(s_run_id, assigned_to, azure_pat, fields, project_name, env
         "flow": workflow,
         "env": env,
         "suiteName": suiteName,
-        "type": "Bug",
         "title": title,
+        "fields": fields,
         "azureTestcaseFlag" : azureTestcaseFlag
     }  
+    if not assigned_to:
+        del azure_body["assignedTo"]
     if not workflow:
         del azure_body["flow"]
     if not title:
         del azure_body["title"]  
-    if fields:
-        azure_body["fields"] = json.loads(fields)
+    if not fields:
+        del azure_body["fields"]
         
     azure_body = json.loads(json.dumps(str(azure_body).replace("'", '"')))
     try:

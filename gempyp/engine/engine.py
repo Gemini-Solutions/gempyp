@@ -242,7 +242,7 @@ class Engine:
 
         self.start_time = datetime.now(timezone.utc)
         self.skip_jira = 0
-        self.skip_azure=0
+        self.skip_azure = 0
         try:
             self.jira_email = self.PARAMS.get("JIRA_EMAIL", None)
             self.jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
@@ -255,11 +255,23 @@ class Engine:
 
             self.azure_pat = self.PARAMS.get("AZURE_PAT", None)
             self.azure_project = self.PARAMS.get("AZURE_PROJECT", None)
-            self.azure_testcase_flag = self.PARAMS.get("AZURE_TESTCASE_FLAG", 'N')
+            self.azure_testcase_flag = self.PARAMS.get("AZURE_TESTCASE_FLAG", "N")
             self.azure_assigned_to = self.PARAMS.get("AZURE_ASSIGNED_TO", None)
             self.azure_workflow = self.PARAMS.get("AZURE_WORKFLOW", None)
             self.azure_fields = self.PARAMS.get("AZURE_FIELDS", None)
             self.azure_title = self.PARAMS.get("AZURE_TITLE", None)
+
+            if self.azure_testcase_flag.upper().strip() != 'Y' and self.azure_testcase_flag.upper().strip() != 'N':
+                logging.info("User entered wrong azure_testcase_flag!")
+                logging.info("Thus disabling it by default.")
+                self.azure_testcase_flag = "N"
+
+            try:
+                if self.azure_fields:
+                    self.azure_fields = json.loads(self.azure_fields)
+            except Exception as e:
+                logging.error("User has entered wrong data in Azure_fields!")
+                self.skip_azure = 1
 
             if self.azure_pat is None and self.azure_project is None:
                 self.skip_azure = 1
