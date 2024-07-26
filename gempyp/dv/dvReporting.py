@@ -73,6 +73,7 @@ def writeToReport(dv_obj):
     singleTestcase["misc"] = miscSorted
     singleTestcase["json_data"] = dv_obj.json_data
     singleTestcase["misc"]["log_file"] = s3_log_file_url
+    singleTestcase["GLOBAL_VARIABLES"] = {}
     output.append(singleTestcase)
     return output
 
