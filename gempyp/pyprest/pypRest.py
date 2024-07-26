@@ -413,7 +413,7 @@ class PypRest(Base):
         self.res_obj = None
         self.legacy_res = None
         self.request_file = None
-        self.legacy_request_file=None
+        self.legacy_file=None
         self.env = self.data["ENVIRONMENT"]
         self.variables = {}
         self.category = self.data["config_data"].get("CATEGORY", None)

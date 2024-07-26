@@ -117,42 +117,43 @@ def importFromPath(file_name):
     path_cd = os.sep.join(path_arr)
     return path_cd, file
     
-def moduleImports(file_name):
-    import_flag = 0
-    if not file_name:
-        return None
-    try:
-        logging.info("--------Trying importing modules--------")
-        dynamicTestcase = importlib.import_module(file_name)       
-        return dynamicTestcase
-    except Exception as i:
-        logging.info("-------Testcase not imported as module, Trying with absolute path-------")
+def moduleImports(file_names):
+    for file_name in file_names:
+        import_flag = 0
+        if not file_name:
+            return None
         try:
-            script_path, script_name = importFromPath(file_name)
-            script_name = script_name.split(".")[0]
-            if script_path is not None:
-                sys.path.append(script_path)
-            try:
-                dynamicTestcase = importlib.import_module(script_name) 
-            except Exception:
-                logging.info("when absolute and module import both failed. Trying relative path....")
-                try:
-                    for each in sys.path:
-                        if isinstance(each,dict) and each is not None:
-                            logging.info("Fetching config path - {}".format( each['XMLConfigDir']))
-                            lib_path = os.path.join(each['XMLConfigDir'], script_path)
-                    sys.path.append(lib_path)
-                    dynamicTestcase = importlib.import_module(script_name.split(".")[0])
-                    import_flag = 1 
-                except Exception:
-                    traceback.print_exc()
-                if import_flag != 1:
-                    traceback.print_exc()
+            logging.info("--------Trying importing modules--------")
+            dynamicTestcase = importlib.import_module(file_name)       
             return dynamicTestcase
-        except Exception as e:
-            logging.error("----- Error occured file could not be imported using any of the methods.-----")
-            traceback.print_exc()
-            return e
+        except Exception as i:
+            logging.info("-------Testcase not imported as module, Trying with absolute path-------")
+            try:
+                script_path, script_name = importFromPath(file_name)
+                script_name = script_name.split(".")[0]
+                if script_path is not None:
+                    sys.path.append(script_path)
+                try:
+                    dynamicTestcase = importlib.import_module(script_name) 
+                except Exception:
+                    logging.info("when absolute and module import both failed. Trying relative path....")
+                    try:
+                        for each in sys.path:
+                            if isinstance(each,dict) and each is not None:
+                                logging.info("Fetching config path - {}".format( each['XMLConfigDir']))
+                                lib_path = os.path.join(each['XMLConfigDir'], script_path)
+                        sys.path.append(lib_path)
+                        dynamicTestcase = importlib.import_module(script_name.split(".")[0])
+                        import_flag = 1 
+                    except Exception:
+                        traceback.print_exc()
+                    if import_flag != 1:
+                        traceback.print_exc()
+                return dynamicTestcase
+            except Exception as e:
+                logging.error("----- Error occured file could not be imported using any of the methods.-----")
+                traceback.print_exc()
+                return e
 
 def download_common_file(file_names,headers=None):
      try:
