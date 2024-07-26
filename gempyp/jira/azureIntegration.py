@@ -11,7 +11,7 @@ def createAzureTicket(body, bridge_token, user_name):
 
     try:
 
-        azure_res = dataUpload._sendData(body, url="http://localhost:8003/gemEcosystemJira/v1/azure", bridge_token=bridge_token, user_name=user_name)
+        azure_res = dataUpload._sendData(body, url=create_azure_api, bridge_token=bridge_token, user_name=user_name)
         azure_json = json.loads(azure_res.text)
         logging.info(azure_json)
 
