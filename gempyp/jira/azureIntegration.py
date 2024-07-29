@@ -29,7 +29,7 @@ def createAzureTicket(body, bridge_token, user_name):
         return None
 
 
-def azureIntegration(s_run_id, assigned_to, azure_pat, fields, project_name, env, workflow, azureTestcaseFlag, title, bridge_token, user_name, suiteName):  # adding title  ######################### post 1.0.4
+def azureIntegration(s_run_id, assigned_to, azure_pat, fields, project_name, env, workflow, azureTestcaseFlag, title, bridge_token, user_name, suiteName, organization):  # adding title  ######################### post 1.0.4
     logging.info("---------- In Azure Integration ---------")
     
     azure_id = None
@@ -41,6 +41,7 @@ def azureIntegration(s_run_id, assigned_to, azure_pat, fields, project_name, env
         "assignedTo": assigned_to, 
         "pat": azure_pat,
         "project": project_name, 
+        "organization": organization,
         "s_run_id": s_run_id,
         "flow": workflow,
         "env": env,
