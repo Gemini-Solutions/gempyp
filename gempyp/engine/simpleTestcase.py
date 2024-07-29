@@ -25,7 +25,7 @@ class AbstractSimpleTestcase(ABC):
         logger = testcase_settings.get("LOGGER")
         kwargs["TESTCASENAME"] = testcase_settings["NAME"]
         try:
-            method_name = testcase_settings.get("METHOD", "main")
+            method_name = testcase_settings.get("METHOD", "main").strip()
             logger.info(f"-------- method ---------{method_name}")
             reporter = TestcaseReporter(kwargs["PROJECT_NAME"], testcase_settings["NAME"])
             # adding logger to the reporter

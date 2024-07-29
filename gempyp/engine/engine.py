@@ -59,9 +59,15 @@ def executorFactory(data: Dict, conn=None, custom_logger=None) -> Tuple[List, Di
     }
     _type = data.get("config_data").get("TYPE", "GEMPYP") if data.get(
         "config_data").get("TYPE", None) else "GEMPYP"
-    dv = ["data validator", "dv", "datavalidator", "dvalidator"]
+    dv = ["data validator","dv","datavalidator","dvalidator"]
+    pyprest = ["pyprest","prest","pr"]
+    gempyp = ["gempyp","gpyp","gp"]
     if _type in dv:
         _type = "dv"
+    elif _type in pyprest:
+        _type = "pyprest"
+    elif _type in gempyp:
+        _type = "gempyp"
 
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
@@ -208,9 +214,9 @@ class Engine:
         self.total_runable_testcase = config.total_yflag_testcase
 
         self.machine = platform.node()
-        # creating job_name variable to set job name from suite tags reason:- facing issue on lambda side 
+        # creating job_name variable to set job name from suite tags reason:- facing issue on lambda side
         self.job_name = self.PARAMS.get("JEWEL_JOB",None)
-        
+
         self.user = self.PARAMS.get("JEWEL_USER", getpass.getuser())
         self.username = self.PARAMS.get("JEWEL_USER", None)
         self.bridgetoken = self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
@@ -552,7 +558,7 @@ class Engine:
                                     self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
 
                             response = self.update_df(output, error)
-                    
+
 
                     for process in processes:
                         process.join()
@@ -795,8 +801,8 @@ class Engine:
         adj_list = {}
         for key, value in testcases.items():
 
-            adj_list[key] = list(
-                set(list(value.get("DEPENDENCY", "").upper().split(","))) - set([""]))
+            dependencies=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))
+            adj_list[key] = list(map(lambda i: i.strip(), dependencies))
 
         for key, value in adj_list.items():
             new_list = []
@@ -846,11 +852,14 @@ class Engine:
             ","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
-            dep_split = list(dep.split(":"))
+            dep_split = list(map(lambda i: i.strip(), list(dep.split(":"))))
+
             if len(dep_split) == 1:
                 # NAME to name, to_list()
                 if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
                     return 'err'
+                if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[0]]['status'].iloc[0]) != status.PASS.name):
+                        return 'fail'
 
             else:
                 if dep_split[0].upper() == "P":
@@ -860,7 +869,7 @@ class Engine:
                     if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
                         return 'fail'
 
-                if dep_split[0].upper() == "F":
+                elif dep_split[0].upper() == "F":
                     if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
                         return 'err'
                     if (
@@ -869,6 +878,10 @@ class Engine:
                         != status.FAIL.name
                     ):
                         return 'fail'
+
+                else:
+                    logging.error("Wrong Dependency flag. Should be either P/F but {} was found in testcase {}".format(dep_split[0].upper(), testcase.get("NAME")))
+                    return 'err'
 
         return 'true'
 

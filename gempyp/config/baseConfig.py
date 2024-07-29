@@ -90,7 +90,8 @@ class AbstarctBaseConfig(ABC):
 
             # filtered_dict[key] = value
             type_list = ["data validator","dv","datavalidator","dvalidator","pyprest","gempyp","prest","gpyp","pr","gp"]
-            if value.get("RUN_FLAG", "Y").upper() == "Y" and value.get("TYPE").lower() in type_list:
+            
+            if value.get("RUN_FLAG", "Y").upper().strip() == "Y" and value.get("TYPE").lower().strip() in type_list:
                 if self.filter_category(value):
                     continue
                 self.total_yflag_testcase += 1
@@ -98,9 +99,7 @@ class AbstarctBaseConfig(ABC):
                 if "SUBTESTCASES" in value.keys():
                     testcases=value.get("SUBTESTCASES").upper().split(",")
                     testcases.append(key)
-            elif value.get("TYPE").lower() not in type_list:
-                logging.warning("Type of {} testcase is not right".format(value.get("NAME").upper()))
-            elif value.get("TYPE").lower() not in type_list:
+            elif value.get("TYPE").lower().strip() not in type_list:
                 logging.warning("Type of {} testcase is not right".format(value.get("NAME").upper()))
             if(len(testcases)>0):
                 for i in range(len(testcases)):
@@ -118,7 +117,7 @@ class AbstarctBaseConfig(ABC):
         if value.get("CATEGORY", None):
             this_category = value.get("CATEGORY") if isinstance(value.get("CATEGORY"), list) else str(value.get("CATEGORY")).upper().split(",")
         if exp_category:
-            if not len(list(set([i.lower() for i in exp_category]) & set([i.lower() for i in this_category]))) > 0:
+            if not len(list(set([i.lower().strip() for i in exp_category]) & set([i.lower().strip() for i in this_category]))) > 0:
                 return 1
         return 0
 
