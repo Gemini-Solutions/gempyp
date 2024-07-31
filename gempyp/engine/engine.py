@@ -141,7 +141,7 @@ class Engine:
                     
             if self.skip_azure == 0:
                 azure_id = azureIntegration(self.s_run_id, self.azure_assigned_to, self.azure_pat, self.azure_fields, self.azure_project, self.project_env, self.azure_workflow,
-                                        self.azure_testcase_flag, self.azure_title, self.bridgetoken, self.username, self.report_name)  # adding title  ######################### post 1.0.4
+                                        self.azure_testcase_flag, self.azure_title, self.bridgetoken, self.username, self.report_name, self.azure_organization)  # adding title  ######################### post 1.0.4
                 if azure_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append(
                         {"Azure_id": azure_id})
@@ -260,6 +260,7 @@ class Engine:
             self.azure_workflow = self.PARAMS.get("AZURE_WORKFLOW", None)
             self.azure_fields = self.PARAMS.get("AZURE_FIELDS", None)
             self.azure_title = self.PARAMS.get("AZURE_TITLE", None)
+            self.azure_organization = self.PARAMS.get("AZURE_ORGANIZATION", None)
 
             if self.azure_testcase_flag.upper().strip() != 'Y' and self.azure_testcase_flag.upper().strip() != 'N':
                 logging.info("User entered wrong azure_testcase_flag!")
@@ -273,7 +274,7 @@ class Engine:
                 logging.error("User has entered wrong data in Azure_fields!")
                 self.skip_azure = 1
 
-            if self.azure_pat is None and self.azure_project is None:
+            if self.azure_pat is None or self.azure_project is None or self.azure_organization is None:
                 self.skip_azure = 1
                 logging.info("Not enough data for azure integration! Thus skipping it")
 
