@@ -136,7 +136,7 @@ class KeyCheck:
                 self.pyprest_obj.reporter.addRow("Performing key check", "Checking Keys not required in response body - " + content_not_found, _status_n)
 
             if status.FAIL in [_status, _status_n]:
-                self.pyprest_obj.reporter.assMisc("REASON OF FAILURE", "Status of key check is not as expected")
+                self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Status of key check is not as expected")
             # self.pyprest_obj.reporter.addMisc("REASON OF FAILURE", "Status of key check is not as expected")
 
 # change adding another param typeOfResponse to make findkeys reusable for legacy and current responses
