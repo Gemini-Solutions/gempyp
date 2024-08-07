@@ -144,6 +144,7 @@ class DvRunner(Base):
         except Exception as e:
             self.reporter.addMisc(
                     "REASON OF FAILURE", get_reason_of_failure(traceback.format_exc(), e))
+            self.reporter.addRow("Stopping execution", get_reason_of_failure(traceback.format_exc(), e), status.ERR)
             self.logger.error(str(e))
             traceback.print_exc()
             output = writeToReport(self)

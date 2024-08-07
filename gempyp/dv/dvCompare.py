@@ -122,7 +122,7 @@ def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, l
 
                     if type(src_val) == numpy.float64 and type(tgt_val) == numpy.float64:
                         if math.isnan(src_val) == False and math.isnan(tgt_val) == False:
-                            if src_val - tgt_val > float(configData.get("TOLERANCE",0)):
+                            if abs(src_val - tgt_val) > float(configData.get("TOLERANCE",0)):
                                 li = key_val.split("----")
                                 #this is for getting the key value
                                 for i in range(len(li)):

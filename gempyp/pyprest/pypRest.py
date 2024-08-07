@@ -136,7 +136,7 @@ class PypRest(Base):
             raise Exception("mandatory keys missing")
 
         
-        if(self.data["config_data"]["RUN_FLAG"]=="Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()): ###here we do not need to check for y flag because we are already sending y testcase
+        if(self.data["config_data"].get("RUN_FLAG", "Y") == "Y" and "SUBTESTCASES_DATA" in self.data["config_data"].keys()): ###here we do not need to check for y flag because we are already sending y testcase
             # self.reporter.addRow("Parent Testcase",f'Testcase Name: {self.data["config_data"]["NAME"]}',status.INFO)
 
             self.list_subtestcases = self.data["config_data"]["SUBTESTCASES_DATA"]
@@ -413,7 +413,7 @@ class PypRest(Base):
         self.res_obj = None
         self.legacy_res = None
         self.request_file = None
-        self.legacy_request_file=None
+        self.legacy_file=None
         self.env = self.data["ENVIRONMENT"]
         self.variables = {}
         self.category = self.data["config_data"].get("CATEGORY", None)

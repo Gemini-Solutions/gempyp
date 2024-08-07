@@ -25,6 +25,7 @@ from gempyp.pyprest.pypRest import PypRest
 import smtplib
 from gempyp.dv.dvRunner import DvRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
+from gempyp.jira.azureIntegration import azureIntegration
 from multiprocessing import Process, Pipe
 from gempyp.libs.gem_s3_common import upload_to_s3, create_s3_link, uploadToS3
 from gempyp.libs.common import *
@@ -59,9 +60,15 @@ def executorFactory(data: Dict, conn=None, custom_logger=None) -> Tuple[List, Di
     }
     _type = data.get("config_data").get("TYPE", "GEMPYP") if data.get(
         "config_data").get("TYPE", None) else "GEMPYP"
-    dv = ["data validator", "dv", "datavalidator", "dvalidator"]
+    dv = ["data validator","dv","datavalidator","dvalidator"]
+    pyprest = ["pyprest","prest","pr"]
+    gempyp = ["gempyp","gpyp","gp"]
     if _type in dv:
         _type = "dv"
+    elif _type in pyprest:
+        _type = "pyprest"
+    elif _type in gempyp:
+        _type = "gempyp"
 
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
@@ -131,6 +138,13 @@ class Engine:
                 if jira_id is not None:
                     self.DATA.suite_detail.at[0, "meta_data"].append(
                         {"Jira_id": jira_id})
+                    
+            if self.skip_azure == 0:
+                azure_id = azureIntegration(self.s_run_id, self.azure_assigned_to, self.azure_pat, self.azure_fields, self.azure_project, self.project_env, self.azure_workflow,
+                                        self.azure_testcase_flag, self.azure_title, self.bridgetoken, self.username, self.report_name, self.azure_organization)  # adding title  ######################### post 1.0.4
+                if azure_id is not None:
+                    self.DATA.suite_detail.at[0, "meta_data"].append(
+                        {"Azure_id": azure_id})
             # # dataUpload.sendSuiteData(self.DATA.toSuiteJson(), self.PARAMS["BRIDGE_TOKEN"], self.PARAMS["USERNAME"], mode="PUT")
         else:
             unuploaded_path = self.DATA.WriteSuiteFile(
@@ -208,9 +222,9 @@ class Engine:
         self.total_runable_testcase = config.total_yflag_testcase
 
         self.machine = platform.node()
-        # creating job_name variable to set job name from suite tags reason:- facing issue on lambda side 
+        # creating job_name variable to set job name from suite tags reason:- facing issue on lambda side
         self.job_name = self.PARAMS.get("JEWEL_JOB",None)
-        
+
         self.user = self.PARAMS.get("JEWEL_USER", getpass.getuser())
         self.username = self.PARAMS.get("JEWEL_USER", None)
         self.bridgetoken = self.PARAMS.get("JEWEL_BRIDGE_TOKEN", None)
@@ -228,6 +242,7 @@ class Engine:
 
         self.start_time = datetime.now(timezone.utc)
         self.skip_jira = 0
+        self.skip_azure = 0
         try:
             self.jira_email = self.PARAMS.get("JIRA_EMAIL", None)
             self.jira_access_token = self.PARAMS.get("JIRA_ACCESS_TOKEN", None)
@@ -237,6 +252,32 @@ class Engine:
             self.jira_title = self.PARAMS.get("JIRA_TITLE", None)
             if self.jira_access_token is None and self.jira_email is None:
                 self.skip_jira = 1
+
+            self.azure_pat = self.PARAMS.get("AZURE_PAT", None)
+            self.azure_project = self.PARAMS.get("AZURE_PROJECT", None)
+            self.azure_testcase_flag = self.PARAMS.get("AZURE_TESTCASE_FLAG", "N")
+            self.azure_assigned_to = self.PARAMS.get("AZURE_ASSIGNED_TO", None)
+            self.azure_workflow = self.PARAMS.get("AZURE_WORKFLOW", None)
+            self.azure_fields = self.PARAMS.get("AZURE_FIELDS", None)
+            self.azure_title = self.PARAMS.get("AZURE_TITLE", None)
+            self.azure_organization = self.PARAMS.get("AZURE_ORGANIZATION", None)
+
+            if self.azure_testcase_flag.upper().strip() != 'Y' and self.azure_testcase_flag.upper().strip() != 'N':
+                logging.info("User entered wrong azure_testcase_flag!")
+                logging.info("Thus disabling it by default.")
+                self.azure_testcase_flag = "N"
+
+            try:
+                if self.azure_fields:
+                    self.azure_fields = json.loads(self.azure_fields)
+            except Exception as e:
+                logging.error("User has entered wrong data in Azure_fields!")
+                self.skip_azure = 1
+
+            if self.azure_pat is None or self.azure_project is None or self.azure_organization is None:
+                self.skip_azure = 1
+                logging.info("Not enough data for azure integration! Thus skipping it")
+
         except Exception as e:
             pass
 
@@ -552,7 +593,7 @@ class Engine:
                                     self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
 
                             response = self.update_df(output, error)
-                    
+
 
                     for process in processes:
                         process.join()
@@ -795,8 +836,8 @@ class Engine:
         adj_list = {}
         for key, value in testcases.items():
 
-            adj_list[key] = list(
-                set(list(value.get("DEPENDENCY", "").upper().split(","))) - set([""]))
+            dependencies=list(set(list(value.get("DEPENDENCY", "").upper().split(",")))  - set([""]))
+            adj_list[key] = list(map(lambda i: i.strip(), dependencies))
 
         for key, value in adj_list.items():
             new_list = []
@@ -846,11 +887,14 @@ class Engine:
             ","))) - set([""]))  # if testcase.get("DEPENDENCY", None) else listOfTestcases
         for dep in listOfTestcases:
 
-            dep_split = list(dep.split(":"))
+            dep_split = list(map(lambda i: i.strip(), list(dep.split(":"))))
+
             if len(dep_split) == 1:
                 # NAME to name, to_list()
                 if dep_split[0] not in self.DATA.testcase_details["name"].to_list():
                     return 'err'
+                if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[0]]['status'].iloc[0]) != status.PASS.name):
+                        return 'fail'
 
             else:
                 if dep_split[0].upper() == "P":
@@ -860,7 +904,7 @@ class Engine:
                     if ((self.DATA.testcase_details[self.DATA.testcase_details["name"] == dep_split[1]]['status'].iloc[0]) != status.PASS.name):
                         return 'fail'
 
-                if dep_split[0].upper() == "F":
+                elif dep_split[0].upper() == "F":
                     if dep_split[1] not in self.DATA.testcase_details["name"].to_list():
                         return 'err'
                     if (
@@ -869,6 +913,10 @@ class Engine:
                         != status.FAIL.name
                     ):
                         return 'fail'
+
+                else:
+                    logging.error("Wrong Dependency flag. Should be either P/F but {} was found in testcase {}".format(dep_split[0].upper(), testcase.get("NAME")))
+                    return 'err'
 
         return 'true'
 

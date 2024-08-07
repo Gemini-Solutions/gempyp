@@ -28,18 +28,18 @@ def getEnterPoint(url, bridge_token, user_name):
             apiSuccess = True
         elif re.search('50[0-9]',str(response.status_code)):
             logging.warning("Error Occurs While Getting the BASE_URLs")
-            logging.warning("Response status code: "+response.status_code)
-            logging.warning("Response: "+response.text)
+            logging.warning("Response status code: {}".format(response.status_code))
+            logging.warning("Response: {}".format(response.text))
         else:
             logging.info("Some Error From the Client Side, Maybe username or bridgeToken, Therefore terminating execution")
-            logging.warning("Response status code: "+response.status_code)
-            logging.warning("Response: "+response.text)
+            logging.warning("Response status code: {}".format(response.status_code))
+            logging.warning("Response: {}".format(response.text))
             sys.exit()
     except Exception as e:
             traceback.print_exc()
             logging.warning("Error Occurs While Getting the BASE_URLs")
-            logging.warning("Response status code: "+response.status_code)
-            logging.warning("Response: "+response.text)
+            logging.warning("Response status code: {}".format(response.status_code))
+            logging.warning("Response: {}".format(response.text))
             sys.exit()
 
 # for sending urls to dataupload file
