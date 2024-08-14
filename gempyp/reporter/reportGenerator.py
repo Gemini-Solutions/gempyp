@@ -126,7 +126,7 @@ class TemplateData:
         with open(ResultFile, "w+") as f:
             f.write(suiteReport)
         # return repJson, ouput_file_path
-        return repJson
+        return repJson, ouput_file_path
     
     def makeTestcaseReport(self):
         index_path = os.path.dirname(__file__)
@@ -159,7 +159,7 @@ class TemplateData:
         return output_file
 
 
-    def repSummary(self, repJson,jewel_link, unuploaded_path,folder_path,output_file,bridgeToken,username,suite_log):
+    def repSummary(self, repJson,jewel_link, unuploaded_path,folder_path,output_file,bridgeToken,username,suite_log, output_file_path):
         """
         logging some information
         """
@@ -189,7 +189,7 @@ class TemplateData:
 #                 logging.info('Report at S3: {link}'.format(link = s3_report_file_url))
                 
             # if not jewel_user:
-                # logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
+            logging.info('-------- Report created Successfully at: {path}'.format(path=output_file_path))
 
 
         except Exception as e:
