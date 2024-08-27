@@ -110,17 +110,12 @@ def uploadToS3(api=None, tag=None, file=None, data=None, s_run_id=None, folder=N
                 j = None
                 for i in range(len(resultData)):
                     j = i
-                    files = []
                     if resultData[i].get(filename,None):
                         if not os.path.isfile(each):
                             logging.error("Path of file invalid - " + str(each))
                             continue
-                        try:
-                            files.append(("file", (os.path.basename(each),open(each, "rb"),'text/csv')))
-                        except Exception:
-                            print(traceback.print_exc())
                         api = resultData[i].get(os.path.basename(each),None)
-                        response = requests.put(api, files=files, headers=headers)
+                        response = requests.put(api, data=open(each,'rb'), headers={'Content-Type': 'text/csv'})
                         if response.status_code == 200: ## this logic is needed to be modified currently support only one file at a time
                             # url = {}
                             # url["url"] = resultData[i].get("Url",None)
@@ -132,7 +127,7 @@ def uploadToS3(api=None, tag=None, file=None, data=None, s_run_id=None, folder=N
             return finalResult
         else:
             logging.warn("Some Error Ocurred While Uploading File to S3")
-    except Exception:
+    except Exception as e:
             print(traceback.print_exc())
         
 def download_from_s3(api, bearer_token=None, bridge_token=None, username=None, id=None):
