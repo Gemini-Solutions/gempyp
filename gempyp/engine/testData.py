@@ -128,7 +128,18 @@ class TestData:
         test_data["meta_data"] = meta_data
         test_data["s_run_id"] = s_run_id
         test_data["user_defined_data"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
+        if(test_data.get("testcase_id", None) is not None):
+            test_data["testcase_id"]=int(test_data["testcase_id"])
+        testcase_type = None
+
+        if("GEMPYP" == test_data["product_type"]):
+            testcase_type = "GEMPYP"
+        elif("GEMPYP-PR" == test_data["product_type"]):
+            testcase_type = "PYPREST"
+        else:
+            testcase_type = "DV"
         
+        test_data["type"] = testcase_type
         return json.dumps(test_data, cls=dateTimeEncoder)
 
     def _validate(self):

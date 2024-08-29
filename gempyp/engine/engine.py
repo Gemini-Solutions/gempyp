@@ -153,10 +153,10 @@ class Engine:
         if ("EMAIL_TO" in self.PARAMS.keys()):
             sendMail(self.s_run_id, self.mail, self.bridgetoken, self.username)
 
-        self.repJson = TemplateData().makeSuiteReport(self.DATA.getJSONData(),
+        self.repJson, output_file_path = TemplateData().makeSuiteReport(self.DATA.getJSONData(),
                                                     self.testcase_data, self.ouput_folder, self.jewel_user)
         TemplateData().repSummary(self.repJson, jewel, unuploaded_path, self.testcase_log_folder,
-                                self.complete_logs, self.bridgetoken, self.username, self.suite_log_file)
+                                self.complete_logs, self.bridgetoken, self.username, self.suite_log_file, output_file_path)
 
     def makeOutputFolder(self):
         """
@@ -624,6 +624,8 @@ class Engine:
 
             output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'], output[0][
                 'testcase_dict']['job_name'], output[0]['testcase_dict']['job_runid'] = self.set_run_type_mode()
+            if(self.testcase_id is not None):
+                output[0]['testcase_dict']["testcase_id"]=int(str(self.testcase_id))
             for i in output:
                 if 'json_data' in i:
                     i["testcase_dict"]["steps"] = i["json_data"]["steps"]
@@ -825,6 +827,7 @@ class Engine:
         updated_config_data = self.replace_vars_in_testcase(
             data["config_data"], self.user_global_variables)
         data["config_data"] = updated_config_data
+        self.testcase_id=data["config_data"].get("ISOLATEDVERSIONID", None)
         return data
 
     def getDependency(self, testcases: Dict):

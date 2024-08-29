@@ -29,6 +29,7 @@ class Gempyp:
         self.RUN_TYPE = None
         self.RUN_MODE = None
         self.RE_RUN = None
+        self.testcase_id=None
     
     def argParser(self):
         """Argument parser to help running through CLI"""
