@@ -24,6 +24,11 @@ def getEnterPoint(url, bridge_token, user_name):
         if response.status_code == 200:
             url_enter_point = response.json()
             urls["data"]=url_enter_point["data"]
+            # This is to be removed later
+            if urls["data"]["test-exe-api"]=="https://apis.gemecosystem.com/testExecution/v2/testcase":
+                urls["data"]["test-exe-api"]="https://apis.gemecosystem.com/testExecution/v3/testcase"
+            elif urls["data"]["test-exe-api"]=="https://betaapi.gemecosystem.com/testExecution/v2/testcase":
+                urls["data"]["test-exe-api"]="https://betaapi.gemecosystem.com/testExecution/v3/testcase"
             global apiSuccess
             apiSuccess = True
         elif re.search('50[0-9]',str(response.status_code)):

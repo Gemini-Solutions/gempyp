@@ -128,8 +128,10 @@ class TestData:
         test_data["meta_data"] = meta_data
         test_data["s_run_id"] = s_run_id
         test_data["user_defined_data"]["duration"]="{0:.{1}f} sec(s)".format((test_data["end_time"]-test_data["start_time"]).total_seconds(),2)
-        if(test_data.get("testcase_id", None) is not None):
+        if(str(test_data.get("testcase_id")) != "-"):
             test_data["testcase_id"]=int(test_data["testcase_id"])
+        else:
+            del test_data["testcase_id"]
         testcase_type = None
 
         if("GEMPYP" == test_data["product_type"]):
@@ -246,8 +248,8 @@ class TestData:
             jewel = f'{jewelLink}/#/autolytics/execution-report?s_run_id={s_run_id}&p_id={DefaultSettings.project_id}'
         if len(dataUpload.not_uploaded) != 0 and dataUpload.suite_uploaded:
             logging.info("------Trying again to Upload Testcase------")
-            for testcase in dataUpload.not_uploaded:
-                dataUpload.sendTestcaseData(testcase,bridgetoken, username)
+            # for testcase in dataUpload.not_uploaded:
+            dataUpload.sendTestcaseData(dataUpload.not_uploaded,bridgetoken, username)
             # if dataUpload.flag:
                 # logging.warning("Testcase may be present with same tc_run_id in database")
             # unuploaded_path=self.unuploadedFile(output_folder,dataUpload.not_uploaded,"Unploaded_testCases.json")

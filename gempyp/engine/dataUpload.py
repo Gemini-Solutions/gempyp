@@ -95,24 +95,30 @@ def sendTestcaseData(payload, bridge_token, user_name):
     """
     try:
         method = "POST"
-        payload = json.loads(payload)
-        payload = attachmentRemover(payload)
-        tc_run_id = payload["tc_run_id"]
-        if tc_run_id[:-37] in list_of_testcase:
-        #checking whether testcase present in previous run 
-            payload, method = getTestcase(payload, method, bridge_token, user_name)
-        payload = json.dumps(payload)
-        response = _sendData(payload, DefaultSettings.getUrls("test-exe-api"), bridge_token, user_name, method)
+        body = []
+        if type(payload) != list:
+            payload = [payload]
+        for i in payload:
+            i = json.loads(i)
+            i = attachmentRemover(i)
+            tc_run_id = i["tc_run_id"]
+            if tc_run_id[:-37] in list_of_testcase:
+            #checking whether testcase present in previous run 
+                i, method = getTestcase(i, method, bridge_token, user_name)
+            body.append(i)
+        response = _sendData(json.dumps(body), DefaultSettings.getUrls("test-exe-api"), bridge_token, user_name, method)
         ### Applying regex to the response
         x = re.search("already present",response.text,re.IGNORECASE)
         if response.status_code == 201:
             logging.info("data uploaded successfully")
-            if payload in not_uploaded:
-                not_uploaded.remove(payload)
+            for i in payload:
+                if i in not_uploaded:
+                    not_uploaded.remove(i)
         elif response.status_code == 200:
             logging.info("data updated successfully")
-            if payload in not_uploaded:
-                not_uploaded.remove(payload)
+            for i in payload:
+                if i in not_uploaded:
+                    not_uploaded.remove(i)
     ### code for adding unuploaded testcases
         # elif re.search('50[0-9]',str(response.status_code)):
         #     if payload not in not_uploaded:
@@ -134,7 +140,7 @@ def sendTestcaseData(payload, bridge_token, user_name):
                 if x != None:
                     global flag
                     flag = True
-    except Exception as e:
+    except Exception:
         logging.error(traceback.format_exc())
 
 

@@ -567,6 +567,8 @@ class Engine:
                     # for i in a_splited:
                     for process in processes:
                         process.start()
+                    outputlist = []
+                    errorlist = []
                     for parent_connection in parent_connections:
 
                         instances_total.append(parent_connection.recv()[0])
@@ -577,6 +579,8 @@ class Engine:
                                     "Some error occurred while running the testcases"
                                 )
                             output = row[0]
+                            if(output is not None):
+                                outputlist.append(output[0])
 
                             error = row[1]
                             if error:
@@ -584,6 +588,7 @@ class Engine:
                                     f"Error occurred while executing the testcase: {error['testcase']}"
                                 )
                                 logging.error(f"message: {error['message']}")
+                                errorlist.append(error)
 
                             if output is not None and output[0]["GLOBAL_VARIABLES"].get("UPDATED_GLOBAL_VARS", None) is not None:
                                 key_list = output[0]["GLOBAL_VARIABLES"]["UPDATED_GLOBAL_VARS"]
@@ -592,7 +597,7 @@ class Engine:
                                         " Updating global variables values after testcase execution -- {k}".format(k=key))
                                     self.user_global_variables[key] = output[0]["GLOBAL_VARIABLES"][key]
 
-                            response = self.update_df(output, error)
+                    response = self.update_df(outputlist, errorlist)
 
 
                     for process in processes:
@@ -600,33 +605,34 @@ class Engine:
         except Exception:
             logging.error(traceback.format_exc())
 
-    def update_df(self, output: List, error: Dict):
+    def update_df(self, output: List, error):
         """
         updates the testcase data in the dataframes of testData.py
         also upload testcasedata to db
 
         """
         try:
-            if error:
-                output = self.getErrorTestcase(
-                    error["message"],
-                    error["testcase"],
-                    error.get("category"),
-                    error.get("product_type"),
-                    error.get('log_path', None),
-                    error.get('status', status.ERR)
-                )
-                output = [output]
-            if 'json_data' in output[0]:
-                unsorted_dict = output[0]['json_data']['meta_data'][2]
-                sorted_dict = self.totalOrder(unsorted_dict)
-                output[0]['json_data']['meta_data'][2] = sorted_dict
-
-            output[0]['testcase_dict']['run_type'], output[0]['testcase_dict']['run_mode'], output[0][
-                'testcase_dict']['job_name'], output[0]['testcase_dict']['job_runid'] = self.set_run_type_mode()
-            if(self.testcase_id is not None):
-                output[0]['testcase_dict']["testcase_id"]=int(str(self.testcase_id))
+            if error and type(error)!=list:
+                error = [error]
+            if error and len(error)>0:
+                for i in error:
+                    output.append( self.getErrorTestcase(
+                        i["message"],
+                        i["testcase"],
+                        i.get("category"),
+                        i.get("product_type"),
+                        i.get('log_path', None),
+                        i.get('status', status.ERR)
+                    ))
+            testdata = []
             for i in output:
+                if 'json_data' in i:
+                    unsorted_dict = i['json_data']['meta_data'][2]
+                    sorted_dict = self.totalOrder(unsorted_dict)
+                    i['json_data']['meta_data'][2] = sorted_dict
+
+                i['testcase_dict']['run_type'], i['testcase_dict']['run_mode'], i[
+                    'testcase_dict']['job_name'], i['testcase_dict']['job_runid'] = self.set_run_type_mode()
                 if 'json_data' in i:
                     i["testcase_dict"]["steps"] = i["json_data"]["steps"]
                 else:
@@ -650,13 +656,14 @@ class Engine:
                     i["misc"], tc_run_id=testcase_dict.get("tc_run_id")
                 )
                 if (self.jewel_user and dataUpload.suite_uploaded):
-                    response = dataUpload.sendTestcaseData((self.DATA.totestcaseJson(testcase_dict.get(
-                        "tc_run_id").upper(), self.s_run_id)), self.bridgetoken, self.username)
-                    return True if response == 412 else False
-
+                    testdata.append(self.DATA.totestcaseJson(testcase_dict.get("tc_run_id").upper(), self.s_run_id))
                 else:
                     dataUpload.not_uploaded.append((self.DATA.totestcaseJson(
                         testcase_dict.get("tc_run_id").upper(), self.s_run_id)))
+            
+            if (self.jewel_user and dataUpload.suite_uploaded):
+                response = dataUpload.sendTestcaseData(testdata, self.bridgetoken, self.username)
+                return True if response == 412 else False
 
         except Exception as e:
             traceback.print_exc()
@@ -827,7 +834,6 @@ class Engine:
         updated_config_data = self.replace_vars_in_testcase(
             data["config_data"], self.user_global_variables)
         data["config_data"] = updated_config_data
-        self.testcase_id=data["config_data"].get("ISOLATEDVERSIONID", None)
         return data
 
     def getDependency(self, testcases: Dict):

@@ -51,6 +51,7 @@ def writeToReport(dv_obj):
     tempdict["start_time"] = result["START_TIME"]
     tempdict["end_time"] = result["END_TIME"]
     tempdict["ignore"] = False
+    tempdict["testcase_id"] = dv_obj.data["config_data"].get("ISOLATEDVERSIONID", None)
     all_status = result["json_data"]["meta_data"][2]
     total = 0
     for key in all_status:
