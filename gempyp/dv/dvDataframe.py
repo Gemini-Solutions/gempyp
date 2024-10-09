@@ -222,7 +222,7 @@ class Dataframe:
             else:
                 dbCursor = myDB.cursor()
             self.reporter.addRow(
-                f"Connection to {dbType}db:", f"Connection to {dbType}db is successfull", status.PASS)
+                f"Connection to {dbType}db", f"Connection to {dbType}db is successfull", status.PASS)
         else:
             dv = Databases()
             lib, connect = Databases.getConnectionString(
@@ -235,7 +235,7 @@ class Dataframe:
                 myDB.server_info()
             connDetails = self.getHostDetails(cred)
             self.reporter.addRow(
-                f"Connection to {dbType}db: {connDetails}", f"Connection to {dbType}db is successful", status.PASS)
+                f"Connection to {dbType}db", f"Connection to {dbType}db is successful", status.PASS)
         return myDB
 
     def getHostDetails(self, details):

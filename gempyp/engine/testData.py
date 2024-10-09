@@ -136,8 +136,10 @@ class TestData:
             testcase_type = "GEMPYP"
         elif("GEMPYP-PR" == test_data["product_type"]):
             testcase_type = "PYPREST"
-        else:
+        elif("GEMPYP-DV" == test_data["product_type"]):
             testcase_type = "DV"
+        else:
+            testcase_type = "DV-API"
         
         test_data["type"] = testcase_type
         return json.dumps(test_data, cls=dateTimeEncoder)

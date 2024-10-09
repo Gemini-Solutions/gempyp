@@ -24,6 +24,7 @@ from gempyp.engine import dataUpload
 from gempyp.pyprest.pypRest import PypRest
 import smtplib
 from gempyp.dv.dvRunner import DvRunner
+from gempyp.dvApi.dvApiRunner import DvApiRunner
 from gempyp.jira.jiraIntegration import jiraIntegration
 from gempyp.jira.azureIntegration import azureIntegration
 from multiprocessing import Process, Pipe
@@ -56,6 +57,7 @@ def executorFactory(data: Dict, conn=None, custom_logger=None) -> Tuple[List, Di
     engine_control = {
         "pyprest": {"class": PypRest, "classParam": data, "function": "restEngine"},
         "dv": {"class": DvRunner, "classParam": data, "function": "dvEngine"},
+        "dv-api": {"class": DvApiRunner, "classParam": data, "function": "dvEngine"},
         "gempyp": {"function": testcaseRunner, "functionParam": data}
     }
     _type = data.get("config_data").get("TYPE", "GEMPYP") if data.get(
@@ -456,7 +458,7 @@ class Engine:
             for testcase in testcases:
                 passedDependency = self.isDependencyPassed(testcase)
                 product_type = {'dv': "GEMPYP-DV",
-                                    "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP"}
+                                    "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "DV-API"}
                 dependency_error = {
                     "message": "dependency failed",
                     "testcase": testcase["NAME"],
@@ -519,7 +521,7 @@ class Engine:
                     # only append testcases whose dependency are passed otherwise just update the databasee
                     passedDependency = self.isDependencyPassed(testcase)
                     product_type = {'dv': "GEMPYP-DV",
-                                        "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP"}
+                                        "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "DV-API"}
                     dependency_error = {
                         "message": "dependency failed",
                         "testcase": testcase["NAME"],
