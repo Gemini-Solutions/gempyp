@@ -30,13 +30,6 @@ def df_compare(src_df, tgt_df, key, logger, reporter, configData):
         keys_only_in_tgt = list(set(tgt_key_values) - set(src_key_values))
         src_df.drop(keys_only_in_src, inplace=True)
         tgt_df.drop(keys_only_in_tgt, inplace=True)
-        # if 'SKIP_COLUMN' in configData:
-        #     try:
-            # skip_column = configData["SKIP_COLUMN"].split(',')
-        
-            # headers = list(set(headers)-set(skip_column))
-        #     except Exception as e:
-        #         reporter.addRow("While Skipping Columns",get_reason_of_failure(traceback.format_exc(), e),status.INFO)
         """calling src and tgt for getting different keys"""
         src_key_dict = addDiffKeysDict(keys_only_in_src, "Source", key, logger)
         tgt_key_dict = addDiffKeysDict(keys_only_in_tgt, "Target", key, logger)
@@ -93,82 +86,6 @@ def addDiffKeysDict(_list, db, keys, logger):
 
 
 def compareValues(commonList: list, src_df, tgt_df, headers, keys, configData, logger,cut_out,count):
-    # logger.info("In compareValues Function")
-    # dummy_response_dict = {
-    #     "Column-Name": [],
-    #     "Source-Value": [],
-    #     "Target-Value": [],
-    #     "Reason-of-Failure": [],
-    # }
-    # comm_dict = {}
-
-    # if commonList:
-    #     for key_val in commonList:
-    #         for field in headers:
-    #             src_val = src_df.loc[key_val, field]
-    #             tgt_val = tgt_df.loc[key_val, field]
-    #             if src_val == src_val or tgt_val == tgt_val:
-    #                 if "ROUND_OFF" in configData:
-    #                     # self.reporter.addMisc("",str(self.configData["THRESHOLD"]))
-    #                     if (
-    #                         type(src_val) == numpy.float64
-    #                         and math.isnan(src_val) == False
-    #                     ):
-    #                         src_val = truncate(src_val, int(configData["ROUND_OFF"]))
-    #                     if (
-    #                         type(tgt_val) == numpy.float64
-    #                         and math.isnan(tgt_val) == False
-    #                     ):
-    #                         tgt_val = truncate(tgt_val, int(configData["ROUND_OFF"]))
-
-    #                 if type(src_val) == numpy.float64 and type(tgt_val) == numpy.float64:
-    #                     if math.isnan(src_val) == False and math.isnan(tgt_val) == False:
-    #                         if abs(src_val - tgt_val) > float(configData.get("TOLERANCE",0)):
-    #                             li = key_val.split("----")
-    #                             #this is for getting the key value
-    #                             for i in range(len(li)):
-    #                                 key = keys[i]
-    #                                 li1 = []
-    #                                 li1.append(li[i])
-    #                                 comm_dict[key] = comm_dict.get(key, []) + li1
-    #                             dummy_response_dict.get("Column-Name").append(field)
-    #                             dummy_response_dict.get("Source-Value").append(src_val)
-    #                             dummy_response_dict.get("Target-Value").append(tgt_val)
-    #                             dummy_response_dict.get("Reason-of-Failure").append(
-    #                                 "Difference In Value"
-    #                                 )   
-
-    #                 elif src_val != tgt_val and type(src_val) == type(tgt_val):
-    #                     li = key_val.split("----")
-    #                     for i in range(len(li)):
-    #                         key = keys[i]
-    #                         li1 = []
-    #                         li1.append(li[i])
-    #                         comm_dict[key] = comm_dict.get(key, []) + li1
-    #                     dummy_response_dict.get("Column-Name").append(field)
-    #                     dummy_response_dict.get("Source-Value").append(src_val)
-    #                     dummy_response_dict.get("Target-Value").append(tgt_val)
-    #                     dummy_response_dict.get("Reason-of-Failure").append(
-    #                         "Difference In Value"
-    #                     )
-
-    #                 elif type(src_val) != type(tgt_val):
-    #                     li = key_val.split("----")
-    #                     for i in range(len(li)):
-    #                         key = keys[i]
-    #                         li1 = []
-    #                         li1.append(li[i])
-    #                         comm_dict[key] = comm_dict.get(key, []) + li1
-    #                     dummy_response_dict.get("Column-Name").append(field)
-    #                     dummy_response_dict.get("Source-Value").append(src_val)
-    #                     dummy_response_dict.get("Target-Value").append(tgt_val)
-    #                     dummy_response_dict.get("Reason-of-Failure").append(
-    #                         "Difference In Datatype"
-    #                     )
-    #         if count + len(dummy_response_dict['Reason-of-Failure']) > int(cut_out):
-    #             break   
-    #     comm_dict.update(dummy_response_dict)
-    #     return comm_dict
     if "ROUND_OFF" in configData:
         for column in src_df.columns:
             if src_df[column].dtype == numpy.float64:
@@ -283,9 +200,6 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger, 
                 final_value_diffs[keys] = final_value_diffs[keys] + chunk_diffs[keys]
             else:
                 final_value_diffs[keys] = chunk_diffs[keys]
-        # for key, val in itertools.chain(final_value_diffs.items(), chunk_diffs.items()):
-        # final_value_diffs[key] += val
-        # final_value_diffs = dict(final_value_diffs)
         count = len(final_value_diffs["Reason-of-Failure"])
         if count > int(cut_out):
             reporter.addRow("Stopping execution","Mismatch count is greater than {}".format(cut_out),status.INFO)
