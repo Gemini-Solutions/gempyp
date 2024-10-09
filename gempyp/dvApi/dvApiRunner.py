@@ -68,7 +68,7 @@ class DvApiRunner(Base):
             
             response, start_time, end_time = Api.make_request(self, request)
             if response.status_code < 300:
-                self.apiData = pd.DataFrame(response.json()['data'])
+                self.apiData = pd.DataFrame(response.json())
                 self.logger.info(f"The api {request.api} gave response status : {response.status_code}")
                 self.reporter.addRow(
                     "Api response", f"The api {request.api} gave response status : {response.status_code} response body : {response.json()}", status.PASS)
