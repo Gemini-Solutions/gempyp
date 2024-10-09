@@ -81,7 +81,7 @@ def dataUploader(file_path, bridge_token):
                                 data['testcases'][i]['user_defined_data']['LOG_FILE'] = f'<a href="{s3_log_file_url}" target=_blank>view</a>'
                             except Exception:
                                 print('some problem occured while uploading testcase log file')
-                        if data['testcases'][i]['product_type'] == 'GEMPYP-DV':
+                        if data['testcases'][i]['product_type'] == 'GEMPYP-DV' or data['testcases'][i]['product_type'] == 'DV-API':
                             if not re.search("^https://.", data['testcases'][i]['steps'][-1]["Attachment"][-1]):
                                print('Uploading DV Result File to S3')
                                s3_result_file_url = create_s3_link(url=upload_to_s3(data["urls"]["bucket-file-upload-api"], bridge_token=data['bridge_token'], username=data['user_name'], file=data['testcases'][i]['steps'][-1]["Attachment"][-1])[0]["Url"]) 
