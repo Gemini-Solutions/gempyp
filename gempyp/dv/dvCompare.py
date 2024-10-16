@@ -196,6 +196,10 @@ def getValueDict(src_df, tgt_df, common_keys, headers, key, configData, logger, 
             count
         )
         for keys in chunk_diffs.keys():
+            chunk_diffs[keys] = [
+                value.replace('\n', ' ') if isinstance(value, str) else value 
+                for value in chunk_diffs[keys]
+            ]
             if keys in final_value_diffs.keys():
                 final_value_diffs[keys] = final_value_diffs[keys] + chunk_diffs[keys]
             else:

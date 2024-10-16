@@ -45,7 +45,7 @@ def writeToReport(dv_obj):
     tempdict["base_user"] = getpass.getuser()
     tempdict["invoke_user"] = dv_obj.data.get("INVOKE_USER")
     tempdict["machine"] = dv_obj.data.get("MACHINE")
-    tempdict["product_type"] = "DV-API"
+    tempdict["product_type"] = "GEMPYP-DV-API"
     tempdict["steps"] = result["json_data"]['steps']
     tempdict["result_file"] = result["RESULT_FILE"]
     tempdict["start_time"] = result["START_TIME"]
