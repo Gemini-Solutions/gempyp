@@ -461,7 +461,7 @@ class Engine:
             for testcase in testcases:
                 passedDependency = self.isDependencyPassed(testcase)
                 product_type = {'dv': "GEMPYP-DV",
-                                    "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "DV-API"}
+                                    "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "GEMPYP-DV-API"}
                 dependency_error = {
                     "message": "dependency failed",
                     "testcase": testcase["NAME"],
