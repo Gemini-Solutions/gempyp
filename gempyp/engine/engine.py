@@ -65,12 +65,15 @@ def executorFactory(data: Dict, conn=None, custom_logger=None) -> Tuple[List, Di
     dv = ["data validator","dv","datavalidator","dvalidator"]
     pyprest = ["pyprest","prest","pr"]
     gempyp = ["gempyp","gpyp","gp"]
+    dvApi = ["dv-api", "dv_api"]
     if _type in dv:
         _type = "dv"
     elif _type in pyprest:
         _type = "pyprest"
     elif _type in gempyp:
         _type = "gempyp"
+    elif _type in dvApi:
+        _type = "dv-api"
 
     _type_dict = engine_control[_type.lower()]
     custom_logger.info(f"Starting {_type} testcase")
@@ -458,7 +461,7 @@ class Engine:
             for testcase in testcases:
                 passedDependency = self.isDependencyPassed(testcase)
                 product_type = {'dv': "GEMPYP-DV",
-                                    "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "DV-API"}
+                                    "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "GEMPYP-DV-API"}
                 dependency_error = {
                     "message": "dependency failed",
                     "testcase": testcase["NAME"],
@@ -521,7 +524,7 @@ class Engine:
                     # only append testcases whose dependency are passed otherwise just update the databasee
                     passedDependency = self.isDependencyPassed(testcase)
                     product_type = {'dv': "GEMPYP-DV",
-                                        "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "DV-API"}
+                                        "pyprest": "GEMPYP-PR", "gempyp": "GEMPYP", 'dv-api': "GEMPYP-DV-API"}
                     dependency_error = {
                         "message": "dependency failed",
                         "testcase": testcase["NAME"],

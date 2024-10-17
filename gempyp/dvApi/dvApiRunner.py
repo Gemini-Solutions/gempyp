@@ -23,8 +23,9 @@ from gempyp.dv.dvCompare import df_compare
 from gempyp.dv.dfOperations import dateFormatHandling, columnCompare, skipColumn
 import re
 import ast
-
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from gempyp.pyprest.apiCommon import Api, Request
+import json
 
 
 class DvApiRunner(Base):
@@ -48,6 +49,15 @@ class DvApiRunner(Base):
         self.reporter = Base(project_name=self.project,
                             testcase_name=self.tcname)
 
+
+    def add_params_to_url(self, url, paramMap):
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+        query_params.update(paramMap)
+        new_query = urlencode(query_params, doseq=True)
+        new_url = urlunparse(parsed_url._replace(query=new_query))
+        return new_url
+    
     def getApiData(self):
         try:
             request = Request()
@@ -62,26 +72,59 @@ class DvApiRunner(Base):
             else :
                 self.logger.info(
                     "--------Api tags not present in the testcase--------")
-                self.reporter.addRow(
-                    "Api tags not present in the testcase", "Not found", status.ERR)
                 raise Exception("Api tags not present in the testcase")
-            
+            page_number = json.loads(str(self.configData.get("PAGE_NUMBER", {})))
+            page_size = json.loads(str(self.configData.get("PAGE_SIZE", {})))
+            if len(page_number) == 0:
+                if len(page_size) == 1:
+                    request.api = self.add_params_to_url(request.api, page_size)
+                response, start_time, end_time = Api.make_request(self, request)
+                if response.status_code < 300:
+                    self.apiData = pd.DataFrame(response.json())
+                    self.logger.info(f"The api {request.api} gave response status : {response.status_code}")
+                    self.reporter.addRow(
+                        "Api response", f"The api {request.api} gave response status : {response.status_code} response body : {response.json()}", status.PASS)
+                else:
+                    self.logger.info(f"The api {request.api} gave response status : {response.status_code}")
+                    self.reporter.addRow(
+                        "Api response", f"The api {request.api} gave response status : {response.status_code} response body : {response.json()}", status.FAIL)
+                    raise Exception(f"Api gave {response.status_code}")
+            else:
+                self.getPaginatedData(request, page_number, page_size)
+        except Exception as e:
+                self.reporter.addRow("Api", get_reason_of_failure(traceback.format_exc(), e), status.ERR)
+                raise Exception("Couldn't fetch api response")
+    
+    def getPaginatedData(self, request, page_number, page_size):
+        page_param = list(page_number.keys())
+        pages = str(page_number[page_param[0]]).split("-")
+        if len(pages) > 1 :
+            start = int(pages[0])
+            end = int(pages[1])
+        else:
+            start = 1
+            end = int(pages[0])
+        response_data =[]
+        
+        for page in range(start, end+1):
+            page_data = {}
+            page_data[page_param[0]] = page
+            if len(page_size) == 1:
+                page_data.update(page_size)
+            request.api = self.add_params_to_url(request.api, page_data)
+            if len(page_param) == 2:
+                request.api = self.add_params_to_url(request.api, page_param[1], page_data[page_param[1]])
             response, start_time, end_time = Api.make_request(self, request)
             if response.status_code < 300:
-                self.apiData = pd.DataFrame(response.json())
+                response_data.extend(response.json())
                 self.logger.info(f"The api {request.api} gave response status : {response.status_code}")
-                self.reporter.addRow(
-                    "Api response", f"The api {request.api} gave response status : {response.status_code} response body : {response.json()}", status.PASS)
             else:
                 self.logger.info(f"The api {request.api} gave response status : {response.status_code}")
-                self.reporter.addRow(
-                    "Api response", f"The api {request.api} gave response status : {response.status_code} response body : {response.json()}", status.FAIL)
-                raise Exception(f"Api gave {response.status_code}")
-        except Exception as e:
-                self.reporter.addRow("Api Tags", e , status.ERR)
-                raise Exception(e)
-
-
+        if len(response_data) == 0:
+            raise Exception(f"Api gave {response.status_code} response")
+        self.reporter.addRow("Api Execution Details", f"Api response data : {response_data}", status.INFO)
+        self.apiData = pd.DataFrame(response_data)
+    
     def dvEngine(self):
 
         self.sourceCred = None
@@ -119,8 +162,6 @@ class DvApiRunner(Base):
             else:
                 self.source_df, self.source_columns = Dataframe.getSourceDataFrame(obj, self.data, self.logger, self.reporter, self.sourceCred)
                 self.target_df, self.target_columns = self.apiData, list(self.apiData.keys())
-
-            self.target_df = self.target_df.merge(self.source_df[self.keys], on=self.keys, how="inner")
 
             if "BEFORE_FILE" in self.configData:
                 self.beforeMethod()
@@ -166,6 +207,7 @@ class DvApiRunner(Base):
             self.target_df.drop_duplicates(
                 subset=self.keys, keep='last', inplace=True)
             
+            self.target_df = self.target_df.merge(self.source_df[self.keys], on=self.keys, how="inner")
             
             # hadling case insensitivity
             if 'MATCH_CASE' in self.configData:
